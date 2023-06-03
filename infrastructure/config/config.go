@@ -10,9 +10,9 @@ type Provider interface {
 	UnmarshalKey(name string, dest interface{}) error
 }
 
-var DefaultDirs = []string{"./secrets", ".", "$HOME/.kanthor"}
+var DefaultDirs = []string{"$KANTHOR_CONFIG_DIR", "$HOME/.kanthor", ".", "./secrets"}
 
-func New() Provider {
+func New() (Provider, error) {
 	provider := viper.New()
 	provider.SetConfigName("configs") // name of config file (without extension)
 	provider.SetConfigType("yaml")
@@ -31,7 +31,7 @@ func New() Provider {
 	provider.SetEnvPrefix("KANTHOR")
 	provider.AutomaticEnv()
 
-	return &config{provider: provider}
+	return &config{provider: provider}, nil
 }
 
 type config struct {

@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	command := cmd.New()
+
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("main.recover:", r)
@@ -15,7 +17,6 @@ func main() {
 		}
 	}()
 
-	command := cmd.New()
 	if err := command.Execute(); err != nil {
 		log.Println("main.error:", err.Error())
 		os.Exit(1)

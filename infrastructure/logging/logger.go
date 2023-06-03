@@ -1,5 +1,11 @@
 package logging
 
+import "github.com/scrapnode/kanthor/infrastructure/config"
+
+func New(provider config.Provider) (Logger, error) {
+	return NewZap(provider)
+}
+
 // Logger is the logger abstraction. It largely follows zap structure.
 type Logger interface {
 	// Error creates a log entry that includes a Key/ErrorValue pair.

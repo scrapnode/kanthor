@@ -6,8 +6,8 @@ import (
 )
 
 // Message are allocated based on bucket
-// For SQL: create a composite index for Bucket+AppId+Type, sort by ID (ksuid)
-// for Dynamo-style: partition by Bucket+AppId+Type, sort by ID (ksuid)
+// For SQL: create a composite index for AppId+Type+Bucket, sort by ID (ksuid)
+// for Dynamo-style: partition by AppId+Type+Bucket, sort by ID (ksuid)
 // we don't need workspace_id because most time we only retrieve message of app, not of workspace
 type Message struct {
 	Entity

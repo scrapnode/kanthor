@@ -13,15 +13,15 @@ type z struct {
 
 // With returns a new no-op logger.
 func (logger *z) With(args ...interface{}) Logger {
-	return logger.With(args)
+	return &z{logger.SugaredLogger.With(args...)}
 }
 
-func NewZap(provider config.Provider) Logger {
+func NewZap(provider config.Provider) (Logger, error) {
 	var zapConfig zap.Config
 
 	cfg, err := GetConfig(provider)
 	if err != nil {
-		panic(fmt.Sprintf("logging.GetConfig(): %v", err))
+		return nil, err
 	}
 
 	if cfg.Debug {
@@ -46,5 +46,5 @@ func NewZap(provider config.Provider) Logger {
 		panic(fmt.Sprintf("logging.zap.config.Build(): %v", err))
 	}
 
-	return &z{logger.Sugar()}
+	return &z{logger.Sugar()}, nil
 }

@@ -1,3 +1,21 @@
 logger:
     debug: true
-    level: info
+    level: debug
+database:
+    uri: sqlite:///tmp/kanthor.sqlite
+msgbroker:
+    uri: nats://127.0.0.1:4222
+    stream:
+        name: dataplane
+        subject: message
+        replicas: 0
+        limits:
+            msgs: 50000
+            msg_bytes: 65536
+            # 64kb * 50000 ~ 3Gb
+            bytes: 3276800000
+            # 60*60*24*3 = 3d
+            age: 259200
+    consumer:
+        name: local
+        temporary: true
