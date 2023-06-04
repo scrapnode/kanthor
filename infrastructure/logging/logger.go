@@ -1,9 +1,7 @@
 package logging
 
-import "github.com/scrapnode/kanthor/infrastructure/config"
-
-func New(provider config.Provider) (Logger, error) {
-	return NewZap(provider)
+func New(conf *Config) (Logger, error) {
+	return NewZap(conf)
 }
 
 // Logger is the logger abstraction. It largely follows zap structure.

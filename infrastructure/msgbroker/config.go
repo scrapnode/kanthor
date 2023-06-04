@@ -1,9 +1,5 @@
 package msgbroker
 
-import (
-	"github.com/scrapnode/kanthor/infrastructure/config"
-)
-
 type Config struct {
 	Uri    string `json:"uri"`
 	Stream struct {
@@ -24,12 +20,4 @@ type ConfigConsumer struct {
 	Name      string `json:"name"`
 	Temporary bool   `json:"temporary"`
 	MaxRetry  int    `json:"max_retry"`
-}
-
-const ConfigName = "msgbroker"
-
-func GetConfig(provider config.Provider) (*Config, error) {
-	var cfg Config
-	err := provider.UnmarshalKey(ConfigName, &cfg)
-	return &cfg, err
 }

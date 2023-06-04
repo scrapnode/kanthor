@@ -7,7 +7,6 @@
 package ioc
 
 import (
-	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/msgbroker"
@@ -15,7 +14,7 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeLogger(conf config.Provider) (logging.Logger, error) {
+func InitializeLogger(conf *logging.Config) (logging.Logger, error) {
 	logger, err := logging.New(conf)
 	if err != nil {
 		return nil, err
@@ -23,11 +22,7 @@ func InitializeLogger(conf config.Provider) (logging.Logger, error) {
 	return logger, nil
 }
 
-func InitializeMsgBroker(conf config.Provider) (msgbroker.MsgBroker, error) {
-	logger, err := InitializeLogger(conf)
-	if err != nil {
-		return nil, err
-	}
+func InitializeMsgBroker(logger logging.Logger, conf *msgbroker.Config) (msgbroker.MsgBroker, error) {
 	msgBroker, err := msgbroker.New(conf, logger)
 	if err != nil {
 		return nil, err
@@ -35,11 +30,7 @@ func InitializeMsgBroker(conf config.Provider) (msgbroker.MsgBroker, error) {
 	return msgBroker, nil
 }
 
-func InitializeDatabase(conf config.Provider) (database.Database, error) {
-	logger, err := InitializeLogger(conf)
-	if err != nil {
-		return nil, err
-	}
+func InitializeDatabase(logger logging.Logger, conf *database.Config) (database.Database, error) {
 	databaseDatabase, err := database.New(conf, logger)
 	if err != nil {
 		return nil, err

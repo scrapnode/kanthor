@@ -2,7 +2,6 @@ package entities
 
 import (
 	"github.com/scrapnode/kanthor/infrastructure/utils"
-	"net/http"
 )
 
 type Request struct {
@@ -12,12 +11,11 @@ type Request struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`
 
-	Method  string      `json:"method"`
-	Headers http.Header `json:"headers"`
-	Body    []byte      `json:"body"`
+	Uri      string            `json:"uri"`
+	Body     []byte            `json:"body"`
+	Metadata map[string]string `json:"metadata"`
 
-	Uri    string `json:"uri"`
-	Status int    `json:"status"`
+	Status int `json:"status"`
 }
 
 func (entity *Request) GenId() {

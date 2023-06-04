@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"github.com/scrapnode/kanthor/infrastructure/utils"
 	"time"
 )
 
@@ -18,11 +19,13 @@ type SoftDelete struct {
 }
 
 type TimeSeries struct {
-	Timestamp time.Time `json:"timestamp"`
-	Bucket    string    `json:"bucket"`
+	Timestamp *time.Time `json:"timestamp"`
+	Bucket    string     `json:"bucket"`
 }
 
 func (entity *TimeSeries) GenBucket(layout string) {
-	entity.Timestamp = time.Now().UTC()
+	if entity.Timestamp == nil {
+		entity.Timestamp = utils.Now()
+	}
 	entity.Bucket = entity.Timestamp.Format(layout)
 }

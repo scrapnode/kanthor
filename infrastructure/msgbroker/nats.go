@@ -6,7 +6,6 @@ import (
 	"fmt"
 	natsio "github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
-	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"log"
 	"os"
@@ -15,17 +14,12 @@ import (
 	"time"
 )
 
-func NewNats(conf config.Provider, logger logging.Logger) (MsgBroker, error) {
-	cfg, err := GetConfig(conf)
-	if err != nil {
-		return nil, err
-	}
-
-	return &nats{config: cfg, logger: logger.With("layer", "msgbroker")}, nil
+func NewNats(conf *Config, logger logging.Logger) (MsgBroker, error) {
+	return &nats{conf: conf, logger: logger.With("layer", "msgbroker")}, nil
 }
 
 type nats struct {
-	config *Config
+	conf   *Config
 	logger logging.Logger
 
 	mu           sync.Mutex
@@ -61,7 +55,7 @@ func (broker *nats) Connect(ctx context.Context) error {
 			broker.logger.Error(fmt.Sprintf("got reconnected to %v", conn.ConnectedUrl()))
 		}),
 	}
-	broker.client, err = natsio.Connect(broker.config.Uri, opts...)
+	broker.client, err = natsio.Connect(broker.conf.Uri, opts...)
 	if err != nil {
 		return fmt.Errorf("msgbroker: %w", err)
 	}
@@ -195,21 +189,21 @@ func (broker *nats) Sub(ctx context.Context, handler Handler) error {
 
 func (broker *nats) consumer(ctx context.Context, stream jetstream.Stream) (jetstream.Consumer, error) {
 	conf := jetstream.ConsumerConfig{
-		Name:           broker.config.Consumer.Name,
-		DeliverSubject: broker.config.Consumer.Name,
-		DeliverGroup:   broker.config.Consumer.Name,
+		Name:           broker.conf.Consumer.Name,
+		DeliverSubject: broker.conf.Consumer.Name,
+		DeliverGroup:   broker.conf.Consumer.Name,
 		DeliverPolicy:  jetstream.DeliverAllPolicy,
 		AckPolicy:      jetstream.AckExplicitPolicy,
 		// if MaxRetry is not set, we guarantee at least one MaxDeliver
-		MaxDeliver: broker.config.Consumer.MaxRetry + 1,
+		MaxDeliver: broker.conf.Consumer.MaxRetry + 1,
 		// @TODO: consider apply RateLimit
 	}
-	if !broker.config.Consumer.Temporary {
-		conf.Durable = broker.config.Consumer.Name
+	if !broker.conf.Consumer.Temporary {
+		conf.Durable = broker.conf.Consumer.Name
 		conf.InactiveThreshold = time.Hour
 
 	}
-	log.Println(broker.config.Consumer.Temporary)
+	log.Println(broker.conf.Consumer.Temporary)
 	log.Println(conf)
 
 	consumer, err := stream.Consumer(ctx, conf.Name)
@@ -227,7 +221,7 @@ func (broker *nats) consumer(ctx context.Context, stream jetstream.Stream) (jets
 
 func (broker *nats) subject(event *Event) string {
 	subjects := []string{
-		broker.config.Stream.Subject,
+		broker.conf.Stream.Subject,
 		event.Tier,
 		event.AppId,
 		event.Type,
@@ -259,23 +253,23 @@ func (broker *nats) stream(ctx context.Context) (jetstream.Stream, error) {
 		return nil, err
 	}
 
-	stream, err := js.Stream(ctx, broker.config.Stream.Name)
+	stream, err := js.Stream(ctx, broker.conf.Stream.Name)
 	if errors.Is(err, jetstream.ErrStreamNotFound) {
 		stream, err = js.CreateStream(ctx, jetstream.StreamConfig{
-			Name:     broker.config.Stream.Name,
-			Replicas: broker.config.Stream.Replicas,
+			Name:     broker.conf.Stream.Name,
+			Replicas: broker.conf.Stream.Replicas,
 			// only support one subject wildcard per stream
-			Subjects: []string{fmt.Sprintf("%s.>", broker.config.Stream.Subject)},
+			Subjects: []string{fmt.Sprintf("%s.>", broker.conf.Stream.Subject)},
 			// Retention based on the various limits that are set including: MaxMsgs, MaxBytes, MaxAge, and MaxMsgsPerSubject.
 			// If any of these limits are set, whichever limit is hit first will cause the automatic deletion of the respective message(s)
 			Retention: jetstream.LimitsPolicy,
 			// This policy will delete the oldest messages in order to maintain the limit.
 			// For example, if MaxAge is set to one minute, the server will automatically delete messages older than one minute with this policy.
 			Discard:    jetstream.DiscardOld,
-			MaxMsgs:    broker.config.Stream.Limits.Msgs,
-			MaxMsgSize: broker.config.Stream.Limits.MsgBytes,
-			MaxBytes:   broker.config.Stream.Limits.Bytes,
-			MaxAge:     time.Duration(broker.config.Stream.Limits.Age) * time.Second,
+			MaxMsgs:    broker.conf.Stream.Limits.Msgs,
+			MaxMsgSize: broker.conf.Stream.Limits.MsgBytes,
+			MaxBytes:   broker.conf.Stream.Limits.Bytes,
+			MaxAge:     time.Duration(broker.conf.Stream.Limits.Age) * time.Second,
 		})
 	}
 

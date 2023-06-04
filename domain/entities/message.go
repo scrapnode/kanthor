@@ -1,9 +1,6 @@
 package entities
 
-import (
-	"github.com/scrapnode/kanthor/infrastructure/utils"
-	"net/http"
-)
+import "github.com/scrapnode/kanthor/infrastructure/utils"
 
 // Message are allocated based on bucket
 // For SQL: create a composite index for AppId+Type+Bucket, sort by ID (ksuid)
@@ -16,11 +13,12 @@ type Message struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`
 
-	Method  string      `json:"method"`
-	Headers http.Header `json:"headers"`
-	Body    []byte      `json:"body"`
+	Body     []byte            `json:"body"`
+	Metadata map[string]string `json:"metadata"`
 }
 
 func (entity *Message) GenId() {
-	entity.Id = utils.ID("msg")
+	if entity.Id == "" {
+		entity.Id = utils.ID("msg")
+	}
 }

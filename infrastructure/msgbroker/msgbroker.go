@@ -3,12 +3,11 @@ package msgbroker
 import (
 	"context"
 	"encoding/json"
-	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func New(conf config.Provider, logger logging.Logger) (MsgBroker, error) {
+func New(conf *Config, logger logging.Logger) (MsgBroker, error) {
 	return NewNats(conf, logger)
 }
 

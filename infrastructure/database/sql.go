@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"github.com/avast/retry-go"
-	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -15,17 +14,12 @@ import (
 	"time"
 )
 
-func NewSQL(conf config.Provider, logger logging.Logger) (Database, error) {
-	cfg, err := GetConfig(conf)
-	if err != nil {
-		return nil, err
-	}
-
-	return &sql{config: cfg, logger: logger.With("layer", "database")}, nil
+func NewSQL(conf *Config, logger logging.Logger) (Database, error) {
+	return &sql{conf: conf, logger: logger.With("layer", "database")}, nil
 }
 
 type sql struct {
-	config *Config
+	conf   *Config
 	logger logging.Logger
 
 	mu     sync.Mutex
@@ -40,7 +34,7 @@ func (db *sql) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	uri, err := url.Parse(db.config.Uri)
+	uri, err := url.Parse(db.conf.Uri)
 	if err != nil {
 		return err
 	}
@@ -50,13 +44,13 @@ func (db *sql) Connect(ctx context.Context) error {
 		if strings.HasPrefix(uri.Scheme, "sqlite") {
 			dialector = sqlite.Open(uri.Host + uri.Path + uri.RawQuery)
 		} else {
-			dialector = postgres.Open(db.config.Uri)
+			dialector = postgres.Open(db.conf.Uri)
 		}
 
 		db.client, err = gorm.Open(dialector, &gorm.Config{Logger: &SqlLogger{log: db.logger}})
 		return err
 	},
-		retry.Attempts(db.config.RetryAttempts),
+		retry.Attempts(db.conf.RetryAttempts),
 		retry.Delay(time.Second),
 	)
 
