@@ -9,7 +9,6 @@ func NewServe() *cobra.Command {
 	command := &cobra.Command{
 		Use: "serve",
 	}
-	command.AddCommand(NewServeMsgBroker())
 	command.AddCommand(dataplane.New())
 	return command
 }

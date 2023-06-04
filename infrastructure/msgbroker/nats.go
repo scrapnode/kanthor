@@ -7,7 +7,6 @@ import (
 	natsio "github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -15,7 +14,7 @@ import (
 )
 
 func NewNats(conf *Config, logger logging.Logger) (MsgBroker, error) {
-	return &nats{conf: conf, logger: logger.With("layer", "msgbroker")}, nil
+	return &nats{conf: conf, logger: logger.With("component", "msgbroker")}, nil
 }
 
 type nats struct {
@@ -138,6 +137,7 @@ func (broker *nats) Sub(ctx context.Context, handler Handler) error {
 	if err != nil {
 		return fmt.Errorf("msgbroker: %w", err)
 	}
+
 	c, err := consumer.Info(ctx)
 	if err != nil {
 		return fmt.Errorf("msgbroker: %w", err)
@@ -198,13 +198,14 @@ func (broker *nats) consumer(ctx context.Context, stream jetstream.Stream) (jets
 		MaxDeliver: broker.conf.Consumer.MaxRetry + 1,
 		// @TODO: consider apply RateLimit
 	}
+	if broker.conf.Consumer.FilterSubject != "" {
+		conf.FilterSubject = fmt.Sprintf("%s.%s", broker.conf.Stream.Subject, broker.conf.Consumer.FilterSubject)
+	}
+
 	if !broker.conf.Consumer.Temporary {
 		conf.Durable = broker.conf.Consumer.Name
 		conf.InactiveThreshold = time.Hour
-
 	}
-	log.Println(broker.conf.Consumer.Temporary)
-	log.Println(conf)
 
 	consumer, err := stream.Consumer(ctx, conf.Name)
 	if err == nil {

@@ -40,5 +40,11 @@ func NewZap(conf *Config) (Logger, error) {
 		panic(fmt.Sprintf("logging.zap.config.Build(): %v", err))
 	}
 
+	if conf.With != nil {
+		for key, value := range conf.With {
+			logger = logger.With(zap.String(key, value))
+		}
+	}
+
 	return &z{logger.Sugar()}, nil
 }

@@ -14,7 +14,7 @@ import (
 func New(conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
 	return &server{
 		conf:   conf,
-		logger: logger.With("layer", "dataplane.servers.grpc"),
+		logger: logger.With("component", "servers.grpc"),
 	}, nil
 }
 

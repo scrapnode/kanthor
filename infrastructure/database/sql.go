@@ -15,7 +15,7 @@ import (
 )
 
 func NewSQL(conf *Config, logger logging.Logger) (Database, error) {
-	return &sql{conf: conf, logger: logger.With("layer", "database")}, nil
+	return &sql{conf: conf, logger: logger.With("component", "database")}, nil
 }
 
 type sql struct {
