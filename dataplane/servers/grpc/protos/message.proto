@@ -3,16 +3,16 @@ package kanthor.dataplane.v1;
 option go_package = "github.com/scrapnode/kanthor/dataplane/server/grpc/protos";
 
 service Message {
-  rpc Put(MessagePutReq) returns (MessagePutRes) {}
+  rpc Create(MessageCreateReq) returns (MessageCreateRes) {}
 }
 
-message MessagePutReq {
+message MessageCreateReq {
   string app_id = 1;
   string type = 2;
   string body = 3;
 }
 
-message MessagePutRes {
+message MessageCreateRes {
   string id = 1;
   string bucket = 2;
   int64 timestamp = 3;

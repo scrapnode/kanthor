@@ -1,4 +1,4 @@
-package database
+package datastore
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-func NewSQL(conf *Config, logger logging.Logger) Database {
-	return &sql{conf: conf, logger: logger.With("component", "database")}
+func NewSQL(conf *Config, logger logging.Logger) Datastore {
+	return &sql{conf: conf, logger: logger.With("component", "datastore")}
 }
 
 type sql struct {

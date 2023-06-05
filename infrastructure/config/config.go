@@ -7,7 +7,7 @@ import (
 )
 
 type Provider interface {
-	UnmarshalKey(name string, dest interface{}) error
+	Unmarshal(dest interface{}) error
 }
 
 var DefaultDirs = []string{"$KANTHOR_CONFIG_DIR", "$HOME/.kanthor", ".", "./secrets"}
@@ -38,6 +38,6 @@ type config struct {
 	provider *viper.Viper
 }
 
-func (cfg *config) UnmarshalKey(name string, dest interface{}) error {
-	return cfg.provider.UnmarshalKey(name, dest)
+func (cfg *config) Unmarshal(dest interface{}) error {
+	return cfg.provider.Unmarshal(dest)
 }

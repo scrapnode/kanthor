@@ -3,24 +3,31 @@ package config
 import (
 	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/database"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/msgbroker"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
 type Config struct {
-	Logger    *logging.Config   `json:"logger"`
-	Database  *database.Config  `json:"database"`
-	MsgBroker *msgbroker.Config `json:"msgbroker"`
+	Database  database.Config            `json:"database"`
+	Datastore datastore.Config           `json:"datastore"`
+	Streaming streaming.ConnectionConfig `json:"streaming_publisher"`
 
+	Dataplane *Dataplane `json:"dataplane"`
+}
+
+type Dataplane struct {
+	Logger logging.Config
 	Server struct {
 		Addr string `json:"addr"`
 	} `json:"server"`
+	Message struct {
+		BucketLayout string `json:"bucket_layout"`
+	} `json:"message"`
 }
-
-const Name = "dataplane"
 
 func New(provider config.Provider) (*Config, error) {
 	var cfg Config
-	err := provider.UnmarshalKey(Name, &cfg)
+	err := provider.Unmarshal(&cfg)
 	return &cfg, err
 }

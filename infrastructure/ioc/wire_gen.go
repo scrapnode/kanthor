@@ -8,8 +8,9 @@ package ioc
 
 import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/msgbroker"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
 // Injectors from wire.go:
@@ -22,18 +23,17 @@ func InitializeLogger(conf *logging.Config) (logging.Logger, error) {
 	return logger, nil
 }
 
-func InitializeMsgBroker(logger logging.Logger, conf *msgbroker.Config) (msgbroker.MsgBroker, error) {
-	msgBroker, err := msgbroker.New(conf, logger)
-	if err != nil {
-		return nil, err
-	}
-	return msgBroker, nil
+func InitializeStreamingPublisher(conf *streaming.PublisherConfig, logger logging.Logger) (streaming.Publisher, error) {
+	publisher := streaming.NewPublisher(conf, logger)
+	return publisher, nil
 }
 
-func InitializeDatabase(logger logging.Logger, conf *database.Config) (database.Database, error) {
-	databaseDatabase, err := database.New(conf, logger)
-	if err != nil {
-		return nil, err
-	}
+func InitializeDatabase(conf *database.Config, logger logging.Logger) (database.Database, error) {
+	databaseDatabase := database.New(conf, logger)
 	return databaseDatabase, nil
+}
+
+func InitializeDatastore(conf *datastore.Config, logger logging.Logger) (datastore.Datastore, error) {
+	datastoreDatastore := datastore.New(conf, logger)
+	return datastoreDatastore, nil
 }

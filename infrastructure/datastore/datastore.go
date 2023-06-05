@@ -1,15 +1,15 @@
-package database
+package datastore
 
 import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func New(conf *Config, logger logging.Logger) Database {
+func New(conf *Config, logger logging.Logger) Datastore {
 	return NewSQL(conf, logger)
 }
 
-type Database interface {
+type Datastore interface {
 	patterns.Connectable
 	DB() any
 }

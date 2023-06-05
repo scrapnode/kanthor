@@ -1,4 +1,4 @@
-package database
+package datastore
 
 type Config struct {
 	Uri string `json:"uri"`

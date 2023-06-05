@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"github.com/scrapnode/kanthor/dataplane/ioc"
 	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/spf13/cobra"
@@ -20,6 +21,11 @@ func NewServer() *cobra.Command {
 				return err
 			}
 
+			logger, err := ioc.InitializeLogger(provider)
+			if err != nil {
+				return err
+			}
+
 			server, err := ioc.InitializeServer(provider)
 			if err != nil {
 				return err
@@ -32,7 +38,7 @@ func NewServer() *cobra.Command {
 
 			go func() {
 				if err := server.Run(ctx); err != nil {
-					// @TODO: logging
+					logger.Error(errors.Unwrap(err))
 					cancel()
 					return
 				}
@@ -46,7 +52,7 @@ func NewServer() *cobra.Command {
 			ctx, cancel = context.WithTimeout(cmd.Context(), 11*time.Second)
 			go func() {
 				if err := server.Stop(ctx); err != nil {
-					// @TODO: logging
+					logger.Error(errors.Unwrap(err))
 				}
 				cancel()
 			}()

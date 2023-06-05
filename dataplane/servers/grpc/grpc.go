@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/dataplane/config"
 	"github.com/scrapnode/kanthor/dataplane/servers/grpc/protos"
+	"github.com/scrapnode/kanthor/dataplane/services"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"google.golang.org/grpc"
@@ -11,41 +12,50 @@ import (
 	"net"
 )
 
-func New(conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
-	return &server{
-		conf:   conf,
-		logger: logger.With("component", "servers.grpc"),
-	}, nil
+func New(conf *config.Config, logger logging.Logger, services services.Services) patterns.Runnable {
+	logger = logger.With("component", "servers.grpc")
+	return &server{conf: conf, logger: logger, services: services}
 }
 
 type server struct {
-	conf   *config.Config
-	logger logging.Logger
-	server *grpc.Server
+	conf     *config.Config
+	logger   logging.Logger
+	services services.Services
+	server   *grpc.Server
 }
 
 func (s *server) Start(ctx context.Context) error {
-	s.logger.Info("starting")
+	if err := s.services.Connect(ctx); err != nil {
+		return err
+	}
 
 	s.server = grpc.NewServer()
-	protos.RegisterMessageServer(s.server, &MessageServer{})
+	protos.RegisterMessageServer(s.server, &MessageServer{service: s.services.Message()})
 	reflection.Register(s.server)
 
+	s.logger.Info("started")
 	return nil
 }
 
 func (s *server) Stop(ctx context.Context) error {
-	s.logger.Info("stopping")
 	s.server.GracefulStop()
+	s.logger.Info("stopped")
+
+	if err := s.services.Disconnect(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (s *server) Run(ctx context.Context) error {
-	listener, err := net.Listen("tcp", s.conf.Server.Addr)
+	addr := s.conf.Dataplane.Server.Addr
+
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 
-	s.logger.Infow("listening", "addr", s.conf.Server.Addr)
+	s.logger.Infow("listening", "addr", addr)
 	return s.server.Serve(listener)
 }

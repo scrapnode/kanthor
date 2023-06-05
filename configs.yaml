@@ -1,7 +1,9 @@
-msgbroker:
+streaming:
   uri: nats://127.0.0.1:4222
   stream:
-    default: true
+    name: default
+    subjects:
+      - kanthor.default.>
     replicas: 0
     limits:
       msgs: 50000
@@ -14,9 +16,6 @@ msgbroker:
 database:
   uri: sqlite:///tmp/kanthor.sqlite
 
-datastore:
-  uri: sqlite:///tmp/kanthor.sqlite
-
 dataplane:
   logger:
     debug: true
@@ -25,12 +24,3 @@ dataplane:
       app: dataplane
   server:
     addr: ":8080"
-
-tiers:
-  - name: free
-    msgbroker: {}
-    database: {}
-    datastore: {}
-    dataplane: {}
-    scheduler: {}
-    dispatcher: {}

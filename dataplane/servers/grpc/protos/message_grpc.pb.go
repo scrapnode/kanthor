@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MessageClient interface {
-	Put(ctx context.Context, in *MessagePutReq, opts ...grpc.CallOption) (*MessagePutRes, error)
+	Create(ctx context.Context, in *MessageCreateReq, opts ...grpc.CallOption) (*MessageCreateRes, error)
 }
 
 type messageClient struct {
@@ -33,9 +33,9 @@ func NewMessageClient(cc grpc.ClientConnInterface) MessageClient {
 	return &messageClient{cc}
 }
 
-func (c *messageClient) Put(ctx context.Context, in *MessagePutReq, opts ...grpc.CallOption) (*MessagePutRes, error) {
-	out := new(MessagePutRes)
-	err := c.cc.Invoke(ctx, "/kanthor.dataplane.v1.Message/Put", in, out, opts...)
+func (c *messageClient) Create(ctx context.Context, in *MessageCreateReq, opts ...grpc.CallOption) (*MessageCreateRes, error) {
+	out := new(MessageCreateRes)
+	err := c.cc.Invoke(ctx, "/kanthor.dataplane.v1.Message/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *messageClient) Put(ctx context.Context, in *MessagePutReq, opts ...grpc
 // All implementations must embed UnimplementedMessageServer
 // for forward compatibility
 type MessageServer interface {
-	Put(context.Context, *MessagePutReq) (*MessagePutRes, error)
+	Create(context.Context, *MessageCreateReq) (*MessageCreateRes, error)
 	mustEmbedUnimplementedMessageServer()
 }
 
@@ -54,8 +54,8 @@ type MessageServer interface {
 type UnimplementedMessageServer struct {
 }
 
-func (UnimplementedMessageServer) Put(context.Context, *MessagePutReq) (*MessagePutRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
+func (UnimplementedMessageServer) Create(context.Context, *MessageCreateReq) (*MessageCreateRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedMessageServer) mustEmbedUnimplementedMessageServer() {}
 
@@ -70,20 +70,20 @@ func RegisterMessageServer(s grpc.ServiceRegistrar, srv MessageServer) {
 	s.RegisterService(&Message_ServiceDesc, srv)
 }
 
-func _Message_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MessagePutReq)
+func _Message_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MessageCreateReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MessageServer).Put(ctx, in)
+		return srv.(MessageServer).Create(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/kanthor.dataplane.v1.Message/Put",
+		FullMethod: "/kanthor.dataplane.v1.Message/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MessageServer).Put(ctx, req.(*MessagePutReq))
+		return srv.(MessageServer).Create(ctx, req.(*MessageCreateReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +96,8 @@ var Message_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*MessageServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Put",
-			Handler:    _Message_Put_Handler,
+			MethodName: "Create",
+			Handler:    _Message_Create_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
