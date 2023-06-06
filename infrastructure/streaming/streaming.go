@@ -1,6 +1,9 @@
 package streaming
 
-import "github.com/scrapnode/kanthor/infrastructure/utils"
+import (
+	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"strings"
+)
 
 var (
 	MetaAppId = "KANTHOR_META_APP_ID"
@@ -19,4 +22,8 @@ type Event struct {
 
 func (e *Event) GenId() {
 	e.Id = utils.ID("event")
+}
+
+func Subject(segments ...string) string {
+	return strings.Join(segments, ".")
 }

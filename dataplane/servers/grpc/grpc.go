@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/dataplane/config"
 	"github.com/scrapnode/kanthor/dataplane/servers/grpc/protos"
-	"github.com/scrapnode/kanthor/dataplane/services"
+	"github.com/scrapnode/kanthor/dataplane/usecases/message"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"google.golang.org/grpc"
@@ -12,25 +12,25 @@ import (
 	"net"
 )
 
-func New(conf *config.Config, logger logging.Logger, services services.Services) patterns.Runnable {
+func New(conf *config.Config, logger logging.Logger, message message.Service) patterns.Runnable {
 	logger = logger.With("component", "servers.grpc")
-	return &server{conf: conf, logger: logger, services: services}
+	return &server{conf: conf, logger: logger, message: message}
 }
 
 type server struct {
-	conf     *config.Config
-	logger   logging.Logger
-	services services.Services
-	server   *grpc.Server
+	conf    *config.Config
+	logger  logging.Logger
+	message message.Service
+	server  *grpc.Server
 }
 
 func (s *server) Start(ctx context.Context) error {
-	if err := s.services.Connect(ctx); err != nil {
+	if err := s.message.Connect(ctx); err != nil {
 		return err
 	}
 
 	s.server = grpc.NewServer()
-	protos.RegisterMessageServer(s.server, &MessageServer{service: s.services.Message()})
+	protos.RegisterMessageServer(s.server, &MessageServer{service: s.message})
 	reflection.Register(s.server)
 
 	s.logger.Info("started")
@@ -41,7 +41,7 @@ func (s *server) Stop(ctx context.Context) error {
 	s.server.GracefulStop()
 	s.logger.Info("stopped")
 
-	if err := s.services.Disconnect(ctx); err != nil {
+	if err := s.message.Disconnect(ctx); err != nil {
 		return err
 	}
 

@@ -9,14 +9,24 @@ package ioc
 import (
 	config2 "github.com/scrapnode/kanthor/dataplane/config"
 	"github.com/scrapnode/kanthor/dataplane/servers"
-	"github.com/scrapnode/kanthor/dataplane/services"
+	"github.com/scrapnode/kanthor/dataplane/usecases/message"
+	"github.com/scrapnode/kanthor/infrastructure/auth"
 	"github.com/scrapnode/kanthor/infrastructure/config"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/ioc"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
 // Injectors from wire.go:
+
+func InitializeConfig(provider config.Provider) (*config2.Config, error) {
+	configConfig, err := config2.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	return configConfig, nil
+}
 
 func InitializeServer(provider config.Provider) (servers.Servers, error) {
 	configConfig, err := InitializeConfig(provider)
@@ -28,31 +38,33 @@ func InitializeServer(provider config.Provider) (servers.Servers, error) {
 	if err != nil {
 		return nil, err
 	}
-	services, err := InitializeServices(configConfig, logger)
+	service, err := InitializeMessageUseCase(configConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	serversServers := servers.New(configConfig, logger, services)
+	serversServers := servers.New(configConfig, logger, service)
 	return serversServers, nil
 }
 
-func InitializeConfig(provider config.Provider) (*config2.Config, error) {
-	configConfig, err := config2.New(provider)
+func InitializeMessageUseCase(conf *config2.Config, logger logging.Logger) (message.Service, error) {
+	authConfig := GetAuthConfig(conf)
+	auth, err := ioc.InitializeAuth(authConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	return configConfig, nil
-}
-
-func InitializeServices(conf *config2.Config, logger logging.Logger) (services.Services, error) {
 	publisherConfig := GetStreamingPublisherConfig(conf)
 	publisher, err := ioc.InitializeStreamingPublisher(publisherConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	message := services.NewMessage(conf, logger, publisher)
-	servicesServices := services.New(logger, message)
-	return servicesServices, nil
+	datastoreConfig := GetDatastoreConfig(conf)
+	datastore, err := ioc.InitializeDatastore(datastoreConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	repository := message.NewRepository(logger, datastore)
+	service := message.NewService(conf, logger, auth, publisher, repository)
+	return service, nil
 }
 
 func InitializeLogger(provider config.Provider) (logging.Logger, error) {
@@ -72,6 +84,14 @@ func InitializeLogger(provider config.Provider) (logging.Logger, error) {
 
 func GetLoggingConfig(conf *config2.Config) *logging.Config {
 	return &conf.Dataplane.Logger
+}
+
+func GetDatastoreConfig(conf *config2.Config) *datastore.Config {
+	return &conf.Datastore
+}
+
+func GetAuthConfig(conf *config2.Config) *auth.Config {
+	return &conf.Dataplane.Auth
 }
 
 func GetStreamingPublisherConfig(conf *config2.Config) *streaming.PublisherConfig {

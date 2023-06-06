@@ -3,16 +3,16 @@ package grpc
 import (
 	"context"
 	"github.com/scrapnode/kanthor/dataplane/servers/grpc/protos"
-	"github.com/scrapnode/kanthor/dataplane/services"
+	"github.com/scrapnode/kanthor/dataplane/usecases/message"
 )
 
 type MessageServer struct {
 	protos.UnimplementedMessageServer
-	service services.Message
+	service message.Service
 }
 
 func (s *MessageServer) Put(ctx context.Context, req *protos.MessageCreateReq) (*protos.MessageCreateRes, error) {
-	request := &services.MessageCreateReq{AppId: req.AppId, Type: req.Type, Body: req.Body}
+	request := &message.CreateReq{AppId: req.AppId, Type: req.Type, Body: req.Body}
 
 	response, err := s.service.Create(ctx, request)
 	if err != nil {

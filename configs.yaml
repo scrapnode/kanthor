@@ -14,7 +14,10 @@ streaming:
       age: 259200
 
 database:
-  uri: sqlite:///tmp/kanthor.sqlite
+  uri: sqlite:///tmp/kanthor.database.sqlite
+
+datastore:
+  uri: sqlite:///tmp/kanthor.datastore.sqlite
 
 dataplane:
   logger:

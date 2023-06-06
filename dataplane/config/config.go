@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/scrapnode/kanthor/infrastructure/auth"
 	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
@@ -17,7 +18,8 @@ type Config struct {
 }
 
 type Dataplane struct {
-	Logger logging.Config
+	Logger logging.Config `json:"logger"`
+	Auth   auth.Config    `json:"auth"`
 	Server struct {
 		Addr string `json:"addr"`
 	} `json:"server"`

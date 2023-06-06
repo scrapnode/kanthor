@@ -5,6 +5,7 @@ package ioc
 
 import (
 	"github.com/google/wire"
+	"github.com/scrapnode/kanthor/infrastructure/auth"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -28,5 +29,10 @@ func InitializeDatabase(conf *database.Config, logger logging.Logger) (database.
 
 func InitializeDatastore(conf *datastore.Config, logger logging.Logger) (datastore.Datastore, error) {
 	wire.Build(datastore.New)
+	return nil, nil
+}
+
+func InitializeAuth(conf *auth.Config, logger logging.Logger) (auth.Auth, error) {
+	wire.Build(auth.New)
 	return nil, nil
 }
