@@ -1,3 +1,3 @@
 package constants
 
-const Namespace = "kanthor"
+const TopicNamespace = "kanthor"

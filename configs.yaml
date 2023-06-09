@@ -14,14 +14,22 @@ streaming:
       age: 259200
 
 database:
-  uri: sqlite:///tmp/kanthor.database.sqlite
+  uri: sqlite3://./.tmp/kanthor.database.sqlite
 
 datastore:
-  uri: sqlite:///tmp/kanthor.datastore.sqlite
+  uri: sqlite3://./.tmp/kanthor.datastore.sqlite
+
+migration:
+  logger:
+    pretty: true
+    level: debug
+    with:
+      app: migration
+  source: file://./migration/scripts/sql
 
 dataplane:
   logger:
-    debug: true
+    pretty: true
     level: debug
     with:
       app: dataplane

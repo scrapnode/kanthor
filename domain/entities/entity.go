@@ -1,31 +1,26 @@
 package entities
 
-import (
-	"github.com/scrapnode/kanthor/infrastructure/utils"
-	"time"
-)
+import "time"
 
 type Entity struct {
 	Id string `json:"id"`
 }
 
 type AuditTime struct {
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
+	CreatedAt int64 `json:"created_at"`
+	UpdatedAt int64 `json:"updated_at"`
 }
 
 type SoftDelete struct {
-	DeletedAt *time.Time `json:"deleted_at"`
+	DeletedAt int64 `json:"deleted_at"`
 }
 
 type TimeSeries struct {
-	Timestamp *time.Time `json:"timestamp"`
-	Bucket    string     `json:"bucket"`
+	Timestamp int64  `json:"timestamp"`
+	Bucket    string `json:"bucket"`
 }
 
-func (entity *TimeSeries) GenBucket(layout string) {
-	if entity.Timestamp == nil {
-		entity.Timestamp = utils.Now()
-	}
-	entity.Bucket = entity.Timestamp.Format(layout)
+func (ts *TimeSeries) SetTS(now time.Time, layout string) {
+	ts.Timestamp = now.UnixMilli()
+	ts.Bucket = now.Format(layout)
 }

@@ -18,7 +18,7 @@ func (logger *z) With(args ...interface{}) Logger {
 func NewZap(conf *Config) (Logger, error) {
 	var zapConfig zap.Config
 
-	if conf.Debug {
+	if conf.Pretty {
 		// running in development mode we will use a human-readable output
 		zapConfig = zap.NewDevelopmentConfig()
 		zapConfig.Encoding = "console"

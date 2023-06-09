@@ -3,10 +3,11 @@ package message
 import (
 	"context"
 	"github.com/scrapnode/kanthor/dataplane/config"
-	"github.com/scrapnode/kanthor/infrastructure/auth"
+	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/infrastructure/timer"
 )
 
 type Service interface {
@@ -17,24 +18,24 @@ type Service interface {
 func NewService(
 	conf *config.Config,
 	logger logging.Logger,
-	auth auth.Auth,
+	timer timer.Timer,
 	publisher streaming.Publisher,
-	repo Repository,
+	repos repositories.Repositories,
 ) Service {
 	logger = logger.With("component", "dataplane.usecases.message")
-	return &service{conf: conf, logger: logger, auth: auth, publisher: publisher, repo: repo}
+	return &service{conf: conf, logger: logger, timer: timer, publisher: publisher, repos: repos}
 }
 
 type service struct {
 	conf      *config.Config
 	logger    logging.Logger
-	auth      auth.Auth
+	timer     timer.Timer
 	publisher streaming.Publisher
-	repo      Repository
+	repos     repositories.Repositories
 }
 
 func (service *service) Connect(ctx context.Context) error {
-	if err := service.repo.Connect(ctx); err != nil {
+	if err := service.repos.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -49,7 +50,7 @@ func (service *service) Connect(ctx context.Context) error {
 func (service *service) Disconnect(ctx context.Context) error {
 	service.logger.Info("disconnected")
 
-	if err := service.repo.Disconnect(ctx); err != nil {
+	if err := service.repos.Disconnect(ctx); err != nil {
 		return err
 	}
 

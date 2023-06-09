@@ -6,11 +6,9 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"net/url"
 	"strings"
 	"sync"
-	"time"
 )
 
 func NewSQL(conf *Config, logger logging.Logger) Datastore {
@@ -45,7 +43,7 @@ func (db *sql) Connect(ctx context.Context) error {
 		dialector = postgres.Open(db.conf.Uri)
 	}
 
-	db.client, err = gorm.Open(dialector, &gorm.Config{Logger: &SqlLogger{log: db.logger}})
+	db.client, err = gorm.Open(dialector, &gorm.Config{Logger: NewSqlLogger(db.logger)})
 
 	db.logger.Info("connected")
 	return err
@@ -71,42 +69,4 @@ func (db *sql) Disconnect(ctx context.Context) error {
 	db.client = nil
 	db.logger.Info("disconnected")
 	return nil
-}
-
-func (db *sql) DB() any {
-	return db.client
-}
-
-type SqlLogger struct {
-	log logging.Logger
-}
-
-func (logger SqlLogger) LogMode(logger.LogLevel) logger.Interface {
-	return logger
-}
-
-func (logger SqlLogger) Info(ctx context.Context, msg string, args ...interface{}) {
-	logger.log.Infow(msg, args...)
-}
-func (logger SqlLogger) Warn(ctx context.Context, msg string, args ...interface{}) {
-	logger.log.Warnw(msg, args...)
-}
-
-func (logger SqlLogger) Error(ctx context.Context, msg string, args ...interface{}) {
-	logger.log.Errorw(msg, args...)
-}
-
-func (logger SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
-	elapsed := time.Since(begin)
-
-	sql, rows := fc()
-	args := []interface{}{
-		"rows", rows,
-		"time", float64(elapsed.Nanoseconds()) / 1e6,
-	}
-	if err != nil {
-		args = append(args, "error", err.Error())
-	}
-
-	logger.log.Debugw(sql, args...)
 }

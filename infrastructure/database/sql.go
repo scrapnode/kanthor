@@ -2,22 +2,26 @@ package database
 
 import (
 	"context"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"net/url"
 	"strings"
 	"sync"
-	"time"
+
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/lib/pq"
 )
 
-func NewSQL(conf *Config, logger logging.Logger) Database {
-	return &sql{conf: conf, logger: logger.With("component", "database")}
+func NewSQL(conf *Config, logger logging.Logger) *SQL {
+	return &SQL{conf: conf, logger: logger.With("component", "database")}
 }
 
-type sql struct {
+type SQL struct {
 	conf   *Config
 	logger logging.Logger
 
@@ -25,7 +29,7 @@ type sql struct {
 	client *gorm.DB
 }
 
-func (db *sql) Connect(ctx context.Context) error {
+func (db *SQL) Connect(ctx context.Context) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
@@ -45,13 +49,16 @@ func (db *sql) Connect(ctx context.Context) error {
 		dialector = postgres.Open(db.conf.Uri)
 	}
 
-	db.client, err = gorm.Open(dialector, &gorm.Config{Logger: &SqlLogger{log: db.logger}})
+	db.client, err = gorm.Open(dialector, &gorm.Config{Logger: NewSqlLogger(db.logger)})
+	if err != nil {
+		return err
+	}
 
 	db.logger.Info("connected")
-	return err
+	return nil
 }
 
-func (db *sql) Disconnect(ctx context.Context) error {
+func (db *SQL) Disconnect(ctx context.Context) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
@@ -73,40 +80,19 @@ func (db *sql) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (db *sql) DB() any {
+func (db *SQL) Client() any {
 	return db.client
 }
 
-type SqlLogger struct {
-	log logging.Logger
-}
-
-func (logger SqlLogger) LogMode(logger.LogLevel) logger.Interface {
-	return logger
-}
-
-func (logger SqlLogger) Info(ctx context.Context, msg string, args ...interface{}) {
-	logger.log.Infow(msg, args...)
-}
-func (logger SqlLogger) Warn(ctx context.Context, msg string, args ...interface{}) {
-	logger.log.Warnw(msg, args...)
-}
-
-func (logger SqlLogger) Error(ctx context.Context, msg string, args ...interface{}) {
-	logger.log.Errorw(msg, args...)
-}
-
-func (logger SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
-	elapsed := time.Since(begin)
-
-	sql, rows := fc()
-	args := []interface{}{
-		"rows", rows,
-		"time", float64(elapsed.Nanoseconds()) / 1e6,
-	}
+func (db *SQL) Migrator(source string) (patterns.Migrate, error) {
+	instance, err := db.client.DB()
 	if err != nil {
-		args = append(args, "error", err.Error())
+		return nil, err
+	}
+	driver, err := sqlite3.WithInstance(instance, &sqlite3.Config{})
+	if err != nil {
+		return nil, err
 	}
 
-	logger.log.Debugw(sql, args...)
+	return migrate.NewWithDatabaseInstance(source, "main", driver)
 }

@@ -17,8 +17,8 @@ type Message struct {
 	Metadata map[string]string `json:"metadata"`
 }
 
-func (entity *Message) GenId() {
-	if entity.Id == "" {
-		entity.Id = utils.ID("msg")
+func (msg *Message) GenId() {
+	if msg.Id != "" {
+		msg.Id = utils.ID("msg")
 	}
 }

@@ -21,7 +21,9 @@ type Event struct {
 }
 
 func (e *Event) GenId() {
-	e.Id = utils.ID("event")
+	if e.Id != "" {
+		e.Id = utils.ID("event")
+	}
 }
 
 func Subject(segments ...string) string {

@@ -1,9 +1,5 @@
 package entities
 
-import (
-	"github.com/scrapnode/kanthor/infrastructure/utils"
-)
-
 type Response struct {
 	Entity
 	TimeSeries
@@ -18,8 +14,4 @@ type Response struct {
 	Body     []byte            `json:"body"`
 
 	Status int `json:"status"`
-}
-
-func (entity *Response) GenId() {
-	entity.Id = utils.ID("res")
 }

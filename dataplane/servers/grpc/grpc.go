@@ -56,6 +56,6 @@ func (s *server) Run(ctx context.Context) error {
 		return err
 	}
 
-	s.logger.Infow("listening", "addr", addr)
+	s.logger.Infow("running", "addr", addr)
 	return s.server.Serve(listener)
 }

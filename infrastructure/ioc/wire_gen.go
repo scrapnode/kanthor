@@ -7,7 +7,6 @@
 package ioc
 
 import (
-	"github.com/scrapnode/kanthor/infrastructure/auth"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -37,9 +36,4 @@ func InitializeDatabase(conf *database.Config, logger logging.Logger) (database.
 func InitializeDatastore(conf *datastore.Config, logger logging.Logger) (datastore.Datastore, error) {
 	datastoreDatastore := datastore.New(conf, logger)
 	return datastoreDatastore, nil
-}
-
-func InitializeAuth(conf *auth.Config, logger logging.Logger) (auth.Auth, error) {
-	authAuth := auth.New(conf, logger)
-	return authAuth, nil
 }

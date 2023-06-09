@@ -1,9 +1,5 @@
 package entities
 
-import (
-	"github.com/scrapnode/kanthor/infrastructure/utils"
-)
-
 type Request struct {
 	Entity
 	TimeSeries
@@ -16,8 +12,4 @@ type Request struct {
 	Metadata map[string]string `json:"metadata"`
 
 	Status int `json:"status"`
-}
-
-func (entity *Request) GenId() {
-	entity.Id = utils.ID("req")
 }

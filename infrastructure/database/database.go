@@ -11,5 +11,6 @@ func New(conf *Config, logger logging.Logger) Database {
 
 type Database interface {
 	patterns.Connectable
-	DB() any
+	Client() any
+	Migrator(source string) (patterns.Migrate, error)
 }

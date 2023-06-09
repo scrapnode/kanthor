@@ -1,7 +1,5 @@
 package entities
 
-import "github.com/scrapnode/kanthor/infrastructure/utils"
-
 type Workspace struct {
 	Entity
 	AuditTime
@@ -9,8 +7,11 @@ type Workspace struct {
 
 	OwnerId string `json:"owner_id"`
 	Name    string `json:"name"`
+
+	Tier *WorkspaceTier
 }
 
-func (entity *Workspace) GenId() {
-	entity.Id = utils.ID("ws")
+type WorkspaceTier struct {
+	WorkspaceId string `json:"workspace_id"`
+	Name        string `json:"name"`
 }
