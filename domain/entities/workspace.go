@@ -11,7 +11,15 @@ type Workspace struct {
 	Tier *WorkspaceTier
 }
 
+func (entity *Workspace) TableName() string {
+	return "workspace"
+}
+
 type WorkspaceTier struct {
 	WorkspaceId string `json:"workspace_id"`
 	Name        string `json:"name"`
+}
+
+func (entity *WorkspaceTier) TableName() string {
+	return "workspace_tier"
 }

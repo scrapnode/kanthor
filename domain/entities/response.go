@@ -15,3 +15,7 @@ type Response struct {
 
 	Status int `json:"status"`
 }
+
+func (entity *Response) TableName() string {
+	return "request"
+}

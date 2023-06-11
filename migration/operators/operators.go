@@ -1,4 +1,4 @@
-package migrators
+package operators
 
 import (
 	"errors"
@@ -7,11 +7,11 @@ import (
 	"github.com/scrapnode/kanthor/migration/config"
 )
 
-func New(conf *config.Config, logger logging.Logger) Migrator {
+func New(conf *config.Config, logger logging.Logger) Operator {
 	return NewSql(conf, logger)
 }
 
-type Migrator interface {
+type Operator interface {
 	patterns.Connectable
 	Up() error
 	Down() error

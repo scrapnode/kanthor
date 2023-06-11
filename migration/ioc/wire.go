@@ -8,12 +8,12 @@ import (
 	confprovider "github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/migration/config"
-	"github.com/scrapnode/kanthor/migration/migrators"
+	"github.com/scrapnode/kanthor/migration/operators"
 )
 
-func InitializeMigrator(provider confprovider.Provider) (migrators.Migrator, error) {
+func InitializeMigrator(provider confprovider.Provider) (operators.Operator, error) {
 	wire.Build(
-		migrators.New,
+		operators.New,
 		InitializeConfig,
 		InitializeLogger,
 	)

@@ -19,7 +19,7 @@ func (sql *SqlWorkspace) Create(ctx context.Context, ws *entities.Workspace) (*e
 	ws.Id = utils.ID("ws")
 	ws.CreatedAt = sql.timer.Now().UnixMilli()
 
-	if tx := sql.client.Create(ws); tx.Error != nil {
+	if tx := sql.client.Preload("Tier").Create(ws); tx.Error != nil {
 		return nil, fmt.Errorf("repositories.sql.workspace.create: %w", tx.Error)
 	}
 	return ws, nil

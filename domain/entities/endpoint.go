@@ -14,6 +14,12 @@ type Endpoint struct {
 	// HTTP: https:://httpbin.org/post?app=kanthor.webhook
 	// gRPC: grpc:://app.kanthorlabs.com
 	Uri string `json:"uri"`
+	// HTTP: POST/PUT/PATCH
+	Method string `json:"method"`
+}
+
+func (entity *Endpoint) TableName() string {
+	return "endpoint"
 }
 
 func (entity *Endpoint) GenId() {
@@ -30,9 +36,14 @@ type EndpointRule struct {
 	// examples:
 	// - regex::.*
 	// - type::orders.paid
-	Condition string `json:"condition"`
-	Priority  int    `json:"priority"`
+	ConditionSource     string `json:"condition_source"`
+	ConditionExpression string `json:"condition_expression"`
+	Priority            int    `json:"priority"`
 	// the logic of not-false is true should be used here
 	// to guarantee default all rule will be on include mode
 	Exclusionary bool `json:"exclusionary"`
+}
+
+func (entity *EndpointRule) TableName() string {
+	return "endpoint_rule"
 }

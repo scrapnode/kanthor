@@ -10,12 +10,12 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	config2 "github.com/scrapnode/kanthor/migration/config"
-	"github.com/scrapnode/kanthor/migration/migrators"
+	"github.com/scrapnode/kanthor/migration/operators"
 )
 
 // Injectors from wire.go:
 
-func InitializeMigrator(provider config.Provider) (migrators.Migrator, error) {
+func InitializeMigrator(provider config.Provider) (operators.Operator, error) {
 	configConfig, err := InitializeConfig(provider)
 	if err != nil {
 		return nil, err
@@ -24,8 +24,8 @@ func InitializeMigrator(provider config.Provider) (migrators.Migrator, error) {
 	if err != nil {
 		return nil, err
 	}
-	migrator := migrators.New(configConfig, logger)
-	return migrator, nil
+	operator := operators.New(configConfig, logger)
+	return operator, nil
 }
 
 func InitializeConfig(provider config.Provider) (*config2.Config, error) {

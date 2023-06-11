@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/migration/ioc"
-	"github.com/scrapnode/kanthor/migration/migrators"
+	"github.com/scrapnode/kanthor/migration/operators"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
@@ -45,7 +45,7 @@ func NewUp() *cobra.Command {
 			go func() {
 				err := migrator.Up()
 
-				if err != nil && !errors.Is(err, migrators.ErrNoChange) {
+				if err != nil && !errors.Is(err, operators.ErrNoChange) {
 					logger.Error(err)
 					cancel()
 					return

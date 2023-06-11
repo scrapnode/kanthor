@@ -7,7 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/infrastructure/timer"
-	"time"
 )
 
 func (service *service) Create(ctx context.Context, req *CreateReq) (*CreateRes, error) {
@@ -39,9 +38,9 @@ type CreateReq struct {
 }
 
 type CreateRes struct {
-	Id        string    `json:"id"`
-	Timestamp time.Time `json:"timestamp"`
-	Bucket    string    `json:"bucket"`
+	Id        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
+	Bucket    string `json:"bucket"`
 }
 
 func TransformCreateReq2Message(req *CreateReq, timer timer.Timer, conf *config.Config) *entities.Message {
@@ -52,7 +51,7 @@ func TransformCreateReq2Message(req *CreateReq, timer timer.Timer, conf *config.
 		Metadata: map[string]string{},
 	}
 	msg.GenId()
-	msg.SetTS(timer.Now(), conf.Dataplane.Message.BucketLayout)
+	msg.SetTS(timer.Now(), conf.Bucket.Layout)
 
 	return msg
 }
@@ -79,7 +78,7 @@ func TransformMessage2Event(msg *entities.Message, tierName string) (string, *st
 func TransformMessage2CreateRes(msg *entities.Message) *CreateRes {
 	return &CreateRes{
 		Id:        msg.Id,
-		Timestamp: time.UnixMilli(msg.Timestamp),
+		Timestamp: msg.Timestamp,
 		Bucket:    msg.Bucket,
 	}
 }

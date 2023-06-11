@@ -13,3 +13,7 @@ type Request struct {
 
 	Status int `json:"status"`
 }
+
+func (entity *Request) TableName() string {
+	return "request"
+}

@@ -21,7 +21,7 @@ type Event struct {
 }
 
 func (e *Event) GenId() {
-	if e.Id != "" {
+	if e.Id == "" {
 		e.Id = utils.ID("event")
 	}
 }

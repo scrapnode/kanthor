@@ -8,3 +8,7 @@ type Application struct {
 	WorkspaceId string `json:"workspace_id"`
 	Name        string `json:"name"`
 }
+
+func (entity *Application) TableName() string {
+	return "application"
+}

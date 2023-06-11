@@ -3,11 +3,13 @@ package database
 import (
 	"context"
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
+	postgresdevier "gorm.io/driver/postgres"
+	sqlitedriver "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/url"
 	"strings"
@@ -44,9 +46,9 @@ func (db *SQL) Connect(ctx context.Context) error {
 
 	var dialector gorm.Dialector
 	if strings.HasPrefix(uri.Scheme, "sqlite") {
-		dialector = sqlite.Open(uri.Host + uri.Path + uri.RawQuery)
+		dialector = sqlitedriver.Open(uri.Host + uri.Path)
 	} else {
-		dialector = postgres.Open(db.conf.Uri)
+		dialector = postgresdevier.Open(db.conf.Uri)
 	}
 
 	db.client, err = gorm.Open(dialector, &gorm.Config{Logger: NewSqlLogger(db.logger)})
@@ -89,10 +91,25 @@ func (db *SQL) Migrator(source string) (patterns.Migrate, error) {
 	if err != nil {
 		return nil, err
 	}
-	driver, err := sqlite3.WithInstance(instance, &sqlite3.Config{})
-	if err != nil {
-		return nil, err
+
+	var driver database.Driver
+	if db.client.Config.Dialector.Name() == "sqlite" {
+		conf := &sqlite3.Config{
+			MigrationsTable: "database_migration",
+		}
+		driver, err = sqlite3.WithInstance(instance, conf)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		conf := &postgres.Config{
+			MigrationsTable: "database_migration",
+		}
+		driver, err = postgres.WithInstance(instance, conf)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return migrate.NewWithDatabaseInstance(source, "main", driver)
+	return migrate.NewWithDatabaseInstance(source, "", driver)
 }

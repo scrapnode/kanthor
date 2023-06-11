@@ -1,4 +1,4 @@
-package migrators
+package operators
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/migration/config"
 )
 
-func NewSql(conf *config.Config, logger logging.Logger) Migrator {
+func NewSql(conf *config.Config, logger logging.Logger) Operator {
 	db := database.New(&conf.Database, logger)
 
 	logger = logger.With("component", "migration.sql")
@@ -25,33 +25,33 @@ type sql struct {
 	migrate patterns.Migrate
 }
 
-func (migrator *sql) Connect(ctx context.Context) error {
-	if err := migrator.db.Connect(ctx); err != nil {
+func (operator *sql) Connect(ctx context.Context) error {
+	if err := operator.db.Connect(ctx); err != nil {
 		return err
 	}
 
-	m, err := migrator.db.Migrator(migrator.conf.Migration.Source)
+	m, err := operator.db.Migrator(operator.conf.Migration.Source)
 	if err != nil {
 		return err
 	}
-	migrator.migrate = m
+	operator.migrate = m
 
-	migrator.logger.Info("connected")
+	operator.logger.Info("connected")
 	return nil
 }
 
-func (migrator *sql) Disconnect(ctx context.Context) error {
-	migrator.logger.Info("disconnected")
+func (operator *sql) Disconnect(ctx context.Context) error {
+	operator.logger.Info("disconnected")
 
-	if err := migrator.db.Disconnect(ctx); err != nil {
+	if err := operator.db.Disconnect(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (migrator *sql) Up() error {
-	err := migrator.migrate.Up()
+func (operator *sql) Up() error {
+	err := operator.migrate.Up()
 	// convert error
 	if errors.Is(err, migrate.ErrNoChange) {
 		return ErrNoChange
@@ -60,6 +60,6 @@ func (migrator *sql) Up() error {
 	return err
 }
 
-func (migrator *sql) Down() error {
-	return migrator.migrate.Down()
+func (operator *sql) Down() error {
+	return operator.migrate.Down()
 }

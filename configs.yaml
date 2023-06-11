@@ -1,3 +1,6 @@
+bucket:
+  layout: "20060102"
+
 streaming:
   uri: nats://127.0.0.1:4222
   stream:

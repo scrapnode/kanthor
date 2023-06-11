@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	Bucket    config.Bucket
 	Database  database.Config            `json:"database"`
 	Streaming streaming.ConnectionConfig `json:"streaming_publisher"`
 
@@ -19,9 +20,6 @@ type Dataplane struct {
 	Server struct {
 		Addr string `json:"addr"`
 	} `json:"server"`
-	Message struct {
-		BucketLayout string `json:"bucket_layout"`
-	} `json:"message"`
 }
 
 func New(provider config.Provider) (*Config, error) {
