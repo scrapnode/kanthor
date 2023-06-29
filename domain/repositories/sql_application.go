@@ -20,7 +20,7 @@ func (sql *SqlApplication) Create(ctx context.Context, app *entities.Application
 	app.CreatedAt = sql.timer.Now().UnixMilli()
 
 	if tx := sql.client.Create(app); tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.application.create: %w", tx.Error)
+		return nil, fmt.Errorf("application.create: %w", tx.Error)
 	}
 	return app, nil
 }
@@ -28,7 +28,11 @@ func (sql *SqlApplication) Create(ctx context.Context, app *entities.Application
 func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Application, error) {
 	var app entities.Application
 	if tx := sql.client.Model(&app).Where("id = ?", id).First(&app); tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.application.get: %w", tx.Error)
+		return nil, fmt.Errorf("application.get: %w", tx.Error)
+	}
+
+	if app.DeletedAt >= sql.timer.Now().UnixMilli() {
+		return nil, fmt.Errorf("application.get.deleted: deleted_at:%d", app.DeletedAt)
 	}
 
 	return &app, nil
@@ -36,14 +40,16 @@ func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Applic
 
 func (sql *SqlApplication) List(ctx context.Context, wsId, name string) ([]entities.Application, error) {
 	var apps []entities.Application
-	var tx = sql.client.Model(&entities.Application{}).Where("workspace_id = ?", wsId)
+	var tx = sql.client.Model(&entities.Application{}).
+		Scopes(NotDeleted(sql.timer, &entities.Application{})).
+		Where("workspace_id = ?", wsId)
 
 	if name != "" {
 		tx = tx.Where("name like ?", name+"%")
 	}
 
 	if tx.Find(&apps); tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.application.list: %w", tx.Error)
+		return nil, fmt.Errorf("application.list: %w", tx.Error)
 	}
 
 	return apps, nil
@@ -53,7 +59,7 @@ func (sql *SqlApplication) Update(ctx context.Context, app *entities.Application
 	app.UpdatedAt = sql.timer.Now().UnixMilli()
 
 	if tx := sql.client.Model(app).Select("name", "updated_at").Updates(app); tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.application.create: %w", tx.Error)
+		return nil, fmt.Errorf("application.create: %w", tx.Error)
 	}
 
 	return app, nil
@@ -66,18 +72,18 @@ func (sql *SqlApplication) Delete(ctx context.Context, id string) (*entities.App
 	tx := sql.client.Begin(&xsql.TxOptions{Isolation: xsql.LevelReadCommitted})
 
 	if txn := tx.Model(&app).Where("id = ?", id).First(&app); txn.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.application.delete.get: %w", txn.Error)
+		return nil, fmt.Errorf("application.delete.get: %w", txn.Error)
 	}
 
 	app.UpdatedAt = sql.timer.Now().UnixMilli()
 	app.DeletedAt = sql.timer.Now().UnixMilli()
 
 	if txn := tx.Model(app).Select("updated_at", "deleted_at").Updates(app); txn.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.application.delete.update: %w", txn.Error)
+		return nil, fmt.Errorf("application.delete.update: %w", txn.Error)
 	}
 
 	if txn := tx.Commit(); txn.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.application.delete: %w", tx.Error)
+		return nil, fmt.Errorf("application.delete: %w", tx.Error)
 	}
 
 	return &app, nil

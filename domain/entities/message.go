@@ -1,6 +1,9 @@
 package entities
 
-import "github.com/scrapnode/kanthor/infrastructure/utils"
+import (
+	"encoding/json"
+	"github.com/scrapnode/kanthor/infrastructure/utils"
+)
 
 // Message are allocated based on bucket
 // For SQL: create a composite index for AppId+Type+Bucket, sort by ID (ksuid)
@@ -25,4 +28,12 @@ func (entity *Message) GenId() {
 	if entity.Id == "" {
 		entity.Id = utils.ID("msg")
 	}
+}
+
+func (entity *Message) Marshal() ([]byte, error) {
+	return json.Marshal(entity)
+}
+
+func (entity *Message) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, entity)
 }

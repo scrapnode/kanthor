@@ -43,6 +43,13 @@ type Endpoint interface {
 	List(ctx context.Context, appId, name string) ([]entities.Endpoint, error)
 	Update(ctx context.Context, ep *entities.Endpoint) (*entities.Endpoint, error)
 	Delete(ctx context.Context, id string) (*entities.Endpoint, error)
+
+	ListWithRules(ctx context.Context, appId string) ([]EndpointWithRules, error)
+}
+
+type EndpointWithRules struct {
+	entities.Endpoint
+	Rules []entities.EndpointRule
 }
 
 type EndpointRule interface {

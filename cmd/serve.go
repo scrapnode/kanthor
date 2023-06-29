@@ -1,14 +1,16 @@
 package cmd
 
 import (
-	dataplane "github.com/scrapnode/kanthor/dataplane/cmd"
+	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/spf13/cobra"
 )
 
-func NewServe() *cobra.Command {
+func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use: "serve",
 	}
-	command.AddCommand(dataplane.New())
+	command.AddCommand(NewServeDataplane(conf, logger))
+	command.AddCommand(NewServeScheduler(conf, logger))
 	return command
 }

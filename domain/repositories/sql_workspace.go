@@ -20,7 +20,7 @@ func (sql *SqlWorkspace) Create(ctx context.Context, ws *entities.Workspace) (*e
 	ws.CreatedAt = sql.timer.Now().UnixMilli()
 
 	if tx := sql.client.Preload("Tier").Create(ws); tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.workspace.create: %w", tx.Error)
+		return nil, fmt.Errorf("workspace.create: %w", tx.Error)
 	}
 	return ws, nil
 }
@@ -29,7 +29,15 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	var ws entities.Workspace
 	tx := sql.client.Model(&ws).Preload("Tier").Where("id = ?", id).First(&ws)
 	if tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.workspace.get: %w", tx.Error)
+		return nil, fmt.Errorf("workspace.get: %w", tx.Error)
+	}
+
+	if ws.DeletedAt >= sql.timer.Now().UnixMilli() {
+		return nil, fmt.Errorf("workspace.get.deleted: deleted_at:%d", ws.DeletedAt)
+	}
+
+	if ws.Tier == nil {
+		ws.Tier = entities.DefaultTier(ws.Id)
 	}
 
 	return &ws, nil
@@ -37,14 +45,15 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 
 func (sql *SqlWorkspace) List(ctx context.Context, name string) ([]entities.Workspace, error) {
 	var workspaces []entities.Workspace
-	var tx = sql.client.Model(&entities.Workspace{})
+	var tx = sql.client.Model(&entities.Workspace{}).
+		Scopes(NotDeleted(sql.timer, &entities.Workspace{}))
 
 	if name != "" {
 		tx = tx.Where("name LIKE ?", name+"%")
 	}
 
 	if tx.Find(&workspaces); tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.workspace"+
+		return nil, fmt.Errorf("workspace"+
 			".list: %w", tx.Error)
 	}
 
@@ -58,7 +67,7 @@ func (sql *SqlWorkspace) Update(ctx context.Context, ws *entities.Workspace) (*e
 		Select("name", "updated_at").
 		Updates(ws)
 	if tx.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.workspace.create: %w", tx.Error)
+		return nil, fmt.Errorf("workspace.create: %w", tx.Error)
 	}
 
 	return ws, nil
@@ -71,18 +80,18 @@ func (sql *SqlWorkspace) Delete(ctx context.Context, id string) (*entities.Works
 	tx := sql.client.Begin(&xsql.TxOptions{Isolation: xsql.LevelReadCommitted})
 
 	if txn := tx.Model(&ws).Where("id = ?", id).First(&ws); txn.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.workspace.delete.get: %w", txn.Error)
+		return nil, fmt.Errorf("workspace.delete.get: %w", txn.Error)
 	}
 
 	ws.UpdatedAt = sql.timer.Now().UnixMilli()
 	ws.DeletedAt = sql.timer.Now().UnixMilli()
 
 	if txn := tx.Model(ws).Select("updated_at", "deleted_at").Updates(ws); txn.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.workspace.delete.update: %w", txn.Error)
+		return nil, fmt.Errorf("workspace.delete.update: %w", txn.Error)
 	}
 
 	if txn := tx.Commit(); txn.Error != nil {
-		return nil, fmt.Errorf("repositories.sql.workspace.delete: %w", tx.Error)
+		return nil, fmt.Errorf("workspace.delete: %w", tx.Error)
 	}
 
 	return &ws, nil

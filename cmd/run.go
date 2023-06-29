@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	migration "github.com/scrapnode/kanthor/migration/cmd"
+	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/spf13/cobra"
 )
 
-func NewRun() *cobra.Command {
+func NewRun(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use: "run",
 	}
-	command.AddCommand(migration.New())
+	command.AddCommand(NewRunMigration(conf, logger))
 	return command
 }

@@ -30,7 +30,7 @@ func NewNats(conf *ConnectionConfig, logger logging.Logger) (*nats.Conn, error) 
 		}),
 		nats.ReconnectHandler(func(conn *nats.Conn) {
 			// @TODO: add metrics here
-			logger.Error(fmt.Sprintf("got reconnected to %v", conn.ConnectedUrl()))
+			logger.Infow(fmt.Sprintf("got reconnected to %v", conn.ConnectedUrl()))
 		}),
 	}
 

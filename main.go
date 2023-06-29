@@ -2,23 +2,38 @@ package main
 
 import (
 	"github.com/scrapnode/kanthor/cmd"
-	"log"
+	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"os"
 	"runtime/debug"
 )
 
 func main() {
-	command := cmd.New()
+	provider, err := configuration.New()
+	if err != nil {
+		panic(err)
+	}
+	conf, err := config.New(provider)
+	if err != nil {
+		panic(err)
+	}
+	logger, err := logging.New(&conf.Logger)
+	if err != nil {
+		panic(err)
+	}
+
+	command := cmd.New(conf, logger)
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("main.recover:", r)
-			log.Println("main.recover.trace:", string(debug.Stack()))
+			logger.Errorf("main.recover: %v", r)
+			logger.Errorf("main.recover.trace: %s", string(debug.Stack()))
 		}
 	}()
 
 	if err := command.Execute(); err != nil {
-		log.Println("main.error:", err.Error())
+		logger.Errorf("main.error:", err.Error())
 		os.Exit(1)
 	}
 }

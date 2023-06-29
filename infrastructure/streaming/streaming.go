@@ -1,6 +1,7 @@
 package streaming
 
 import (
+	"encoding/json"
 	"github.com/scrapnode/kanthor/infrastructure/utils"
 	"strings"
 )
@@ -24,6 +25,11 @@ func (e *Event) GenId() {
 	if e.Id == "" {
 		e.Id = utils.ID("event")
 	}
+}
+
+func (e *Event) String() string {
+	bytes, _ := json.Marshal(e)
+	return string(bytes)
 }
 
 func Subject(segments ...string) string {

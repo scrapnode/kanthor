@@ -39,7 +39,7 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	// make sure we have created it successfully
+	// make sure we have saved it successfully
 	info, err := stream.Info(context.Background())
 	if err != nil {
 		return err

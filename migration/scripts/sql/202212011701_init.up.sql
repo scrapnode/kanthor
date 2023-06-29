@@ -70,4 +70,4 @@ INSERT INTO endpoint (id, created_at, updated_at, deleted_at, app_id, name, uri,
 VALUES ('ep_2IJycYt4H7idXACZtjcHV21NK1w', 1669914060000, 0, 0, 'app_2IJycYlPREw5nqMDss3TCdQhotU', 'httpin', 'https://httpbin.org/post', 'POST') ON CONFLICT DO NOTHING ;
 
 INSERT INTO endpoint_rule (id, created_at, updated_at, deleted_at, endpoint_id, condition_source, condition_expression, priority, exclusionary)
-VALUES ('epr_2IJycYfnerRGxL3uzcvA20mHVqK', 1669914060000, 0, 0, 'ep_2IJycYt4H7idXACZtjcHV21NK1w', 'message.app_id', 'equal::app_2IJycYlPREw5nqMDss3TCdQhotU', 0, false) ON CONFLICT DO NOTHING ;
+VALUES ('epr_2IJycYfnerRGxL3uzcvA20mHVqK', 1669914060000, 0, 0, 'ep_2IJycYt4H7idXACZtjcHV21NK1w', 'app_id', 'equal::app_2IJycYlPREw5nqMDss3TCdQhotU', 0, false) ON CONFLICT DO NOTHING ;

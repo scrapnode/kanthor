@@ -23,5 +23,5 @@ go.work
 # IDEs
 .idea
 .vscode
-.tmp
-!.tmp/.gitignore
+.kanthor
+!.kanthor/.gitignore

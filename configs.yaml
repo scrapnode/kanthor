@@ -1,3 +1,7 @@
+logger:
+  pretty: true
+  level: debug
+
 bucket:
   layout: "20060102"
 
@@ -17,24 +21,25 @@ streaming:
       age: 259200
 
 database:
-  uri: sqlite3://./.tmp/kanthor.database.sqlite
+  uri: sqlite3://./.kanthor/database.sqlite
 
 datastore:
-  uri: sqlite3://./.tmp/kanthor.datastore.sqlite
+  uri: sqlite3://./.kanthor/datastore.sqlite
 
 migration:
-  logger:
-    pretty: true
-    level: debug
-    with:
-      app: migration
   source: file://./migration/scripts/sql
 
 dataplane:
-  logger:
-    pretty: true
-    level: debug
-    with:
-      app: dataplane
   server:
-    addr: ":8080"
+    addr: ":8081"
+
+scheduler:
+  consumer:
+    topic: schedule
+    group: default
+    filter_subject: kanthor.default.message.>
+    temporary: true
+    max_deliver: 1
+
+
+dispatcher: {}

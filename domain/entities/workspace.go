@@ -23,3 +23,7 @@ type WorkspaceTier struct {
 func (entity *WorkspaceTier) TableName() string {
 	return "workspace_tier"
 }
+
+func DefaultTier(id string) *WorkspaceTier {
+	return &WorkspaceTier{WorkspaceId: id, Name: "default"}
+}

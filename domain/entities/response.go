@@ -1,5 +1,7 @@
 package entities
 
+import "encoding/json"
+
 type Response struct {
 	Entity
 	TimeSeries
@@ -18,4 +20,12 @@ type Response struct {
 
 func (entity *Response) TableName() string {
 	return "request"
+}
+
+func (entity *Response) Marshal() ([]byte, error) {
+	return json.Marshal(entity)
+}
+
+func (entity *Response) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, entity)
 }
