@@ -23,7 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	command := cmd.New(conf, logger)
+	command := cmd.New(provider, conf, logger)
 
 	defer func() {
 		if r := recover(); r != nil {

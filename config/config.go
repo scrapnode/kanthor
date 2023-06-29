@@ -30,5 +30,9 @@ type Server struct {
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Config
 	err := provider.Unmarshal(&conf)
+
+	conf.Scheduler.Consumer.ConnectionConfig = conf.Streaming
+	conf.Dispatcher.Consumer.ConnectionConfig = conf.Streaming
+
 	return &conf, err
 }

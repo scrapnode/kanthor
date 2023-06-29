@@ -60,9 +60,7 @@ func ResolvePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 }
 
 func ResolveSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	sconf := &conf.Scheduler.Consumer
-	sconf.ConnectionConfig = conf.Streaming
-	return sconf
+	return &conf.Scheduler.Consumer
 }
 
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {

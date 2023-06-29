@@ -6,4 +6,10 @@ func New() (Provider, error) {
 
 type Provider interface {
 	Unmarshal(dest interface{}) error
+	Sources() []Source
+}
+
+type Source struct {
+	Source string
+	Found  bool
 }
