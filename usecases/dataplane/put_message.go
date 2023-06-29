@@ -1,4 +1,4 @@
-package usecases
+package dataplane
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/timer"
 )
 
-func (usecase *dataplane) PutMessage(ctx context.Context, req *DataplanePutMessageReq) (*DataplanePutMessageRes, error) {
+func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*PutMessageRes, error) {
 	app, err := usecase.repos.Application().Get(ctx, req.AppId)
 	if err != nil {
 		return nil, err
@@ -19,10 +19,10 @@ func (usecase *dataplane) PutMessage(ctx context.Context, req *DataplanePutMessa
 		return nil, err
 	}
 
-	msg := TransformPutMessageReq2Message(req, usecase.timer, usecase.conf)
+	msg := transformPutMessageReq2Message(req, usecase.timer, usecase.conf)
 	msg.Metadata[constants.MetaKeyTier] = ws.Tier.Name
 
-	event, err := TransformMessage2Event(msg)
+	event, err := transformMessage2Event(msg)
 	if err != nil {
 		return nil, err
 	}
@@ -38,11 +38,11 @@ func (usecase *dataplane) PutMessage(ctx context.Context, req *DataplanePutMessa
 		return nil, err
 	}
 
-	res := TransformMessage2PutMessageRes(msg)
+	res := transformMessage2PutMessageRes(msg)
 	return res, nil
 }
 
-func TransformPutMessageReq2Message(req *DataplanePutMessageReq, timer timer.Timer, conf *config.Config) *entities.Message {
+func transformPutMessageReq2Message(req *PutMessageReq, timer timer.Timer, conf *config.Config) *entities.Message {
 	msg := &entities.Message{
 		AppId:    req.AppId,
 		Type:     req.Type,
@@ -55,7 +55,7 @@ func TransformPutMessageReq2Message(req *DataplanePutMessageReq, timer timer.Tim
 	return msg
 }
 
-func TransformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
+func transformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
 	data, err := msg.Marshal()
 	if err != nil {
 		return nil, err
@@ -72,8 +72,8 @@ func TransformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
 	return event, nil
 }
 
-func TransformMessage2PutMessageRes(msg *entities.Message) *DataplanePutMessageRes {
-	return &DataplanePutMessageRes{
+func transformMessage2PutMessageRes(msg *entities.Message) *PutMessageRes {
+	return &PutMessageRes{
 		Id:        msg.Id,
 		Timestamp: msg.Timestamp,
 		Bucket:    msg.Bucket,

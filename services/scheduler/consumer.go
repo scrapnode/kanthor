@@ -5,10 +5,10 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/usecases"
+	usecase "github.com/scrapnode/kanthor/usecases/scheduler"
 )
 
-func Consumer(logger logging.Logger, usecase usecases.Scheduler) streaming.SubHandler {
+func Consumer(logger logging.Logger, uc usecase.Scheduler) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(event *streaming.Event) error {
@@ -18,8 +18,8 @@ func Consumer(logger logging.Logger, usecase usecases.Scheduler) streaming.SubHa
 			return nil
 		}
 
-		req := &usecases.ArrangeRequestsReq{Message: msg}
-		res, err := usecase.ArrangeRequests(context.TODO(), req)
+		req := &usecase.ArrangeRequestsReq{Message: msg}
+		res, err := uc.ArrangeRequests(context.TODO(), req)
 		if err != nil {
 			logger.Error(err)
 			return nil

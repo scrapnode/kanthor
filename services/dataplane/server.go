@@ -4,19 +4,19 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
-	"github.com/scrapnode/kanthor/usecases"
+	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 )
 
 type Server struct {
 	protos.UnimplementedDataplaneServer
-	logger  logging.Logger
-	usecase usecases.Dataplane
+	logger logging.Logger
+	uc     usecase.Dataplane
 }
 
 func (server *Server) PutMessage(ctx context.Context, req *protos.PutMessageReq) (*protos.PutMessageRes, error) {
-	request := &usecases.DataplanePutMessageReq{AppId: req.AppId, Type: req.Type, Body: req.Body}
+	request := &usecase.PutMessageReq{AppId: req.AppId, Type: req.Type, Body: req.Body}
 
-	response, err := server.usecase.PutMessage(ctx, request)
+	response, err := server.uc.PutMessage(ctx, request)
 	if err != nil {
 		server.logger.Error(err)
 		return nil, err
