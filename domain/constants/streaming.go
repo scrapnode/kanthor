@@ -2,7 +2,7 @@ package constants
 
 const (
 	TopicNamespace = "kanthor"
-	TopicMessage   = "message"
-	TopicRequest   = "request"
-	TopicResponse  = "response"
+	TopicMessage   = "msg"
+	TopicRequest   = "req"
+	TopicResponse  = "res"
 )

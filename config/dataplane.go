@@ -1,5 +1,6 @@
 package config
 
 type Dataplane struct {
-	Server Server `json:"server"`
+	GRPC    Server `json:"grpc" mapstructure:"grpc"`
+	Metrics Server `json:"metrics" mapstructure:"metrics"`
 }

@@ -50,7 +50,7 @@ func (service *dataplane) Stop(ctx context.Context) error {
 }
 
 func (service *dataplane) Run(ctx context.Context) error {
-	addr := service.conf.Dataplane.Server.Addr
+	addr := service.conf.Dataplane.GRPC.Addr
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {

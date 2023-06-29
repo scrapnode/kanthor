@@ -52,16 +52,9 @@ func (service *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 		p.Go(func() {
 			key := utils.Key(req.Message.Id, request.Metadata["endpoint_id"], request.Metadata["rule_id"], request.Id)
 
-			event, err := transformRequest2Event(&request)
+			event, err := transformRequest2Event(&request, ws.Tier.Name)
 			if err == nil {
-				subject := streaming.Subject(
-					constants.TopicNamespace,
-					ws.Tier.Name,
-					constants.TopicRequest,
-					event.AppId,
-					event.Type,
-				)
-				err = service.publisher.Pub(ctx, subject, event)
+				err = service.publisher.Pub(ctx, event)
 			}
 
 			res.Entities = append(res.Entities, structure.BulkRes[entities.Request]{Entity: request, Error: err})
@@ -181,7 +174,7 @@ func resolveConditionExpression(rule entities.EndpointRule) (func(source string)
 	return nil, errors.New("unknown rule expression")
 }
 
-func transformRequest2Event(req *entities.Request) (*streaming.Event, error) {
+func transformRequest2Event(req *entities.Request, tierName string) (*streaming.Event, error) {
 	data, err := req.Marshal()
 	if err != nil {
 		return nil, err
@@ -194,6 +187,13 @@ func transformRequest2Event(req *entities.Request) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.GenId()
+	event.Subject = streaming.Subject(
+		constants.TopicNamespace,
+		tierName,
+		constants.TopicRequest,
+		event.AppId,
+		event.Type,
+	)
 
 	return event, nil
 }

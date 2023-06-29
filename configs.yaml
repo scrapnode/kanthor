@@ -30,16 +30,21 @@ migration:
   source: file://./migration/scripts/sql
 
 dataplane:
-  server:
+  grpc:
     addr: ":8081"
 
 scheduler:
   consumer:
     topic: schedule
     group: default
-    filter_subject: kanthor.default.message.>
+    filter_subject: kanthor.default.msg.>
     temporary: true
     max_deliver: 1
 
-
-dispatcher: {}
+dispatcher:
+  consumer:
+    topic: dispatch
+    group: default
+    filter_subject: kanthor.default.req.>
+    temporary: true
+    max_deliver: 1

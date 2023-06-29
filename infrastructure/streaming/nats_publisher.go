@@ -65,8 +65,8 @@ func (publisher *NatsPublisher) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (publisher *NatsPublisher) Pub(ctx context.Context, subject string, event *Event) error {
-	msg := publisher.transform(subject, event)
+func (publisher *NatsPublisher) Pub(ctx context.Context, event *Event) error {
+	msg := publisher.transform(event.Subject, event)
 	ack, err := publisher.js.PublishMsg(ctx, msg)
 	if err != nil {
 		return fmt.Errorf("streaming.publisher.nats: %w", err)
@@ -80,6 +80,7 @@ func (publisher *NatsPublisher) transform(subject string, event *Event) *nats.Ms
 	msg := &nats.Msg{
 		Subject: subject,
 		Header: nats.Header{
+			// for deduplicate purpose
 			"Nats-Msg-Id": []string{event.Id},
 			MetaAppId:     []string{event.AppId},
 			MetaType:      []string{event.Type},

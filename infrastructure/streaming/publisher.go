@@ -12,7 +12,7 @@ func NewPublisher(conf *PublisherConfig, logger logging.Logger) Publisher {
 
 type Publisher interface {
 	patterns.Connectable
-	Pub(ctx context.Context, subject string, event *Event) error
+	Pub(ctx context.Context, event *Event) error
 }
 
 type PublisherConfig struct {

@@ -22,19 +22,12 @@ func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*
 	msg := transformPutMessageReq2Message(req, usecase.timer, usecase.conf)
 	msg.Metadata[constants.MetaKeyTier] = ws.Tier.Name
 
-	event, err := transformMessage2Event(msg)
+	event, err := transformMessage2Event(msg, ws.Tier.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	subject := streaming.Subject(
-		constants.TopicNamespace,
-		ws.Tier.Name,
-		constants.TopicMessage,
-		event.AppId,
-		event.Type,
-	)
-	if err := usecase.publisher.Pub(ctx, subject, event); err != nil {
+	if err := usecase.publisher.Pub(ctx, event); err != nil {
 		return nil, err
 	}
 
@@ -55,7 +48,7 @@ func transformPutMessageReq2Message(req *PutMessageReq, timer timer.Timer, conf 
 	return msg
 }
 
-func transformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
+func transformMessage2Event(msg *entities.Message, tierName string) (*streaming.Event, error) {
 	data, err := msg.Marshal()
 	if err != nil {
 		return nil, err
@@ -68,6 +61,13 @@ func transformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.GenId()
+	event.Subject = streaming.Subject(
+		constants.TopicNamespace,
+		tierName,
+		constants.TopicMessage,
+		event.AppId,
+		event.Type,
+	)
 
 	return event, nil
 }

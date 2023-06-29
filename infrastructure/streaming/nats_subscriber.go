@@ -166,6 +166,7 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context) (jetstream.Consu
 
 func (subscriber *NatsSubscriber) transform(msg *nats.Msg) *Event {
 	event := &Event{
+		Subject:  msg.Subject,
 		AppId:    msg.Header.Get(MetaAppId),
 		Type:     msg.Header.Get(MetaType),
 		Id:       msg.Header.Get(MetaId),

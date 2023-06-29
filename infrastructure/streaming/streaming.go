@@ -13,8 +13,9 @@ var (
 )
 
 type Event struct {
-	AppId string `json:"app_id"`
-	Type  string `json:"type"`
+	Subject string `json:"subject"`
+	AppId   string `json:"app_id"`
+	Type    string `json:"type"`
 
 	Id       string            `json:"id"`
 	Data     []byte            `json:"data"`
