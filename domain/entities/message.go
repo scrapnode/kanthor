@@ -3,6 +3,7 @@ package entities
 import (
 	"encoding/json"
 	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"net/http"
 )
 
 // Message are allocated based on bucket
@@ -16,7 +17,8 @@ type Message struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`
 
-	Body     []byte            `json:"body"`
+	Headers  http.Header       `json:"headers"`
+	Body     string            `json:"body"`
 	Metadata map[string]string `json:"metadata"`
 }
 

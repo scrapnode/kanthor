@@ -12,6 +12,7 @@ func Consumer(logger logging.Logger, uc usecase.Scheduler) streaming.SubHandler 
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(event *streaming.Event) error {
+		logger.Debugw("received event", "event_id", event.Id)
 		msg, err := transformEventToMessage(event)
 		if err != nil {
 			logger.Error(err)

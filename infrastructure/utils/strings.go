@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"github.com/segmentio/ksuid"
 	"strings"
@@ -17,4 +19,9 @@ func Key(values ...string) string {
 func Stringify(value interface{}) string {
 	bytes, _ := json.Marshal(value)
 	return string(bytes)
+}
+
+func MD5(values ...string) string {
+	hash := md5.Sum([]byte(strings.Join(values, "/")))
+	return hex.EncodeToString(hash[:])
 }

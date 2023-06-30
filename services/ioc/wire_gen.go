@@ -35,8 +35,8 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	publisher := streaming.NewPublisher(publisherConfig, logger)
 	databaseConfig := ResolveDatabaseConfig(conf)
 	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
-	usecasesDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories)
-	service := dataplane.New(conf, logger, usecasesDataplane)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories)
+	service := dataplane.New(conf, logger, dataplaneDataplane)
 	return service, nil
 }
 
@@ -48,8 +48,8 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	publisher := streaming.NewPublisher(publisherConfig, logger)
 	databaseConfig := ResolveDatabaseConfig(conf)
 	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
-	usecasesScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositoriesRepositories)
-	service := scheduler.New(conf, logger, subscriber, usecasesScheduler)
+	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositoriesRepositories)
+	service := scheduler.New(conf, logger, subscriber, schedulerScheduler)
 	return service, nil
 }
 
@@ -60,9 +60,7 @@ func ResolvePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 }
 
 func ResolveSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	sconf := &conf.Scheduler.Consumer
-	sconf.ConnectionConfig = conf.Streaming
-	return sconf
+	return &conf.Scheduler.Consumer
 }
 
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {

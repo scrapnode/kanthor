@@ -10,12 +10,12 @@ type Endpoint struct {
 	AppId string `json:"app_id"`
 	Name  string `json:"name"`
 
+	// HTTP: POST/PUT/PATCH
+	Method string `json:"method"`
 	// format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
 	// HTTP: https:://httpbin.org/post?app=kanthor.webhook
 	// gRPC: grpc:://app.kanthorlabs.com
 	Uri string `json:"uri"`
-	// HTTP: POST/PUT/PATCH
-	Method string `json:"method"`
 }
 
 func (entity *Endpoint) TableName() string {

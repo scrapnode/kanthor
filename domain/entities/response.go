@@ -1,6 +1,9 @@
 package entities
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 type Response struct {
 	Entity
@@ -9,11 +12,12 @@ type Response struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`
 
-	RequestId string `json:"request_id"`
+	RequestId string            `json:"request_id"`
+	Metadata  map[string]string `json:"metadata"`
 
-	Uri      string            `json:"uri"`
-	Metadata map[string]string `json:"metadata"`
-	Body     []byte            `json:"body"`
+	Uri     string      `json:"uri"`
+	Headers http.Header `json:"headers"`
+	Body    string      `json:"body"`
 
 	Status int `json:"status"`
 }

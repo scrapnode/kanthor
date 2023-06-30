@@ -18,86 +18,86 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// DataplaneClient is the client API for Dataplane service.
+// MessageClient is the client API for Message service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type DataplaneClient interface {
-	PutMessage(ctx context.Context, in *PutMessageReq, opts ...grpc.CallOption) (*PutMessageRes, error)
+type MessageClient interface {
+	Put(ctx context.Context, in *PutReq, opts ...grpc.CallOption) (*PutRes, error)
 }
 
-type dataplaneClient struct {
+type messageClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewDataplaneClient(cc grpc.ClientConnInterface) DataplaneClient {
-	return &dataplaneClient{cc}
+func NewMessageClient(cc grpc.ClientConnInterface) MessageClient {
+	return &messageClient{cc}
 }
 
-func (c *dataplaneClient) PutMessage(ctx context.Context, in *PutMessageReq, opts ...grpc.CallOption) (*PutMessageRes, error) {
-	out := new(PutMessageRes)
-	err := c.cc.Invoke(ctx, "/kanthor.dataplane.v1.Dataplane/PutMessage", in, out, opts...)
+func (c *messageClient) Put(ctx context.Context, in *PutReq, opts ...grpc.CallOption) (*PutRes, error) {
+	out := new(PutRes)
+	err := c.cc.Invoke(ctx, "/kanthor.dataplane.v1.Message/Put", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// DataplaneServer is the server API for Dataplane service.
-// All implementations must embed UnimplementedDataplaneServer
+// MessageServer is the server API for Message service.
+// All implementations must embed UnimplementedMessageServer
 // for forward compatibility
-type DataplaneServer interface {
-	PutMessage(context.Context, *PutMessageReq) (*PutMessageRes, error)
-	mustEmbedUnimplementedDataplaneServer()
+type MessageServer interface {
+	Put(context.Context, *PutReq) (*PutRes, error)
+	mustEmbedUnimplementedMessageServer()
 }
 
-// UnimplementedDataplaneServer must be embedded to have forward compatible implementations.
-type UnimplementedDataplaneServer struct {
+// UnimplementedMessageServer must be embedded to have forward compatible implementations.
+type UnimplementedMessageServer struct {
 }
 
-func (UnimplementedDataplaneServer) PutMessage(context.Context, *PutMessageReq) (*PutMessageRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PutMessage not implemented")
+func (UnimplementedMessageServer) Put(context.Context, *PutReq) (*PutRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
 }
-func (UnimplementedDataplaneServer) mustEmbedUnimplementedDataplaneServer() {}
+func (UnimplementedMessageServer) mustEmbedUnimplementedMessageServer() {}
 
-// UnsafeDataplaneServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to DataplaneServer will
+// UnsafeMessageServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MessageServer will
 // result in compilation errors.
-type UnsafeDataplaneServer interface {
-	mustEmbedUnimplementedDataplaneServer()
+type UnsafeMessageServer interface {
+	mustEmbedUnimplementedMessageServer()
 }
 
-func RegisterDataplaneServer(s grpc.ServiceRegistrar, srv DataplaneServer) {
-	s.RegisterService(&Dataplane_ServiceDesc, srv)
+func RegisterMessageServer(s grpc.ServiceRegistrar, srv MessageServer) {
+	s.RegisterService(&Message_ServiceDesc, srv)
 }
 
-func _Dataplane_PutMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PutMessageReq)
+func _Message_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataplaneServer).PutMessage(ctx, in)
+		return srv.(MessageServer).Put(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/kanthor.dataplane.v1.Dataplane/PutMessage",
+		FullMethod: "/kanthor.dataplane.v1.Message/Put",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataplaneServer).PutMessage(ctx, req.(*PutMessageReq))
+		return srv.(MessageServer).Put(ctx, req.(*PutReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Dataplane_ServiceDesc is the grpc.ServiceDesc for Dataplane service.
+// Message_ServiceDesc is the grpc.ServiceDesc for Message service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Dataplane_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "kanthor.dataplane.v1.Dataplane",
-	HandlerType: (*DataplaneServer)(nil),
+var Message_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "kanthor.dataplane.v1.Message",
+	HandlerType: (*MessageServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "PutMessage",
-			Handler:    _Dataplane_PutMessage_Handler,
+			MethodName: "Put",
+			Handler:    _Message_Put_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -93,8 +93,8 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) e
 	)
 
 	subscriber.subscription, err = subscriber.conn.QueueSubscribe(
-		info.Config.DeliverSubject,
-		info.Config.DeliverGroup,
+		subscriber.conf.Topic,
+		subscriber.conf.Group,
 		func(msg *nats.Msg) {
 			event := subscriber.transform(msg)
 			if err := subscriber.validate(event); err != nil {
@@ -117,7 +117,10 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) e
 		},
 	)
 
-	subscriber.logger.Info("subscribed")
+	subscriber.logger.Infow("subscribed",
+		"subscription_topic", subscriber.conf.Topic,
+		"subscription_group", subscriber.conf.Group,
+	)
 	return err
 }
 
@@ -134,14 +137,12 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context) (jetstream.Consu
 		DeliverPolicy: jetstream.DeliverNewPolicy,
 		AckPolicy:     jetstream.AckExplicitPolicy,
 	}
+	if conf.Name == "" {
+		conf.Name = utils.MD5(subscriber.conf.Topic, subscriber.conf.Group)
+	}
 
 	// do magic work to make create temporary consumer easier
 	if subscriber.conf.Temporary {
-		// no name? just assign an arbitrary name
-		if conf.Name == "" {
-			conf.Name = utils.ID("consumer")
-		}
-
 		// add temporary consumer
 		return subscriber.stream.AddConsumer(ctx, conf)
 	}

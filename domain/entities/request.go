@@ -3,6 +3,7 @@ package entities
 import (
 	"encoding/json"
 	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"net/http"
 )
 
 var (
@@ -16,13 +17,12 @@ type Request struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`
 
-	Uri string `json:"uri"`
 	// HTTP: POST/PUT/PATCH
 	Method   string            `json:"method"`
-	Body     []byte            `json:"body"`
+	Uri      string            `json:"uri"`
+	Headers  http.Header       `json:"headers"`
+	Body     string            `json:"body"`
 	Metadata map[string]string `json:"metadata"`
-
-	Status int `json:"status"`
 }
 
 func (entity *Request) TableName() string {

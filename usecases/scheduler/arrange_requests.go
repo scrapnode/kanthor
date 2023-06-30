@@ -109,16 +109,16 @@ func (service *scheduler) generateRequestsFromEndpoints(endpoints []repositories
 			}
 
 			request := entities.Request{
-				AppId:  msg.AppId,
-				Type:   msg.Type,
-				Uri:    endpoint.Uri,
-				Method: endpoint.Method,
-				Body:   msg.Body,
+				AppId:   msg.AppId,
+				Type:    msg.Type,
+				Uri:     endpoint.Uri,
+				Method:  endpoint.Method,
+				Headers: msg.Headers,
+				Body:    msg.Body,
 				Metadata: map[string]string{
-					"endpoint_id": endpoint.Id,
-					"rule_id":     rule.Id,
+					entities.MetaEndpointId: endpoint.Id,
+					entities.MetaRuleId:     rule.Id,
 				},
-				Status: entities.StatusScheduled,
 			}
 			request.GenId()
 			request.SetTS(service.timer.Now(), service.conf.Bucket.Layout)

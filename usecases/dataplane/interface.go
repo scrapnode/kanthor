@@ -3,6 +3,7 @@ package dataplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"net/http"
 )
 
 type Dataplane interface {
@@ -11,9 +12,11 @@ type Dataplane interface {
 }
 
 type PutMessageReq struct {
-	AppId string `json:"app_id"`
-	Type  string `json:"type"`
-	Body  string `json:"body"`
+	AppId    string            `json:"app_id"`
+	Type     string            `json:"type"`
+	Headers  http.Header       `json:"headers"`
+	Body     string            `json:"body"`
+	Metadata map[string]string `json:"metadata"`
 }
 
 type PutMessageRes struct {

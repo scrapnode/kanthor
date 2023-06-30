@@ -5,16 +5,29 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
+	"net/http"
 )
 
-type Server struct {
-	protos.UnimplementedDataplaneServer
+type Message struct {
+	protos.UnimplementedMessageServer
 	logger logging.Logger
 	uc     usecase.Dataplane
 }
 
-func (server *Server) PutMessage(ctx context.Context, req *protos.PutMessageReq) (*protos.PutMessageRes, error) {
-	request := &usecase.PutMessageReq{AppId: req.AppId, Type: req.Type, Body: req.Body}
+func (server *Message) Put(ctx context.Context, req *protos.PutReq) (*protos.PutRes, error) {
+	request := &usecase.PutMessageReq{
+		AppId:    req.AppId,
+		Type:     req.Type,
+		Headers:  http.Header{},
+		Body:     req.Body,
+		Metadata: map[string]string{},
+	}
+	for key, value := range req.Headers {
+		request.Headers.Set(key, value)
+	}
+	for key, value := range req.Metadata {
+		request.Metadata[key] = value
+	}
 
 	response, err := server.uc.PutMessage(ctx, request)
 	if err != nil {
@@ -22,6 +35,6 @@ func (server *Server) PutMessage(ctx context.Context, req *protos.PutMessageReq)
 		return nil, err
 	}
 
-	res := &protos.PutMessageRes{Id: response.Id, Timestamp: response.Timestamp, Bucket: response.Bucket}
+	res := &protos.PutRes{Id: response.Id, Timestamp: response.Timestamp, Bucket: response.Bucket}
 	return res, nil
 }

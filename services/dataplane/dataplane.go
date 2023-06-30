@@ -31,7 +31,7 @@ func (service *dataplane) Start(ctx context.Context) error {
 
 	service.grpc = grpc.NewServer()
 	logger := service.logger.With("fn", "server")
-	protos.RegisterDataplaneServer(service.grpc, &Server{uc: service.uc, logger: logger})
+	protos.RegisterMessageServer(service.grpc, &Message{uc: service.uc, logger: logger})
 	reflection.Register(service.grpc)
 
 	service.logger.Info("started")

@@ -39,9 +39,11 @@ func transformPutMessageReq2Message(req *PutMessageReq, timer timer.Timer, conf 
 	msg := &entities.Message{
 		AppId:    req.AppId,
 		Type:     req.Type,
-		Body:     []byte(req.Body),
-		Metadata: map[string]string{},
+		Headers:  req.Headers,
+		Body:     req.Body,
+		Metadata: req.Metadata,
 	}
+
 	msg.GenId()
 	msg.SetTS(timer.Now(), conf.Bucket.Layout)
 
