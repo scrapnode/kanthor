@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/timer"
+	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
 func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*PutMessageRes, error) {
@@ -19,10 +19,10 @@ func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*
 		return nil, err
 	}
 
-	msg := transformPutMessageReq2Message(req, usecase.timer, usecase.conf)
-	msg.Metadata[constants.MetaKeyTier] = ws.Tier.Name
+	msg := transformPutMessageReq2Message(ws.Tier.Name, req, usecase.timer, usecase.conf)
+	msg.Metadata[entities.MetaTier] = ws.Tier.Name
 
-	event, err := transformMessage2Event(msg, ws.Tier.Name)
+	event, err := transformMessage2Event(msg)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +35,9 @@ func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*
 	return res, nil
 }
 
-func transformPutMessageReq2Message(req *PutMessageReq, timer timer.Timer, conf *config.Config) *entities.Message {
+func transformPutMessageReq2Message(tier string, req *PutMessageReq, timer timer.Timer, conf *config.Config) *entities.Message {
 	msg := &entities.Message{
+		Tier:     tier,
 		AppId:    req.AppId,
 		Type:     req.Type,
 		Headers:  req.Headers,
@@ -50,7 +51,7 @@ func transformPutMessageReq2Message(req *PutMessageReq, timer timer.Timer, conf 
 	return msg
 }
 
-func transformMessage2Event(msg *entities.Message, tierName string) (*streaming.Event, error) {
+func transformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
 	data, err := msg.Marshal()
 	if err != nil {
 		return nil, err
@@ -65,7 +66,7 @@ func transformMessage2Event(msg *entities.Message, tierName string) (*streaming.
 	event.GenId()
 	event.Subject = streaming.Subject(
 		constants.TopicNamespace,
-		tierName,
+		msg.Tier,
 		constants.TopicMessage,
 		event.AppId,
 		event.Type,

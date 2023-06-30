@@ -5,8 +5,8 @@ import (
 	xsql "database/sql"
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/timer"
-	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"github.com/scrapnode/kanthor/pkg/timer"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 	"strings"
 )

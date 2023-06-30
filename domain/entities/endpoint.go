@@ -1,6 +1,8 @@
 package entities
 
-import "github.com/scrapnode/kanthor/infrastructure/utils"
+import (
+	"github.com/scrapnode/kanthor/pkg/utils"
+)
 
 type Endpoint struct {
 	Entity

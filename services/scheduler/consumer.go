@@ -19,29 +19,27 @@ func Consumer(logger logging.Logger, uc usecase.Scheduler) streaming.SubHandler 
 			return nil
 		}
 
-		req := &usecase.ArrangeRequestsReq{Message: msg}
-		res, err := uc.ArrangeRequests(context.TODO(), req)
+		request := &usecase.ArrangeRequestsReq{Message: *msg}
+		response, err := uc.ArrangeRequests(context.TODO(), request)
 		if err != nil {
 			logger.Error(err)
 			return nil
 		}
 
 		// @TODO: use deadletter
-		if len(res.FailKeys) > 0 {
-			logger.Errorw("got some errors", "fail_keys", res.FailKeys)
+		if len(response.FailKeys) > 0 {
+			logger.Errorw("got some errors", "fail_keys", response.FailKeys)
 		}
 
-		logger.Debugw("scheduled requested", "request_count", len(res.SuccessKeys))
+		logger.Debugw("scheduled requested", "request_count", len(response.SuccessKeys))
 		return nil
 	}
 }
 
 func transformEventToMessage(event *streaming.Event) (*entities.Message, error) {
 	var msg entities.Message
-
 	if err := msg.Unmarshal(event.Data); err != nil {
 		return nil, err
 	}
-
 	return &msg, nil
 }

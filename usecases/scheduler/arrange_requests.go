@@ -8,23 +8,14 @@ import (
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/sourcegraph/conc/pool"
 	"regexp"
 	"strings"
 )
 
-func (service *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeRequestsReq) (*ArrangeRequestsRes, error) {
+func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeRequestsReq) (*ArrangeRequestsRes, error) {
 	res := &ArrangeRequestsRes{Entities: []structure.BulkRes[entities.Request]{}, FailKeys: []string{}, SuccessKeys: []string{}}
-
-	app, err := service.repos.Application().Get(ctx, req.Message.AppId)
-	if err != nil {
-		return nil, err
-	}
-	ws, err := service.repos.Workspace().Get(ctx, app.WorkspaceId)
-	if err != nil {
-		return nil, err
-	}
 
 	// rules of endpoint are well sorted slice like this
 	// IMPORTANT: the order is important
@@ -35,14 +26,14 @@ func (service *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 	//		  	  70 - TRUE
 	// 			  70 - FALSE
 	//			  0  - FALSE
-	endpoints, err := service.repos.Endpoint().ListWithRules(ctx, app.Id)
+	endpoints, err := usecase.repos.Endpoint().ListWithRules(ctx, req.Message.AppId)
 	if err != nil {
 		return nil, err
 	}
 
-	requests := service.generateRequestsFromEndpoints(endpoints, req.Message)
+	requests := usecase.generateRequestsFromEndpoints(endpoints, req.Message)
 	if len(requests) == 0 {
-		service.logger.Warnw("no request was generated", "message_id", req.Message.Id)
+		usecase.logger.Warnw("no request was generated", "message_id", req.Message.Id)
 	}
 
 	// @TODO: remove hardcode of max goroutines here
@@ -50,11 +41,11 @@ func (service *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 	for _, r := range requests {
 		request := r
 		p.Go(func() {
-			key := utils.Key(req.Message.Id, request.Metadata["endpoint_id"], request.Metadata["rule_id"], request.Id)
+			key := utils.Key(req.Message.Id, request.Metadata[entities.MetaEndpointId], request.Metadata[entities.MetaRuleId], request.Id)
 
-			event, err := transformRequest2Event(&request, ws.Tier.Name)
+			event, err := transformRequest2Event(&request)
 			if err == nil {
-				err = service.publisher.Pub(ctx, event)
+				err = usecase.publisher.Pub(ctx, event)
 			}
 
 			res.Entities = append(res.Entities, structure.BulkRes[entities.Request]{Entity: request, Error: err})
@@ -70,12 +61,13 @@ func (service *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 	return res, nil
 }
 
-func (service *scheduler) generateRequestsFromEndpoints(endpoints []repositories.EndpointWithRules, msg *entities.Message) []entities.Request {
+func (usecase *scheduler) generateRequestsFromEndpoints(endpoints []repositories.EndpointWithRules, msg entities.Message) []entities.Request {
 	var requests []entities.Request
 
 	for _, endpoint := range endpoints {
+		// with this for loop, we enforce endpoint must have at least one rule to construct scheduled request
 		for _, rule := range endpoint.Rules {
-			subLogger := service.logger.With(
+			subLogger := usecase.logger.With(
 				"rule_id", rule.Id,
 				"rule_condition_source", rule.ConditionSource,
 				"rule_condition_expression", rule.ConditionExpression,
@@ -109,6 +101,7 @@ func (service *scheduler) generateRequestsFromEndpoints(endpoints []repositories
 			}
 
 			request := entities.Request{
+				Tier:    msg.Tier,
 				AppId:   msg.AppId,
 				Type:    msg.Type,
 				Uri:     endpoint.Uri,
@@ -116,12 +109,13 @@ func (service *scheduler) generateRequestsFromEndpoints(endpoints []repositories
 				Headers: msg.Headers,
 				Body:    msg.Body,
 				Metadata: map[string]string{
+					entities.MetaMsgId:      msg.Id,
 					entities.MetaEndpointId: endpoint.Id,
 					entities.MetaRuleId:     rule.Id,
 				},
 			}
 			request.GenId()
-			request.SetTS(service.timer.Now(), service.conf.Bucket.Layout)
+			request.SetTS(usecase.timer.Now(), usecase.conf.Bucket.Layout)
 
 			requests = append(requests, request)
 		}
@@ -130,7 +124,7 @@ func (service *scheduler) generateRequestsFromEndpoints(endpoints []repositories
 	return requests
 }
 
-func resolveConditionSource(rule entities.EndpointRule, msg *entities.Message) string {
+func resolveConditionSource(rule entities.EndpointRule, msg entities.Message) string {
 	if rule.ConditionSource == "app_id" {
 		return msg.AppId
 	}
@@ -174,7 +168,7 @@ func resolveConditionExpression(rule entities.EndpointRule) (func(source string)
 	return nil, errors.New("unknown rule expression")
 }
 
-func transformRequest2Event(req *entities.Request, tierName string) (*streaming.Event, error) {
+func transformRequest2Event(req *entities.Request) (*streaming.Event, error) {
 	data, err := req.Marshal()
 	if err != nil {
 		return nil, err
@@ -189,7 +183,7 @@ func transformRequest2Event(req *entities.Request, tierName string) (*streaming.
 	event.GenId()
 	event.Subject = streaming.Subject(
 		constants.TopicNamespace,
-		tierName,
+		req.Tier,
 		constants.TopicRequest,
 		event.AppId,
 		event.Type,

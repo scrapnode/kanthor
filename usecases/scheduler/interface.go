@@ -13,7 +13,7 @@ type Scheduler interface {
 }
 
 type ArrangeRequestsReq struct {
-	Message *entities.Message
+	Message entities.Message
 }
 
 type ArrangeRequestsRes struct {

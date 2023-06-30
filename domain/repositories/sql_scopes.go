@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"fmt"
-	"github.com/scrapnode/kanthor/infrastructure/timer"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )

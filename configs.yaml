@@ -48,3 +48,9 @@ dispatcher:
     filter_subject: kanthor.default.req.>
     temporary: true
     max_deliver: 1
+  sender:
+    timeout: 5000
+    retry:
+      count: 1
+      wait_time: 500
+      wait_time_max: 3000

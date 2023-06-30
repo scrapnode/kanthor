@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/timer"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 )
 

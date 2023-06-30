@@ -2,17 +2,14 @@ package entities
 
 import (
 	"encoding/json"
-	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"net/http"
-)
-
-var (
-	StatusScheduled = 0
 )
 
 type Request struct {
 	Entity
 	TimeSeries
+	Tier string `json:"tier"`
 
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`

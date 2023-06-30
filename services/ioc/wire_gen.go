@@ -12,9 +12,11 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/timer"
+	"github.com/scrapnode/kanthor/pkg/sender"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dataplane"
+	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/migration"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
@@ -41,7 +43,7 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 }
 
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	subscriberConfig := ResolveSubscriberConfig(conf)
+	subscriberConfig := ResolveSchedulerSubscriberConfig(conf)
 	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
 	timerTimer := timer.New()
 	publisherConfig := ResolvePublisherConfig(conf)
@@ -53,16 +55,38 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	return service, nil
 }
 
+func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	subscriberConfig := ResolveDispatcherSubscriberConfig(conf)
+	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
+	timerTimer := timer.New()
+	publisherConfig := ResolvePublisherConfig(conf)
+	publisher := streaming.NewPublisher(publisherConfig, logger)
+	databaseConfig := ResolveDatabaseConfig(conf)
+	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
+	send := ResolveSender(conf, logger)
+	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send)
+	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher)
+	return service, nil
+}
+
 // wire.go:
 
 func ResolvePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 	return &streaming.PublisherConfig{ConnectionConfig: conf.Streaming}
 }
 
-func ResolveSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
+func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
 	return &conf.Scheduler.Consumer
+}
+
+func ResolveDispatcherSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
+	return &conf.Dispatcher.Consumer
 }
 
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {
 	return &conf.Database
+}
+
+func ResolveSender(conf *config.Config, logger logging.Logger) sender.Send {
+	return sender.New(&conf.Dispatcher.Sender, logger)
 }

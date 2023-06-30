@@ -2,7 +2,7 @@ package entities
 
 import (
 	"encoding/json"
-	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"net/http"
 )
 
@@ -13,6 +13,7 @@ import (
 type Message struct {
 	Entity
 	TimeSeries
+	Tier string `json:"tier"`
 
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`

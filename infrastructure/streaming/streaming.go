@@ -2,7 +2,7 @@ package streaming
 
 import (
 	"encoding/json"
-	"github.com/scrapnode/kanthor/infrastructure/utils"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"strings"
 )
 

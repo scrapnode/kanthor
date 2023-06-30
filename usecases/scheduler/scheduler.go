@@ -5,7 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/timer"
+	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
 func New(
