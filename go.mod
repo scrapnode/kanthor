@@ -3,6 +3,7 @@ module github.com/scrapnode/kanthor
 go 1.19
 
 require (
+	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golang-migrate/migrate/v4 v4.16.1
 	github.com/google/wire v0.5.0
 	github.com/jedib0t/go-pretty/v6 v6.4.6
@@ -23,7 +24,6 @@ require (
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
