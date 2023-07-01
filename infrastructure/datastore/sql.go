@@ -12,7 +12,8 @@ import (
 )
 
 func NewSQL(conf *Config, logger logging.Logger) Datastore {
-	return &sql{conf: conf, logger: logger.With("component", "datastore")}
+	logger = logger.With("component", "datastore.sql")
+	return &sql{conf: conf, logger: logger}
 }
 
 type sql struct {

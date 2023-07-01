@@ -3,6 +3,7 @@ package usecases
 import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
+	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
@@ -18,9 +19,10 @@ func NewDataplane(
 	timer timer.Timer,
 	publisher streaming.Publisher,
 	repos repositories.Repositories,
+	cache cache.Cache,
 ) dataplane.Dataplane {
 	logger = logger.With("usecase", "dataplane")
-	return dataplane.New(conf, logger, timer, publisher, repos)
+	return dataplane.New(conf, logger, timer, publisher, repos, cache)
 }
 
 func NewScheduler(
@@ -29,9 +31,10 @@ func NewScheduler(
 	timer timer.Timer,
 	publisher streaming.Publisher,
 	repos repositories.Repositories,
+	cache cache.Cache,
 ) scheduler.Scheduler {
 	logger = logger.With("usecase", "scheduler")
-	return scheduler.New(conf, logger, timer, publisher, repos)
+	return scheduler.New(conf, logger, timer, publisher, repos, cache)
 }
 
 func NewDispatcher(
@@ -41,7 +44,8 @@ func NewDispatcher(
 	publisher streaming.Publisher,
 	repos repositories.Repositories,
 	dispatch sender.Send,
+	cache cache.Cache,
 ) dispatcher.Dispatcher {
 	logger = logger.With("usecase", "scheduler")
-	return dispatcher.New(conf, logger, timer, publisher, repos, dispatch)
+	return dispatcher.New(conf, logger, timer, publisher, repos, dispatch, cache)
 }

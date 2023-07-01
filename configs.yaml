@@ -1,9 +1,11 @@
+# normal
+bucket:
+  layout: "20060102"
+
+# components
 logger:
   pretty: true
   level: debug
-
-bucket:
-  layout: "20060102"
 
 streaming:
   uri: nats://127.0.0.1:4222
@@ -26,6 +28,11 @@ database:
 datastore:
   uri: sqlite3://./.kanthor/datastore.sqlite
 
+cache:
+  uri: memory://bigcache
+  time_to_live_in_seconds: 300
+
+# services
 migration:
   source: file://./migration/scripts/sql
 

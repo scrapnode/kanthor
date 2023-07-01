@@ -8,29 +8,29 @@ import (
 )
 
 func NewSqlLogger(log logging.Logger) logger.Interface {
-	return &GormLogger{log: log}
+	return &SqlLogger{log: log}
 }
 
-type GormLogger struct {
+type SqlLogger struct {
 	log logging.Logger
 }
 
-func (logger GormLogger) LogMode(logger.LogLevel) logger.Interface {
+func (logger *SqlLogger) LogMode(logger.LogLevel) logger.Interface {
 	return logger
 }
 
-func (logger GormLogger) Info(ctx context.Context, msg string, args ...interface{}) {
+func (logger *SqlLogger) Info(ctx context.Context, msg string, args ...interface{}) {
 	logger.log.Infow(msg, args...)
 }
-func (logger GormLogger) Warn(ctx context.Context, msg string, args ...interface{}) {
+func (logger *SqlLogger) Warn(ctx context.Context, msg string, args ...interface{}) {
 	logger.log.Warnw(msg, args...)
 }
 
-func (logger GormLogger) Error(ctx context.Context, msg string, args ...interface{}) {
+func (logger *SqlLogger) Error(ctx context.Context, msg string, args ...interface{}) {
 	logger.log.Errorw(msg, args...)
 }
 
-func (logger GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
+func (logger *SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	elapsed := time.Since(begin)
 
 	sql, rows := fc()

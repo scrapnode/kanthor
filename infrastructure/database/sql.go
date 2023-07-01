@@ -20,7 +20,8 @@ import (
 )
 
 func NewSQL(conf *Config, logger logging.Logger) *SQL {
-	return &SQL{conf: conf, logger: logger.With("component", "database")}
+	logger = logger.With("component", "database.sql")
+	return &SQL{conf: conf, logger: logger}
 }
 
 type SQL struct {

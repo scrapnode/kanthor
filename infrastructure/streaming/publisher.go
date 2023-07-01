@@ -16,5 +16,5 @@ type Publisher interface {
 }
 
 type PublisherConfig struct {
-	ConnectionConfig
+	*ConnectionConfig
 }

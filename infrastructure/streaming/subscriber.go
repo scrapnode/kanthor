@@ -18,7 +18,7 @@ type Subscriber interface {
 type SubHandler func(event *Event) error
 
 type SubscriberConfig struct {
-	ConnectionConfig
+	*ConnectionConfig
 	Name  string `json:"name" mapstructure:"name"`
 	Topic string `json:"topic" mapstructure:"topic"`
 	Group string `json:"group" mapstructure:"group"`

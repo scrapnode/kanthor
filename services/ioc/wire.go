@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
+	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -34,10 +35,12 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 		dataplane.New,
 		usecases.NewDataplane,
 		timer.New,
-		ResolvePublisherConfig,
+		ResolveDataplanePublisherConfig,
 		streaming.NewPublisher,
 		ResolveDatabaseConfig,
 		repositories.New,
+		ResolveDataplaneCacheConfig,
+		cache.New,
 	)
 	return nil, nil
 }
@@ -47,12 +50,14 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 		scheduler.New,
 		usecases.NewScheduler,
 		timer.New,
-		ResolvePublisherConfig,
+		ResolveSchedulerPublisherConfig,
 		streaming.NewPublisher,
 		ResolveSchedulerSubscriberConfig,
 		streaming.NewSubscriber,
 		ResolveDatabaseConfig,
 		repositories.New,
+		ResolveSchedulerCacheConfig,
+		cache.New,
 	)
 	return nil, nil
 }
@@ -62,27 +67,83 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 		dispatcher.New,
 		usecases.NewDispatcher,
 		timer.New,
-		ResolvePublisherConfig,
+		ResolveDispatcherPublisherConfig,
 		streaming.NewPublisher,
 		ResolveDispatcherSubscriberConfig,
 		streaming.NewSubscriber,
 		ResolveDatabaseConfig,
 		repositories.New,
 		ResolveSender,
+		ResolveDispatcherCacheConfig,
+		cache.New,
 	)
 	return nil, nil
 }
 
-func ResolvePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	return &streaming.PublisherConfig{ConnectionConfig: conf.Streaming}
+func ResolveDataplanePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	publisher := conf.Dataplane.Publisher
+	if publisher.ConnectionConfig == nil {
+		publisher.ConnectionConfig = &conf.Streaming
+	}
+	return &publisher
+}
+
+func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
+	if conf.Dataplane.Cache == nil {
+		return &conf.Cache
+	}
+
+	return conf.Dataplane.Cache
+}
+
+func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	publisher := conf.Scheduler.Publisher
+	if publisher.ConnectionConfig == nil {
+		publisher.ConnectionConfig = &conf.Streaming
+	}
+	return &publisher
 }
 
 func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	return &conf.Scheduler.Consumer
+	subscriber := conf.Scheduler.Subscriber
+	if subscriber.ConnectionConfig == nil {
+		subscriber.ConnectionConfig = &conf.Streaming
+	}
+
+	return &subscriber
+}
+
+func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
+	if conf.Scheduler.Cache == nil {
+		return &conf.Cache
+	}
+
+	return conf.Scheduler.Cache
+}
+
+func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	publisher := conf.Scheduler.Publisher
+	if publisher.ConnectionConfig == nil {
+		publisher.ConnectionConfig = &conf.Streaming
+	}
+	return &publisher
 }
 
 func ResolveDispatcherSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	return &conf.Dispatcher.Consumer
+	subscriber := conf.Dispatcher.Subscriber
+	if subscriber.ConnectionConfig == nil {
+		subscriber.ConnectionConfig = &conf.Streaming
+	}
+
+	return &subscriber
+}
+
+func ResolveDispatcherCacheConfig(conf *config.Config) *cache.Config {
+	if conf.Dispatcher.Cache == nil {
+		return &conf.Cache
+	}
+
+	return conf.Dispatcher.Cache
 }
 
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {

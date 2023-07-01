@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -8,10 +9,12 @@ import (
 )
 
 type Config struct {
+	Bucket Bucket `json:"bucket" mapstructure:"bucket"`
+
 	Logger    logging.Config             `json:"logger" mapstructure:"logger"`
-	Bucket    Bucket                     `json:"bucket" mapstructure:"bucket"`
 	Database  database.Config            `json:"database" mapstructure:"database"`
 	Streaming streaming.ConnectionConfig `json:"streaming" mapstructure:"streaming"`
+	Cache     cache.Config               `json:"cache" mapstructure:"cache"`
 
 	Migration  Migration  `json:"migration" mapstructure:"migration"`
 	Dataplane  Dataplane  `json:"dataplane" mapstructure:"dataplane"`
@@ -30,9 +33,6 @@ type Server struct {
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Config
 	err := provider.Unmarshal(&conf)
-
-	conf.Scheduler.Consumer.ConnectionConfig = conf.Streaming
-	conf.Dispatcher.Consumer.ConnectionConfig = conf.Streaming
 
 	return &conf, err
 }
