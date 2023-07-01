@@ -36,10 +36,6 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 		return nil, fmt.Errorf("workspace.get.deleted: deleted_at:%d", ws.DeletedAt)
 	}
 
-	if ws.Tier == nil {
-		ws.Tier = entities.DefaultTier(ws.Id)
-	}
-
 	return &ws, nil
 }
 

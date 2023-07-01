@@ -2,27 +2,35 @@ package scheduler
 
 import "context"
 
-func (service *scheduler) Connect(ctx context.Context) error {
-	if err := service.repos.Connect(ctx); err != nil {
+func (usecase *scheduler) Connect(ctx context.Context) error {
+	if err := usecase.repos.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := service.publisher.Connect(ctx); err != nil {
+	if err := usecase.publisher.Connect(ctx); err != nil {
 		return err
 	}
 
-	service.logger.Info("connected")
+	if err := usecase.cache.Connect(ctx); err != nil {
+		return err
+	}
+
+	usecase.logger.Info("connected")
 	return nil
 }
 
-func (service *scheduler) Disconnect(ctx context.Context) error {
-	service.logger.Info("disconnected")
+func (usecase *scheduler) Disconnect(ctx context.Context) error {
+	usecase.logger.Info("disconnected")
 
-	if err := service.repos.Disconnect(ctx); err != nil {
+	if err := usecase.repos.Disconnect(ctx); err != nil {
 		return err
 	}
 
-	if err := service.publisher.Disconnect(ctx); err != nil {
+	if err := usecase.publisher.Disconnect(ctx); err != nil {
+		return err
+	}
+
+	if err := usecase.cache.Disconnect(ctx); err != nil {
 		return err
 	}
 

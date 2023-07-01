@@ -5,22 +5,24 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/repositories"
+	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
+	"time"
 )
 
 func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*PutMessageRes, error) {
-	app, err := usecase.repos.Application().Get(ctx, req.AppId)
-	if err != nil {
-		return nil, err
-	}
-	ws, err := usecase.repos.Workspace().Get(ctx, app.WorkspaceId)
+	cacheKey := cache.Key("APP_WITH_WORKSPACE", req.AppId)
+	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithWorkspace, error) {
+		return usecase.repos.Application().GetWithWorkspace(ctx, req.AppId)
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	msg := transformPutMessageReq2Message(ws.Tier.Name, req, usecase.timer, usecase.conf)
-	msg.Metadata[entities.MetaTier] = ws.Tier.Name
+	msg := transformPutMessageReq2Message(app.Workspace.Tier.Name, req, usecase.timer, usecase.conf)
+	msg.Metadata[entities.MetaTier] = app.Workspace.Tier.Name
 
 	event, err := transformMessage2Event(msg)
 	if err != nil {

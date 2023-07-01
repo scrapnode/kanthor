@@ -7,31 +7,36 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/domain/structure"
+	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/sourcegraph/conc/pool"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeRequestsReq) (*ArrangeRequestsRes, error) {
 	res := &ArrangeRequestsRes{Entities: []structure.BulkRes[entities.Request]{}, FailKeys: []string{}, SuccessKeys: []string{}}
 
-	// rules of endpoint are well sorted slice like this
-	// IMPORTANT: the order is important
-	// rule.priority - rule.exclusionary
-	// 			  15 - TRUE
-	// 			  15 - FALSE
-	// 			  9  - FALSE
-	//		  	  70 - TRUE
-	// 			  70 - FALSE
-	//			  0  - FALSE
-	endpoints, err := usecase.repos.Endpoint().ListWithRules(ctx, req.Message.AppId)
+	cacheKey := cache.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
+	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithEndpointsAndRules, error) {
+		// rules of endpoint are well sorted slice like this
+		// IMPORTANT: the order is important
+		// rule.priority - rule.exclusionary
+		// 			  15 - TRUE
+		// 			  15 - FALSE
+		// 			  9  - FALSE
+		//		  	  70 - TRUE
+		// 			  70 - FALSE
+		//			  0  - FALSE
+		return usecase.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	requests := usecase.generateRequestsFromEndpoints(endpoints, req.Message)
+	requests := usecase.generateRequestsFromEndpoints(app.Endpoints, req.Message)
 	if len(requests) == 0 {
 		usecase.logger.Warnw("no request was generated", "message_id", req.Message.Id)
 	}

@@ -7,12 +7,13 @@ import (
 
 func Warp[T any](cache Cache, key string, ttl time.Duration, handler func() (*T, error)) (*T, error) {
 	entry, err := cache.Get(key)
-	if !errors.Is(err, ErrEntryNotFound) {
-		return nil, err
-	}
-
 	if err == nil {
 		return Unmarshal[T](entry)
+	}
+
+	// we only accept ErrEntryNotFound
+	if !errors.Is(err, ErrEntryNotFound) {
+		return nil, err
 	}
 
 	// ErrEntryNotFound, seed entry

@@ -3,6 +3,7 @@ package cache
 import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"strings"
 	"time"
 )
 
@@ -16,4 +17,8 @@ type Cache interface {
 	Set(key string, entry []byte, ttl time.Duration) error
 	Exist(key string) bool
 	Del(key string) error
+}
+
+func Key(values ...string) string {
+	return strings.Join(values, "/")
 }

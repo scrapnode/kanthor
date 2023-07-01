@@ -11,6 +11,10 @@ func (usecase *dataplane) Connect(ctx context.Context) error {
 		return err
 	}
 
+	if err := usecase.cache.Connect(ctx); err != nil {
+		return err
+	}
+
 	usecase.logger.Info("connected")
 	return nil
 }
@@ -23,6 +27,10 @@ func (usecase *dataplane) Disconnect(ctx context.Context) error {
 	}
 
 	if err := usecase.publisher.Disconnect(ctx); err != nil {
+		return err
+	}
+
+	if err := usecase.cache.Disconnect(ctx); err != nil {
 		return err
 	}
 

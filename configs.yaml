@@ -41,7 +41,7 @@ dataplane:
     addr: ":8081"
 
 scheduler:
-  consumer:
+  subscriber:
     topic: schedule
     group: default
     filter_subject: kanthor.default.msg.>
@@ -49,7 +49,7 @@ scheduler:
     max_deliver: 1
 
 dispatcher:
-  consumer:
+  subscriber:
     topic: dispatch
     group: default
     filter_subject: kanthor.default.req.>
