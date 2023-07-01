@@ -46,7 +46,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 	for _, r := range requests {
 		request := r
 		p.Go(func() {
-			key := utils.Key(req.Message.Id, request.Metadata[entities.MetaEndpointId], request.Metadata[entities.MetaRuleId], request.Id)
+			key := utils.Key(req.Message.Id, request.EndpointId, request.Metadata[entities.MetaRuleId], request.Id)
 
 			event, err := transformRequest2Event(&request)
 			if err == nil {
@@ -106,17 +106,17 @@ func (usecase *scheduler) generateRequestsFromEndpoints(endpoints []repositories
 			}
 
 			request := entities.Request{
-				Tier:    msg.Tier,
-				AppId:   msg.AppId,
-				Type:    msg.Type,
-				Uri:     endpoint.Uri,
-				Method:  endpoint.Method,
-				Headers: msg.Headers,
-				Body:    msg.Body,
+				Tier:       msg.Tier,
+				AppId:      msg.AppId,
+				Type:       msg.Type,
+				EndpointId: endpoint.Id,
+				Uri:        endpoint.Uri,
+				Method:     endpoint.Method,
+				Headers:    msg.Headers,
+				Body:       msg.Body,
 				Metadata: map[string]string{
-					entities.MetaMsgId:      msg.Id,
-					entities.MetaEndpointId: endpoint.Id,
-					entities.MetaRuleId:     rule.Id,
+					entities.MetaMsgId:  msg.Id,
+					entities.MetaRuleId: rule.Id,
 				},
 			}
 			request.GenId()

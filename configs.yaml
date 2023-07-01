@@ -56,7 +56,7 @@ dispatcher:
     temporary: true
     max_deliver: 1
   sender:
-    timeout: 5000
+    timeout: 2000
     retry:
       count: 1
       wait_time: 500

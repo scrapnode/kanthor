@@ -11,8 +11,9 @@ type Response struct {
 	TimeSeries
 	Tier string `json:"tier"`
 
-	AppId string `json:"app_id"`
-	Type  string `json:"type"`
+	AppId      string `json:"app_id"`
+	Type       string `json:"type"`
+	EndpointId string `json:"endpoint_id"`
 
 	Metadata map[string]string `json:"metadata"`
 
