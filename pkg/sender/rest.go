@@ -16,7 +16,20 @@ func Rest(conf *Config, logger logging.Logger) Send {
 		SetTimeout(time.Millisecond * time.Duration(conf.Timeout)).
 		SetRetryCount(conf.Retry.Count).
 		SetRetryWaitTime(time.Millisecond * time.Duration(conf.Retry.WaitTime)).
-		SetRetryMaxWaitTime(time.Millisecond * time.Duration(conf.Retry.WaitTimeMax))
+		SetRetryMaxWaitTime(time.Millisecond * time.Duration(conf.Retry.WaitTimeMax)).
+		AddRetryCondition(func(r *resty.Response, err error) bool {
+			status := r.StatusCode()
+			url := r.Request.URL
+			if status == http.StatusTooManyRequests {
+				logger.Warnw("retrying", "status", status, "url", url)
+				return true
+			}
+			if status >= http.StatusInternalServerError {
+				logger.Warnw("retrying", "status", status, "url", url)
+				return true
+			}
+			return false
+		})
 
 	return func(req *Request) (*Response, error) {
 		r := client.R().

@@ -4,6 +4,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
@@ -18,6 +19,7 @@ func New(
 	repos repositories.Repositories,
 	dispatch sender.Send,
 	cache cache.Cache,
+	cb circuitbreaker.CircuitBreaker,
 ) Dispatcher {
 	return &dispatcher{
 		conf:      conf,
@@ -27,6 +29,7 @@ func New(
 		repos:     repos,
 		dispatch:  dispatch,
 		cache:     cache,
+		cb:        cb,
 	}
 }
 
@@ -38,4 +41,5 @@ type dispatcher struct {
 	repos     repositories.Repositories
 	dispatch  sender.Send
 	cache     cache.Cache
+	cb        circuitbreaker.CircuitBreaker
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 )
@@ -18,7 +19,18 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 	}
 	request.Headers.Set("Idempotency-Key", req.Request.Id)
 
-	response, err := usecase.dispatch(request)
+	response, err := circuitbreaker.Do[sender.Response](
+		usecase.cb,
+		req.Request.EndpointId,
+		func() (interface{}, error) {
+			return usecase.dispatch(request)
+		},
+		func(err error) error {
+			usecase.logger.Error(err)
+			// good place to put metrics
+			return err
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

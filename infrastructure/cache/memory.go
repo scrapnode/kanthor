@@ -30,7 +30,7 @@ func (cache *memory) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	conf := bigcache.DefaultConfig(time.Duration(cache.conf.TimeToLiveInSeconds) * time.Second)
+	conf := bigcache.DefaultConfig(time.Duration(cache.conf.TimeToLive) * time.Millisecond)
 	conf.Logger = NewMemoryLogger(cache.logger)
 
 	client, err := bigcache.New(ctx, conf)

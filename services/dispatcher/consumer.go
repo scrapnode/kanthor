@@ -26,7 +26,7 @@ func Consumer(logger logging.Logger, uc usecase.Dispatcher) streaming.SubHandler
 			return nil
 		}
 
-		logger.Debugw("received response", "response_id", response.Response.Id)
+		logger.Debugw("received response", "response_id", response.Response.Id, "response_status", response.Response.Status)
 		return nil
 	}
 }

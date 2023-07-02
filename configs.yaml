@@ -30,7 +30,7 @@ datastore:
 
 cache:
   uri: memory://bigcache
-  time_to_live_in_seconds: 300
+  time_to_live: 300000
 
 # services
 migration:
@@ -56,8 +56,12 @@ dispatcher:
     temporary: true
     max_deliver: 1
   sender:
-    timeout: 2000
+    timeout: 3000
     retry:
       count: 1
       wait_time: 500
       wait_time_max: 3000
+  circuit_breaker:
+    timeout: 6000
+    sleep_window: 300000
+    error_percent_threshold: 25

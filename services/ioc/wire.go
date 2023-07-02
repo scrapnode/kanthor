@@ -8,6 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -73,9 +74,11 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 		streaming.NewSubscriber,
 		ResolveDatabaseConfig,
 		repositories.New,
-		ResolveSender,
+		ResolveDispatcherSender,
 		ResolveDispatcherCacheConfig,
 		cache.New,
+		circuitbreaker.New,
+		ResolveDispatcherCircuitBreakerConfig,
 	)
 	return nil, nil
 }
@@ -146,10 +149,14 @@ func ResolveDispatcherCacheConfig(conf *config.Config) *cache.Config {
 	return conf.Dispatcher.Cache
 }
 
+func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.Config {
+	return &conf.Dispatcher.CircuitBreaker
+}
+
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {
 	return &conf.Database
 }
 
-func ResolveSender(conf *config.Config, logger logging.Logger) sender.Send {
+func ResolveDispatcherSender(conf *config.Config, logger logging.Logger) sender.Send {
 	return sender.New(&conf.Dispatcher.Sender, logger)
 }

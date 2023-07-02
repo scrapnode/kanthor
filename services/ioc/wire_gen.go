@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -68,10 +69,12 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	publisher := streaming.NewPublisher(publisherConfig, logger)
 	databaseConfig := ResolveDatabaseConfig(conf)
 	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
-	send := ResolveSender(conf, logger)
+	send := ResolveDispatcherSender(conf, logger)
 	cacheConfig := ResolveDispatcherCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
-	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send, cacheCache)
+	circuitbreakerConfig := ResolveDispatcherCircuitBreakerConfig(conf)
+	circuitBreaker := circuitbreaker.New(circuitbreakerConfig, logger)
+	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send, cacheCache, circuitBreaker)
 	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher)
 	return service, nil
 }
@@ -144,10 +147,14 @@ func ResolveDispatcherCacheConfig(conf *config.Config) *cache.Config {
 	return conf.Dispatcher.Cache
 }
 
+func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.Config {
+	return &conf.Dispatcher.CircuitBreaker
+}
+
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {
 	return &conf.Database
 }
 
-func ResolveSender(conf *config.Config, logger logging.Logger) sender.Send {
+func ResolveDispatcherSender(conf *config.Config, logger logging.Logger) sender.Send {
 	return sender.New(&conf.Dispatcher.Sender, logger)
 }

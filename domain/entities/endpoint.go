@@ -34,7 +34,9 @@ type EndpointRule struct {
 	SoftDelete
 
 	EndpointId string `json:"endpoint_id"`
-	Priority   int    `json:"priority"`
+	Name       string `json:"name"`
+
+	Priority int `json:"priority"`
 	// the logic of not-false is true should be used here
 	// to guarantee default all rule will be on include mode
 	Exclusionary bool `json:"exclusionary"`

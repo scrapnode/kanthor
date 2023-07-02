@@ -4,6 +4,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
@@ -45,7 +46,8 @@ func NewDispatcher(
 	repos repositories.Repositories,
 	dispatch sender.Send,
 	cache cache.Cache,
+	cb circuitbreaker.CircuitBreaker,
 ) dispatcher.Dispatcher {
 	logger = logger.With("usecase", "scheduler")
-	return dispatcher.New(conf, logger, timer, publisher, repos, dispatch, cache)
+	return dispatcher.New(conf, logger, timer, publisher, repos, dispatch, cache, cb)
 }
