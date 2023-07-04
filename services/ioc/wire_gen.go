@@ -13,6 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -33,7 +34,7 @@ func InitializeMigration(conf *config.Config, logger logging.Logger) (services.S
 	return service, nil
 }
 
-func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeDataplane(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
 	timerTimer := timer.New()
 	publisherConfig := ResolveDataplanePublisherConfig(conf)
 	publisher := streaming.NewPublisher(publisherConfig, logger)
@@ -42,11 +43,11 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	cacheConfig := ResolveDataplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache)
-	service := dataplane.New(conf, logger, dataplaneDataplane)
+	service := dataplane.New(conf, logger, dataplaneDataplane, meter)
 	return service, nil
 }
 
-func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeScheduler(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
 	subscriberConfig := ResolveSchedulerSubscriberConfig(conf)
 	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
 	timerTimer := timer.New()
@@ -57,11 +58,11 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	cacheConfig := ResolveSchedulerCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache)
-	service := scheduler.New(conf, logger, subscriber, schedulerScheduler)
+	service := scheduler.New(conf, logger, subscriber, schedulerScheduler, meter)
 	return service, nil
 }
 
-func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeDispatcher(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
 	subscriberConfig := ResolveDispatcherSubscriberConfig(conf)
 	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
 	timerTimer := timer.New()
@@ -75,7 +76,7 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	circuitbreakerConfig := ResolveDispatcherCircuitBreakerConfig(conf)
 	circuitBreaker := circuitbreaker.New(circuitbreakerConfig, logger)
 	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send, cacheCache, circuitBreaker)
-	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher)
+	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher, meter)
 	return service, nil
 }
 

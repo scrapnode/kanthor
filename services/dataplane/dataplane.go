@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
@@ -12,9 +13,14 @@ import (
 	"net"
 )
 
-func New(conf *config.Config, logger logging.Logger, uc usecase.Dataplane) services.Service {
+func New(
+	conf *config.Config,
+	logger logging.Logger,
+	uc usecase.Dataplane,
+	meter metric.Meter,
+) services.Service {
 	logger.With("service", "dataplane")
-	return &dataplane{conf: conf, logger: logger, uc: uc}
+	return &dataplane{conf: conf, logger: logger, uc: uc, meter: meter}
 }
 
 type dataplane struct {
@@ -22,6 +28,7 @@ type dataplane struct {
 	logger logging.Logger
 	grpc   *grpc.Server
 	uc     usecase.Dataplane
+	meter  metric.Meter
 }
 
 func (service *dataplane) Start(ctx context.Context) error {
@@ -30,8 +37,7 @@ func (service *dataplane) Start(ctx context.Context) error {
 	}
 
 	service.grpc = grpc.NewServer()
-	logger := service.logger.With("fn", "server")
-	protos.RegisterMessageServer(service.grpc, &Message{uc: service.uc, logger: logger})
+	protos.RegisterMessageServer(service.grpc, &Message{service: service})
 	reflection.Register(service.grpc)
 
 	service.logger.Info("started")
@@ -58,5 +64,6 @@ func (service *dataplane) Run(ctx context.Context) error {
 	}
 
 	service.logger.Infow("running", "addr", addr)
+
 	return service.grpc.Serve(listener)
 }

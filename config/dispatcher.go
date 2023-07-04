@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 )
@@ -13,5 +14,6 @@ type Dispatcher struct {
 	Sender         sender.Config              `json:"sender" mapstructure:"sender"`
 	Cache          *cache.Config              `json:"cache" mapstructure:"cache"`
 	CircuitBreaker circuitbreaker.Config      `json:"circuit_breaker" mapstructure:"circuit_breaker"`
-	Metrics        Server                     `json:"metrics" mapstructure:"metrics"`
+
+	Metrics metric.Config `json:"metrics" mapstructure:"metrics"`
 }

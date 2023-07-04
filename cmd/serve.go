@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/ioc"
 	"github.com/spf13/cobra"
@@ -20,7 +22,18 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 		ValidArgs: []string{"dataplane", "scheduler", "dispatcher"},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			service, err := useService(args[0], conf, logger)
+			enableMetrics, err := cmd.Flags().GetBool("enable-metrics")
+			if err != nil {
+				return err
+			}
+			meter := useMetricProvider(conf, logger, enableMetrics)
+
+			service, err := useService(args[0], conf, logger, meter)
+			if err != nil {
+				return err
+			}
+
+			exporter, err := useMetricExporter(args[0], conf, logger, enableMetrics)
 			if err != nil {
 				return err
 			}
@@ -30,8 +43,20 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
+			if err := exporter.Start(ctx); err != nil {
+				return err
+			}
+
 			go func() {
 				if err := service.Run(ctx); err != nil {
+					logger.Error(err)
+					cancel()
+					return
+				}
+			}()
+
+			go func() {
+				if err := exporter.Run(ctx); err != nil {
 					logger.Error(err)
 					cancel()
 					return
@@ -49,6 +74,10 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 				if err := service.Stop(ctx); err != nil {
 					logger.Error(err)
 				}
+
+				if err := exporter.Stop(ctx); err != nil {
+					logger.Error(err)
+				}
 				cancel()
 			}()
 			<-ctx.Done()
@@ -57,19 +86,46 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 		},
 	}
 
+	command.Flags().BoolP("enable-metrics", "", false, "enable metric collectors")
 	return command
 }
 
-func useService(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
+func useService(name string, conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
 	if name == "dataplane" {
-		return ioc.InitializeDataplane(conf, logger)
+		return ioc.InitializeDataplane(conf, logger, meter)
 	}
 	if name == "scheduler" {
-		return ioc.InitializeScheduler(conf, logger)
+		return ioc.InitializeScheduler(conf, logger, meter)
 	}
 	if name == "dispatcher" {
-		return ioc.InitializeDispatcher(conf, logger)
+		return ioc.InitializeDispatcher(conf, logger, meter)
 	}
 
-	return nil, fmt.Errorf("serve: unknow service [%s]", name)
+	return nil, fmt.Errorf("serve.service: unknow service [%s]", name)
+}
+
+func useMetricExporter(name string, conf *config.Config, logger logging.Logger, enable bool) (patterns.Runnable, error) {
+	if !enable {
+		return metric.NewNoopExporter(nil, logger), nil
+	}
+
+	if name == "dataplane" {
+		return metric.NewPrometheusExporter(&conf.Dataplane.Metrics, logger), nil
+	}
+	if name == "scheduler" {
+		return metric.NewPrometheusExporter(&conf.Scheduler.Metrics, logger), nil
+	}
+	if name == "dispatcher" {
+		return metric.NewPrometheusExporter(&conf.Dispatcher.Metrics, logger), nil
+	}
+
+	return nil, fmt.Errorf("serve.metric: unknow service [%s]", name)
+}
+
+func useMetricProvider(conf *config.Config, logger logging.Logger, enable bool) metric.Meter {
+	if !enable {
+		return metric.NewNoop()
+	}
+
+	return metric.NewPrometheus()
 }

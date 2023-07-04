@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 	usecase "github.com/scrapnode/kanthor/usecases/dispatcher"
@@ -14,9 +15,10 @@ func New(
 	logger logging.Logger,
 	subscriber streaming.Subscriber,
 	uc usecase.Dispatcher,
+	meter metric.Meter,
 ) services.Service {
 	logger.With("service", "dispatcher")
-	return &dispatcher{conf: conf, logger: logger, subscriber: subscriber, uc: uc}
+	return &dispatcher{conf: conf, logger: logger, subscriber: subscriber, uc: uc, meter: meter}
 }
 
 type dispatcher struct {
@@ -24,6 +26,7 @@ type dispatcher struct {
 	logger     logging.Logger
 	subscriber streaming.Subscriber
 	uc         usecase.Dispatcher
+	meter      metric.Meter
 }
 
 func (service *dispatcher) Start(ctx context.Context) error {
@@ -54,6 +57,5 @@ func (service *dispatcher) Stop(ctx context.Context) error {
 }
 
 func (service *dispatcher) Run(ctx context.Context) error {
-	logger := service.logger.With("fn", "consumer")
-	return service.subscriber.Sub(ctx, Consumer(logger, service.uc))
+	return service.subscriber.Sub(ctx, Consumer(service))
 }

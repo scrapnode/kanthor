@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -31,7 +32,7 @@ func InitializeMigration(conf *config.Config, logger logging.Logger) (services.S
 	return nil, nil
 }
 
-func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeDataplane(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
 	wire.Build(
 		dataplane.New,
 		usecases.NewDataplane,
@@ -46,7 +47,7 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	return nil, nil
 }
 
-func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeScheduler(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
 	wire.Build(
 		scheduler.New,
 		usecases.NewScheduler,
@@ -63,7 +64,7 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	return nil, nil
 }
 
-func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeDispatcher(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
 	wire.Build(
 		dispatcher.New,
 		usecases.NewDispatcher,

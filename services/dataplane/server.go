@@ -2,7 +2,6 @@ package dataplane
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 	"net/http"
@@ -10,11 +9,12 @@ import (
 
 type Message struct {
 	protos.UnimplementedMessageServer
-	logger logging.Logger
-	uc     usecase.Dataplane
+	service *dataplane
 }
 
 func (server *Message) Put(ctx context.Context, req *protos.PutReq) (*protos.PutRes, error) {
+	server.service.meter.Counter("dataplane_message_put_total", 1)
+
 	request := &usecase.PutMessageReq{
 		AppId:    req.AppId,
 		Type:     req.Type,
@@ -29,9 +29,10 @@ func (server *Message) Put(ctx context.Context, req *protos.PutReq) (*protos.Put
 		request.Metadata[key] = value
 	}
 
-	response, err := server.uc.PutMessage(ctx, request)
+	response, err := server.service.uc.PutMessage(ctx, request)
 	if err != nil {
-		server.logger.Error(err)
+		server.service.meter.Counter("dataplane_message_put_error", 1)
+		server.service.logger.Error(err)
 		return nil, err
 	}
 
