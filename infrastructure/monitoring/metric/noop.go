@@ -5,7 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func NewNoop() Meter {
+func NewNoop(conf *Config) Meter {
 	return &prometheusio{}
 }
 

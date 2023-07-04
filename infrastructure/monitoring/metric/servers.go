@@ -9,7 +9,6 @@ import (
 )
 
 func NewHttpServer(conf *Config, logger logging.Logger, handler http.Handler) services.Service {
-	logger.With("service", "metrics")
 	return &httpServer{conf: conf, logger: logger, handler: handler}
 }
 
@@ -57,7 +56,6 @@ func (server *httpServer) Run(ctx context.Context) error {
 }
 
 func NewNoopServer(conf *Config, logger logging.Logger) services.Service {
-	logger.With("service", "metrics")
 	return &noopServer{conf: conf, logger: logger}
 }
 

@@ -32,7 +32,7 @@ func InitializeMigration(conf *config.Config, logger logging.Logger) (services.S
 	return nil, nil
 }
 
-func InitializeDataplane(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
+func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		dataplane.New,
 		usecases.NewDataplane,
@@ -43,11 +43,13 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger, meter metri
 		repositories.New,
 		ResolveDataplaneCacheConfig,
 		cache.New,
+		ResolveDataplaneMetricConfig,
+		metric.New,
 	)
 	return nil, nil
 }
 
-func InitializeScheduler(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
+func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		scheduler.New,
 		usecases.NewScheduler,
@@ -60,11 +62,13 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger, meter metri
 		repositories.New,
 		ResolveSchedulerCacheConfig,
 		cache.New,
+		ResolveSchedulerMetricConfig,
+		metric.New,
 	)
 	return nil, nil
 }
 
-func InitializeDispatcher(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
+func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		dispatcher.New,
 		usecases.NewDispatcher,
@@ -78,8 +82,10 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger, meter metr
 		ResolveDispatcherSender,
 		ResolveDispatcherCacheConfig,
 		cache.New,
-		circuitbreaker.New,
 		ResolveDispatcherCircuitBreakerConfig,
+		circuitbreaker.New,
+		ResolveDispatcherMetricConfig,
+		metric.New,
 	)
 	return nil, nil
 }
@@ -98,6 +104,10 @@ func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
 	}
 
 	return conf.Dataplane.Cache
+}
+
+func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Dataplane.Metrics
 }
 
 func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
@@ -123,6 +133,10 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 	}
 
 	return conf.Scheduler.Cache
+}
+
+func ResolveSchedulerMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Scheduler.Metrics
 }
 
 func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
@@ -152,6 +166,10 @@ func ResolveDispatcherCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.Config {
 	return &conf.Dispatcher.CircuitBreaker
+}
+
+func ResolveDispatcherMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Dispatcher.Metrics
 }
 
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {

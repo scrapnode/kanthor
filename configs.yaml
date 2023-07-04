@@ -40,6 +40,7 @@ dataplane:
   grpc:
     addr: ":8081"
   metrics:
+    enable: false
     server:
       addr: ":9090"
 
@@ -51,6 +52,7 @@ scheduler:
     temporary: true
     max_deliver: 1
   metrics:
+    enable: false
     server:
       addr: ":9190"
 
@@ -72,5 +74,6 @@ dispatcher:
     sleep_window: 300000
     error_percent_threshold: 25
   metrics:
+    enable: false
     server:
       addr: ":9290"

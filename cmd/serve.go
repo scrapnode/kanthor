@@ -22,18 +22,12 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 		ValidArgs: []string{"dataplane", "scheduler", "dispatcher"},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			enableMetrics, err := cmd.Flags().GetBool("enable-metrics")
-			if err != nil {
-				return err
-			}
-			meter := useMetricProvider(conf, logger, enableMetrics)
-
-			service, err := useService(args[0], conf, logger, meter)
+			service, err := useService(args[0], conf, logger)
 			if err != nil {
 				return err
 			}
 
-			exporter, err := useMetricExporter(args[0], conf, logger, enableMetrics)
+			exporter, err := useMetricExporter(args[0], conf, logger)
 			if err != nil {
 				return err
 			}
@@ -86,46 +80,33 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 		},
 	}
 
-	command.Flags().BoolP("enable-metrics", "", false, "enable metric collectors")
 	return command
 }
 
-func useService(name string, conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
+func useService(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
 	if name == "dataplane" {
-		return ioc.InitializeDataplane(conf, logger, meter)
+		return ioc.InitializeDataplane(conf, logger)
 	}
 	if name == "scheduler" {
-		return ioc.InitializeScheduler(conf, logger, meter)
+		return ioc.InitializeScheduler(conf, logger)
 	}
 	if name == "dispatcher" {
-		return ioc.InitializeDispatcher(conf, logger, meter)
+		return ioc.InitializeDispatcher(conf, logger)
 	}
 
 	return nil, fmt.Errorf("serve.service: unknow service [%s]", name)
 }
 
-func useMetricExporter(name string, conf *config.Config, logger logging.Logger, enable bool) (patterns.Runnable, error) {
-	if !enable {
-		return metric.NewNoopExporter(nil, logger), nil
-	}
-
+func useMetricExporter(name string, conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
 	if name == "dataplane" {
-		return metric.NewPrometheusExporter(&conf.Dataplane.Metrics, logger), nil
+		return metric.NewExporter(&conf.Dataplane.Metrics, logger), nil
 	}
 	if name == "scheduler" {
-		return metric.NewPrometheusExporter(&conf.Scheduler.Metrics, logger), nil
+		return metric.NewExporter(&conf.Scheduler.Metrics, logger), nil
 	}
 	if name == "dispatcher" {
-		return metric.NewPrometheusExporter(&conf.Dispatcher.Metrics, logger), nil
+		return metric.NewExporter(&conf.Dispatcher.Metrics, logger), nil
 	}
 
-	return nil, fmt.Errorf("serve.metric: unknow service [%s]", name)
-}
-
-func useMetricProvider(conf *config.Config, logger logging.Logger, enable bool) metric.Meter {
-	if !enable {
-		return metric.NewNoop()
-	}
-
-	return metric.NewPrometheus()
+	return nil, fmt.Errorf("serve.metric.exporter: unknow service [%s]", name)
 }

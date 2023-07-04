@@ -34,7 +34,7 @@ func InitializeMigration(conf *config.Config, logger logging.Logger) (services.S
 	return service, nil
 }
 
-func InitializeDataplane(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
+func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	timerTimer := timer.New()
 	publisherConfig := ResolveDataplanePublisherConfig(conf)
 	publisher := streaming.NewPublisher(publisherConfig, logger)
@@ -43,11 +43,13 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger, meter metri
 	cacheConfig := ResolveDataplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache)
+	metricConfig := ResolveDataplaneMetricConfig(conf)
+	meter := metric.New(metricConfig)
 	service := dataplane.New(conf, logger, dataplaneDataplane, meter)
 	return service, nil
 }
 
-func InitializeScheduler(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
+func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	subscriberConfig := ResolveSchedulerSubscriberConfig(conf)
 	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
 	timerTimer := timer.New()
@@ -58,11 +60,13 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger, meter metri
 	cacheConfig := ResolveSchedulerCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache)
+	metricConfig := ResolveSchedulerMetricConfig(conf)
+	meter := metric.New(metricConfig)
 	service := scheduler.New(conf, logger, subscriber, schedulerScheduler, meter)
 	return service, nil
 }
 
-func InitializeDispatcher(conf *config.Config, logger logging.Logger, meter metric.Meter) (services.Service, error) {
+func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	subscriberConfig := ResolveDispatcherSubscriberConfig(conf)
 	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
 	timerTimer := timer.New()
@@ -76,6 +80,8 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger, meter metr
 	circuitbreakerConfig := ResolveDispatcherCircuitBreakerConfig(conf)
 	circuitBreaker := circuitbreaker.New(circuitbreakerConfig, logger)
 	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send, cacheCache, circuitBreaker)
+	metricConfig := ResolveDispatcherMetricConfig(conf)
+	meter := metric.New(metricConfig)
 	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher, meter)
 	return service, nil
 }
@@ -96,6 +102,10 @@ func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
 	}
 
 	return conf.Dataplane.Cache
+}
+
+func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Dataplane.Metrics
 }
 
 func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
@@ -121,6 +131,10 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 	}
 
 	return conf.Scheduler.Cache
+}
+
+func ResolveSchedulerMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Scheduler.Metrics
 }
 
 func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
@@ -150,6 +164,10 @@ func ResolveDispatcherCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.Config {
 	return &conf.Dispatcher.CircuitBreaker
+}
+
+func ResolveDispatcherMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Dispatcher.Metrics
 }
 
 func ResolveDatabaseConfig(conf *config.Config) *database.Config {

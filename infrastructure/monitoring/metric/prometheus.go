@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func NewPrometheus() Meter {
+func NewPrometheus(conf *Config) Meter {
 	return &prometheusio{}
 }
 
