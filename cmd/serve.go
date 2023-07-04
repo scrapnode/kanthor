@@ -19,15 +19,20 @@ import (
 func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "serve",
-		ValidArgs: []string{"dataplane", "scheduler", "dispatcher"},
+		ValidArgs: []string{services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			service, err := useService(args[0], conf, logger)
+			serviceName := args[0]
+			if err := conf.Validate(serviceName); err != nil {
+				return err
+			}
+
+			service, err := useService(serviceName, conf, logger)
 			if err != nil {
 				return err
 			}
 
-			exporter, err := useMetricExporter(args[0], conf, logger)
+			exporter, err := useMetricExporter(serviceName, conf, logger)
 			if err != nil {
 				return err
 			}
@@ -84,13 +89,13 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 }
 
 func useService(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
-	if name == "dataplane" {
+	if name == services.DATAPLANE {
 		return ioc.InitializeDataplane(conf, logger)
 	}
-	if name == "scheduler" {
+	if name == services.SCHEDULER {
 		return ioc.InitializeScheduler(conf, logger)
 	}
-	if name == "dispatcher" {
+	if name == services.DISPATCHER {
 		return ioc.InitializeDispatcher(conf, logger)
 	}
 
@@ -98,13 +103,13 @@ func useService(name string, conf *config.Config, logger logging.Logger) (servic
 }
 
 func useMetricExporter(name string, conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
-	if name == "dataplane" {
+	if name == services.DATAPLANE {
 		return metric.NewExporter(&conf.Dataplane.Metrics, logger), nil
 	}
-	if name == "scheduler" {
+	if name == services.SCHEDULER {
 		return metric.NewExporter(&conf.Scheduler.Metrics, logger), nil
 	}
-	if name == "dispatcher" {
+	if name == services.DISPATCHER {
 		return metric.NewExporter(&conf.Dispatcher.Metrics, logger), nil
 	}
 

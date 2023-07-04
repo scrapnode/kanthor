@@ -1,6 +1,12 @@
 package cache
 
+import "github.com/go-playground/validator/v10"
+
 type Config struct {
-	Uri        string `json:"uri" mapstructure:"uri"`
-	TimeToLive int    `json:"time_to_live" mapstructure:"time_to_live"`
+	Uri        string `json:"uri" mapstructure:"uri" validate:"required,uri"`
+	TimeToLive int    `json:"time_to_live" mapstructure:"time_to_live" validate:"required,number,gte=0"`
+}
+
+func (conf Config) Validate() error {
+	return validator.New().Struct(conf)
 }

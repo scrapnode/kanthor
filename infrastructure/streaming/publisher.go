@@ -2,6 +2,7 @@ package streaming
 
 import (
 	"context"
+	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
@@ -17,4 +18,8 @@ type Publisher interface {
 
 type PublisherConfig struct {
 	*ConnectionConfig
+}
+
+func (conf PublisherConfig) Validate() error {
+	return validator.New().Struct(conf)
 }

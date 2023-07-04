@@ -18,6 +18,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	logger, err := logging.New(&conf.Logger)
 	if err != nil {
 		panic(err)

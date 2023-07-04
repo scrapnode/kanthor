@@ -39,10 +39,6 @@ migration:
 dataplane:
   grpc:
     addr: ":8081"
-  metrics:
-    enable: false
-    server:
-      addr: ":9090"
 
 scheduler:
   subscriber:
@@ -51,10 +47,6 @@ scheduler:
     filter_subject: kanthor.default.msg.>
     temporary: true
     max_deliver: 1
-  metrics:
-    enable: false
-    server:
-      addr: ":9190"
 
 dispatcher:
   subscriber:
@@ -73,7 +65,3 @@ dispatcher:
     timeout: 6000
     sleep_window: 300000
     error_percent_threshold: 25
-  metrics:
-    enable: false
-    server:
-      addr: ":9290"

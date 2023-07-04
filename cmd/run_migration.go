@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/ioc"
 	"github.com/spf13/cobra"
 	"os"
@@ -16,6 +17,10 @@ func NewRunMigration(conf *config.Config, logger logging.Logger) *cobra.Command 
 	command := &cobra.Command{
 		Use: "migration",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := conf.Validate(services.MIGRATION); err != nil {
+				return err
+			}
+
 			keepRunning, err := cmd.Flags().GetBool("keep-running")
 			if err != nil {
 				return err
