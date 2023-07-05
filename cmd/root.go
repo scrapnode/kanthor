@@ -10,6 +10,7 @@ import (
 func New(provider configuration.Provider, conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{}
 
+	command.AddCommand(NewVersion(provider, conf))
 	command.AddCommand(NewShow(provider, conf))
 	command.AddCommand(NewServe(conf, logger))
 	command.AddCommand(NewRun(conf, logger))

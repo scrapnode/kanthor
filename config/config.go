@@ -12,7 +12,8 @@ import (
 )
 
 type Config struct {
-	Bucket Bucket `json:"bucket" mapstructure:"bucket" validate:"required"`
+	Version string
+	Bucket  Bucket `json:"bucket" mapstructure:"bucket" validate:"required"`
 
 	Logger    logging.Config             `json:"logger" mapstructure:"logger" validate:"required"`
 	Streaming streaming.ConnectionConfig `json:"streaming" mapstructure:"streaming" validate:"required"`

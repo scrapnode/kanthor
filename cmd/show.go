@@ -13,13 +13,17 @@ import (
 func NewShow(provider configuration.Provider, conf *config.Config) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "show",
-		ValidArgs: []string{"config"},
+		ValidArgs: []string{"config", "version"},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			name := args[0]
 			verbose, _ := cmd.Flags().GetBool("verbose")
 
-			if args[0] == "config" {
-				return showConfig(provider, conf, verbose)
+			if name == "config" {
+				return showConfig(conf, provider.Sources(), verbose)
+			}
+			if name == "version" {
+				return showVersion(conf, verbose)
 			}
 
 			return nil
@@ -29,7 +33,7 @@ func NewShow(provider configuration.Provider, conf *config.Config) *cobra.Comman
 	return command
 }
 
-func showConfig(provider configuration.Provider, conf *config.Config, verbose bool) error {
+func showConfig(conf *config.Config, sources []configuration.Source, verbose bool) error {
 	bytes, err := yaml.Marshal(&conf)
 	if err != nil {
 		return err
@@ -40,7 +44,6 @@ func showConfig(provider configuration.Provider, conf *config.Config, verbose bo
 	if verbose {
 		t := table.NewWriter()
 		t.AppendHeader(table.Row{"origin", "found", "used"})
-		sources := provider.Sources()
 		for _, source := range sources {
 			var check string
 			if source.Used {
@@ -52,5 +55,10 @@ func showConfig(provider configuration.Provider, conf *config.Config, verbose bo
 		t.Render()
 	}
 
+	return nil
+}
+
+func showVersion(conf *config.Config, verbose bool) error {
+	fmt.Println(conf.Version)
 	return nil
 }

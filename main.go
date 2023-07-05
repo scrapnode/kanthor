@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"github.com/scrapnode/kanthor/cmd"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
@@ -8,6 +9,9 @@ import (
 	"os"
 	"runtime/debug"
 )
+
+//go:embed .version
+var version string
 
 func main() {
 	provider, err := configuration.New()
@@ -18,6 +22,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	conf.Version = version
 
 	logger, err := logging.New(&conf.Logger)
 	if err != nil {
