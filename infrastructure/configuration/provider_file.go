@@ -2,41 +2,45 @@ package configuration
 
 import (
 	"fmt"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/spf13/viper"
 	"path"
 	"strings"
 )
 
-var FileLookingDirs = []string{"./", "$HOME/.kanthor/", "$KANTHOR_CONFIG_DIR/"}
+var FileLookingDirs = []string{"$KANTHOR_HOME/", "$HOME/.kanthor/", "./"}
 var FileName = "configs"
 var FileExt = "yaml"
 
 func NewFile(dirs []string) (Provider, error) {
-	provider := &file{viper: viper.New()}
-	provider.viper.SetConfigName(FileName) // name of config file (without extension)
-	provider.viper.SetConfigType(FileExt)  // extension
+	instance := viper.New()
+	instance.SetConfigName(FileName) // name of config file (without extension)
+	instance.SetConfigType(FileExt)  // extension
 
+	var sources []Source
 	for _, dir := range dirs {
-		source := Source{Source: path.Join(dir, fmt.Sprintf("%s.%s", FileName, FileExt)), Found: true}
-
-		provider.viper.AddConfigPath(dir)
-		if err := provider.viper.MergeInConfig(); err != nil {
-			// ignore not found files, otherwise return error
-
-			if _, notfound := err.(viper.ConfigFileNotFoundError); !notfound {
-				return nil, fmt.Errorf("config.viper.MergeInConfig(): %v", err)
-			}
-		}
-
-		source.Found = true
-		provider.sources = append(provider.sources, source)
+		filename := FileName + "." + FileExt
+		sources = append(sources, Source{Origin: path.Join(dir, filename), Found: path.Join(utils.AbsPathify(dir), filename)})
+		instance.AddConfigPath(dir)
 	}
 
-	provider.viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	provider.viper.SetEnvPrefix("KANTHOR")
-	provider.viper.AutomaticEnv()
+	if err := instance.MergeInConfig(); err != nil {
+		// ignore not found files, otherwise return error
+		if _, notfound := err.(viper.ConfigFileNotFoundError); !notfound {
+			return nil, fmt.Errorf("config.viper.MergeInConfig(): %v", err)
+		}
+	}
 
-	return provider, nil
+	for index, source := range sources {
+		source.Used = instance.ConfigFileUsed() != "" && instance.ConfigFileUsed() == source.Found
+		sources[index] = source
+	}
+
+	instance.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	instance.SetEnvPrefix("KANTHOR")
+	instance.AutomaticEnv()
+
+	return &file{viper: instance, sources: sources}, nil
 }
 
 type file struct {

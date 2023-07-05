@@ -1,5 +1,7 @@
 services:
   streaming:
+    networks:
+      - kanthor
     image: nats:2.9
     ports:
       - "8222:8222"

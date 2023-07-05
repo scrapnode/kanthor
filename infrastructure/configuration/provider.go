@@ -10,6 +10,7 @@ type Provider interface {
 }
 
 type Source struct {
-	Source string
-	Found  bool
+	Origin string
+	Found  string
+	Used   bool
 }

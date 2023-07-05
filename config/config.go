@@ -15,8 +15,8 @@ type Config struct {
 	Bucket Bucket `json:"bucket" mapstructure:"bucket" validate:"required"`
 
 	Logger    logging.Config             `json:"logger" mapstructure:"logger" validate:"required"`
-	Database  database.Config            `json:"database" mapstructure:"database" validate:"required"`
 	Streaming streaming.ConnectionConfig `json:"streaming" mapstructure:"streaming" validate:"required"`
+	Database  database.Config            `json:"database" mapstructure:"database" validate:"required"`
 	Cache     cache.Config               `json:"cache" mapstructure:"cache" validate:"required"`
 
 	Migration  Migration  `json:"migration" mapstructure:"migration"`
@@ -46,6 +46,9 @@ func (conf Config) Validate(service string) error {
 		return fmt.Errorf("config.Cache: %v", err)
 	}
 
+	if service == services.MIGRATION {
+		return conf.Migration.Validate()
+	}
 	if service == services.DATAPLANE {
 		return conf.Dataplane.Validate()
 	}

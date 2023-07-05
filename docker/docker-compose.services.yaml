@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:13-alpine
+    networks:
+      - kanthor
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=changemenow
+
+  redis:
+    image: redis:6-alpine
+    networks:
+      - kanthor
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  migration:
+    networks:
+      - kanthor
+    depends_on:
+      - postgres
+      - redis
+    build: ..
+    container_name: kanthor-services-migration
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./configs.yaml
+        target: /root/.kanthor/configs.yaml
+    command:
+      - run migration --keep-running
+
+networks:
+  kanthor:
+    name: kanthor
+    external: true

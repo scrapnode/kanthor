@@ -39,7 +39,7 @@ func (server *httpServer) Stop(ctx context.Context) error {
 }
 
 func (server *httpServer) Run(ctx context.Context) error {
-	addr := server.conf.Server.Addr
+	addr := server.conf.Exporter.Addr
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {

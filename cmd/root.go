@@ -13,5 +13,7 @@ func New(provider configuration.Provider, conf *config.Config, logger logging.Lo
 	command.AddCommand(NewShow(provider, conf))
 	command.AddCommand(NewServe(conf, logger))
 	command.AddCommand(NewRun(conf, logger))
+
+	command.PersistentFlags().BoolP("verbose", "", false, "--verbose: show more information")
 	return command
 }

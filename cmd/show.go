@@ -6,9 +6,8 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"os"
-	"strings"
 )
 
 func NewShow(provider configuration.Provider, conf *config.Config) *cobra.Command {
@@ -17,17 +16,20 @@ func NewShow(provider configuration.Provider, conf *config.Config) *cobra.Comman
 		ValidArgs: []string{"config"},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			verbose, _ := cmd.Flags().GetBool("verbose")
+
 			if args[0] == "config" {
-				return showConfig(provider, conf)
+				return showConfig(provider, conf, verbose)
 			}
 
 			return nil
 		},
 	}
+
 	return command
 }
 
-func showConfig(provider configuration.Provider, conf *config.Config) error {
+func showConfig(provider configuration.Provider, conf *config.Config, verbose bool) error {
 	bytes, err := yaml.Marshal(&conf)
 	if err != nil {
 		return err
@@ -35,18 +37,20 @@ func showConfig(provider configuration.Provider, conf *config.Config) error {
 
 	fmt.Println(string(bytes))
 
-	title := "SOURCES (lower priority will be overridden by higher)"
-	fmt.Println(strings.Repeat("-", len(title)+2))
-	fmt.Println(title)
-	t := table.NewWriter()
-	t.AppendHeader(table.Row{"file", "found", "priority"})
-
-	sources := provider.Sources()
-	for priority, source := range sources {
-		t.AppendRow([]interface{}{source.Source, source.Found, priority})
+	if verbose {
+		t := table.NewWriter()
+		t.AppendHeader(table.Row{"origin", "found", "used"})
+		sources := provider.Sources()
+		for _, source := range sources {
+			var check string
+			if source.Used {
+				check = "x"
+			}
+			t.AppendRow([]interface{}{source.Origin, source.Found, check})
+		}
+		t.SetOutputMirror(os.Stdout)
+		t.Render()
 	}
-	t.SetOutputMirror(os.Stdout)
-	t.Render()
 
 	return nil
 }

@@ -10,7 +10,7 @@ logger:
     environment: localhost
 
 streaming:
-  uri: nats://127.0.0.1:4222
+  uri: nats://streaming:4222
   stream:
     name: default
     subjects:
@@ -25,14 +25,14 @@ streaming:
       age: 259200
 
 database:
-  uri: sqlite3://./.kanthor/database.sqlite
+  uri: postgresql://postgres:changemenow@postgres/postgres?connect_timeout=30&application_name=kanthor.database
 
 cache:
-  uri: memory://bigcache
+  uri: redis://redis:6379/1
   time_to_live: 300000
 
 datastore:
-  uri: sqlite3://./.kanthor/datastore.sqlite
+  uri: postgresql://postgres:postgres@postgres/postgres?connect_timeout=30&application_name=kanthor.datastore
 
 # services
 migration:
@@ -42,7 +42,7 @@ dataplane:
   grpc:
     addr: ":8081"
   metrics:
-    enable: false
+    enable: true
     exporter:
       addr: ":9091"
 
@@ -54,7 +54,7 @@ scheduler:
     temporary: true
     max_deliver: 1
   metrics:
-    enable: false
+    enable: true
     exporter:
       addr: ":9092"
 
@@ -76,6 +76,6 @@ dispatcher:
     sleep_window: 300000
     error_percent_threshold: 25
   metrics:
-    enable: false
+    enable: true
     exporter:
       addr: ":9093"
