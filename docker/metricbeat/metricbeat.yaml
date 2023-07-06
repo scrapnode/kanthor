@@ -1,6 +1,6 @@
 setup:
   dashboards:
-    enabled: true
+    enabled: false
   kibana:
     host: '${KIBANA_HOST:kibana:5601}'
 
@@ -11,25 +11,6 @@ metricbeat.modules:
     metricsets: ["collector"]
     hosts: ["dataplane:9190", "scheduler:9290", "dispatcher:9390"]
     metrics_path: /metrics
-
-  - module: nats
-    period: 10s
-    enabled: true
-    metricsets:
-      - "connections"
-      - "routes"
-      - "stats"
-      - "subscriptions"
-    hosts: ["streaming:8222"]
-
-  - module: redis
-    enabled: true
-    period: 10s
-    metricsets: ["info", "key", "keyspace"]
-    hosts: ["redis:6379"]
-    key.patterns:
-      - pattern: '*'
-        limit: 20
 
 processors:
   - add_fields:
