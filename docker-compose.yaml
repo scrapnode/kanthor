@@ -1,5 +1,6 @@
 services:
   streaming:
+    container_name: kanthor-streaming
     networks:
       - kanthor
     image: nats:2.9

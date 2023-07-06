@@ -1,5 +1,6 @@
 services:
   postgres:
+    container_name: kanthor-postgres
     image: postgres:13-alpine
     networks:
       - kanthor
@@ -10,6 +11,7 @@ services:
       - POSTGRES_PASSWORD=changemenow
 
   redis:
+    container_name: kanthor-redis
     image: redis:6-alpine
     networks:
       - kanthor
@@ -18,13 +20,13 @@ services:
       - "6379:6379"
 
   migration:
+    container_name: kanthor-services-migration
     networks:
       - kanthor
     depends_on:
       - postgres
       - redis
     build: ..
-    container_name: kanthor-services-migration
     restart: unless-stopped
     volumes:
       - type: bind
@@ -32,6 +34,61 @@ services:
         target: /root/.kanthor/configs.yaml
     command:
       - run migration --keep-running
+
+  dataplane:
+    container_name: kanthor-services-dataplane
+    networks:
+      - kanthor
+    depends_on:
+      - postgres
+      - redis
+    build: ..
+    restart: unless-stopped
+    ports:
+      - "8181:8181"
+      - "9190:9190"
+    volumes:
+      - type: bind
+        source: ./configs.yaml
+        target: /root/.kanthor/configs.yaml
+    command:
+      - serve dataplane
+
+  scheduler:
+    container_name: kanthor-services-scheduler
+    networks:
+      - kanthor
+    depends_on:
+      - postgres
+      - redis
+    build: ..
+    restart: unless-stopped
+    ports:
+      - "9290:9290"
+    volumes:
+      - type: bind
+        source: ./configs.yaml
+        target: /root/.kanthor/configs.yaml
+    command:
+      - serve scheduler
+
+  dispatcher:
+    container_name: kanthor-services-dispatcher
+    networks:
+      - kanthor
+    depends_on:
+      - postgres
+      - redis
+    build: ..
+    restart: unless-stopped
+    ports:
+      - "9390:9390"
+    volumes:
+      - type: bind
+        source: ./configs.yaml
+        target: /root/.kanthor/configs.yaml
+    command:
+      - serve dispatcher
 
 networks:
   kanthor:
