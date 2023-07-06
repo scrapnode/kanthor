@@ -26,9 +26,9 @@ services:
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
-          "  - name: fleet-server\n"\
+          "  - name: metricbeat\n"\
           "    dns:\n"\
-          "      - fleet-server\n"\
+          "      - metricbeat\n"\
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
@@ -125,12 +125,39 @@ services:
       timeout: 10s
       retries: 120
 
+  metricbeat:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    container_name: kanthor-elk-metricbeat
+    image: docker.elastic.co/beats/metricbeat:8.8.2
+    networks:
+      - kanthor
+    volumes:
+      - certs:/usr/share/metricbeat/config/certs
+      - metricbeat:/usr/share/metricbeat/data
+      - ./metricbeat/metricbeat.yaml:/usr/share/metricbeat/metricbeat.yml
+    environment:
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changemenow
+      - KIBANA_HOST:http://kibana:5601
+      - METRICBEAT_CA=/usr/share/metricbeat/config/certs/ca/ca.crt
+      - METRICBEAT_CERT=/usr/share/metricbeat/config/certs/metricbeat/metricbeat.crt
+      - METRICBEAT_KEY=/usr/share/metricbeat/config/certs/metricbeat/metricbeat.key
+    healthcheck:
+      test: metricbeat test config
+
 volumes:
   certs:
     driver: local
   esdata:
     driver: local
   kibanadata:
+    driver: local
+  metricbeat:
     driver: local
 
 networks:

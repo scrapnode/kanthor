@@ -3,8 +3,9 @@ package metric
 import "github.com/go-playground/validator/v10"
 
 type Config struct {
-	Enable   bool `json:"enable" mapstructure:"enable"`
-	Exporter struct {
+	Enable    bool   `json:"enable" mapstructure:"enable"`
+	Namespace string `json:"namespace" mapstructure:"namespace"`
+	Exporter  struct {
 		Addr string `json:"addr" mapstructure:"addr" validate:"required"`
 	} `json:"exporter" mapstructure:"exporter" validate:"required"`
 }

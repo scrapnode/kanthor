@@ -43,6 +43,7 @@ dataplane:
     addr: ":8181"
   metrics:
     enable: false
+    namespace: kanthor
     exporter:
       addr: ":9190"
 
@@ -55,6 +56,7 @@ scheduler:
     max_deliver: 1
   metrics:
     enable: false
+    namespace: kanthor
     exporter:
       addr: ":9290"
 
@@ -77,5 +79,6 @@ dispatcher:
     error_percent_threshold: 25
   metrics:
     enable: false
+    namespace: kanthor
     exporter:
       addr: ":9390"

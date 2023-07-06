@@ -10,7 +10,7 @@ import (
 )
 
 func NewPrometheus(conf *Config) Meter {
-	return &prometheusio{}
+	return &prometheusio{conf: conf}
 }
 
 func NewPrometheusExporter(conf *Config, logger logging.Logger) patterns.Runnable {
@@ -18,6 +18,7 @@ func NewPrometheusExporter(conf *Config, logger logging.Logger) patterns.Runnabl
 }
 
 type prometheusio struct {
+	conf       *Config
 	counters   sync.Map
 	histograms sync.Map
 }
@@ -33,6 +34,7 @@ func (metric *prometheusio) counter(name string, labels map[string]string) prome
 	}
 
 	counter := promauto.NewCounter(prometheus.CounterOpts{
+		Namespace:   metric.conf.Namespace,
 		Name:        name,
 		ConstLabels: labels,
 	})
@@ -51,6 +53,7 @@ func (metric *prometheusio) histogram(name string, labels map[string]string) pro
 	}
 
 	histogram := promauto.NewHistogram(prometheus.HistogramOpts{
+		Namespace:   metric.conf.Namespace,
 		Name:        name,
 		ConstLabels: labels,
 		Buckets:     prometheus.DefBuckets,
