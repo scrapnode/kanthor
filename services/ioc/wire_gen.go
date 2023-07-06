@@ -42,9 +42,9 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveDataplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache)
 	metricConfig := ResolveDataplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache, meter)
 	service := dataplane.New(conf, logger, dataplaneDataplane, meter)
 	return service, nil
 }
@@ -59,9 +59,9 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveSchedulerCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
-	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache)
 	metricConfig := ResolveSchedulerMetricConfig(conf)
 	meter := metric.New(metricConfig)
+	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache, meter)
 	service := scheduler.New(conf, logger, subscriber, schedulerScheduler, meter)
 	return service, nil
 }
@@ -79,9 +79,9 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	cacheCache := cache.New(cacheConfig, logger)
 	circuitbreakerConfig := ResolveDispatcherCircuitBreakerConfig(conf)
 	circuitBreaker := circuitbreaker.New(circuitbreakerConfig, logger)
-	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send, cacheCache, circuitBreaker)
 	metricConfig := ResolveDispatcherMetricConfig(conf)
 	meter := metric.New(metricConfig)
+	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send, cacheCache, circuitBreaker, meter)
 	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher, meter)
 	return service, nil
 }

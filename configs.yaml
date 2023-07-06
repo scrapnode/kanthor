@@ -68,15 +68,15 @@ dispatcher:
     temporary: true
     max_deliver: 1
   sender:
-    timeout: 3000
+    timeout: 1500
     retry:
       count: 1
-      wait_time: 500
-      wait_time_max: 3000
+      wait_time: 100
+      wait_time_max: 2000
   circuit_breaker:
-    timeout: 6000
+    timeout: 3000
     sleep_window: 300000
-    error_percent_threshold: 25
+    error_percent_threshold: 10
   metrics:
     enable: false
     namespace: kanthor

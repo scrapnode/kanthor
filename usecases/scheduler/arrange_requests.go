@@ -34,7 +34,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 	}
 
 	// @TODO: remove hardcode of max goroutines here
-	p := pool.New().WithMaxGoroutines(10)
+	p := pool.New().WithMaxGoroutines(100)
 	for _, r := range requests {
 		request := r
 		p.Go(func() {

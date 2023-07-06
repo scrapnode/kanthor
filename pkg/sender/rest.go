@@ -30,6 +30,9 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			}
 			return false
 		})
+	if conf.EnableTrace {
+		client = client.EnableTrace()
+	}
 
 	return func(req *Request) (*Response, error) {
 		r := client.R().
@@ -51,6 +54,7 @@ func Rest(conf *Config, logger logging.Logger) Send {
 		}
 
 		if err != nil {
+			logger.Debugw("sent", "trace_info", rp.Request.TraceInfo())
 			return nil, err
 		}
 
@@ -59,10 +63,13 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			Headers: rp.Header(),
 			// follow redirect url and got final url
 			// most time the response url is same as request url
-			Uri:  rp.RawResponse.Request.URL.String(),
+			Uri: rp.RawResponse.Request.URL.String(),
+			// @TODO: use SetDoNotParseResponse
+			// Do not forget to close the body, otherwise you might get into connection leaks, no connection reuse.
+			// Basically you have taken over the control of response parsing from `Resty`.
 			Body: string(rp.Body()),
 		}
-		logger.Debugw("sent", "uri", res.Uri)
+		logger.Debugw("sent", "uri", res.Uri, "trace_info", rp.Request.TraceInfo())
 
 		return res, nil
 	}

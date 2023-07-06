@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -21,9 +22,10 @@ func NewDataplane(
 	publisher streaming.Publisher,
 	repos repositories.Repositories,
 	cache cache.Cache,
+	meter metric.Meter,
 ) dataplane.Dataplane {
 	logger = logger.With("usecase", "dataplane")
-	return dataplane.New(conf, logger, timer, publisher, repos, cache)
+	return dataplane.New(conf, logger, timer, publisher, repos, cache, meter)
 }
 
 func NewScheduler(
@@ -33,9 +35,10 @@ func NewScheduler(
 	publisher streaming.Publisher,
 	repos repositories.Repositories,
 	cache cache.Cache,
+	meter metric.Meter,
 ) scheduler.Scheduler {
 	logger = logger.With("usecase", "scheduler")
-	return scheduler.New(conf, logger, timer, publisher, repos, cache)
+	return scheduler.New(conf, logger, timer, publisher, repos, cache, meter)
 }
 
 func NewDispatcher(
@@ -47,7 +50,8 @@ func NewDispatcher(
 	dispatch sender.Send,
 	cache cache.Cache,
 	cb circuitbreaker.CircuitBreaker,
+	meter metric.Meter,
 ) dispatcher.Dispatcher {
 	logger = logger.With("usecase", "scheduler")
-	return dispatcher.New(conf, logger, timer, publisher, repos, dispatch, cache, cb)
+	return dispatcher.New(conf, logger, timer, publisher, repos, dispatch, cache, cb, meter)
 }

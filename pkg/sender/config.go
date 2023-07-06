@@ -3,8 +3,9 @@ package sender
 import "github.com/go-playground/validator/v10"
 
 type Config struct {
-	Timeout int   `json:"timeout" mapstructure:"timeout" validate:"required,number,gte=0"`
-	Retry   Retry `json:"retry" mapstructure:"retry" validate:"required"`
+	EnableTrace bool  `json:"enable_trace" mapstructure:"enable_trace"`
+	Timeout     int   `json:"timeout" mapstructure:"timeout" validate:"required,number,gte=0"`
+	Retry       Retry `json:"retry" mapstructure:"retry" validate:"required"`
 }
 
 func (conf Config) Validate() error {
