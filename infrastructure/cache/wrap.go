@@ -16,7 +16,7 @@ func Warp[T any](cache Cache, key string, ttl time.Duration, handler func() (*T,
 		return nil, err
 	}
 
-	// ErrEntryNotFound, seed entry
+	// cache miss
 	data, err := handler()
 	if err != nil {
 		return nil, err

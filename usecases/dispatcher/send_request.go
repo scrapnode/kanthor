@@ -27,7 +27,7 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 		},
 		func(err error) error {
 			usecase.logger.Error(err)
-			// good place to put metrics
+			// @TODO: metric of circuit breaker
 			return err
 		},
 	)

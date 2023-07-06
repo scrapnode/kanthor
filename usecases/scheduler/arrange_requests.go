@@ -21,15 +21,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 
 	cacheKey := cache.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
 	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithEndpointsAndRules, error) {
-		// rules of endpoint are well sorted slice like this
-		// IMPORTANT: the order is important
-		// rule.priority - rule.exclusionary
-		// 			  15 - TRUE
-		// 			  15 - FALSE
-		// 			  9  - FALSE
-		//		  	  70 - TRUE
-		// 			  70 - FALSE
-		//			  0  - FALSE
+		// @TODO: metric of cache miss
 		return usecase.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
 	})
 	if err != nil {
