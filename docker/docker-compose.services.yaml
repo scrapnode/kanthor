@@ -1,92 +1,106 @@
+version: "3.8"
+
 services:
   postgres:
     container_name: kanthor-postgres
     image: postgres:13-alpine
+    restart: unless-stopped
     networks:
       - kanthor
-    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=changemenow
+    user: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" , "-U", "postgres" ]
+      interval: 8s
+      timeout: 4s
+      retries: 16
 
   redis:
     container_name: kanthor-redis
     image: redis:6-alpine
+    restart: unless-stopped
     networks:
       - kanthor
-    restart: unless-stopped
     ports:
       - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 1s
+      timeout: 4s
+      retries: 16
 
   migration:
-    container_name: kanthor-services-migration
-    networks:
-      - kanthor
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    container_name: kanthor-services-migration
     build: ..
     restart: unless-stopped
+    networks:
+      - kanthor
     volumes:
-      - type: bind
-        source: ./configs.yaml
-        target: /root/.kanthor/configs.yaml
+      - ./.kanthor:/root/.kanthor
     command:
       - run migration --keep-running
 
   dataplane:
-    container_name: kanthor-services-dataplane
-    networks:
-      - kanthor
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    container_name: kanthor-services-dataplane
     build: ..
     restart: unless-stopped
+    networks:
+      - kanthor
     ports:
       - "8181:8181"
       - "9190:9190"
     volumes:
-      - type: bind
-        source: ./configs.yaml
-        target: /root/.kanthor/configs.yaml
+      - ./.kanthor:/root/.kanthor
     command:
       - serve dataplane
 
   scheduler:
-    container_name: kanthor-services-scheduler
-    networks:
-      - kanthor
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    container_name: kanthor-services-scheduler
     build: ..
     restart: unless-stopped
+    networks:
+      - kanthor
     ports:
       - "9290:9290"
     volumes:
-      - type: bind
-        source: ./configs.yaml
-        target: /root/.kanthor/configs.yaml
+      - ./.kanthor:/root/.kanthor
     command:
       - serve scheduler
 
   dispatcher:
-    container_name: kanthor-services-dispatcher
-    networks:
-      - kanthor
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    container_name: kanthor-services-dispatcher
     build: ..
     restart: unless-stopped
+    networks:
+      - kanthor
     ports:
       - "9390:9390"
     volumes:
-      - type: bind
-        source: ./configs.yaml
-        target: /root/.kanthor/configs.yaml
+      - ./.kanthor:/root/.kanthor
     command:
       - serve dispatcher
 

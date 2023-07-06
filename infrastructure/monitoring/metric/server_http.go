@@ -22,6 +22,7 @@ type httpServer struct {
 
 func (server *httpServer) Start(ctx context.Context) error {
 	mux := http.NewServeMux()
+	mux.Handle("/healthz", &healthz{logger: server.logger})
 	mux.Handle("/metrics", server.handler)
 	server.server = &http.Server{Handler: mux}
 
@@ -55,25 +56,14 @@ func (server *httpServer) Run(ctx context.Context) error {
 	return nil
 }
 
-func NewNoopServer(conf *Config, logger logging.Logger) services.Service {
-	return &noopServer{conf: conf, logger: logger}
-}
-
-type noopServer struct {
-	conf   *Config
+type healthz struct {
 	logger logging.Logger
 }
 
-func (server *noopServer) Start(ctx context.Context) error {
-	server.logger.Info("connected")
-	return nil
-}
-
-func (server *noopServer) Stop(ctx context.Context) error {
-	server.logger.Info("disconnected")
-	return nil
-}
-
-func (server *noopServer) Run(ctx context.Context) error {
-	return nil
+func (handler healthz) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte("healthy"))
+	if err != nil {
+		handler.logger.Errorw("unable to response client", "error", err.Error(), "handler", "healthz")
+	}
 }
