@@ -13,17 +13,17 @@ import (
 
 type Config struct {
 	Version string
-	Bucket  Bucket `json:"bucket" mapstructure:"bucket" validate:"required"`
+	Bucket  Bucket `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
 
-	Logger    logging.Config             `json:"logger" mapstructure:"logger" validate:"required"`
-	Streaming streaming.ConnectionConfig `json:"streaming" mapstructure:"streaming" validate:"required"`
-	Database  database.Config            `json:"database" mapstructure:"database" validate:"required"`
-	Cache     cache.Config               `json:"cache" mapstructure:"cache" validate:"required"`
+	Logger    logging.Config             `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
+	Streaming streaming.ConnectionConfig `json:"streaming" yaml:"streaming" mapstructure:"streaming" validate:"required"`
+	Database  database.Config            `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
+	Cache     cache.Config               `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 
-	Migration  Migration  `json:"migration" mapstructure:"migration"`
-	Dataplane  Dataplane  `json:"dataplane" mapstructure:"dataplane"`
-	Scheduler  Scheduler  `json:"scheduler" mapstructure:"scheduler"`
-	Dispatcher Dispatcher `json:"dispatcher" mapstructure:"dispatcher"`
+	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
+	Dataplane  Dataplane  `json:"dataplane" yaml:"dataplane" mapstructure:"dataplane"`
+	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
+	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
 }
 
 func (conf Config) Validate(service string) error {
@@ -64,7 +64,7 @@ func (conf Config) Validate(service string) error {
 }
 
 type Bucket struct {
-	Layout string `json:"layout" mapstructure:"layout" validate:"required"`
+	Layout string `json:"layout" yaml:"layout" mapstructure:"layout" validate:"required"`
 }
 
 func (conf Bucket) Validate() error {
@@ -72,7 +72,7 @@ func (conf Bucket) Validate() error {
 }
 
 type Server struct {
-	Addr string `json:"addr" mapstructure:"addr" validate:"required"`
+	Addr string `json:"addr" yaml:"addr" mapstructure:"addr" validate:"required"`
 }
 
 func (conf Server) Validate() error {

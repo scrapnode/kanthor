@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+var ResponseStatusErr = -1
+
 type Response struct {
 	Entity
 	TimeSeries
@@ -21,7 +23,8 @@ type Response struct {
 	Headers http.Header `json:"headers"`
 	Body    string      `json:"body"`
 
-	Status int `json:"status"`
+	Status int    `json:"status"`
+	Error  string `json:"error"`
 }
 
 func (entity *Response) TableName() string {

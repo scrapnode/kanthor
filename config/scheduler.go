@@ -9,11 +9,11 @@ import (
 )
 
 type Scheduler struct {
-	Publisher  streaming.PublisherConfig  `json:"publisher" mapstructure:"publisher" validate:"required"`
-	Subscriber streaming.SubscriberConfig `json:"subscriber" mapstructure:"subscriber" validate:"required"`
-	Cache      *cache.Config              `json:"cache" validate:"-"`
+	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
+	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
+	Cache      *cache.Config              `json:"cache" yaml:"cache" validate:"-"`
 
-	Metrics metric.Config `json:"metrics" mapstructure:"metrics" validate:"-"`
+	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
 
 func (conf Scheduler) Validate() error {

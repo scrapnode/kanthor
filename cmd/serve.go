@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -22,8 +23,14 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 		ValidArgs: []string{services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			verbose, _ := cmd.Flags().GetBool("verbose")
+
 			serviceName := args[0]
+
 			if err := conf.Validate(serviceName); err != nil {
+				if verbose {
+					_ = showConfig(conf, []configuration.Source{}, false)
+				}
 				return err
 			}
 

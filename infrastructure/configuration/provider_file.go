@@ -19,8 +19,9 @@ func NewFile(dirs []string) (Provider, error) {
 
 	var sources []Source
 	for _, dir := range dirs {
+		dir = strings.Trim(dir, " ")
 		filename := FileName + "." + FileExt
-		sources = append(sources, Source{Origin: path.Join(dir, filename), Found: path.Join(utils.AbsPathify(dir), filename)})
+		sources = append(sources, Source{Looking: path.Join(dir, filename), Found: path.Join(utils.AbsPathify(dir), filename)})
 		instance.AddConfigPath(dir)
 	}
 
@@ -36,7 +37,7 @@ func NewFile(dirs []string) (Provider, error) {
 		sources[index] = source
 	}
 
-	instance.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	instance.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	instance.SetEnvPrefix("KANTHOR")
 	instance.AutomaticEnv()
 

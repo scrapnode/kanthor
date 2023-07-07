@@ -43,13 +43,13 @@ func showConfig(conf *config.Config, sources []configuration.Source, verbose boo
 
 	if verbose {
 		t := table.NewWriter()
-		t.AppendHeader(table.Row{"origin", "found", "used"})
+		t.AppendHeader(table.Row{"looking", "found", "used"})
 		for _, source := range sources {
 			var check string
 			if source.Used {
 				check = "x"
 			}
-			t.AppendRow([]interface{}{source.Origin, source.Found, check})
+			t.AppendRow([]interface{}{source.Looking, source.Found, check})
 		}
 		t.SetOutputMirror(os.Stdout)
 		t.Render()

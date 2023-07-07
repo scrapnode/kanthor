@@ -11,13 +11,13 @@ import (
 )
 
 type Dispatcher struct {
-	Publisher      streaming.PublisherConfig  `json:"publisher" mapstructure:"publisher" validate:"required"`
-	Subscriber     streaming.SubscriberConfig `json:"subscriber" mapstructure:"subscriber" validate:"required"`
-	Sender         sender.Config              `json:"sender" mapstructure:"sender" validate:"required"`
-	Cache          *cache.Config              `json:"cache" mapstructure:"cache" validate:"-"`
-	CircuitBreaker circuitbreaker.Config      `json:"circuit_breaker" mapstructure:"circuit_breaker" validate:"required"`
+	Publisher      streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
+	Subscriber     streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
+	Sender         sender.Config              `json:"sender" yaml:"sender" mapstructure:"sender" validate:"required"`
+	Cache          *cache.Config              `json:"cache" yaml:"cache" mapstructure:"cache" validate:"-"`
+	CircuitBreaker circuitbreaker.Config      `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker" validate:"required"`
 
-	Metrics metric.Config `json:"metrics" mapstructure:"metrics" validate:"-"`
+	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
 
 func (conf Dispatcher) Validate() error {

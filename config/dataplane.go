@@ -9,11 +9,11 @@ import (
 )
 
 type Dataplane struct {
-	GRPC      Server                    `json:"grpc" mapstructure:"grpc" validate:"required"`
-	Publisher streaming.PublisherConfig `json:"publisher" mapstructure:"publisher" validate:"required"`
-	Cache     *cache.Config             `json:"cache" mapstructure:"cache" validate:"-"`
+	GRPC      Server                    `json:"grpc" yaml:"grpc" mapstructure:"grpc" validate:"required"`
+	Publisher streaming.PublisherConfig `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
+	Cache     *cache.Config             `json:"cache" yaml:"cache" mapstructure:"cache" validate:"-"`
 
-	Metrics metric.Config `json:"metrics" mapstructure:"metrics" validate:"-"`
+	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
 
 func (conf Dataplane) Validate() error {

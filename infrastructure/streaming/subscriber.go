@@ -19,18 +19,18 @@ type Subscriber interface {
 type SubHandler func(event *Event) error
 
 type SubscriberConfig struct {
-	*ConnectionConfig
-	Name  string `json:"name" mapstructure:"name"`
-	Topic string `json:"topic" mapstructure:"topic" validate:"required"`
-	Group string `json:"group" mapstructure:"group" validate:"required"`
+	ConnectionConfig *ConnectionConfig `json:"connection_config" yaml:"connection_config" mapstructure:"connection_config"`
+	Name             string            `json:"name" yaml:"name" mapstructure:"name"`
+	Topic            string            `json:"topic" yaml:"topic" mapstructure:"topic" validate:"required"`
+	Group            string            `json:"group" yaml:"group" mapstructure:"group" validate:"required"`
 	// only consume matched event with given subject
-	FilterSubject string `json:"filter_subject" mapstructure:"filter_subject"`
+	FilterSubject string `json:"filter_subject" yaml:"filter_subject" mapstructure:"filter_subject"`
 
 	// Advance configuration, don't change it until you know what you are doing
 	// must set it to TRUE explicitly to avoid misconfiguration
-	Temporary bool `json:"temporary" mapstructure:"temporary" validate:"boolean"`
+	Temporary bool `json:"temporary" yaml:"temporary" mapstructure:"temporary" validate:"boolean"`
 	// or we can call this option by MaxRetry
-	MaxDeliver int `json:"max_deliver" mapstructure:"max_deliver" validate:"number,gte=0"`
+	MaxDeliver int `json:"max_deliver" yaml:"max_deliver" mapstructure:"max_deliver" validate:"number,gte=0"`
 	// @TODO: consider apply RateLimit
 }
 

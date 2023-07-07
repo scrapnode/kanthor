@@ -3,7 +3,7 @@ package datastore
 import "github.com/go-playground/validator/v10"
 
 type Config struct {
-	Uri string `json:"uri" mapstructure:"uri" validate:"required,uri"`
+	Uri string `json:"uri" yaml:"uri" mapstructure:"uri" validate:"required,uri"`
 }
 
 func (conf Config) Validate() error {

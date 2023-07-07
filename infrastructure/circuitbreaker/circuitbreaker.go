@@ -3,7 +3,7 @@ package circuitbreaker
 import "github.com/scrapnode/kanthor/infrastructure/logging"
 
 func New(conf *Config, logger logging.Logger) CircuitBreaker {
-	return NewHystrix(conf, logger)
+	return NewSony(conf, logger)
 }
 
 type CircuitBreaker interface {

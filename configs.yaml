@@ -74,9 +74,11 @@ dispatcher:
       wait_time: 100
       wait_time_max: 2000
   circuit_breaker:
-    timeout: 3000
-    sleep_window: 300000
-    error_percent_threshold: 10
+    half_open_max_pass_through_requests: 5
+    half_open_trigger_minimum_requests: 10
+    half_open_trigger_error_threshold_ratio: 0.1
+    close_state_clear_interval: 600000
+    open_state_duration: 300000
   metrics:
     enable: false
     namespace: kanthor

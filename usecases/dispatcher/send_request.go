@@ -26,13 +26,9 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 			return usecase.dispatch(request)
 		},
 		func(err error) error {
-			usecase.logger.Error(err)
 			return err
 		},
 	)
-	if err != nil {
-		return nil, err
-	}
 
 	res := &SendRequestsRes{
 		Response: entities.Response{
@@ -40,10 +36,6 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 			AppId:    req.Request.AppId,
 			Type:     req.Request.Type,
 			Metadata: req.Request.Metadata,
-			Uri:      response.Uri,
-			Headers:  response.Headers,
-			Body:     response.Body,
-			Status:   response.Status,
 		},
 	}
 	res.Response.GenId()
@@ -51,6 +43,18 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 	res.Response.Metadata[entities.MetaReqId] = req.Request.Id
 	res.Response.Metadata[entities.MetaReqBucket] = req.Request.Bucket
 	res.Response.Metadata[entities.MetaReqTs] = fmt.Sprintf("%d", req.Request.Timestamp)
+
+	// either error was happened or not, we need to publish response event, so we can handle custom logic later
+	// example use case are retry, notification, i.e
+	if err == nil {
+		res.Response.Status = response.Status
+		res.Response.Uri = response.Uri
+		res.Response.Headers = response.Headers
+		res.Response.Body = response.Body
+	} else {
+		res.Response.Status = entities.ResponseStatusErr
+		res.Response.Error = err.Error()
+	}
 
 	event, err := transformResponse2Event(&res.Response)
 	if err != nil {
