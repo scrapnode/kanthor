@@ -47,7 +47,7 @@ services:
     volumes:
       - ./.kanthor:/root/.kanthor
     command:
-      - run migration --keep-running
+      - migrate --keep-running
 
   dataplane:
     depends_on:
