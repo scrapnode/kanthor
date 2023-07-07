@@ -27,7 +27,6 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 		response, err := service.uc.SendRequest(context.TODO(), request)
 		if err != nil {
 			service.meter.Counter("dispatcher_consume_event_error", 1)
-			service.meter.Counter("dispatcher_send_request_error", 1)
 			service.logger.Error(err)
 			return nil
 		}

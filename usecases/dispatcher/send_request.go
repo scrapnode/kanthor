@@ -11,6 +11,8 @@ import (
 )
 
 func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq) (*SendRequestsRes, error) {
+	usecase.meter.Counter("dispatcher_consume_event_total", 1)
+
 	request := &sender.Request{
 		Method:  req.Request.Method,
 		Headers: req.Request.Headers,
@@ -52,6 +54,7 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 		res.Response.Headers = response.Headers
 		res.Response.Body = response.Body
 	} else {
+		usecase.meter.Counter("dispatcher_send_request_error", 1)
 		res.Response.Status = entities.ResponseStatusErr
 		res.Response.Error = err.Error()
 	}
