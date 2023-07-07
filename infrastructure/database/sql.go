@@ -19,12 +19,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func NewSQL(conf *Config, logger logging.Logger) *SQL {
+func NewSQL(conf *Config, logger logging.Logger) Database {
 	logger = logger.With("component", "database.sql")
-	return &SQL{conf: conf, logger: logger}
+	return &sql{conf: conf, logger: logger}
 }
 
-type SQL struct {
+type sql struct {
 	conf   *Config
 	logger logging.Logger
 
@@ -32,7 +32,7 @@ type SQL struct {
 	client *gorm.DB
 }
 
-func (db *SQL) Connect(ctx context.Context) error {
+func (db *sql) Connect(ctx context.Context) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
@@ -61,7 +61,7 @@ func (db *SQL) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (db *SQL) Disconnect(ctx context.Context) error {
+func (db *sql) Disconnect(ctx context.Context) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
@@ -83,11 +83,11 @@ func (db *SQL) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (db *SQL) Client() any {
+func (db *sql) Client() any {
 	return db.client
 }
 
-func (db *SQL) Migrator(source string) (patterns.Migrate, error) {
+func (db *sql) Migrator(source string) (patterns.Migrate, error) {
 	instance, err := db.client.DB()
 	if err != nil {
 		return nil, err

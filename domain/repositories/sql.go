@@ -18,7 +18,7 @@ func NewSql(conf *database.Config, logger logging.Logger, timer timer.Timer) Rep
 type sql struct {
 	logger logging.Logger
 	timer  timer.Timer
-	db     *database.SQL
+	db     database.Database
 
 	client       *gorm.DB
 	application  *SqlApplication

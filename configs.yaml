@@ -36,7 +36,13 @@ datastore:
 
 # services
 migration:
-  source: file://./migration/scripts/sql
+  tasks:
+    - name: database
+      uri: sqlite3://./.kanthor/database.sqlite
+      source: file://./migration/database/sql
+    - name: datastore
+      uri: sqlite3://./.kanthor/datastore.sqlite
+      source: file://./migration/datastore/sql
 
 dataplane:
   grpc:

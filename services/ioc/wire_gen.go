@@ -20,19 +20,11 @@ import (
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dataplane"
 	"github.com/scrapnode/kanthor/services/dispatcher"
-	"github.com/scrapnode/kanthor/services/migration"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
 )
 
 // Injectors from wire.go:
-
-func InitializeMigration(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	databaseConfig := ResolveDatabaseConfig(conf)
-	databaseDatabase := database.New(databaseConfig, logger)
-	service := migration.New(conf, logger, databaseDatabase)
-	return service, nil
-}
 
 func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	timerTimer := timer.New()

@@ -11,4 +11,6 @@ func New(conf *Config, logger logging.Logger) Datastore {
 
 type Datastore interface {
 	patterns.Connectable
+	Client() any
+	Migrator(source string) (patterns.Migrate, error)
 }
