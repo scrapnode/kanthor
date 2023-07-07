@@ -11,12 +11,20 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/migration"
 	"github.com/sourcegraph/conc"
 	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use: "migrate",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			keepRunning, err := cmd.Flags().GetBool("keep-running")
+			if err != nil {
+				return err
+			}
+
 			logger = logger.With("service", "migrate")
 
 			if len(conf.Migration.Tasks) == 0 {
@@ -87,6 +95,12 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 				wg.Wait()
 			}
 
+			if !keepRunning {
+				return nil
+			}
+
+			ctx, _ := signal.NotifyContext(context.TODO(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+			<-ctx.Done()
 			return nil
 		},
 	}
