@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/infrastructure/migration"
 	"github.com/sourcegraph/conc"
 	"github.com/spf13/cobra"
 )
@@ -17,28 +17,30 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use: "migrate",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			logger = logger.With("service", "migrate")
+
 			if len(conf.Migration.Tasks) == 0 {
 				return errors.New("no migration task was configured")
 			}
 
 			var undo bool
-			var tasks []patterns.Migrator
-			var migrators []patterns.Migrate
+			var sources []migration.Source
+			var migrators []migration.Migrator
 			for _, t := range conf.Migration.Tasks {
-				task, err := useMigrationTask(&t, logger)
+				source, err := useMigrationSource(&t, logger)
 				if err != nil {
 					logger.Error(err)
 					continue
 				}
 
-				if err := task.Connect(context.Background()); err != nil {
+				if err := source.Connect(context.Background()); err != nil {
 					logger.Errorf("task.connect: %v", err)
 					continue
 				}
 
-				tasks = append(tasks, task)
+				sources = append(sources, source)
 
-				migrator, err := task.Migrator(t.Source)
+				migrator, err := source.Migrator(t.Source)
 				if err != nil {
 					logger.Errorf("migrator.init: %v", err)
 					continue
@@ -72,12 +74,12 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 				wg.Wait()
 			}
 
-			if len(tasks) > 0 {
+			if len(sources) > 0 {
 				var wg conc.WaitGroup
-				for _, t := range tasks {
-					task := t
+				for _, s := range sources {
+					source := s
 					wg.Go(func() {
-						if err := task.Disconnect(context.Background()); err != nil {
+						if err := source.Disconnect(context.Background()); err != nil {
 							logger.Errorf("task.disconnect: %v", err)
 						}
 					})
@@ -94,7 +96,7 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 	return command
 }
 
-func useMigrationTask(task *config.MigrationTask, logger logging.Logger) (patterns.Migrator, error) {
+func useMigrationSource(task *config.MigrationTask, logger logging.Logger) (migration.Source, error) {
 	if task.Name == "database" {
 		return database.New(&database.Config{Uri: task.Uri}, logger), nil
 	}

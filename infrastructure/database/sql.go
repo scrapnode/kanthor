@@ -7,7 +7,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/infrastructure/migration"
 	postgresdevier "gorm.io/driver/postgres"
 	sqlitedriver "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -87,7 +87,7 @@ func (db *sql) Client() any {
 	return db.client
 }
 
-func (db *sql) Migrator(source string) (patterns.Migrate, error) {
+func (db *sql) Migrator(source string) (migration.Migrator, error) {
 	instance, err := db.client.DB()
 	if err != nil {
 		return nil, err
@@ -112,5 +112,10 @@ func (db *sql) Migrator(source string) (patterns.Migrate, error) {
 		}
 	}
 
-	return migrate.NewWithDatabaseInstance(source, "", driver)
+	runner, err := migrate.NewWithDatabaseInstance(source, "", driver)
+	if err != nil {
+		return nil, err
+	}
+
+	return migration.NewSql(runner), nil
 }
