@@ -12,13 +12,12 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(event *streaming.Event) error {
-		service.meter.Counter("dispatcher_consume_event_total", 1)
-		service.meter.Counter("dispatcher_send_request_total", 1)
+		service.meter.Count("dispatcher_send_request_total", 1)
 
 		service.logger.Debugw("received event", "event_id", event.Id)
 		req, err := transformEventToRequest(event)
 		if err != nil {
-			service.meter.Counter("dispatcher_consume_event_error", 1, metric.UseLabel("action", "transform"))
+			service.meter.Count("dispatcher_consume_event_error", 1, metric.Label("action", "transform"))
 			service.logger.Error(err)
 			return nil
 		}
@@ -26,9 +25,13 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 		request := &usecase.SendRequestsReq{Request: *req}
 		response, err := service.uc.SendRequest(context.TODO(), request)
 		if err != nil {
-			service.meter.Counter("dispatcher_consume_event_error", 1)
+			service.meter.Count("dispatcher_send_request_error", 1)
 			service.logger.Error(err)
 			return nil
+		}
+		// custom handle for error
+		if response.Response.Error != "" {
+			service.meter.Count("dispatcher_send_request_error", 1)
 		}
 
 		service.logger.Debugw("received response", "response_id", response.Response.Id, "response_status", response.Response.Status)

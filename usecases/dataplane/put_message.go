@@ -3,10 +3,10 @@ package dataplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"time"
@@ -15,7 +15,7 @@ import (
 func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*PutMessageRes, error) {
 	cacheKey := cache.Key("APP_WITH_WORKSPACE", req.AppId)
 	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithWorkspace, error) {
-		// @TODO: cache miss
+		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_put_message"))
 		return usecase.repos.Application().GetWithWorkspace(ctx, req.AppId)
 	})
 	if err != nil {
@@ -68,9 +68,9 @@ func transformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
 	}
 	event.GenId()
 	event.Subject = streaming.Subject(
-		constants.TopicNamespace,
+		streaming.Namespace,
 		msg.Tier,
-		constants.TopicMessage,
+		streaming.TopicMsg,
 		event.AppId,
 		event.Type,
 	)

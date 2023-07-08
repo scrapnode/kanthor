@@ -97,7 +97,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) e
 		subscriber.conf.Group,
 		func(msg *nats.Msg) {
 			event := subscriber.transform(msg)
-			if err := subscriber.validate(event); err != nil {
+			if err := event.Validate(); err != nil {
 				subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
 			}
 
@@ -105,14 +105,14 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) e
 			if err := handler(event); err != nil {
 				if err := msg.Nak(); err != nil {
 					// it's important to log entire event here because we can trace it in log
-					subscriber.logger.Errorw("unable to nak an event", "event", event.String())
+					subscriber.logger.Errorw(ErrSubNakFail.Error(), "event", event.String())
 				}
 				return
 			}
 
 			if err := msg.Ack(); err != nil {
 				// it's important to log entire event here because we can trace it in log
-				subscriber.logger.Errorw("unable to ack an event", "event", event.String())
+				subscriber.logger.Errorw(ErrSubAckFail.Error(), "event", event.String())
 			}
 		},
 	)
@@ -184,17 +184,4 @@ func (subscriber *NatsSubscriber) transform(msg *nats.Msg) *Event {
 		event.Metadata[key] = value[0]
 	}
 	return event
-}
-
-func (subscriber *NatsSubscriber) validate(event *Event) error {
-	if event.AppId == "" {
-		return errors.New("event.AppId is empty")
-	}
-	if event.Type == "" {
-		return errors.New("event.Type is empty")
-	}
-	if event.Id == "" {
-		return errors.New("event.Id is empty")
-	}
-	return nil
 }

@@ -60,6 +60,8 @@ scheduler:
     filter_subject: kanthor.default.msg.>
     temporary: true
     max_deliver: 1
+  arrange_requests:
+    concurrency: 100
   metrics:
     enable: false
     namespace: kanthor

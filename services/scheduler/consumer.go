@@ -12,12 +12,12 @@ func Consumer(service *scheduler) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(event *streaming.Event) error {
-		service.meter.Counter("scheduler_consume_event_total", 1)
+		service.meter.Count("scheduler_arrange_request_total", 1)
 
 		service.logger.Debugw("received event", "event_id", event.Id)
 		msg, err := transformEventToMessage(event)
 		if err != nil {
-			service.meter.Counter("scheduler_consume_event_error", 1, metric.UseLabel("action", "transform"))
+			service.meter.Count("scheduler_arrange_request_error", 1, metric.Label("action", "transform"))
 			service.logger.Error(err)
 			return nil
 		}
@@ -25,15 +25,15 @@ func Consumer(service *scheduler) streaming.SubHandler {
 		request := &usecase.ArrangeRequestsReq{Message: *msg}
 		response, err := service.uc.ArrangeRequests(context.TODO(), request)
 		if err != nil {
-			service.meter.Counter("scheduler_consume_event_error", 1)
+			service.meter.Count("scheduler_arrange_request_error", 1)
 			service.logger.Error(err)
 			return nil
 		}
 
-		service.meter.Counter("scheduler_arrange_request_total", int64(len(response.Entities)))
+		service.meter.Count("scheduler_arrange_request_entity_total", int64(len(response.Entities)))
 		// @TODO: use deadletter
 		if len(response.FailKeys) > 0 {
-			service.meter.Counter("scheduler_arrange_request_error", int64(len(response.FailKeys)))
+			service.meter.Count("scheduler_arrange_request_entity_fail_total", int64(len(response.FailKeys)))
 			service.logger.Errorw("got some errors", "fail_keys", response.FailKeys)
 		}
 

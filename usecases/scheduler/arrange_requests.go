@@ -3,11 +3,11 @@ package scheduler
 import (
 	"context"
 	"errors"
-	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/sourcegraph/conc/pool"
@@ -21,7 +21,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 
 	cacheKey := cache.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
 	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithEndpointsAndRules, error) {
-		// @TODO: metric of cache miss
+		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "scheduler_arrange_requests"))
 		return usecase.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
 	})
 	if err != nil {
@@ -33,8 +33,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 		usecase.logger.Warnw("no request was generated", "message_id", req.Message.Id)
 	}
 
-	// @TODO: remove hardcode of max goroutines here
-	p := pool.New().WithMaxGoroutines(100)
+	p := pool.New().WithMaxGoroutines(usecase.conf.Scheduler.ArrangeRequests.Concurrency)
 	for _, r := range requests {
 		request := r
 		p.Go(func() {
@@ -179,9 +178,9 @@ func transformRequest2Event(req *entities.Request) (*streaming.Event, error) {
 	}
 	event.GenId()
 	event.Subject = streaming.Subject(
-		constants.TopicNamespace,
+		streaming.Namespace,
 		req.Tier,
-		constants.TopicRequest,
+		streaming.TopicReq,
 		event.AppId,
 		event.Type,
 	)

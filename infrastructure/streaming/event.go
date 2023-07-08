@@ -2,6 +2,7 @@ package streaming
 
 import (
 	"encoding/json"
+	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"strings"
 )
@@ -13,13 +14,17 @@ var (
 )
 
 type Event struct {
-	Subject string `json:"subject"`
-	AppId   string `json:"app_id"`
-	Type    string `json:"type"`
+	Subject string `json:"subject" validate:"required"`
+	AppId   string `json:"app_id" validate:"required"`
+	Type    string `json:"type" validate:"required"`
 
 	Id       string            `json:"id"`
 	Data     []byte            `json:"data"`
 	Metadata map[string]string `json:"metadata"`
+}
+
+func (e *Event) Validate() error {
+	return validator.New().Struct(e)
 }
 
 func (e *Event) GenId() {
@@ -33,6 +38,6 @@ func (e *Event) String() string {
 	return string(bytes)
 }
 
-func Subject(segments ...string) string {
-	return strings.Join(segments, ".")
+func Subject(ns string, tier string, topic string, segments ...string) string {
+	return strings.Join(append([]string{ns, tier, topic}, segments...), ".")
 }

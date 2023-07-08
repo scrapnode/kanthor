@@ -1,7 +1,6 @@
 package metric
 
 import (
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
@@ -16,20 +15,20 @@ func New(conf *Config) Meter {
 
 func NewExporter(conf *Config, logger logging.Logger) patterns.Runnable {
 	if !conf.Enable {
-		return NewNoopServer(conf, logger.With("monitoring.metrics.exporter", "noop"))
+		return NewNoopExporter(conf, logger.With("monitoring.metrics.exporter", "noop"))
 	}
 
-	return NewHttpServer(conf, logger.With("monitoring.metrics.exporter", "prometheus"), promhttp.Handler())
+	return NewPrometheusExporter(conf, logger.With("monitoring.metrics.exporter", "prometheus"))
 }
 
 type Meter interface {
-	Counter(name string, value int64, labels ...Label)
-	Histogram(name string, value float64, labels ...Label)
+	Count(name string, value int64, withLabels ...WithLabel)
+	Histogram(name string, value float64, withLabels ...WithLabel)
 }
 
-type Label func(labels map[string]string)
+type WithLabel func(labels map[string]string)
 
-func UseLabel(name, value string) Label {
+func Label(name, value string) WithLabel {
 	return func(labels map[string]string) {
 		labels[name] = value
 	}

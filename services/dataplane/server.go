@@ -13,7 +13,7 @@ type Message struct {
 }
 
 func (server *Message) Put(ctx context.Context, req *protos.PutReq) (*protos.PutRes, error) {
-	server.service.meter.Counter("dataplane_message_put_total", 1)
+	server.service.meter.Count("dataplane_message_put_total", 1)
 
 	request := &usecase.PutMessageReq{
 		AppId:    req.AppId,
@@ -31,7 +31,7 @@ func (server *Message) Put(ctx context.Context, req *protos.PutReq) (*protos.Put
 
 	response, err := server.service.uc.PutMessage(ctx, request)
 	if err != nil {
-		server.service.meter.Counter("dataplane_message_put_error", 1)
+		server.service.meter.Count("dataplane_message_put_error", 1)
 		server.service.logger.Error(err)
 		return nil, err
 	}

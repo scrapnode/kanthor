@@ -58,7 +58,7 @@ func (cb *sonycb) get(cmd string, onError ErrorHandler) *gobreaker.CircuitBreake
 			return reachedRequestCount && reachedErrorRatio
 		},
 		OnStateChange: func(name string, from gobreaker.State, to gobreaker.State) {
-			cb.logger.Warnw("Circuit Breaker stage change", "cb_name", name, "from", from.String(), "to", to.String(), "should_alert", from == gobreaker.StateOpen)
+			cb.logger.Warnw(ErrStageChange.Error(), "name", name, "from", from.String(), "to", to.String())
 		},
 		IsSuccessful: func(err error) bool {
 			return onError(err) == nil

@@ -2,15 +2,17 @@ package metric
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"sync"
 )
 
 func NewPrometheus(conf *Config) Meter {
-	return &prometheusio{conf: conf}
+	return &prometheusio{
+		conf:       conf,
+		counters:   &prometheusc{conf: conf, entries: map[string]prometheus.Counter{}},
+		histograms: &prometheush{conf: conf, entries: map[string]prometheus.Histogram{}},
+	}
 }
 
 func NewPrometheusExporter(conf *Config, logger logging.Logger) patterns.Runnable {
@@ -19,55 +21,16 @@ func NewPrometheusExporter(conf *Config, logger logging.Logger) patterns.Runnabl
 
 type prometheusio struct {
 	conf       *Config
-	counters   sync.Map
-	histograms sync.Map
+	counters   *prometheusc
+	histograms *prometheush
 }
 
-func (metric *prometheusio) Counter(name string, value int64, labels ...Label) {
-	counter := metric.counter(name, metric.labels(labels))
+func (metric *prometheusio) Count(name string, value int64, withLabels ...WithLabel) {
+	counter := metric.counters.Get(name, withLabels)
 	counter.Add(float64(value))
 }
 
-func (metric *prometheusio) counter(name string, labels map[string]string) prometheus.Counter {
-	if value, ok := metric.counters.Load(name); ok {
-		return value.(prometheus.Counter)
-	}
-
-	counter := promauto.NewCounter(prometheus.CounterOpts{
-		Namespace:   metric.conf.Namespace,
-		Name:        name,
-		ConstLabels: labels,
-	})
-	metric.counters.Store(name, counter)
-	return counter
-}
-
-func (metric *prometheusio) Histogram(name string, value float64, labels ...Label) {
-	histogram := metric.histogram(name, metric.labels(labels))
+func (metric *prometheusio) Histogram(name string, value float64, withLabels ...WithLabel) {
+	histogram := metric.histograms.Get(name, withLabels)
 	histogram.Observe(value)
-}
-
-func (metric *prometheusio) histogram(name string, labels map[string]string) prometheus.Histogram {
-	if value, ok := metric.histograms.Load(name); ok {
-		return value.(prometheus.Histogram)
-	}
-
-	histogram := promauto.NewHistogram(prometheus.HistogramOpts{
-		Namespace:   metric.conf.Namespace,
-		Name:        name,
-		ConstLabels: labels,
-		Buckets:     prometheus.DefBuckets,
-	})
-	metric.histograms.Store(name, histogram)
-	return histogram
-}
-
-func (metric *prometheusio) labels(labels []Label) map[string]string {
-	kv := map[string]string{}
-	if len(labels) > 0 {
-		for _, l := range labels {
-			l(kv)
-		}
-	}
-	return kv
 }

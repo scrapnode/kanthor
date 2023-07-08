@@ -23,13 +23,11 @@ func NewNats(conf *ConnectionConfig, logger logging.Logger) (*nats.Conn, error) 
 		nats.MaxReconnects(9),
 		nats.DisconnectErrHandler(func(c *nats.Conn, err error) {
 			if err != nil {
-				// @TODO: add metrics here
 				logger.Error(fmt.Sprintf("got disconnected with reason: %q", err))
 				return
 			}
 		}),
 		nats.ReconnectHandler(func(conn *nats.Conn) {
-			// @TODO: add metrics here
 			logger.Infow(fmt.Sprintf("got reconnected to %v", conn.ConnectedUrl()))
 		}),
 	}

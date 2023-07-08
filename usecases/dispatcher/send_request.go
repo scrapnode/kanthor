@@ -3,7 +3,6 @@ package dispatcher
 import (
 	"context"
 	"fmt"
-	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -11,8 +10,6 @@ import (
 )
 
 func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq) (*SendRequestsRes, error) {
-	usecase.meter.Counter("dispatcher_consume_event_total", 1)
-
 	request := &sender.Request{
 		Method:  req.Request.Method,
 		Headers: req.Request.Headers,
@@ -47,14 +44,13 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 	res.Response.Metadata[entities.MetaReqTs] = fmt.Sprintf("%d", req.Request.Timestamp)
 
 	// either error was happened or not, we need to publish response event, so we can handle custom logic later
-	// example use case are retry, notification, i.e
+	// example use cases are retry, notification, i.e
 	if err == nil {
 		res.Response.Status = response.Status
 		res.Response.Uri = response.Uri
 		res.Response.Headers = response.Headers
 		res.Response.Body = response.Body
 	} else {
-		usecase.meter.Counter("dispatcher_send_request_error", 1)
 		res.Response.Status = entities.ResponseStatusErr
 		res.Response.Error = err.Error()
 	}
@@ -84,9 +80,9 @@ func transformResponse2Event(res *entities.Response) (*streaming.Event, error) {
 	}
 	event.GenId()
 	event.Subject = streaming.Subject(
-		constants.TopicNamespace,
+		streaming.Namespace,
 		res.Tier,
-		constants.TopicResponse,
+		streaming.TopicRes,
 		event.AppId,
 		event.Type,
 	)

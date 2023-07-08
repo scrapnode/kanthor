@@ -6,7 +6,7 @@ import (
 )
 
 func NewNoop(conf *Config) Meter {
-	return &prometheusio{}
+	return &noop{}
 }
 
 func NewNoopExporter(conf *Config, logger logging.Logger) patterns.Runnable {
@@ -16,5 +16,5 @@ func NewNoopExporter(conf *Config, logger logging.Logger) patterns.Runnable {
 type noop struct {
 }
 
-func (metric *noop) Counter(name string, value int64, labels ...Label)     {}
-func (metric *noop) Histogram(name string, value float64, labels ...Label) {}
+func (metric *noop) Count(name string, value int64, withLabels ...WithLabel)       {}
+func (metric *noop) Histogram(name string, value float64, withLabels ...WithLabel) {}

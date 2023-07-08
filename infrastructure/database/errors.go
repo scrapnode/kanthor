@@ -3,6 +3,6 @@ package database
 import "errors"
 
 var (
-	ErrAlreadyConnected = errors.New("database: already connected")
-	ErrNotConnected     = errors.New("database: not connected")
+	ErrAlreadyConnected = errors.New("DATABASE.CONNECTION.ALREADY_CONNECTED")
+	ErrNotConnected     = errors.New("DATABASE.CONNECTION.NOT_CONNECTED")
 )
