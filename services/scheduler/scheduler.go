@@ -17,7 +17,7 @@ func New(
 	uc usecase.Scheduler,
 	meter metric.Meter,
 ) services.Service {
-	logger.With("service", "scheduler")
+	logger = logger.With("service", "scheduler")
 	return &scheduler{conf: conf, logger: logger, subscriber: subscriber, uc: uc, meter: meter}
 }
 

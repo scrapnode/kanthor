@@ -16,6 +16,10 @@ type ask struct {
 	logger logging.Logger
 }
 
+func (authenticator *ask) Scheme() string {
+	return "basic"
+}
+
 func (authenticator *ask) Verify(token string) (*Account, error) {
 	bytes, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
