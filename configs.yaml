@@ -47,6 +47,11 @@ migration:
 dataplane:
   grpc:
     addr: ":8181"
+  authenticator:
+    type: access_secret_key
+    access_secret_key:
+      access_key: kanthorsuperadministrator
+      secret_key: alonglongsecretkeythatcouldnotbepredicted
   metrics:
     enable: false
     namespace: kanthor

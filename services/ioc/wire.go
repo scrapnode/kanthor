@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/database"
@@ -33,6 +34,8 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 		repositories.New,
 		ResolveDataplaneCacheConfig,
 		cache.New,
+		ResolveDataplaneAuthenticatorConfig,
+		authenticator.New,
 		ResolveDataplaneMetricConfig,
 		metric.New,
 	)
@@ -94,6 +97,10 @@ func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
 	}
 
 	return conf.Dataplane.Cache
+}
+
+func ResolveDataplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
+	return &conf.Dataplane.Authenticator
 }
 
 func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {

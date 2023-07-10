@@ -23,13 +23,13 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 		ValidArgs: []string{services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			verbose, _ := cmd.Flags().GetBool("verbose")
-
 			serviceName := args[0]
+			verbose, _ := cmd.Flags().GetBool("verbose")
 
 			if err := conf.Validate(serviceName); err != nil {
 				if verbose {
-					_ = showConfig(conf, []configuration.Source{}, false)
+					// if we got any error, should show the current configuration to easier debugging
+					_ = showConfig(conf, []configuration.Source{}, false, false)
 				}
 				return err
 			}

@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/domain/structure"
@@ -17,20 +18,26 @@ import (
 )
 
 func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeRequestsReq) (*ArrangeRequestsRes, error) {
-	res := &ArrangeRequestsRes{Entities: []structure.BulkRes[entities.Request]{}, FailKeys: []string{}, SuccessKeys: []string{}}
-
 	cacheKey := cache.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
 	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithEndpointsAndRules, error) {
 		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "scheduler_arrange_requests"))
 		return usecase.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
 	})
 	if err != nil {
-		return nil, err
+		usecase.logger.Errorw(err.Error(), "app_id", req.Message.AppId)
+		return nil, fmt.Errorf("unable to find application [%s]", req.Message.AppId)
+	}
+
+	res := &ArrangeRequestsRes{
+		Entities:    []structure.BulkRes[entities.Request]{},
+		FailKeys:    []string{},
+		SuccessKeys: []string{},
 	}
 
 	requests := usecase.generateRequestsFromEndpoints(app.Endpoints, req.Message)
 	if len(requests) == 0 {
-		usecase.logger.Warnw("no request was generated", "message_id", req.Message.Id)
+		usecase.logger.Warnw("no request was generated", "app_id", req.Message.AppId, "message_id", req.Message.Id)
+		return res, nil
 	}
 
 	p := pool.New().WithMaxGoroutines(usecase.conf.Scheduler.ArrangeRequests.Concurrency)
@@ -49,6 +56,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 				res.SuccessKeys = append(res.SuccessKeys, key)
 			} else {
 				res.FailKeys = append(res.FailKeys, key)
+				usecase.logger.Errorw(err.Error(), "app_id", req.Message.AppId, "key", key)
 			}
 		})
 	}

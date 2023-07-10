@@ -47,16 +47,16 @@ func (conf Config) Validate(service string) error {
 		return fmt.Errorf("config.Cache: %v", err)
 	}
 
-	if service == services.MIGRATION {
+	if service == services.ALL || service == services.MIGRATION {
 		return conf.Migration.Validate()
 	}
-	if service == services.DATAPLANE {
+	if service == services.ALL || service == services.DATAPLANE {
 		return conf.Dataplane.Validate()
 	}
-	if service == services.SCHEDULER {
+	if service == services.ALL || service == services.SCHEDULER {
 		return conf.Scheduler.Validate()
 	}
-	if service == services.DISPATCHER {
+	if service == services.ALL || service == services.DISPATCHER {
 		return conf.Dispatcher.Validate()
 	}
 

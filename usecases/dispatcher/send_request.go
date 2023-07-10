@@ -51,16 +51,19 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 		res.Response.Headers = response.Headers
 		res.Response.Body = response.Body
 	} else {
+		usecase.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
 		res.Response.Status = entities.ResponseStatusErr
 		res.Response.Error = err.Error()
 	}
 
 	event, err := transformResponse2Event(&res.Response)
 	if err != nil {
-		return nil, err
+		usecase.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
+		return nil, fmt.Errorf("unable transform response to event [%s/%s]", req.Request.EndpointId, req.Request.Id)
 	}
 	if err := usecase.publisher.Pub(ctx, event); err != nil {
-		return nil, err
+		usecase.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
+		return nil, fmt.Errorf("unable publish event for response of request [%s/%s]", req.Request.EndpointId, req.Request.Id)
 	}
 
 	return res, nil

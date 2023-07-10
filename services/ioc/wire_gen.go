@@ -9,6 +9,7 @@ package ioc
 import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/repositories"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/database"
@@ -37,7 +38,9 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	metricConfig := ResolveDataplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache, meter)
-	service := dataplane.New(conf, logger, dataplaneDataplane, meter)
+	authenticatorConfig := ResolveDataplaneAuthenticatorConfig(conf)
+	authenticatorAuthenticator := authenticator.New(authenticatorConfig, logger)
+	service := dataplane.New(conf, logger, dataplaneDataplane, authenticatorAuthenticator, meter)
 	return service, nil
 }
 
@@ -94,6 +97,10 @@ func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
 	}
 
 	return conf.Dataplane.Cache
+}
+
+func ResolveDataplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
+	return &conf.Dataplane.Authenticator
 }
 
 func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {

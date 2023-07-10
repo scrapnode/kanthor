@@ -7,8 +7,8 @@ type ConnectionConfig struct {
 	Stream StreamConfig `json:"stream" yaml:"stream" mapstructure:"stream" validate:"required"`
 }
 
-func (cconf *ConnectionConfig) Validate() error {
-	return validator.New().Struct(cconf)
+func (conf *ConnectionConfig) Validate() error {
+	return validator.New().Struct(conf)
 }
 
 type StreamConfig struct {
@@ -23,6 +23,6 @@ type StreamConfig struct {
 	} `json:"limits" yaml:"limits" mapstructure:"limits" validate:"required"`
 }
 
-func (sconf *StreamConfig) Validate() error {
-	return validator.New().Struct(sconf)
+func (conf *StreamConfig) Validate() error {
+	return validator.New().Struct(conf)
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/services"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -17,10 +18,17 @@ func NewShow(provider configuration.Provider, conf *config.Config) *cobra.Comman
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
-			verbose, _ := cmd.Flags().GetBool("verbose")
+			verbose, err := cmd.Flags().GetBool("verbose")
+			if err != nil {
+				return err
+			}
+			validating, err := cmd.Flags().GetBool("validate")
+			if err != nil {
+				return err
+			}
 
 			if name == "config" {
-				return showConfig(conf, provider.Sources(), verbose)
+				return showConfig(conf, provider.Sources(), verbose, validating)
 			}
 			if name == "version" {
 				return showVersion(conf, verbose)
@@ -30,10 +38,11 @@ func NewShow(provider configuration.Provider, conf *config.Config) *cobra.Comman
 		},
 	}
 
+	command.Flags().BoolP("validate", "", false, "should validate the output we show you")
 	return command
 }
 
-func showConfig(conf *config.Config, sources []configuration.Source, verbose bool) error {
+func showConfig(conf *config.Config, sources []configuration.Source, verbose, validating bool) error {
 	bytes, err := yaml.Marshal(&conf)
 	if err != nil {
 		return err
@@ -53,6 +62,10 @@ func showConfig(conf *config.Config, sources []configuration.Source, verbose boo
 		}
 		t.SetOutputMirror(os.Stdout)
 		t.Render()
+	}
+
+	if validating {
+		return conf.Validate(services.ALL)
 	}
 
 	return nil
