@@ -25,22 +25,11 @@ func UnaryServerInterceptor(
 		info *grpccore.UnaryServerInfo,
 		handler grpccore.UnaryHandler,
 	) (resp interface{}, err error) {
-		t, err := token(ctx, engine.Scheme())
+		ctx, err = authenticate(logger, meter, engine, ctx)
 		if err != nil {
-			logger.Error(err.Error())
-			meter.Count(gateway.MetricAuthErr, 1, metric.Label("step", "token_resolve"))
 			return nil, err
 		}
 
-		account, err := engine.Verify(t)
-		if err != nil {
-			logger.Error(err.Error())
-			meter.Count(gateway.MetricAuthErr, 1, metric.Label("step", "token_verify"))
-			return nil, err
-		}
-
-		logger.Debugw("authenticated", "account_sub", account.Sub)
-		ctx = context.WithValue(ctx, authenticator.CtxAuthAccount, account)
 		return handler(ctx, req)
 	}
 }
@@ -56,26 +45,48 @@ func StreamServerInterceptor(
 		info *grpccore.StreamServerInfo,
 		handler grpccore.StreamHandler,
 	) error {
-		ctx := ss.Context()
-		t, err := token(ctx, engine.Scheme())
+		ctx, err := authenticate(logger, meter, engine, ss.Context())
 		if err != nil {
-			logger.Error(err.Error())
-			meter.Count(gateway.MetricAuthErr, 1, metric.Label("step", "token_resolve"))
 			return err
 		}
 
-		account, err := engine.Verify(t)
-		if err != nil {
-			logger.Error(err.Error())
-			meter.Count(gateway.MetricAuthErr, 1, metric.Label("step", "token_verify"))
-			return err
-		}
-
-		logger.Debugw("authenticated", "account_sub", account.Sub)
 		wrapped := stream.WrapServerStream(ss)
-		wrapped.WrappedContext = context.WithValue(ctx, authenticator.CtxAuthAccount, account)
+		wrapped.WrappedContext = ctx
 		return handler(srv, wrapped)
 	}
+}
+
+func authenticate(
+	logger logging.Logger,
+	meter metric.Meter,
+	engine authenticator.Authenticator,
+	ctx context.Context,
+) (context.Context, error) {
+	t, err := token(ctx, engine.Scheme())
+	if err != nil {
+		logger.Error(err.Error())
+		meter.Count(
+			gateway.MetricAuthErr, 1,
+			metric.Label("step", "token_resolve"),
+			metric.Label("grpc_type", "stream"),
+		)
+		return ctx, err
+	}
+
+	account, err := engine.Verify(t)
+	if err != nil {
+		logger.Error(err.Error())
+		meter.Count(
+			gateway.MetricAuthErr, 1,
+			metric.Label("step", "token_verify"),
+			metric.Label("grpc_type", "stream"),
+		)
+		return ctx, err
+	}
+
+	ctx = context.WithValue(ctx, authenticator.CtxAuthAccount, account)
+	logger.Debugw("authenticated", "account_sub", account.Sub)
+	return ctx, nil
 }
 
 func token(ctx context.Context, scheme string) (string, error) {
