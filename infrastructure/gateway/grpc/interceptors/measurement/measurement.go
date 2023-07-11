@@ -20,13 +20,15 @@ func UnaryServerInterceptor(
 		start := time.Now()
 		defer func() {
 			duration := time.Now().Sub(start).Seconds()
-			meter.Histogram(
-				gateway.MetricLatency, duration,
-				metric.Label("grpc_type", "unary"),
-			)
+			meter.Histogram(gateway.MetricReqDuration, duration, metric.Label("grpc_type", "unary"))
 		}()
 
-		return handler(ctx, req)
+		resp, err = handler(ctx, req)
+		if err != nil {
+			meter.Count(gateway.MetricReqError, 1, metric.Label("method", info.FullMethod))
+		}
+
+		return
 	}
 }
 
@@ -42,13 +44,14 @@ func StreamServerInterceptor(
 		start := time.Now()
 		defer func() {
 			duration := time.Now().Sub(start).Seconds()
-			meter.Histogram(
-				gateway.MetricLatency, duration,
-				metric.Label("step", "token_resolve"),
-				metric.Label("grpc_type", "stream"),
-			)
+			meter.Histogram(gateway.MetricReqDuration, duration, metric.Label("grpc_type", "stream"))
 		}()
 
-		return handler(srv, ss)
+		err := handler(srv, ss)
+		if err != nil {
+			meter.Count(gateway.MetricReqError, 1, metric.Label("method", info.FullMethod))
+		}
+
+		return err
 	}
 }

@@ -12,6 +12,6 @@ type MigrationTask struct {
 	Source string `json:"source" yaml:"source" mapstructure:"source" validate:"required,uri"`
 }
 
-func (conf Migration) Validate() error {
+func (conf *Migration) Validate() error {
 	return validator.New().Struct(conf)
 }

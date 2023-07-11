@@ -1,0 +1,37 @@
+syntax = "proto3";
+package kanthor.controlplane.v1;
+option go_package = "github.com/scrapnode/kanthor/controlplane/server/grpc/protos";
+
+message Workspace {
+  string id = 1;
+  int64 created_at = 2;
+  int64 updated_at = 3;
+  int64 deleted_at = 4;
+  int64 owner_id = 5;
+  string name = 6;
+
+  WorkspaceTier tier = 7;
+}
+
+message WorkspaceTier {
+  string workspace_id = 1;
+  string name = 2;
+}
+
+service Ws {
+  rpc List(WsListReq) returns (WsListRes) {}
+  rpc Get(WsGetReq) returns (Workspace) {}
+}
+
+message WsListReq {
+  string cursor = 1;
+  string search = 2;
+}
+
+message WsListRes {
+  string cursor = 1;
+  repeated Workspace data = 2;
+}
+message WsGetReq {
+  string id = 1;
+}

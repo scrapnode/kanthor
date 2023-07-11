@@ -18,7 +18,7 @@ type Dataplane struct {
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
 
-func (conf Dataplane) Validate() error {
+func (conf *Dataplane) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return fmt.Errorf("config.Dataplane: %v", err)
 	}

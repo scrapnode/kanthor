@@ -8,7 +8,7 @@ type Config struct {
 	Retry       Retry `json:"retry" yaml:"retry" mapstructure:"retry" validate:"required"`
 }
 
-func (conf Config) Validate() error {
+func (conf *Config) Validate() error {
 	if err := conf.Retry.Validate(); err != nil {
 		return err
 	}
@@ -22,6 +22,6 @@ type Retry struct {
 	WaitTimeMax int `json:"wait_time_max" yaml:"wait_time_max" mapstructure:"wait_time_max" validate:"required,number,gte=0"`
 }
 
-func (conf Retry) Validate() error {
+func (conf *Retry) Validate() error {
 	return validator.New().Struct(conf)
 }

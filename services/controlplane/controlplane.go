@@ -1,4 +1,4 @@
-package dataplane
+package controlplane
 
 import (
 	"github.com/scrapnode/kanthor/config"
@@ -6,8 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/dataplane/grpc"
-	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
+	"github.com/scrapnode/kanthor/services/controlplane/grpc"
 )
 
 func New(
@@ -15,8 +14,7 @@ func New(
 	logger logging.Logger,
 	authenticator authenticator.Authenticator,
 	meter metric.Meter,
-	uc usecase.Dataplane,
 ) services.Service {
-	logger = logger.With("service", "dataplane")
-	return grpc.New(conf, logger, authenticator, meter, uc)
+	logger = logger.With("service", "controlplane")
+	return grpc.New(conf, logger, authenticator, meter)
 }

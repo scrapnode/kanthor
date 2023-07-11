@@ -7,6 +7,6 @@ type Config struct {
 	TimeToLive int    `json:"time_to_live" yaml:"timeToLive" mapstructure:"time_to_live" validate:"required,number,gte=0"`
 }
 
-func (conf Config) Validate() error {
+func (conf *Config) Validate() error {
 	return validator.New().Struct(conf)
 }

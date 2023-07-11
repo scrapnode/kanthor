@@ -2,11 +2,11 @@ syntax = "proto3";
 package kanthor.dataplane.v1;
 option go_package = "github.com/scrapnode/kanthor/dataplane/server/grpc/protos";
 
-service Message {
-  rpc Put(PutReq) returns (PutRes) {}
+service Msg {
+  rpc Put(MsgPutReq) returns (MsgPutRes) {}
 }
 
-message PutReq {
+message MsgPutReq {
   string app_id = 1;
   string type = 2;
   map<string, string> headers = 3;
@@ -14,7 +14,7 @@ message PutReq {
   map<string, string> metadata = 5;
 }
 
-message PutRes {
+message MsgPutRes {
   string id = 1;
   string bucket = 2;
   int64 timestamp = 3;

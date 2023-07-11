@@ -78,3 +78,13 @@ func (repo *sql) EndpointRule() EndpointRule {
 
 	return repo.endpointRule
 }
+
+func TxListCursor(tx *gorm.DB, req ListReq) *gorm.DB {
+	tx = tx.Order("id DESC")
+
+	if req.Cursor == "" {
+		return tx
+	}
+
+	return tx.Where("id < ?", req.Cursor)
+}

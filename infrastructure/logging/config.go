@@ -8,6 +8,6 @@ type Config struct {
 	With   map[string]string `json:"with" yaml:"with" mapstructure:"with"`
 }
 
-func (conf Config) Validate() error {
+func (conf *Config) Validate() error {
 	return validator.New().Struct(conf)
 }

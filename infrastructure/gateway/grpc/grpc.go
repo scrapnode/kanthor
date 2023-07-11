@@ -19,12 +19,12 @@ func New(
 		grpccore.ChainUnaryInterceptor(
 			measurement.UnaryServerInterceptor(meter),
 			recovery.UnaryServerInterceptor(logger),
-			auth.UnaryServerInterceptor(logger, meter, authenticator),
+			auth.UnaryServerInterceptor(logger, authenticator),
 		),
 		grpccore.ChainStreamInterceptor(
 			measurement.StreamServerInterceptor(meter),
 			recovery.StreamServerInterceptor(logger),
-			auth.StreamServerInterceptor(logger, meter, authenticator),
+			auth.StreamServerInterceptor(logger, authenticator),
 		),
 	)
 }

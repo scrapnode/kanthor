@@ -20,6 +20,6 @@ type PublisherConfig struct {
 	ConnectionConfig *ConnectionConfig `json:"connection_config" yaml:"connection_config" yaml:"connection_config" mapstructure:"connection_config"`
 }
 
-func (conf PublisherConfig) Validate() error {
+func (conf *PublisherConfig) Validate() error {
 	return validator.New().Struct(conf)
 }

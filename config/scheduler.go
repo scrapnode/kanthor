@@ -17,7 +17,7 @@ type Scheduler struct {
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
 
-func (conf Scheduler) Validate() error {
+func (conf *Scheduler) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return fmt.Errorf("config.Dispatcher: %v", err)
 	}
@@ -47,6 +47,6 @@ type SchedulerArrangeRequests struct {
 	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency" validate:"required,gt=0"`
 }
 
-func (conf SchedulerArrangeRequests) Validate() error {
+func (conf *SchedulerArrangeRequests) Validate() error {
 	return validator.New().Struct(conf)
 }

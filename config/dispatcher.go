@@ -20,7 +20,7 @@ type Dispatcher struct {
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
 
-func (conf Dispatcher) Validate() error {
+func (conf *Dispatcher) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return fmt.Errorf("config.Dispatcher: %v", err)
 	}

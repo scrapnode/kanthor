@@ -10,7 +10,7 @@ type Config struct {
 	} `json:"exporter" yaml:"exporter" mapstructure:"exporter" validate:"required"`
 }
 
-func (conf Config) Validate() error {
+func (conf *Config) Validate() error {
 	if !conf.Enable {
 		return nil
 	}

@@ -8,7 +8,7 @@ import (
 type Application interface {
 	Create(ctx context.Context, ws *entities.Application) (*entities.Application, error)
 	Get(ctx context.Context, id string) (*entities.Application, error)
-	List(ctx context.Context, wsId, name string) ([]entities.Application, error)
+	List(ctx context.Context, wsId string, opts ...ListOps) (*ListRes[entities.Application], error)
 	Update(ctx context.Context, ws *entities.Application) (*entities.Application, error)
 	Delete(ctx context.Context, id string) (*entities.Application, error)
 

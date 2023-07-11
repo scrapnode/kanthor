@@ -44,14 +44,28 @@ migration:
       uri: sqlite3://./.kanthor/datastore.sqlite
       source: file://./migration/datastore/sql
 
-dataplane:
+controlplane:
   grpc:
-    addr: ":8181"
+    addr: ":8080"
   authenticator:
     type: access_secret_key
     access_secret_key:
-      access_key: kanthorsuperadministrator
-      secret_key: alonglongsecretkeythatcouldnotbepredicted
+      access_key: kanthor_administrator_account
+      secret_key: a_long_long_secret_key_that_is_hard_to_exploited
+  metrics:
+    enable: false
+    namespace: kanthor
+    exporter:
+      addr: ":9090"
+
+dataplane:
+  grpc:
+    addr: ":8180"
+  authenticator:
+    type: access_secret_key
+    access_secret_key:
+      access_key: kanthor_data_account
+      secret_key: a_random_key_that_could_not_be_predicted
   metrics:
     enable: false
     namespace: kanthor

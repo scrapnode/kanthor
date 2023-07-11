@@ -20,13 +20,14 @@ type Config struct {
 	Database  database.Config            `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
 	Cache     cache.Config               `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 
-	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
-	Dataplane  Dataplane  `json:"dataplane" yaml:"dataplane" mapstructure:"dataplane"`
-	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
-	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
+	Migration    Migration    `json:"migration" yaml:"migration" mapstructure:"migration"`
+	Controlplane Controlplane `json:"controlplane" yaml:"controlplane" mapstructure:"controlplane"`
+	Dataplane    Dataplane    `json:"dataplane" yaml:"dataplane" mapstructure:"dataplane"`
+	Scheduler    Scheduler    `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
+	Dispatcher   Dispatcher   `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
 }
 
-func (conf Config) Validate(service string) error {
+func (conf *Config) Validate(service string) error {
 	if err := validator.New().Struct(conf); err != nil {
 		return err
 	}
@@ -50,6 +51,9 @@ func (conf Config) Validate(service string) error {
 	if service == services.ALL || service == services.MIGRATION {
 		return conf.Migration.Validate()
 	}
+	if service == services.ALL || service == services.CONTROLPLANE {
+		return conf.Controlplane.Validate()
+	}
 	if service == services.ALL || service == services.DATAPLANE {
 		return conf.Dataplane.Validate()
 	}
@@ -67,7 +71,7 @@ type Bucket struct {
 	Layout string `json:"layout" yaml:"layout" mapstructure:"layout" validate:"required"`
 }
 
-func (conf Bucket) Validate() error {
+func (conf *Bucket) Validate() error {
 	return validator.New().Struct(conf)
 }
 
@@ -75,7 +79,7 @@ type Server struct {
 	Addr string `json:"addr" yaml:"addr" mapstructure:"addr" validate:"required"`
 }
 
-func (conf Server) Validate() error {
+func (conf *Server) Validate() error {
 	return validator.New().Struct(conf)
 }
 

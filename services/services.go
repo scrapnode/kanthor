@@ -7,9 +7,10 @@ type Service interface {
 }
 
 const (
-	ALL        = "all"
-	DATAPLANE  = "dataplane"
-	SCHEDULER  = "scheduler"
-	DISPATCHER = "dispatcher"
-	MIGRATION  = "migration"
+	ALL          = "all"
+	CONTROLPLANE = "controlplane"
+	DATAPLANE    = "dataplane"
+	SCHEDULER    = "scheduler"
+	DISPATCHER   = "dispatcher"
+	MIGRATION    = "migration"
 )

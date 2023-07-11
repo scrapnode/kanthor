@@ -3,11 +3,9 @@ package auth
 import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/metadata"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/stream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	grpccore "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,7 +14,6 @@ import (
 
 func UnaryServerInterceptor(
 	logger logging.Logger,
-	meter metric.Meter,
 	engine authenticator.Authenticator,
 ) grpccore.UnaryServerInterceptor {
 	return func(
@@ -25,7 +22,7 @@ func UnaryServerInterceptor(
 		info *grpccore.UnaryServerInfo,
 		handler grpccore.UnaryHandler,
 	) (resp interface{}, err error) {
-		ctx, err = authenticate(logger, meter, engine, ctx)
+		ctx, err = authenticate(logger, engine, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -36,7 +33,6 @@ func UnaryServerInterceptor(
 
 func StreamServerInterceptor(
 	logger logging.Logger,
-	meter metric.Meter,
 	engine authenticator.Authenticator,
 ) grpccore.StreamServerInterceptor {
 	return func(
@@ -45,7 +41,7 @@ func StreamServerInterceptor(
 		info *grpccore.StreamServerInfo,
 		handler grpccore.StreamHandler,
 	) error {
-		ctx, err := authenticate(logger, meter, engine, ss.Context())
+		ctx, err := authenticate(logger, engine, ss.Context())
 		if err != nil {
 			return err
 		}
@@ -58,29 +54,18 @@ func StreamServerInterceptor(
 
 func authenticate(
 	logger logging.Logger,
-	meter metric.Meter,
 	engine authenticator.Authenticator,
 	ctx context.Context,
 ) (context.Context, error) {
 	t, err := token(ctx, engine.Scheme())
 	if err != nil {
 		logger.Error(err.Error())
-		meter.Count(
-			gateway.MetricAuthErr, 1,
-			metric.Label("step", "token_resolve"),
-			metric.Label("grpc_type", "stream"),
-		)
 		return ctx, err
 	}
 
 	account, err := engine.Verify(t)
 	if err != nil {
 		logger.Error(err.Error())
-		meter.Count(
-			gateway.MetricAuthErr, 1,
-			metric.Label("step", "token_verify"),
-			metric.Label("grpc_type", "stream"),
-		)
 		return ctx, err
 	}
 

@@ -38,23 +38,25 @@ func (sql *SqlEndpoint) Get(ctx context.Context, id string) (*entities.Endpoint,
 	return &ep, nil
 }
 
-func (sql *SqlEndpoint) List(ctx context.Context, appId, name string) ([]entities.Endpoint, error) {
-	var endpoints []entities.Endpoint
+func (sql *SqlEndpoint) List(ctx context.Context, appId string, opts ...ListOps) (*ListRes[entities.Endpoint], error) {
+	req := ListReqBuild(opts)
+	res := ListRes[entities.Endpoint]{}
 
 	var tx = sql.client.Model(&entities.Endpoint{}).
 		Scopes(NotDeleted(sql.timer, &entities.Endpoint{})).
 		Where("app_id = ?", appId).
 		Order("priority DESC, name ASC")
 
-	if name != "" {
-		tx = tx.Where("name like ?", name+"%")
+	tx = TxListCursor(tx, req)
+	if req.Search != "" {
+		tx = tx.Where("name like ?", req.Search+"%")
 	}
 
-	if tx.Find(&endpoints); tx.Error != nil {
+	if tx.Find(&res.Data); tx.Error != nil {
 		return nil, fmt.Errorf("endpoint.list: %w", tx.Error)
 	}
 
-	return endpoints, nil
+	return &res, nil
 }
 
 func (sql *SqlEndpoint) Update(ctx context.Context, ep *entities.Endpoint) (*entities.Endpoint, error) {

@@ -34,6 +34,6 @@ type SubscriberConfig struct {
 	// @TODO: consider apply RateLimit
 }
 
-func (conf SubscriberConfig) Validate() error {
+func (conf *SubscriberConfig) Validate() error {
 	return validator.New().Struct(conf)
 }

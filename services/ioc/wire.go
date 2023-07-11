@@ -17,12 +17,29 @@ import (
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/services/controlplane"
 	"github.com/scrapnode/kanthor/services/dataplane"
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
 )
 
+func InitializeControlplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	wire.Build(
+		controlplane.New,
+		//usecases.NewControlplane,
+		//timer.New,
+		//ResolveDatabaseConfig,
+		//repositories.New,
+		//ResolveControlplaneCacheConfig,
+		//cache.New,
+		ResolveControlplaneAuthenticatorConfig,
+		authenticator.New,
+		ResolveControlplaneMetricConfig,
+		metric.New,
+	)
+	return nil, nil
+}
 func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		dataplane.New,
@@ -81,6 +98,22 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 		metric.New,
 	)
 	return nil, nil
+}
+
+func ResolveControlplaneCacheConfig(conf *config.Config) *cache.Config {
+	if conf.Controlplane.Cache == nil {
+		return &conf.Cache
+	}
+
+	return conf.Controlplane.Cache
+}
+
+func ResolveControlplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
+	return &conf.Controlplane.Authenticator
+}
+
+func ResolveControlplaneMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Dataplane.Metrics
 }
 
 func ResolveDataplanePublisherConfig(conf *config.Config) *streaming.PublisherConfig {

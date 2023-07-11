@@ -39,21 +39,23 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	return &ws, nil
 }
 
-func (sql *SqlWorkspace) List(ctx context.Context, name string) ([]entities.Workspace, error) {
-	var workspaces []entities.Workspace
+func (sql *SqlWorkspace) List(ctx context.Context, opts ...ListOps) (*ListRes[entities.Workspace], error) {
+	req := ListReqBuild(opts)
+	res := ListRes[entities.Workspace]{}
+
 	var tx = sql.client.Model(&entities.Workspace{}).
 		Scopes(NotDeleted(sql.timer, &entities.Workspace{}))
 
-	if name != "" {
-		tx = tx.Where("name LIKE ?", name+"%")
+	tx = TxListCursor(tx, req)
+	if req.Search != "" {
+		tx = tx.Where("name like ?", req.Search+"%")
 	}
 
-	if tx.Find(&workspaces); tx.Error != nil {
-		return nil, fmt.Errorf("workspace"+
-			".list: %w", tx.Error)
+	if tx.Find(&res.Data); tx.Error != nil {
+		return nil, fmt.Errorf("workspace.list: %w", tx.Error)
 	}
 
-	return workspaces, nil
+	return &res, nil
 }
 
 func (sql *SqlWorkspace) Update(ctx context.Context, ws *entities.Workspace) (*entities.Workspace, error) {

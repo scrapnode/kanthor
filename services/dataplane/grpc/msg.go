@@ -1,4 +1,4 @@
-package dataplane
+package grpc
 
 import (
 	"context"
@@ -7,14 +7,12 @@ import (
 	"net/http"
 )
 
-type Message struct {
-	protos.UnimplementedMessageServer
+type msg struct {
+	protos.UnimplementedMsgServer
 	service *dataplane
 }
 
-func (server *Message) Put(ctx context.Context, req *protos.PutReq) (*protos.PutRes, error) {
-	server.service.meter.Count("dataplane_message_put_total", 1)
-
+func (server *msg) Put(ctx context.Context, req *protos.MsgPutReq) (*protos.MsgPutRes, error) {
 	request := &usecase.PutMessageReq{
 		AppId:    req.AppId,
 		Type:     req.Type,
@@ -31,11 +29,10 @@ func (server *Message) Put(ctx context.Context, req *protos.PutReq) (*protos.Put
 
 	response, err := server.service.uc.PutMessage(ctx, request)
 	if err != nil {
-		server.service.meter.Count("dataplane_message_put_error", 1)
 		server.service.logger.Error(err)
 		return nil, err
 	}
 
-	res := &protos.PutRes{Id: response.Id, Timestamp: response.Timestamp, Bucket: response.Bucket}
+	res := &protos.MsgPutRes{Id: response.Id, Timestamp: response.Timestamp, Bucket: response.Bucket}
 	return res, nil
 }

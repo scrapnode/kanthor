@@ -39,21 +39,24 @@ func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Applic
 	return &app, nil
 }
 
-func (sql *SqlApplication) List(ctx context.Context, wsId, name string) ([]entities.Application, error) {
-	var apps []entities.Application
+func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...ListOps) (*ListRes[entities.Application], error) {
+	req := ListReqBuild(opts)
+	res := ListRes[entities.Application]{}
+
 	var tx = sql.client.Model(&entities.Application{}).
 		Scopes(NotDeleted(sql.timer, &entities.Application{})).
 		Where("workspace_id = ?", wsId)
 
-	if name != "" {
-		tx = tx.Where("name like ?", name+"%")
+	tx = TxListCursor(tx, req)
+	if req.Search != "" {
+		tx = tx.Where("name like ?", req.Search+"%")
 	}
 
-	if tx.Find(&apps); tx.Error != nil {
+	if tx.Find(&res.Data); tx.Error != nil {
 		return nil, fmt.Errorf("application.list: %w", tx.Error)
 	}
 
-	return apps, nil
+	return &res, nil
 }
 
 func (sql *SqlApplication) Update(ctx context.Context, app *entities.Application) (*entities.Application, error) {

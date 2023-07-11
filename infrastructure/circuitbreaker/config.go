@@ -10,6 +10,6 @@ type Config struct {
 	OpenStateDuration                  int     `json:"open_state_duration" yaml:"open_state_duration" mapstructure:"open_state_duration" validate:"required,number,gte=0"`
 }
 
-func (conf Config) Validate() error {
+func (conf *Config) Validate() error {
 	return validator.New().Struct(conf)
 }

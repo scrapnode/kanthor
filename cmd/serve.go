@@ -20,7 +20,7 @@ import (
 func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "serve",
-		ValidArgs: []string{services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
+		ValidArgs: []string{services.CONTROLPLANE, services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
@@ -96,6 +96,9 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 }
 
 func useService(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
+	if name == services.CONTROLPLANE {
+		return ioc.InitializeControlplane(conf, logger)
+	}
 	if name == services.DATAPLANE {
 		return ioc.InitializeDataplane(conf, logger)
 	}
@@ -110,6 +113,9 @@ func useService(name string, conf *config.Config, logger logging.Logger) (servic
 }
 
 func useMetricExporter(name string, conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
+	if name == services.CONTROLPLANE {
+		return metric.NewExporter(&conf.Controlplane.Metrics, logger), nil
+	}
 	if name == services.DATAPLANE {
 		return metric.NewExporter(&conf.Dataplane.Metrics, logger), nil
 	}

@@ -38,8 +38,8 @@ func (sql *SqlEndpointRule) Get(ctx context.Context, id string) (*entities.Endpo
 	return &rule, nil
 }
 
-func (sql *SqlEndpointRule) List(ctx context.Context, epId string) ([]entities.EndpointRule, error) {
-	var rules []entities.EndpointRule
+func (sql *SqlEndpointRule) List(ctx context.Context, epId string) (*ListRes[entities.EndpointRule], error) {
+	res := ListRes[entities.EndpointRule]{}
 	var tx = sql.client.Model(&entities.EndpointRule{}).
 		Scopes(NotDeleted(sql.timer, &entities.EndpointRule{})).
 		Where("endpoint_id = ?", epId).
@@ -52,11 +52,11 @@ func (sql *SqlEndpointRule) List(ctx context.Context, epId string) ([]entities.E
 		// 		  7 - FALSE
 		Order("priority DESC, exclusionary DESC")
 
-	if tx.Find(&rules); tx.Error != nil {
+	if tx.Find(&res.Data); tx.Error != nil {
 		return nil, fmt.Errorf("endpoint_rule.list: %w", tx.Error)
 	}
 
-	return rules, nil
+	return &res, nil
 }
 
 func (sql *SqlEndpointRule) Update(ctx context.Context, epr *entities.EndpointRule) (*entities.EndpointRule, error) {
