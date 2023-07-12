@@ -1,4 +1,4 @@
-package repositories
+package repos
 
 import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
