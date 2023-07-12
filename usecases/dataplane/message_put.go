@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
+	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	"time"
 )
 
-func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*PutMessageRes, error) {
+func (usecase *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
 	cacheKey := cache.Key("APP_WITH_WORKSPACE", req.AppId)
-	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithWorkspace, error) {
-		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_put_message"))
+	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repos.ApplicationWithWorkspace, error) {
+		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_message_put"))
 		return usecase.repos.Application().GetWithWorkspace(ctx, req.AppId)
 	})
 	if err != nil {
@@ -24,7 +24,7 @@ func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*
 		return nil, fmt.Errorf("unable to find application [%s]", req.AppId)
 	}
 
-	msg := transformPutMessageReq2Message(app.Workspace.Tier.Name, req, usecase.timer, usecase.conf)
+	msg := transformMessagePutReq2Message(app.Workspace.Tier.Name, req, usecase.timer, usecase.conf)
 	msg.Metadata[entities.MetaTier] = app.Workspace.Tier.Name
 
 	event, err := transformMessage2Event(msg)
@@ -38,11 +38,11 @@ func (usecase *dataplane) PutMessage(ctx context.Context, req *PutMessageReq) (*
 		return nil, fmt.Errorf("unable to publish event for message [%s/%s]", req.AppId, msg.Id)
 	}
 
-	res := transformMessage2PutMessageRes(msg)
+	res := transformMessage2MessagePutRes(msg)
 	return res, nil
 }
 
-func transformPutMessageReq2Message(tier string, req *PutMessageReq, timer timer.Timer, conf *config.Config) *entities.Message {
+func transformMessagePutReq2Message(tier string, req *MessagePutReq, timer timer.Timer, conf *config.Config) *entities.Message {
 	msg := &entities.Message{
 		Tier:     tier,
 		AppId:    req.AppId,
@@ -82,8 +82,8 @@ func transformMessage2Event(msg *entities.Message) (*streaming.Event, error) {
 	return event, nil
 }
 
-func transformMessage2PutMessageRes(msg *entities.Message) *PutMessageRes {
-	return &PutMessageRes{
+func transformMessage2MessagePutRes(msg *entities.Message) *MessagePutRes {
+	return &MessagePutRes{
 		Id:        msg.Id,
 		Timestamp: msg.Timestamp,
 		Bucket:    msg.Bucket,

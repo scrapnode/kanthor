@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -11,8 +10,10 @@ import (
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/dataplane"
+	dataplanerepos "github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	"github.com/scrapnode/kanthor/usecases/dispatcher"
 	"github.com/scrapnode/kanthor/usecases/scheduler"
+	schedulerrepos "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
 func NewDataplane(
@@ -20,7 +21,7 @@ func NewDataplane(
 	logger logging.Logger,
 	timer timer.Timer,
 	publisher streaming.Publisher,
-	repos repositories.Repositories,
+	repos dataplanerepos.Repositories,
 	cache cache.Cache,
 	meter metric.Meter,
 ) dataplane.Dataplane {
@@ -33,7 +34,7 @@ func NewScheduler(
 	logger logging.Logger,
 	timer timer.Timer,
 	publisher streaming.Publisher,
-	repos repositories.Repositories,
+	repos schedulerrepos.Repositories,
 	cache cache.Cache,
 	meter metric.Meter,
 ) scheduler.Scheduler {
@@ -46,12 +47,11 @@ func NewDispatcher(
 	logger logging.Logger,
 	timer timer.Timer,
 	publisher streaming.Publisher,
-	repos repositories.Repositories,
 	dispatch sender.Send,
 	cache cache.Cache,
 	cb circuitbreaker.CircuitBreaker,
 	meter metric.Meter,
 ) dispatcher.Dispatcher {
 	logger = logger.With("usecase", "scheduler")
-	return dispatcher.New(conf, logger, timer, publisher, repos, dispatch, cache, cb, meter)
+	return dispatcher.New(conf, logger, timer, publisher, dispatch, cache, cb, meter)
 }

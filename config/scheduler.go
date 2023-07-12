@@ -9,10 +9,10 @@ import (
 )
 
 type Scheduler struct {
-	Publisher       streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
-	Subscriber      streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
-	Cache           *cache.Config              `json:"cache" yaml:"cache" validate:"-"`
-	ArrangeRequests SchedulerArrangeRequests   `json:"arrange_requests" yaml:"arrange_requests" mapstructure:"arrange_requests" validate:"required"`
+	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
+	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
+	Cache      *cache.Config              `json:"cache" yaml:"cache" validate:"-"`
+	Request    SchedulerRequest           `json:"arrange_requests" yaml:"arrange_requests" mapstructure:"arrange_requests" validate:"required"`
 
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
@@ -28,7 +28,7 @@ func (conf *Scheduler) Validate() error {
 	if err := conf.Subscriber.Validate(); err != nil {
 		return fmt.Errorf("config.Scheduler.Subscriber: %v", err)
 	}
-	if err := conf.ArrangeRequests.Validate(); err != nil {
+	if err := conf.Request.Validate(); err != nil {
 		return fmt.Errorf("config.Scheduler.Subscriber: %v", err)
 	}
 	if conf.Cache != nil {
@@ -43,10 +43,26 @@ func (conf *Scheduler) Validate() error {
 	return nil
 }
 
-type SchedulerArrangeRequests struct {
+type SchedulerRequest struct {
+	Arrange SchedulerRequestArrange `json:"arrange" yaml:"arrange" mapstructure:"arrange" validate:"required"`
+}
+
+func (conf *SchedulerRequest) Validate() error {
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+
+	if err := conf.Arrange.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SchedulerRequestArrange struct {
 	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency" validate:"required,gt=0"`
 }
 
-func (conf *SchedulerArrangeRequests) Validate() error {
+func (conf *SchedulerRequestArrange) Validate() error {
 	return validator.New().Struct(conf)
 }

@@ -9,14 +9,18 @@ import (
 
 type Scheduler interface {
 	patterns.Connectable
-	ArrangeRequests(ctx context.Context, req *ArrangeRequestsReq) (*ArrangeRequestsRes, error)
+	Request() Request
 }
 
-type ArrangeRequestsReq struct {
+type Request interface {
+	Arrange(ctx context.Context, req *RequestArrangeReq) (*RequestArrangeRes, error)
+}
+
+type RequestArrangeReq struct {
 	Message entities.Message
 }
 
-type ArrangeRequestsRes struct {
+type RequestArrangeRes struct {
 	Entities    []structure.BulkRes[entities.Request]
 	FailKeys    []string
 	SuccessKeys []string

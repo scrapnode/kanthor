@@ -1,10 +1,9 @@
-package dispatcher
+package dataplane
 
 import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-type Dispatcher interface {
+type Controlplane interface {
 	patterns.Connectable
-	Forwarder() Forwarder
 }

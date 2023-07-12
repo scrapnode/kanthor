@@ -6,7 +6,6 @@ package ioc
 import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -16,6 +15,7 @@ import (
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dataplane"
 	"github.com/scrapnode/kanthor/usecases"
+	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
 )
 
 func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
@@ -26,7 +26,7 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 		ResolveDataplanePublisherConfig,
 		streaming.NewPublisher,
 		wire.FieldsOf(new(*config.Config), "Database"),
-		repositories.New,
+		repos.New,
 		ResolveDataplaneCacheConfig,
 		cache.New,
 		ResolveDataplaneAuthenticatorConfig,

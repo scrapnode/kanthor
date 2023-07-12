@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/sender"
 )
 
-func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq) (*SendRequestsRes, error) {
+func (usecase *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*ForwarderSendRes, error) {
 	request := &sender.Request{
 		Method:  req.Request.Method,
 		Headers: req.Request.Headers,
@@ -29,7 +29,7 @@ func (usecase *dispatcher) SendRequest(ctx context.Context, req *SendRequestsReq
 		},
 	)
 
-	res := &SendRequestsRes{
+	res := &ForwarderSendRes{
 		Response: entities.Response{
 			Tier:     req.Request.Tier,
 			AppId:    req.Request.AppId,

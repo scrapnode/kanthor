@@ -2,7 +2,6 @@ package dispatcher
 
 import (
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -10,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
+	"sync"
 )
 
 func New(
@@ -17,7 +17,6 @@ func New(
 	logger logging.Logger,
 	timer timer.Timer,
 	publisher streaming.Publisher,
-	repos repositories.Repositories,
 	dispatch sender.Send,
 	cache cache.Cache,
 	cb circuitbreaker.CircuitBreaker,
@@ -28,7 +27,6 @@ func New(
 		logger:    logger,
 		timer:     timer,
 		publisher: publisher,
-		repos:     repos,
 		dispatch:  dispatch,
 		cache:     cache,
 		cb:        cb,
@@ -41,9 +39,29 @@ type dispatcher struct {
 	logger    logging.Logger
 	timer     timer.Timer
 	publisher streaming.Publisher
-	repos     repositories.Repositories
 	dispatch  sender.Send
 	cache     cache.Cache
 	cb        circuitbreaker.CircuitBreaker
 	meter     metric.Meter
+
+	mu        sync.RWMutex
+	forwarder *forwarder
+}
+
+func (usecase *dispatcher) Forwarder() Forwarder {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.forwarder == nil {
+		usecase.forwarder = &forwarder{
+			conf:      usecase.conf,
+			logger:    usecase.logger,
+			timer:     usecase.timer,
+			publisher: usecase.publisher,
+			cache:     usecase.cache,
+			meter:     usecase.meter,
+		}
+	}
+
+	return usecase.forwarder
 }

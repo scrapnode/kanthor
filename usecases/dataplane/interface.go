@@ -8,10 +8,14 @@ import (
 
 type Dataplane interface {
 	patterns.Connectable
-	PutMessage(ctx context.Context, req *PutMessageReq) (*PutMessageRes, error)
+	Message() Message
 }
 
-type PutMessageReq struct {
+type Message interface {
+	Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error)
+}
+
+type MessagePutReq struct {
 	AppId    string            `json:"app_id"`
 	Type     string            `json:"type"`
 	Headers  http.Header       `json:"headers"`
@@ -19,7 +23,7 @@ type PutMessageReq struct {
 	Metadata map[string]string `json:"metadata"`
 }
 
-type PutMessageRes struct {
+type MessagePutRes struct {
 	Id        string `json:"id"`
 	Timestamp int64  `json:"timestamp"`
 	Bucket    string `json:"bucket"`

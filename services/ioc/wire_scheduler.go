@@ -6,7 +6,6 @@ package ioc
 import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
@@ -15,6 +14,7 @@ import (
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
+	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
@@ -27,7 +27,7 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 		ResolveSchedulerSubscriberConfig,
 		streaming.NewSubscriber,
 		wire.FieldsOf(new(*config.Config), "Database"),
-		repositories.New,
+		repos.New,
 		ResolveSchedulerCacheConfig,
 		cache.New,
 		ResolveSchedulerMetricConfig,

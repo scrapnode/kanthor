@@ -5,22 +5,22 @@ import (
 	"errors"
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 	"github.com/sourcegraph/conc/pool"
 	"regexp"
 	"strings"
 	"time"
 )
 
-func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeRequestsReq) (*ArrangeRequestsRes, error) {
+func (usecase *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*RequestArrangeRes, error) {
 	cacheKey := cache.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
-	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repositories.ApplicationWithEndpointsAndRules, error) {
-		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "scheduler_arrange_requests"))
+	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repos.ApplicationWithEndpointsAndRules, error) {
+		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "scheduler_request_arrange"))
 		return usecase.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
 	})
 	if err != nil {
@@ -28,7 +28,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 		return nil, fmt.Errorf("unable to find application [%s]", req.Message.AppId)
 	}
 
-	res := &ArrangeRequestsRes{
+	res := &RequestArrangeRes{
 		Entities:    []structure.BulkRes[entities.Request]{},
 		FailKeys:    []string{},
 		SuccessKeys: []string{},
@@ -40,7 +40,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 		return res, nil
 	}
 
-	p := pool.New().WithMaxGoroutines(usecase.conf.Scheduler.ArrangeRequests.Concurrency)
+	p := pool.New().WithMaxGoroutines(usecase.conf.Scheduler.Request.Arrange.Concurrency)
 	for _, r := range requests {
 		request := r
 		p.Go(func() {
@@ -65,7 +65,7 @@ func (usecase *scheduler) ArrangeRequests(ctx context.Context, req *ArrangeReque
 	return res, nil
 }
 
-func (usecase *scheduler) generateRequestsFromEndpoints(endpoints []repositories.EndpointWithRules, msg entities.Message) []entities.Request {
+func (usecase *request) generateRequestsFromEndpoints(endpoints []repos.EndpointWithRules, msg entities.Message) []entities.Request {
 	var requests []entities.Request
 
 	for _, endpoint := range endpoints {

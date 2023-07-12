@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/protos"
+	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 	grpccore "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
@@ -19,9 +20,10 @@ func New(
 	logger logging.Logger,
 	authenticator authenticator.Authenticator,
 	meter metric.Meter,
+	uc usecase.Controlplane,
 ) services.Service {
 	logger = logger.With("gateway", "grpc")
-	return &controlplane{conf: conf, logger: logger, authenticator: authenticator, meter: meter}
+	return &controlplane{conf: conf, logger: logger, authenticator: authenticator, meter: meter, uc: uc}
 }
 
 type controlplane struct {
@@ -30,12 +32,13 @@ type controlplane struct {
 	gateway       *grpccore.Server
 	authenticator authenticator.Authenticator
 	meter         metric.Meter
+	uc            usecase.Controlplane
 }
 
 func (service *controlplane) Start(ctx context.Context) error {
-	//if err := service.uc.Connect(ctx); err != nil {
-	//	return err
-	//}
+	if err := service.uc.Connect(ctx); err != nil {
+		return err
+	}
 
 	service.gateway = grpc.New(service.logger, service.meter, service.authenticator)
 	protos.RegisterWsServer(service.gateway, &ws{service: service})
@@ -48,10 +51,10 @@ func (service *controlplane) Start(ctx context.Context) error {
 func (service *controlplane) Stop(ctx context.Context) error {
 	service.gateway.GracefulStop()
 	service.logger.Info("stopped")
-	//
-	//if err := service.uc.Disconnect(ctx); err != nil {
-	//	service.logger.Error(err)
-	//}
+
+	if err := service.uc.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
 
 	return nil
 }

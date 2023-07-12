@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -79,7 +80,7 @@ func (repo *sql) EndpointRule() EndpointRule {
 	return repo.endpointRule
 }
 
-func TxListQuery(tx *gorm.DB, req ListReq) *gorm.DB {
+func TxListQuery(tx *gorm.DB, req structure.ListReq) *gorm.DB {
 	tx = tx.Order("id DESC")
 
 	if req.Limit > 0 {

@@ -13,7 +13,7 @@ type msg struct {
 }
 
 func (server *msg) Put(ctx context.Context, req *protos.MsgPutReq) (*protos.MsgPutRes, error) {
-	request := &usecase.PutMessageReq{
+	request := &usecase.MessagePutReq{
 		AppId:    req.AppId,
 		Type:     req.Type,
 		Headers:  http.Header{},
@@ -27,7 +27,7 @@ func (server *msg) Put(ctx context.Context, req *protos.MsgPutReq) (*protos.MsgP
 		request.Metadata[key] = value
 	}
 
-	response, err := server.service.uc.PutMessage(ctx, request)
+	response, err := server.service.uc.Message().Put(ctx, request)
 	if err != nil {
 		server.service.logger.Error(err)
 		return nil, err

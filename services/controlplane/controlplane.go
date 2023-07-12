@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc"
+	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 )
 
 func New(
@@ -14,7 +15,8 @@ func New(
 	logger logging.Logger,
 	authenticator authenticator.Authenticator,
 	meter metric.Meter,
+	uc usecase.Controlplane,
 ) services.Service {
 	logger = logger.With("service", "controlplane")
-	return grpc.New(conf, logger, authenticator, meter)
+	return grpc.New(conf, logger, authenticator, meter, uc)
 }

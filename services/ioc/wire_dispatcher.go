@@ -6,7 +6,6 @@ package ioc
 import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -28,8 +27,6 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 		streaming.NewPublisher,
 		ResolveDispatcherSubscriberConfig,
 		streaming.NewSubscriber,
-		wire.FieldsOf(new(*config.Config), "Database"),
-		repositories.New,
 		ResolveDispatcherSenderConfig,
 		sender.New,
 		ResolveDispatcherCacheConfig,

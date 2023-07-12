@@ -8,7 +8,6 @@ package ioc
 
 import (
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/repositories"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -23,6 +22,8 @@ import (
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
+	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
+	repos2 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
 // Injectors from wire_controlplane.go:
@@ -47,10 +48,10 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	publisherConfig := ResolveDataplanePublisherConfig(conf)
 	publisher := streaming.NewPublisher(publisherConfig, logger)
 	databaseConfig := &conf.Database
-	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
+	repositories := repos.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveDataplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache, meter)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositories, cacheCache, meter)
 	service := dataplane.New(conf, logger, authenticatorAuthenticator, meter, dataplaneDataplane)
 	return service, nil
 }
@@ -63,8 +64,6 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	timerTimer := timer.New()
 	publisherConfig := ResolveDispatcherPublisherConfig(conf)
 	publisher := streaming.NewPublisher(publisherConfig, logger)
-	databaseConfig := &conf.Database
-	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
 	senderConfig := ResolveDispatcherSenderConfig(conf, logger)
 	send := sender.New(senderConfig, logger)
 	cacheConfig := ResolveDispatcherCacheConfig(conf)
@@ -73,7 +72,7 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	circuitBreaker := circuitbreaker.New(circuitbreakerConfig, logger)
 	metricConfig := ResolveDispatcherMetricConfig(conf)
 	meter := metric.New(metricConfig)
-	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, repositoriesRepositories, send, cacheCache, circuitBreaker, meter)
+	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, meter)
 	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher, meter)
 	return service, nil
 }
@@ -87,12 +86,12 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
 	publisher := streaming.NewPublisher(publisherConfig, logger)
 	databaseConfig := &conf.Database
-	repositoriesRepositories := repositories.New(databaseConfig, logger, timerTimer)
+	repositories := repos2.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveSchedulerCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	metricConfig := ResolveSchedulerMetricConfig(conf)
 	meter := metric.New(metricConfig)
-	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositoriesRepositories, cacheCache, meter)
+	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositories, cacheCache, meter)
 	service := scheduler.New(conf, logger, subscriber, schedulerScheduler, meter)
 	return service, nil
 }
