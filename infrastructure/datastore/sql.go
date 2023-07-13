@@ -17,7 +17,7 @@ import (
 )
 
 func NewSQL(conf *Config, logger logging.Logger) Datastore {
-	logger = logger.With("component", "datastore.sql")
+	logger = logger.With("datastore", "sql")
 	return &sql{conf: conf, logger: logger}
 }
 

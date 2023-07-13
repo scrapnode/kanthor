@@ -13,7 +13,7 @@ import (
 )
 
 func NewRedis(conf *Config, logger logging.Logger) Cache {
-	logger = logger.With("component", "cache.memory")
+	logger = logger.With("cache", "memory")
 	return &redis{conf: conf, logger: logger}
 }
 

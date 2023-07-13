@@ -15,6 +15,7 @@ func New(
 	meter metric.Meter,
 	authenticator authenticator.Authenticator,
 ) *grpccore.Server {
+	logger = logger.With("gateway", "grpc")
 	return grpccore.NewServer(
 		grpccore.ChainUnaryInterceptor(
 			measurement.UnaryServerInterceptor(meter),

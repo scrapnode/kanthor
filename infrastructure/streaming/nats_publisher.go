@@ -10,7 +10,7 @@ import (
 )
 
 func NewNatsPublisher(conf *PublisherConfig, logger logging.Logger) Publisher {
-	logger = logger.With("component", "streaming.publisher.nats")
+	logger = logger.With("streaming.publisher", "nats")
 	return &NatsPublisher{conf: conf, logger: logger}
 }
 

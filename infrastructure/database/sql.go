@@ -20,7 +20,7 @@ import (
 )
 
 func NewSQL(conf *Config, logger logging.Logger) Database {
-	logger = logger.With("component", "database.sql")
+	logger = logger.With("database", "sql")
 	return &sql{conf: conf, logger: logger}
 }
 

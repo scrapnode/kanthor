@@ -9,6 +9,7 @@ import (
 )
 
 func NewSony(conf *Config, logger logging.Logger) CircuitBreaker {
+	logger = logger.With("circuitbreaker", "gobreaker")
 	return &sonycb{
 		conf:     conf,
 		logger:   logger,

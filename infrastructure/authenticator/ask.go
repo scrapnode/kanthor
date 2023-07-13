@@ -7,6 +7,7 @@ import (
 )
 
 func NewASK(conf *Config, logger logging.Logger) Authenticator {
+	logger = logger.With("authenticator", "ask")
 	return &ask{conf: conf, logger: logger}
 }
 

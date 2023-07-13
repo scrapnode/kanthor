@@ -12,7 +12,7 @@ import (
 )
 
 func NewNatsSubscriber(conf *SubscriberConfig, logger logging.Logger) Subscriber {
-	logger = logger.With("component", "streaming.subscriber.nats")
+	logger = logger.With("streaming.subscriber", "nats")
 	return &NatsSubscriber{conf: conf, logger: logger}
 }
 
