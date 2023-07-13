@@ -17,18 +17,18 @@ func New(
 	logger logging.Logger,
 	timer timer.Timer,
 	publisher streaming.Publisher,
-	repos repos.Repositories,
 	cache cache.Cache,
 	meter metric.Meter,
+	repos repos.Repositories,
 ) Dataplane {
 	return &dataplane{
 		conf:      conf,
 		logger:    logger,
 		timer:     timer,
 		publisher: publisher,
-		repos:     repos,
 		cache:     cache,
 		meter:     meter,
+		repos:     repos,
 	}
 }
 
@@ -37,9 +37,9 @@ type dataplane struct {
 	logger    logging.Logger
 	timer     timer.Timer
 	publisher streaming.Publisher
-	repos     repos.Repositories
 	cache     cache.Cache
 	meter     metric.Meter
+	repos     repos.Repositories
 
 	mu      sync.RWMutex
 	message *message

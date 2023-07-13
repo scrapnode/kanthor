@@ -22,8 +22,9 @@ import (
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
-	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
-	repos2 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
+	"github.com/scrapnode/kanthor/usecases/controlplane/repos"
+	repos2 "github.com/scrapnode/kanthor/usecases/dataplane/repos"
+	repos3 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
 // Injectors from wire_controlplane.go:
@@ -33,7 +34,13 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	authenticatorAuthenticator := authenticator.New(authenticatorConfig, logger)
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
-	service := controlplane.New(conf, logger, authenticatorAuthenticator, meter)
+	timerTimer := timer.New()
+	databaseConfig := &conf.Database
+	repositories := repos.New(databaseConfig, logger, timerTimer)
+	cacheConfig := ResolveControlplaneCacheConfig(conf)
+	cacheCache := cache.New(cacheConfig, logger)
+	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, repositories, cacheCache, meter)
+	service := controlplane.New(conf, logger, authenticatorAuthenticator, meter, controlplaneControlplane)
 	return service, nil
 }
 
@@ -47,11 +54,11 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	timerTimer := timer.New()
 	publisherConfig := ResolveDataplanePublisherConfig(conf)
 	publisher := streaming.NewPublisher(publisherConfig, logger)
-	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveDataplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, repositories, cacheCache, meter)
+	databaseConfig := &conf.Database
+	repositories := repos2.New(databaseConfig, logger, timerTimer)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
 	service := dataplane.New(conf, logger, authenticatorAuthenticator, meter, dataplaneDataplane)
 	return service, nil
 }
@@ -85,18 +92,26 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	timerTimer := timer.New()
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
 	publisher := streaming.NewPublisher(publisherConfig, logger)
-	databaseConfig := &conf.Database
-	repositories := repos2.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveSchedulerCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	metricConfig := ResolveSchedulerMetricConfig(conf)
 	meter := metric.New(metricConfig)
-	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, repositories, cacheCache, meter)
+	databaseConfig := &conf.Database
+	repositories := repos3.New(databaseConfig, logger, timerTimer)
+	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
 	service := scheduler.New(conf, logger, subscriber, schedulerScheduler, meter)
 	return service, nil
 }
 
 // wire_controlplane.go:
+
+func ResolveControlplaneCacheConfig(conf *config.Config) *cache.Config {
+	if conf.Controlplane.Cache == nil {
+		return &conf.Cache
+	}
+
+	return conf.Controlplane.Cache
+}
 
 func ResolveControlplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.Controlplane.Authenticator

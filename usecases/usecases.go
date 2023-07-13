@@ -9,6 +9,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
+	"github.com/scrapnode/kanthor/usecases/controlplane"
+	controlplanerepos "github.com/scrapnode/kanthor/usecases/controlplane/repos"
 	"github.com/scrapnode/kanthor/usecases/dataplane"
 	dataplanerepos "github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	"github.com/scrapnode/kanthor/usecases/dispatcher"
@@ -16,17 +18,29 @@ import (
 	schedulerrepos "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
+func NewControlplane(
+	conf *config.Config,
+	logger logging.Logger,
+	timer timer.Timer,
+	repos controlplanerepos.Repositories,
+	cache cache.Cache,
+	meter metric.Meter,
+) controlplane.Controlplane {
+	logger = logger.With("usecase", "controlplane")
+	return controlplane.New(conf, logger, timer, cache, meter, repos)
+}
+
 func NewDataplane(
 	conf *config.Config,
 	logger logging.Logger,
 	timer timer.Timer,
 	publisher streaming.Publisher,
-	repos dataplanerepos.Repositories,
 	cache cache.Cache,
 	meter metric.Meter,
+	repos dataplanerepos.Repositories,
 ) dataplane.Dataplane {
 	logger = logger.With("usecase", "dataplane")
-	return dataplane.New(conf, logger, timer, publisher, repos, cache, meter)
+	return dataplane.New(conf, logger, timer, publisher, cache, meter, repos)
 }
 
 func NewScheduler(
@@ -34,12 +48,12 @@ func NewScheduler(
 	logger logging.Logger,
 	timer timer.Timer,
 	publisher streaming.Publisher,
-	repos schedulerrepos.Repositories,
 	cache cache.Cache,
 	meter metric.Meter,
+	repos schedulerrepos.Repositories,
 ) scheduler.Scheduler {
 	logger = logger.With("usecase", "scheduler")
-	return scheduler.New(conf, logger, timer, publisher, repos, cache, meter)
+	return scheduler.New(conf, logger, timer, publisher, cache, meter, repos)
 }
 
 func NewDispatcher(

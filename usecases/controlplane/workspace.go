@@ -1,4 +1,4 @@
-package dataplane
+package controlplane
 
 import (
 	"github.com/scrapnode/kanthor/config"
