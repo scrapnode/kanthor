@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
@@ -28,19 +29,19 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	return &ws, nil
 }
 
-func (sql *SqlWorkspace) ListByIds(ctx context.Context, ids []string) ([]entities.Workspace, error) {
+func (sql *SqlWorkspace) ListByIds(ctx context.Context, ids []string) (*structure.ListRes[entities.Workspace], error) {
+	res := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}
 	if len(ids) == 0 {
-		return []entities.Workspace{}, nil
+		return res, nil
 	}
 
 	var tx = sql.client.Model(&entities.Workspace{}).
 		Scopes(database.NotDeleted(sql.timer, &entities.Workspace{})).
 		Where("id IN ?", ids)
 
-	var workspaces []entities.Workspace
-	if tx.Find(&workspaces); tx.Error != nil {
+	if tx.Find(&res.Data); tx.Error != nil {
 		return nil, fmt.Errorf("workspace.list: %w", tx.Error)
 	}
 
-	return workspaces, nil
+	return res, nil
 }

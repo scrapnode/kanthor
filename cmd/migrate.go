@@ -105,7 +105,7 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 		},
 	}
 
-	command.Flags().BoolP("keep-running", "", false, "--keep-running: force migration running after finished to prevent it keep restarting. It's useful when you deployed it on UAT/PROD")
+	command.Flags().BoolP("keep-running", "", false, "--keep-running: force migration to run once finished to prevent it from keep restarting. It's useful when you deploy it on UAT/PROD.")
 
 	return command
 }

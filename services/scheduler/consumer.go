@@ -22,8 +22,8 @@ func Consumer(service *scheduler) streaming.SubHandler {
 			return nil
 		}
 
-		request := &usecase.ArrangeRequestsReq{Message: *msg}
-		response, err := service.uc.ArrangeRequests(context.TODO(), request)
+		request := &usecase.RequestArrangeReq{Message: *msg}
+		response, err := service.uc.Request().Arrange(context.TODO(), request)
 		if err != nil {
 			service.meter.Count("scheduler_arrange_request_error", 1)
 			service.logger.Error(err)

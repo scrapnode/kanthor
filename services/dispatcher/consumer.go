@@ -22,8 +22,8 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 			return nil
 		}
 
-		request := &usecase.SendRequestsReq{Request: *req}
-		response, err := service.uc.SendRequest(context.TODO(), request)
+		request := &usecase.ForwarderSendReq{Request: *req}
+		response, err := service.uc.Forwarder().Send(context.TODO(), request)
 		if err != nil {
 			service.meter.Count("dispatcher_send_request_error", 1)
 			service.logger.Error(err)
