@@ -39,10 +39,11 @@ func (authenticator *ask) Verify(token string) (*Account, error) {
 	}
 
 	account := &Account{
-		Sub:  authenticator.conf.AccessSecretKey.AccessKey,
-		Iss:  "kanthor.system",
-		Aud:  "kanthor",
-		Name: "Kanthor",
+		Sub:        authenticator.conf.AccessSecretKey.AccessKey,
+		Iss:        "kanthor.system",
+		Aud:        "kanthor",
+		Name:       "Kanthor",
+		Permission: Permission{Role: PermissionRoot},
 	}
 	return account, nil
 }

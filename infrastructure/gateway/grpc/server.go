@@ -10,7 +10,7 @@ import (
 	grpccore "google.golang.org/grpc"
 )
 
-func New(
+func NewServer(
 	logger logging.Logger,
 	meter metric.Meter,
 	authenticator authenticator.Authenticator,

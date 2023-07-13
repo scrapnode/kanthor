@@ -22,7 +22,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WsClient interface {
-	List(ctx context.Context, in *WsListReq, opts ...grpc.CallOption) (*WsListRes, error)
 	Get(ctx context.Context, in *WsGetReq, opts ...grpc.CallOption) (*Workspace, error)
 }
 
@@ -32,15 +31,6 @@ type wsClient struct {
 
 func NewWsClient(cc grpc.ClientConnInterface) WsClient {
 	return &wsClient{cc}
-}
-
-func (c *wsClient) List(ctx context.Context, in *WsListReq, opts ...grpc.CallOption) (*WsListRes, error) {
-	out := new(WsListRes)
-	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Ws/List", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *wsClient) Get(ctx context.Context, in *WsGetReq, opts ...grpc.CallOption) (*Workspace, error) {
@@ -56,7 +46,6 @@ func (c *wsClient) Get(ctx context.Context, in *WsGetReq, opts ...grpc.CallOptio
 // All implementations must embed UnimplementedWsServer
 // for forward compatibility
 type WsServer interface {
-	List(context.Context, *WsListReq) (*WsListRes, error)
 	Get(context.Context, *WsGetReq) (*Workspace, error)
 	mustEmbedUnimplementedWsServer()
 }
@@ -65,9 +54,6 @@ type WsServer interface {
 type UnimplementedWsServer struct {
 }
 
-func (UnimplementedWsServer) List(context.Context, *WsListReq) (*WsListRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
-}
 func (UnimplementedWsServer) Get(context.Context, *WsGetReq) (*Workspace, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
@@ -82,24 +68,6 @@ type UnsafeWsServer interface {
 
 func RegisterWsServer(s grpc.ServiceRegistrar, srv WsServer) {
 	s.RegisterService(&Ws_ServiceDesc, srv)
-}
-
-func _Ws_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WsListReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WsServer).List(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/kanthor.controlplane.v1.Ws/List",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WsServer).List(ctx, req.(*WsListReq))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Ws_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -127,10 +95,6 @@ var Ws_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "kanthor.controlplane.v1.Ws",
 	HandlerType: (*WsServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "List",
-			Handler:    _Ws_List_Handler,
-		},
 		{
 			MethodName: "Get",
 			Handler:    _Ws_Get_Handler,

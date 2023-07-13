@@ -10,4 +10,14 @@ type Account struct {
 	Picture string `json:"picture" yaml:"picture"`
 	Address string `json:"address" yaml:"address"`
 	Phone   string `json:"phone" yaml:"phone"`
+
+	Permission Permission `json:"permission" yaml:"permission"`
 }
+
+type Permission struct {
+	Role string `json:"role" yaml:"role"`
+}
+
+var (
+	PermissionRoot = "root"
+)

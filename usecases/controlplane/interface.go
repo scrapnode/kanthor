@@ -13,7 +13,7 @@ type Controlplane interface {
 
 type Workspace interface {
 	Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error)
-	ListByIds(ctx context.Context, req *WorkspaceListReq) (*WorkspaceListRes, error)
+	ListByIds(ctx context.Context, req *WorkspaceListByIdsReq) (*WorkspaceListByIdsRes, error)
 }
 
 type WorkspaceGetReq struct {
@@ -24,10 +24,10 @@ type WorkspaceGetRes struct {
 	Workspace entities.Workspace
 }
 
-type WorkspaceListReq struct {
+type WorkspaceListByIdsReq struct {
 	Ids []string
 }
 
-type WorkspaceListRes struct {
+type WorkspaceListByIdsRes struct {
 	Workspaces []entities.Workspace
 }

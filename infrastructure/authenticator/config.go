@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	Type            string                 `json:"type" yaml:"type" mapstructure:"type" validate:"required,oneof=access_secret_key"`
+	Engine          string                 `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=access_secret_key"`
 	AccessSecretKey *AccessSecretKeyConfig `json:"access_secret_key" yaml:"access_secret_key" mapstructure:"access_secret_key" validate:"-"`
 }
 
@@ -15,7 +15,7 @@ func (conf *Config) Validate() error {
 		return err
 	}
 
-	if conf.Type == "access_secret_key" {
+	if conf.Engine == "access_secret_key" {
 		if conf.AccessSecretKey == nil {
 			return errors.New("authenticator.config.access_secret_key: null value")
 		}

@@ -40,7 +40,7 @@ func (service *dataplane) Start(ctx context.Context) error {
 		return err
 	}
 
-	service.gateway = grpc.New(service.logger, service.meter, service.authenticator)
+	service.gateway = grpc.NewServer(service.logger, service.meter, service.authenticator)
 	protos.RegisterMsgServer(service.gateway, &msg{service: service})
 	reflection.Register(service.gateway)
 

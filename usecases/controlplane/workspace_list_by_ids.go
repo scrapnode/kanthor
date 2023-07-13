@@ -12,7 +12,11 @@ import (
 	"time"
 )
 
-func (usecase *worksapce) ListByIds(ctx context.Context, req *WorkspaceListReq) (*WorkspaceListRes, error) {
+func (usecase *worksapce) ListByIds(ctx context.Context, req *WorkspaceListByIdsReq) (*WorkspaceListByIdsRes, error) {
+	if len(req.Ids) == 0 {
+		return &WorkspaceListByIdsRes{Workspaces: []entities.Workspace{}}, nil
+	}
+
 	// workspaces of user does not change frequently, so we can sort the list of id and use cache here
 	sort.Strings(req.Ids)
 	cacheKey := cache.Key("WORKSPACE_BY_IDS", utils.Key(req.Ids...))
@@ -25,6 +29,6 @@ func (usecase *worksapce) ListByIds(ctx context.Context, req *WorkspaceListReq) 
 		return nil, fmt.Errorf("unable to list workspace by ids [%v]", req.Ids)
 	}
 
-	res := &WorkspaceListRes{Workspaces: list.Data}
+	res := &WorkspaceListByIdsRes{Workspaces: list.Data}
 	return res, nil
 }

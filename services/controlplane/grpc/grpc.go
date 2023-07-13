@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/enforcer"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
@@ -20,10 +21,11 @@ func New(
 	logger logging.Logger,
 	authenticator authenticator.Authenticator,
 	meter metric.Meter,
+	enforcer enforcer.Enforcer,
 	uc usecase.Controlplane,
 ) services.Service {
 	logger = logger.With("gateway", "grpc")
-	return &controlplane{conf: conf, logger: logger, authenticator: authenticator, meter: meter, uc: uc}
+	return &controlplane{conf: conf, logger: logger, authenticator: authenticator, meter: meter, enforcer: enforcer, uc: uc}
 }
 
 type controlplane struct {
@@ -32,6 +34,7 @@ type controlplane struct {
 	gateway       *grpccore.Server
 	authenticator authenticator.Authenticator
 	meter         metric.Meter
+	enforcer      enforcer.Enforcer
 	uc            usecase.Controlplane
 }
 
@@ -40,8 +43,9 @@ func (service *controlplane) Start(ctx context.Context) error {
 		return err
 	}
 
-	service.gateway = grpc.New(service.logger, service.meter, service.authenticator)
+	service.gateway = grpc.NewServer(service.logger, service.meter, service.authenticator)
 	protos.RegisterWsServer(service.gateway, &ws{service: service})
+	protos.RegisterAccountServer(service.gateway, &account{service: service})
 	reflection.Register(service.gateway)
 
 	service.logger.Info("started")

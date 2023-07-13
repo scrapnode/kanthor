@@ -12,7 +12,7 @@ type Scheduler struct {
 	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
 	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
 	Cache      *cache.Config              `json:"cache" yaml:"cache" validate:"-"`
-	Request    SchedulerRequest           `json:"arrange_requests" yaml:"arrange_requests" mapstructure:"arrange_requests" validate:"required"`
+	Request    Request                    `json:"request" yaml:"request" mapstructure:"request" validate:"required"`
 
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }
@@ -43,11 +43,11 @@ func (conf *Scheduler) Validate() error {
 	return nil
 }
 
-type SchedulerRequest struct {
-	Arrange SchedulerRequestArrange `json:"arrange" yaml:"arrange" mapstructure:"arrange" validate:"required"`
+type Request struct {
+	Arrange RequestArrange `json:"arrange" yaml:"arrange" mapstructure:"arrange" validate:"required"`
 }
 
-func (conf *SchedulerRequest) Validate() error {
+func (conf *Request) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return err
 	}
@@ -59,10 +59,10 @@ func (conf *SchedulerRequest) Validate() error {
 	return nil
 }
 
-type SchedulerRequestArrange struct {
+type RequestArrange struct {
 	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency" validate:"required,gt=0"`
 }
 
-func (conf *SchedulerRequestArrange) Validate() error {
+func (conf *RequestArrange) Validate() error {
 	return validator.New().Struct(conf)
 }

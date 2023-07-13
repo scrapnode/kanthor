@@ -69,9 +69,8 @@ func authenticate(
 		return ctx, err
 	}
 
-	ctx = context.WithValue(ctx, authenticator.CtxAuthAccount, account)
 	logger.Debugw("authenticated", "account_sub", account.Sub)
-	return ctx, nil
+	return authenticator.AccountWithContext(ctx, account), nil
 }
 
 func token(ctx context.Context, scheme string) (string, error) {

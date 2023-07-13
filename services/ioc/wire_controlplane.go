@@ -8,6 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/enforcer"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -28,6 +29,8 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 		cache.New,
 		ResolveControlplaneAuthenticatorConfig,
 		authenticator.New,
+		ResolveControlplaneEnforcerConfig,
+		enforcer.New,
 		ResolveControlplaneMetricConfig,
 		metric.New,
 	)
@@ -44,6 +47,10 @@ func ResolveControlplaneCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveControlplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.Controlplane.Authenticator
+}
+
+func ResolveControlplaneEnforcerConfig(conf *config.Config) *enforcer.Config {
+	return &conf.Controlplane.Enforcer
 }
 
 func ResolveControlplaneMetricConfig(conf *config.Config) *metric.Config {

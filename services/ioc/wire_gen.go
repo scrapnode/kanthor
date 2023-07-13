@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/enforcer"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -40,7 +41,9 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, repositories, cacheCache, meter)
-	service := controlplane.New(conf, logger, authenticatorAuthenticator, meter, controlplaneControlplane)
+	enforcerConfig := ResolveControlplaneEnforcerConfig(conf)
+	enforcerEnforcer := enforcer.New(enforcerConfig)
+	service := controlplane.New(conf, logger, authenticatorAuthenticator, meter, controlplaneControlplane, enforcerEnforcer)
 	return service, nil
 }
 
@@ -115,6 +118,10 @@ func ResolveControlplaneCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveControlplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.Controlplane.Authenticator
+}
+
+func ResolveControlplaneEnforcerConfig(conf *config.Config) *enforcer.Config {
+	return &conf.Controlplane.Enforcer
 }
 
 func ResolveControlplaneMetricConfig(conf *config.Config) *metric.Config {

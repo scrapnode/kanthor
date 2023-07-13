@@ -48,10 +48,15 @@ controlplane:
   grpc:
     addr: ":8080"
   authenticator:
-    type: access_secret_key
+    engine: access_secret_key
     access_secret_key:
       access_key: kanthor_administrator_account
       secret_key: a_long_long_secret_key_that_is_hard_to_exploited
+  enforcer:
+    engine: casbin
+    casbin:
+      model_source: file://./data/enforcer/casbin_rbac_model.conf
+      policy_source: file://./data/enforcer/casbin_rbac_policy.csv
   metrics:
     enable: false
     namespace: kanthor
@@ -62,7 +67,7 @@ dataplane:
   grpc:
     addr: ":8180"
   authenticator:
-    type: access_secret_key
+    engine: access_secret_key
     access_secret_key:
       access_key: kanthor_data_account
       secret_key: a_random_key_that_could_not_be_predicted
@@ -79,8 +84,9 @@ scheduler:
     filter_subject: kanthor.default.msg.>
     temporary: true
     max_deliver: 1
-  arrange_requests:
-    concurrency: 100
+  request:
+    arrange:
+      concurrency: 100
   metrics:
     enable: false
     namespace: kanthor

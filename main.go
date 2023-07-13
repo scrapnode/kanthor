@@ -39,7 +39,7 @@ func main() {
 	}()
 
 	if err := command.Execute(); err != nil {
-		logger.Errorf("main.error:", err.Error())
+		logger.Errorf("main.error: %v", err)
 		os.Exit(1)
 	}
 }
