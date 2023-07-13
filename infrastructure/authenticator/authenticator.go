@@ -1,6 +1,8 @@
 package authenticator
 
-import "github.com/scrapnode/kanthor/infrastructure/logging"
+import (
+	"github.com/scrapnode/kanthor/infrastructure/logging"
+)
 
 type Authenticator interface {
 	Scheme() string

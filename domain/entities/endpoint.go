@@ -54,3 +54,7 @@ type EndpointRule struct {
 func (entity *EndpointRule) TableName() string {
 	return "endpoint_rule"
 }
+
+func (entity *EndpointRule) GenId() {
+	entity.Id = utils.ID("epr")
+}

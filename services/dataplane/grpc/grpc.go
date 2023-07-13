@@ -8,6 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/services/dataplane/grpc/interceptors"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 	grpccore "google.golang.org/grpc"
@@ -40,7 +41,12 @@ func (service *dataplane) Start(ctx context.Context) error {
 		return err
 	}
 
-	service.gateway = grpc.NewServer(service.logger, service.meter, service.authenticator)
+	service.gateway = grpc.NewServer(
+		service.logger,
+		service.meter,
+		service.authenticator,
+		interceptors.Interceptors(),
+	)
 	protos.RegisterMsgServer(service.gateway, &msg{service: service})
 	reflection.Register(service.gateway)
 

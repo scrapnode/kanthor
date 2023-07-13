@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/services/controlplane/grpc/interceptors"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 	grpccore "google.golang.org/grpc"
@@ -25,7 +26,14 @@ func New(
 	uc usecase.Controlplane,
 ) services.Service {
 	logger = logger.With("gateway", "grpc")
-	return &controlplane{conf: conf, logger: logger, authenticator: authenticator, meter: meter, enforcer: enforcer, uc: uc}
+	return &controlplane{
+		conf:          conf,
+		logger:        logger,
+		authenticator: authenticator,
+		meter:         meter,
+		enforcer:      enforcer,
+		uc:            uc,
+	}
 }
 
 type controlplane struct {
@@ -43,7 +51,12 @@ func (service *controlplane) Start(ctx context.Context) error {
 		return err
 	}
 
-	service.gateway = grpc.NewServer(service.logger, service.meter, service.authenticator)
+	service.gateway = grpc.NewServer(
+		service.logger,
+		service.meter,
+		service.authenticator,
+		interceptors.Interceptors(service.logger, service.uc, service.enforcer),
+	)
 	protos.RegisterWsServer(service.gateway, &ws{service: service})
 	protos.RegisterAccountServer(service.gateway, &account{service: service})
 	reflection.Register(service.gateway)

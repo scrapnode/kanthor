@@ -2,7 +2,6 @@ package repos
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -21,11 +20,8 @@ type sql struct {
 	timer  timer.Timer
 	db     database.Database
 
-	client       *gorm.DB
-	application  *SqlApplication
-	endpoint     *SqlEndpoint
-	endpointRule *SqlEndpointRule
-	workspace    *SqlWorkspace
+	client    *gorm.DB
+	workspace *SqlWorkspace
 }
 
 func (repo *sql) Connect(ctx context.Context) error {
@@ -54,42 +50,4 @@ func (repo *sql) Workspace() Workspace {
 	}
 
 	return repo.workspace
-}
-
-func (repo *sql) Application() Application {
-	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.client, timer: repo.timer}
-	}
-
-	return repo.application
-}
-
-func (repo *sql) Endpoint() Endpoint {
-	if repo.endpoint == nil {
-		repo.endpoint = &SqlEndpoint{client: repo.client, timer: repo.timer}
-	}
-
-	return repo.endpoint
-}
-
-func (repo *sql) EndpointRule() EndpointRule {
-	if repo.endpointRule == nil {
-		repo.endpointRule = &SqlEndpointRule{client: repo.client, timer: repo.timer}
-	}
-
-	return repo.endpointRule
-}
-
-func TxListQuery(tx *gorm.DB, req structure.ListReq) *gorm.DB {
-	tx = tx.Order("id DESC")
-
-	if req.Limit > 0 {
-		tx = tx.Limit(req.Limit)
-	}
-
-	if req.Cursor == "" {
-		return tx
-	}
-
-	return tx.Where("id < ?", req.Cursor)
 }

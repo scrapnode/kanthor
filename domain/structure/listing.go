@@ -3,18 +3,12 @@ package structure
 import "github.com/scrapnode/kanthor/domain/entities"
 
 type ListReq struct {
-	Limit  int
 	Cursor string
 	Search string
+	Limit  int
 }
 
 type ListOps func(req *ListReq)
-
-func WithListLimit(limit int) ListOps {
-	return func(req *ListReq) {
-		req.Limit = limit
-	}
-}
 
 func WithListCursor(cursor string) ListOps {
 	return func(req *ListReq) {
@@ -25,6 +19,12 @@ func WithListCursor(cursor string) ListOps {
 func WithListSearch(search string) ListOps {
 	return func(req *ListReq) {
 		req.Search = search
+	}
+}
+
+func WithListLimit(limit int) ListOps {
+	return func(req *ListReq) {
+		req.Limit = limit
 	}
 }
 

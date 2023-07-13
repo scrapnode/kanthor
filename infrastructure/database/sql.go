@@ -6,6 +6,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
 	postgresdevier "gorm.io/driver/postgres"
@@ -118,4 +119,18 @@ func (db *sql) Migrator(source string) (migration.Migrator, error) {
 	}
 
 	return migration.NewSql(runner), nil
+}
+
+func TxListQuery(tx *gorm.DB, req structure.ListReq) *gorm.DB {
+	tx = tx.Order("id DESC")
+
+	if req.Limit > 0 {
+		tx = tx.Limit(req.Limit)
+	}
+
+	if req.Cursor == "" {
+		return tx
+	}
+
+	return tx.Where("id < ?", req.Cursor)
 }

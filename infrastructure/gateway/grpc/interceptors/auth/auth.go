@@ -24,7 +24,7 @@ func UnaryServerInterceptor(
 	) (resp interface{}, err error) {
 		ctx, err = authenticate(logger, engine, ctx)
 		if err != nil {
-			return nil, err
+			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
 
 		return handler(ctx, req)
@@ -43,7 +43,7 @@ func StreamServerInterceptor(
 	) error {
 		ctx, err := authenticate(logger, engine, ss.Context())
 		if err != nil {
-			return err
+			return status.Error(codes.Unauthenticated, err.Error())
 		}
 
 		wrapped := stream.WrapServerStream(ss)

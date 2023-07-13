@@ -17,7 +17,7 @@ type SqlWorkspace struct {
 
 func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
 	var ws entities.Workspace
-	tx := sql.client.Model(&ws).Preload("Tier").Where("id = ?", id).First(&ws)
+	tx := sql.client.WithContext(ctx).Model(&ws).Preload("Tier").Where("id = ?", id).First(&ws)
 	if tx.Error != nil {
 		return nil, fmt.Errorf("workspace.get: %w", tx.Error)
 	}
@@ -29,19 +29,49 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	return &ws, nil
 }
 
-func (sql *SqlWorkspace) ListByIds(ctx context.Context, ids []string) (*structure.ListRes[entities.Workspace], error) {
+func (sql *SqlWorkspace) ListOfAccountSub(ctx context.Context, sub string, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error) {
+	ws := &entities.Workspace{}
+	wsc := &entities.WorkspacePrivilege{}
+	join := fmt.Sprintf("JOIN %s ON %s.id = %s.workspace_id", ws.TableName(), ws.TableName(), wsc.TableName())
+	selects := fmt.Sprintf("%s.*", ws.TableName())
+
+	tx := sql.client.
+		WithContext(ctx).
+		Model(wsc).
+		Joins(join).
+		Where(fmt.Sprintf("%s.account_sub = ?", wsc.TableName()), sub).
+		Scopes(database.NotDeleted(sql.timer, ws)).
+		Scopes(database.NotDeleted(sql.timer, wsc)).
+		Select(selects)
+	tx = database.TxListQuery(tx, structure.ListReqBuild(opts))
+
 	res := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}
-	if len(ids) == 0 {
-		return res, nil
-	}
-
-	var tx = sql.client.Model(&entities.Workspace{}).
-		Scopes(database.NotDeleted(sql.timer, &entities.Workspace{})).
-		Where("id IN ?", ids)
-
-	if tx.Find(&res.Data); tx.Error != nil {
-		return nil, fmt.Errorf("workspace.list: %w", tx.Error)
+	if tx = tx.Find(&res.Data); tx.Error != nil {
+		return nil, tx.Error
 	}
 
 	return res, nil
+}
+
+func (sql *SqlWorkspace) GetByAccountSub(ctx context.Context, id, sub string) (*entities.Workspace, error) {
+	ws := &entities.Workspace{}
+	wsc := &entities.WorkspacePrivilege{}
+	join := fmt.Sprintf("JOIN %s ON %s.id = %s.workspace_id", ws.TableName(), ws.TableName(), wsc.TableName())
+	selects := fmt.Sprintf("%s.*", ws.TableName())
+
+	tx := sql.client.
+		WithContext(ctx).
+		Model(wsc).
+		Joins(join).
+		Where(fmt.Sprintf("%s.id = ?", ws.TableName()), id).
+		Where(fmt.Sprintf("%s.account_sub = ?", wsc.TableName()), sub).
+		Scopes(database.NotDeleted(sql.timer, ws)).
+		Scopes(database.NotDeleted(sql.timer, wsc)).
+		Select(selects)
+
+	if tx = tx.First(&ws); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return ws, nil
 }

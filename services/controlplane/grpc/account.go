@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
@@ -14,13 +15,20 @@ type account struct {
 	service *controlplane
 }
 
-func (server *account) ListWorkspaces(ctx context.Context, _ *protos.ListWorkspacesReq) (*protos.ListWorkspacesRes, error) {
-	wsIds := authenticator.WorkspaceIdsFromContext(ctx)
-	request := &usecase.WorkspaceListByIdsReq{Ids: wsIds}
-	response, err := server.service.uc.Workspace().ListByIds(ctx, request)
+func (server *account) ListWorkspaces(ctx context.Context, req *protos.ListWorkspacesReq) (*protos.ListWorkspacesRes, error) {
+	acc := authenticator.AccountFromContext(ctx)
+	request := &usecase.WorkspaceListOfAccountReq{
+		ListReq: structure.ListReq{
+			Cursor: req.Cursor,
+			Search: req.Search,
+			Limit:  int(req.Limit),
+		},
+		AccountSub: acc.Sub,
+	}
+
+	response, err := server.service.uc.Workspace().ListOfAccount(ctx, request)
 	if err != nil {
-		server.service.logger.Errorw(err.Error(), "ws_ids", wsIds)
-		return nil, status.Error(codes.Internal, "unable to retrieve data from list workspace")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	res := &protos.ListWorkspacesRes{Data: []*protos.Workspace{}}

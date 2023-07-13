@@ -14,7 +14,4 @@ func New(conf *database.Config, logger logging.Logger, timer timer.Timer) Reposi
 type Repositories interface {
 	patterns.Connectable
 	Workspace() Workspace
-	Application() Application
-	Endpoint() Endpoint
-	EndpointRule() EndpointRule
 }

@@ -20,6 +20,6 @@ func (usecase *worksapce) Get(ctx context.Context, req *WorkspaceGetReq) (*Works
 		return nil, fmt.Errorf("unable to find workspace [%s]", req.Id)
 	}
 
-	res := &WorkspaceGetRes{Workspace: *ws}
+	res := &WorkspaceGetRes{Workspace: ws}
 	return res, nil
 }

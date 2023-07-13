@@ -3,6 +3,7 @@ package controlplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
@@ -13,7 +14,8 @@ type Controlplane interface {
 
 type Workspace interface {
 	Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error)
-	ListByIds(ctx context.Context, req *WorkspaceListByIdsReq) (*WorkspaceListByIdsRes, error)
+	ListOfAccount(ctx context.Context, req *WorkspaceListOfAccountReq) (*WorkspaceListOfAccountRes, error)
+	GetByAccount(ctx context.Context, req *WorkspaceGetByAccountReq) (*WorkspaceGetByAccountRes, error)
 }
 
 type WorkspaceGetReq struct {
@@ -21,13 +23,24 @@ type WorkspaceGetReq struct {
 }
 
 type WorkspaceGetRes struct {
-	Workspace entities.Workspace
+	Workspace *entities.Workspace
 }
 
-type WorkspaceListByIdsReq struct {
-	Ids []string
+type WorkspaceListOfAccountReq struct {
+	structure.ListReq
+	AccountSub string
 }
 
-type WorkspaceListByIdsRes struct {
+type WorkspaceListOfAccountRes struct {
 	Workspaces []entities.Workspace
+}
+
+type WorkspaceGetByAccountReq struct {
+	WorkspaceId string
+	AccountSub  string
+}
+
+type WorkspaceGetByAccountRes struct {
+	Workspace *entities.Workspace
+	Privilege *entities.WorkspacePrivilege
 }
