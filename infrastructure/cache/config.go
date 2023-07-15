@@ -8,5 +8,8 @@ type Config struct {
 }
 
 func (conf *Config) Validate() error {
-	return validator.New().Struct(conf)
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
 }

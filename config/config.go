@@ -7,7 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 )
 
@@ -15,10 +14,9 @@ type Config struct {
 	Version string
 	Bucket  Bucket `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
 
-	Logger    logging.Config             `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
-	Streaming streaming.ConnectionConfig `json:"streaming" yaml:"streaming" mapstructure:"streaming" validate:"required"`
-	Database  database.Config            `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
-	Cache     cache.Config               `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
+	Logger   logging.Config  `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
+	Database database.Config `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
+	Cache    cache.Config    `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 
 	Migration    Migration    `json:"migration" yaml:"migration" mapstructure:"migration"`
 	Controlplane Controlplane `json:"controlplane" yaml:"controlplane" mapstructure:"controlplane"`
@@ -40,9 +38,6 @@ func (conf *Config) Validate(service string) error {
 	}
 	if err := conf.Database.Validate(); err != nil {
 		return fmt.Errorf("config.Database: %v", err)
-	}
-	if err := conf.Streaming.Validate(); err != nil {
-		return fmt.Errorf("config.Streaming: %v", err)
 	}
 	if err := conf.Cache.Validate(); err != nil {
 		return fmt.Errorf("config.Cache: %v", err)
@@ -72,14 +67,6 @@ type Bucket struct {
 }
 
 func (conf *Bucket) Validate() error {
-	return validator.New().Struct(conf)
-}
-
-type Server struct {
-	Addr string `json:"addr" yaml:"addr" mapstructure:"addr" validate:"required"`
-}
-
-func (conf *Server) Validate() error {
 	return validator.New().Struct(conf)
 }
 

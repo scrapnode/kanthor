@@ -23,7 +23,7 @@ type NatsPublisher struct {
 }
 
 func (publisher *NatsPublisher) Connect(ctx context.Context) error {
-	conn, err := NewNats(publisher.conf.ConnectionConfig, publisher.logger)
+	conn, err := NewNats(publisher.conf.Connection, publisher.logger)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 	}
 	publisher.js = js
 
-	stream, err := NewNatsStream(publisher.conf.ConnectionConfig, js)
+	stream, err := NewNatsStream(publisher.conf.Connection, js)
 	if err != nil {
 		return err
 	}

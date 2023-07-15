@@ -21,7 +21,7 @@ func UnaryServerInterceptor(logger logging.Logger) grpccore.UnaryServerIntercept
 				stack := make([]byte, 64<<10)
 				stack = stack[:runtime.Stack(stack, false)]
 
-				logger.Errorw("SYSTEM.ERROR.RECOVER", "panic", r, "stack", stack)
+				logger.Errorw("SYSTEM.ERROR.RECOVER", "panic", r, "stack", string(stack))
 				err = status.Error(codes.Internal, "SYSTEM.ERROR")
 			}
 		}()
@@ -42,7 +42,7 @@ func StreamServerInterceptor(logger logging.Logger) grpccore.StreamServerInterce
 				stack := make([]byte, 64<<10)
 				stack = stack[:runtime.Stack(stack, false)]
 
-				logger.Errorw("SYSTEM.ERROR.RECOVER", "panic", r, "stack", stack)
+				logger.Errorw("SYSTEM.ERROR.RECOVER", "panic", r, "stack", string(stack))
 				err = status.Error(codes.Internal, "SYSTEM.ERROR")
 			}
 		}()

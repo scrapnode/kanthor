@@ -9,9 +9,9 @@ package ioc
 import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
-	"github.com/scrapnode/kanthor/infrastructure/enforcer"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -33,6 +33,8 @@ import (
 func InitializeControlplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	authenticatorConfig := ResolveControlplaneAuthenticatorConfig(conf)
 	authenticatorAuthenticator := authenticator.New(authenticatorConfig, logger)
+	authorizatorConfig := ResolveControlplaneAuthorizatorConfig(conf)
+	authorizatorAuthorizator := authorizator.New(authorizatorConfig)
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	timerTimer := timer.New()
@@ -41,9 +43,7 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, repositories, cacheCache, meter)
-	enforcerConfig := ResolveControlplaneEnforcerConfig(conf)
-	enforcerEnforcer := enforcer.New(enforcerConfig)
-	service := controlplane.New(conf, logger, authenticatorAuthenticator, meter, controlplaneControlplane, enforcerEnforcer)
+	service := controlplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, controlplaneControlplane)
 	return service, nil
 }
 
@@ -109,19 +109,15 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 // wire_controlplane.go:
 
 func ResolveControlplaneCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Controlplane.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Controlplane.Cache
+	return &conf.Controlplane.Cache
 }
 
 func ResolveControlplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.Controlplane.Authenticator
 }
 
-func ResolveControlplaneEnforcerConfig(conf *config.Config) *enforcer.Config {
-	return &conf.Controlplane.Enforcer
+func ResolveControlplaneAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.Controlplane.Authorizator
 }
 
 func ResolveControlplaneMetricConfig(conf *config.Config) *metric.Config {
@@ -131,19 +127,11 @@ func ResolveControlplaneMetricConfig(conf *config.Config) *metric.Config {
 // wire_dataplane.go:
 
 func ResolveDataplanePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	publisher := conf.Dataplane.Publisher
-	if publisher.ConnectionConfig == nil {
-		publisher.ConnectionConfig = &conf.Streaming
-	}
-	return &publisher
+	return &conf.Dataplane.Publisher
 }
 
 func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Dataplane.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Dataplane.Cache
+	return &conf.Dataplane.Cache
 }
 
 func ResolveDataplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
@@ -157,28 +145,15 @@ func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {
 // wire_dispatcher.go:
 
 func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	publisher := conf.Scheduler.Publisher
-	if publisher.ConnectionConfig == nil {
-		publisher.ConnectionConfig = &conf.Streaming
-	}
-	return &publisher
+	return &conf.Scheduler.Publisher
 }
 
 func ResolveDispatcherSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	subscriber := conf.Dispatcher.Subscriber
-	if subscriber.ConnectionConfig == nil {
-		subscriber.ConnectionConfig = &conf.Streaming
-	}
-
-	return &subscriber
+	return &conf.Dispatcher.Subscriber
 }
 
 func ResolveDispatcherCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Dispatcher.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Dispatcher.Cache
+	return &conf.Dispatcher.Cache
 }
 
 func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.Config {
@@ -196,28 +171,15 @@ func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *
 // wire_scheduler.go:
 
 func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	publisher := conf.Scheduler.Publisher
-	if publisher.ConnectionConfig == nil {
-		publisher.ConnectionConfig = &conf.Streaming
-	}
-	return &publisher
+	return &conf.Scheduler.Publisher
 }
 
 func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	subscriber := conf.Scheduler.Subscriber
-	if subscriber.ConnectionConfig == nil {
-		subscriber.ConnectionConfig = &conf.Streaming
-	}
-
-	return &subscriber
+	return &conf.Scheduler.Subscriber
 }
 
 func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Scheduler.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Scheduler.Cache
+	return &conf.Scheduler.Cache
 }
 
 func ResolveSchedulerMetricConfig(conf *config.Config) *metric.Config {

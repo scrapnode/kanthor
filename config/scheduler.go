@@ -11,7 +11,7 @@ import (
 type Scheduler struct {
 	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
 	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
-	Cache      *cache.Config              `json:"cache" yaml:"cache" validate:"-"`
+	Cache      cache.Config               `json:"cache" yaml:"cache" validate:"required"`
 	Request    Request                    `json:"request" yaml:"request" mapstructure:"request" validate:"required"`
 
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
@@ -31,10 +31,8 @@ func (conf *Scheduler) Validate() error {
 	if err := conf.Request.Validate(); err != nil {
 		return fmt.Errorf("config.Scheduler.Subscriber: %v", err)
 	}
-	if conf.Cache != nil {
-		if err := conf.Cache.Validate(); err != nil {
-			return fmt.Errorf("config.Scheduler.Cache: %v", err)
-		}
+	if err := conf.Cache.Validate(); err != nil {
+		return fmt.Errorf("config.Dataplane.Cache: %v", err)
 	}
 	if err := conf.Metrics.Validate(); err != nil {
 		return fmt.Errorf("config.Scheduler.Metrics: %v", err)

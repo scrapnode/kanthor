@@ -29,21 +29,3 @@ type WorkspaceTier struct {
 func (entity *WorkspaceTier) TableName() string {
 	return "workspace_tier"
 }
-
-type WorkspacePrivilege struct {
-	Entity
-	AuditTime
-	SoftDelete
-
-	WorkspaceId string `json:"workspace_id"`
-	AccountSub  string `json:"account_sub"`
-	AccountRole string `json:"account_role"`
-}
-
-func (entity *WorkspacePrivilege) TableName() string {
-	return "workspace_privilege"
-}
-
-func (entity *WorkspacePrivilege) GenId() {
-	entity.Id = utils.ID("wsp")
-}

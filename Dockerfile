@@ -30,22 +30,13 @@ RUN chmod +x /app/entrypoint.sh
 
 COPY --from=build /app/.kanthor/kanthor ./kanthor
 
-# HTTP for setup services
-EXPOSE 8080-8089
-# HTTP for dataplane service
-EXPOSE 8180-8189
-# HTTP for scheduler service
-EXPOSE 8280-8289
-# HTTP for dispatcher service
-EXPOSE 8380-8389
-
-# gRPC for setup services
-EXPOSE 9080-9089
-# gRPC for dataplane service
-EXPOSE 9180-9189
-# gRPC for scheduler service
-EXPOSE 9280-9289
-# gRPC for dispatcher service
-EXPOSE 9380-9389
+# controlplane
+EXPOSE 8080,8081,9090
+# dataplane
+EXPOSE 8180,8181,9190
+# scheduler
+EXPOSE 8280,8281,9290
+# dispatcher
+EXPOSE 8380,8381,9390
 
 ENTRYPOINT ["/app/entrypoint.sh"]

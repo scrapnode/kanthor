@@ -5,10 +5,11 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc"
+	gatewayinterceptors "github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors"
+	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors/auth"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/dataplane/grpc/interceptors"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 	grpccore "google.golang.org/grpc"
@@ -42,10 +43,9 @@ func (service *dataplane) Start(ctx context.Context) error {
 	}
 
 	service.gateway = grpc.NewServer(
-		service.logger,
-		service.meter,
-		service.authenticator,
-		interceptors.Interceptors(),
+		gatewayinterceptors.WithRecovery(service.logger),
+		gatewayinterceptors.WithMeasurement(service.meter),
+		gatewayinterceptors.WithAuth(service.logger, service.authenticator, auth.DefaultPublic()),
 	)
 	protos.RegisterMsgServer(service.gateway, &msg{service: service})
 	reflection.Register(service.gateway)
@@ -66,7 +66,7 @@ func (service *dataplane) Stop(ctx context.Context) error {
 }
 
 func (service *dataplane) Run(ctx context.Context) error {
-	addr := service.conf.Dataplane.GRPC.Addr
+	addr := service.conf.Dataplane.Gateway.GRPC.Addr
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {

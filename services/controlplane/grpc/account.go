@@ -16,14 +16,14 @@ type account struct {
 }
 
 func (server *account) ListWorkspaces(ctx context.Context, req *protos.ListWorkspacesReq) (*protos.ListWorkspacesRes, error) {
-	acc := authenticator.AccountFromContext(ctx)
+	acc := ctx.Value(authenticator.CtxAuthAccount).(*authenticator.Account)
 	request := &usecase.WorkspaceListOfAccountReq{
 		ListReq: structure.ListReq{
 			Cursor: req.Cursor,
 			Search: req.Search,
 			Limit:  int(req.Limit),
 		},
-		AccountSub: acc.Sub,
+		Account: acc,
 	}
 
 	response, err := server.service.uc.Workspace().ListOfAccount(ctx, request)

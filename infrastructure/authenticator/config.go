@@ -33,5 +33,8 @@ type AccessSecretKeyConfig struct {
 }
 
 func (conf *AccessSecretKeyConfig) Validate() error {
-	return validator.New().Struct(conf)
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
 }

@@ -4,8 +4,10 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/enforcer"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc"
+	gatewayinterceptors "github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors"
+	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors/auth"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
@@ -21,8 +23,8 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	authenticator authenticator.Authenticator,
+	authorizator authorizator.Authorizator,
 	meter metric.Meter,
-	enforcer enforcer.Enforcer,
 	uc usecase.Controlplane,
 ) services.Service {
 	logger = logger.With("gateway", "grpc")
@@ -31,7 +33,7 @@ func New(
 		logger:        logger,
 		authenticator: authenticator,
 		meter:         meter,
-		enforcer:      enforcer,
+		authorizator:  authorizator,
 		uc:            uc,
 	}
 }
@@ -41,8 +43,8 @@ type controlplane struct {
 	logger        logging.Logger
 	gateway       *grpccore.Server
 	authenticator authenticator.Authenticator
+	authorizator  authorizator.Authorizator
 	meter         metric.Meter
-	enforcer      enforcer.Enforcer
 	uc            usecase.Controlplane
 }
 
@@ -52,12 +54,11 @@ func (service *controlplane) Start(ctx context.Context) error {
 	}
 
 	service.gateway = grpc.NewServer(
-		service.logger,
-		service.meter,
-		service.authenticator,
-		interceptors.Interceptors(service.logger, service.uc, service.enforcer),
+		gatewayinterceptors.WithRecovery(service.logger),
+		gatewayinterceptors.WithMeasurement(service.meter),
+		gatewayinterceptors.WithAuth(service.logger, service.authenticator, auth.DefaultPublic()),
+		interceptors.WithAuthz(service.logger, service.authorizator),
 	)
-	protos.RegisterWsServer(service.gateway, &ws{service: service})
 	protos.RegisterAccountServer(service.gateway, &account{service: service})
 	reflection.Register(service.gateway)
 
@@ -77,7 +78,7 @@ func (service *controlplane) Stop(ctx context.Context) error {
 }
 
 func (service *controlplane) Run(ctx context.Context) error {
-	addr := service.conf.Controlplane.GRPC.Addr
+	addr := service.conf.Controlplane.Gateway.GRPC.Addr
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {

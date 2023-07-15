@@ -7,7 +7,6 @@ import (
 )
 
 type Workspace interface {
+	List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error)
 	Get(ctx context.Context, id string) (*entities.Workspace, error)
-	ListOfAccountSub(ctx context.Context, sub string, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error)
-	GetByAccountSub(ctx context.Context, id, sub string) (*entities.Workspace, error)
 }

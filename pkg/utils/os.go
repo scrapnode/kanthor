@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -38,4 +40,14 @@ func AbsPathify(in string) string {
 	}
 
 	return ""
+}
+
+func Liveness(name string) error {
+	fp := path.Join(os.TempDir(), fmt.Sprintf("%s.liveness", name))
+	return os.WriteFile(fp, []byte("live"), os.ModePerm)
+}
+
+func Readiness(name string) error {
+	fp := path.Join(os.TempDir(), fmt.Sprintf("%s.readiness", name))
+	return os.WriteFile(fp, []byte("live"), os.ModePerm)
 }

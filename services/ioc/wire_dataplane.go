@@ -38,19 +38,11 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 }
 
 func ResolveDataplanePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	publisher := conf.Dataplane.Publisher
-	if publisher.ConnectionConfig == nil {
-		publisher.ConnectionConfig = &conf.Streaming
-	}
-	return &publisher
+	return &conf.Dataplane.Publisher
 }
 
 func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Dataplane.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Dataplane.Cache
+	return &conf.Dataplane.Cache
 }
 
 func ResolveDataplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {

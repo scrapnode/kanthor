@@ -27,7 +27,7 @@ type NatsSubscriber struct {
 }
 
 func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
-	conn, err := NewNats(subscriber.conf.ConnectionConfig, subscriber.logger)
+	conn, err := NewNats(subscriber.conf.Connection, subscriber.logger)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 	}
 	subscriber.js = js
 
-	subscriber.stream, err = NewNatsStream(subscriber.conf.ConnectionConfig, js)
+	subscriber.stream, err = NewNatsStream(subscriber.conf.Connection, js)
 	if err != nil {
 		return err
 	}

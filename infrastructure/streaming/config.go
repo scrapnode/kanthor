@@ -8,7 +8,10 @@ type ConnectionConfig struct {
 }
 
 func (conf *ConnectionConfig) Validate() error {
-	return validator.New().Struct(conf)
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
 }
 
 type StreamConfig struct {
@@ -24,5 +27,8 @@ type StreamConfig struct {
 }
 
 func (conf *StreamConfig) Validate() error {
-	return validator.New().Struct(conf)
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
 }

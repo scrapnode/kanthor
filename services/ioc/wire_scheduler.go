@@ -37,28 +37,15 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 }
 
 func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	publisher := conf.Scheduler.Publisher
-	if publisher.ConnectionConfig == nil {
-		publisher.ConnectionConfig = &conf.Streaming
-	}
-	return &publisher
+	return &conf.Scheduler.Publisher
 }
 
 func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	subscriber := conf.Scheduler.Subscriber
-	if subscriber.ConnectionConfig == nil {
-		subscriber.ConnectionConfig = &conf.Streaming
-	}
-
-	return &subscriber
+	return &conf.Scheduler.Subscriber
 }
 
 func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Scheduler.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Scheduler.Cache
+	return &conf.Scheduler.Cache
 }
 
 func ResolveSchedulerMetricConfig(conf *config.Config) *metric.Config {

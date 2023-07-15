@@ -34,7 +34,7 @@ func main() {
 	defer func() {
 		if r := recover(); r != nil {
 			logger.Errorf("main.recover: %v", r)
-			logger.Errorf("main.recover.trace: %s", string(debug.Stack()))
+			logger.Errorf("main.recover.trace: %s", debug.Stack())
 		}
 	}()
 

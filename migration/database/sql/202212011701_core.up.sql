@@ -16,18 +16,6 @@ CREATE TABLE IF NOT EXISTS workspace_tier
     name         VARCHAR(256) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS workspace_privilege
-(
-    id           VARCHAR(64)  NOT NULL PRIMARY KEY,
-    created_at   BIGINT       NOT NULL DEFAULT 0,
-    updated_at   BIGINT       NOT NULL DEFAULT 0,
-    deleted_at   BIGINT       NOT NULL DEFAULT 0,
-
-    workspace_id VARCHAR(64)  NOT NULL,
-    account_sub  VARCHAR(64)  NOT NULL,
-    account_role VARCHAR(256) NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS application
 (
     id           VARCHAR(64)  NOT NULL PRIMARY KEY,

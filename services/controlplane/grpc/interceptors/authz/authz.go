@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/enforcer"
-	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/metadata"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/stream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 	grpccore "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,8 +16,7 @@ import (
 
 func UnaryServerInterceptor(
 	logger logging.Logger,
-	uc usecase.Controlplane,
-	engine enforcer.Enforcer,
+	engine authorizator.Authorizator,
 ) grpccore.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -26,7 +24,7 @@ func UnaryServerInterceptor(
 		info *grpccore.UnaryServerInfo,
 		handler grpccore.UnaryHandler,
 	) (resp interface{}, err error) {
-		ctx, err = authorize(logger, uc, engine, ctx, info.FullMethod)
+		ctx, err = authorize(logger, engine, ctx, info.FullMethod)
 		if err != nil {
 			return nil, err
 		}
@@ -37,8 +35,7 @@ func UnaryServerInterceptor(
 
 func StreamServerInterceptor(
 	logger logging.Logger,
-	uc usecase.Controlplane,
-	engine enforcer.Enforcer,
+	engine authorizator.Authorizator,
 ) grpccore.StreamServerInterceptor {
 	return func(
 		srv interface{},
@@ -46,7 +43,7 @@ func StreamServerInterceptor(
 		info *grpccore.StreamServerInfo,
 		handler grpccore.StreamHandler,
 	) error {
-		ctx, err := authorize(logger, uc, engine, ss.Context(), info.FullMethod)
+		ctx, err := authorize(logger, engine, ss.Context(), info.FullMethod)
 		if err != nil {
 			return err
 		}
@@ -59,48 +56,42 @@ func StreamServerInterceptor(
 
 func authorize(
 	logger logging.Logger,
-	uc usecase.Controlplane,
-	engine enforcer.Enforcer,
+	engine authorizator.Authorizator,
 	ctx context.Context,
 	method string,
 ) (context.Context, error) {
-	acc := authenticator.AccountFromContext(ctx)
-	res, err := ws(uc, ctx, acc)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+	if public, ok := ctx.Value(gateway.AccessPublicable).(bool); ok && public {
+		return ctx, nil
+	}
+
+	acc, ok := ctx.Value(authenticator.CtxAuthAccount).(*authenticator.Account)
+	if !ok {
+		return ctx, status.Error(codes.Unauthenticated, "unknown account")
+	}
+
+	meta := gateway.ExtractIncoming(ctx)
+	ws := meta.Get("x-kanthor-workspace")
+	if ws == "" {
+		return ctx, status.Error(codes.InvalidArgument, "unknown workspace")
 	}
 
 	obj, act, err := action(method)
 	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	ok, err := engine.Enforce(res.Privilege.AccountRole, obj, act)
+	ok, err = engine.Enforce(acc.Sub, ws, obj, act)
 	if err != nil {
-		logger.Errorw(err.Error(), "workspace_id", res.Workspace.Id, "account_sub", acc.Sub)
-		return nil, status.Error(codes.Internal, "unable to verify request")
+		logger.Errorw(err.Error(), "workspace_id", ws, "account_sub", acc.Sub)
+		return nil, status.Error(codes.Internal, "unable to perform authorization")
 	}
 
 	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "you cannot perform this action on this workspace")
+		return nil, status.Error(codes.PermissionDenied, "you cannot perform the action on selected workspace")
 	}
 
-	logger.Debugw("granted permission", "workspace_id", res.Workspace.Id, "account_sub", acc.Sub)
+	logger.Debugw("granted permission", "workspace_id", ws, "account_sub", acc.Sub)
 	return ctx, nil
-}
-
-func ws(uc usecase.Controlplane, ctx context.Context, acc *authenticator.Account) (*usecase.WorkspaceGetByAccountRes, error) {
-	wsId := metadata.Metadata(ctx).Get("x-kanthor-workspace")[0]
-	if wsId == "" {
-		return nil, errors.New("request without selected workspace is denied")
-	}
-
-	req := &usecase.WorkspaceGetByAccountReq{WorkspaceId: wsId, AccountSub: acc.Sub}
-	res, err := uc.Workspace().GetByAccount(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func action(method string) (string, string, error) {

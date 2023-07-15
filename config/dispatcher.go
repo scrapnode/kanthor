@@ -14,7 +14,7 @@ type Dispatcher struct {
 	Publisher      streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
 	Subscriber     streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
 	Sender         sender.Config              `json:"sender" yaml:"sender" mapstructure:"sender" validate:"required"`
-	Cache          *cache.Config              `json:"cache" yaml:"cache" mapstructure:"cache" validate:"-"`
+	Cache          cache.Config               `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 	CircuitBreaker circuitbreaker.Config      `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker" validate:"required"`
 
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
@@ -34,10 +34,8 @@ func (conf *Dispatcher) Validate() error {
 	if err := conf.Sender.Validate(); err != nil {
 		return fmt.Errorf("config.Dispatcher.Sender: %v", err)
 	}
-	if conf.Cache != nil {
-		if err := conf.Cache.Validate(); err != nil {
-			return fmt.Errorf("config.Dispatcher.Cache: %v", err)
-		}
+	if err := conf.Cache.Validate(); err != nil {
+		return fmt.Errorf("config.Dataplane.Cache: %v", err)
 	}
 	if err := conf.CircuitBreaker.Validate(); err != nil {
 		return fmt.Errorf("config.Dispatcher.CircuitBreaker: %v", err)

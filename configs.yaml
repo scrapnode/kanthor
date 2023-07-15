@@ -1,15 +1,5 @@
-# normal
-bucket:
-  layout: "20060102"
-
-# components
-logger:
-  pretty: true
-  level: debug
-  with:
-    environment: localhost
-
-streaming:
+# shares
+streaming: &streaming
   uri: nats://127.0.0.1:4222
   stream:
     name: default
@@ -24,39 +14,54 @@ streaming:
       # 60*60*24*3 = 3d
       age: 259200
 
-database:
-  uri: sqlite3://./.kanthor/database.sqlite
-
-cache:
-  uri: memory://bigcache
+cache: &cache
+  uri: redis://127.0.0.1:6379/1
   time_to_live: 300000
 
+authenticator: &authenticator
+  engine: access_secret_key
+  access_secret_key:
+    access_key: kanthor_root_key
+    secret_key: kanthor_root_password
+
+# common
+bucket:
+  layout: "20060102"
+
+logger:
+  pretty: true
+  level: debug
+  with:
+    environment: localhost
+
+database:
+  uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
+
 datastore:
-  uri: sqlite3://./.kanthor/datastore.sqlite
+  uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
 
 # services
 migration:
   tasks:
     - name: database
-      uri: sqlite3://./.kanthor/database.sqlite
+      uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
       source: file://./migration/database/sql
     - name: datastore
-      uri: sqlite3://./.kanthor/datastore.sqlite
+      uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
       source: file://./migration/datastore/sql
 
 controlplane:
-  grpc:
-    addr: ":8080"
-  authenticator:
-    engine: access_secret_key
-    access_secret_key:
-      access_key: kanthor_administrator_account
-      secret_key: a_long_long_secret_key_that_is_hard_to_exploited
-  enforcer:
+  authenticator: *authenticator
+  authorizator:
     engine: casbin
     casbin:
-      model_source: file://./data/enforcer/casbin_rbac_model.conf
-      policy_source: file://./data/enforcer/casbin_rbac_policy.csv
+      model_source: file://./data/authorizator/casbin_rbac_model.conf
+      policy_source: file://./data/authorizator/casbin_rbac_policy.csv
+  cache: *cache
+  gateway:
+    protocol: grpc
+    grpc:
+      addr: ":8081"
   metrics:
     enable: false
     namespace: kanthor
@@ -64,13 +69,14 @@ controlplane:
       addr: ":9090"
 
 dataplane:
-  grpc:
-    addr: ":8180"
-  authenticator:
-    engine: access_secret_key
-    access_secret_key:
-      access_key: kanthor_data_account
-      secret_key: a_random_key_that_could_not_be_predicted
+  authenticator: *authenticator
+  publisher:
+    connection: *streaming
+  cache: *cache
+  gateway:
+    protocol: grpc
+    grpc:
+      addr: ":8181"
   metrics:
     enable: false
     namespace: kanthor
@@ -78,7 +84,10 @@ dataplane:
       addr: ":9190"
 
 scheduler:
+  publisher:
+    connection: *streaming
   subscriber:
+    connection: *streaming
     topic: schedule
     group: default
     filter_subject: kanthor.default.msg.>
@@ -87,6 +96,7 @@ scheduler:
   request:
     arrange:
       concurrency: 100
+  cache: *cache
   metrics:
     enable: false
     namespace: kanthor
@@ -94,7 +104,10 @@ scheduler:
       addr: ":9290"
 
 dispatcher:
+  publisher:
+    connection: *streaming
   subscriber:
+    connection: *streaming
     topic: dispatch
     group: default
     filter_subject: kanthor.default.req.>
@@ -112,6 +125,7 @@ dispatcher:
     half_open_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
     open_state_duration: 300000
+  cache: *cache
   metrics:
     enable: false
     namespace: kanthor

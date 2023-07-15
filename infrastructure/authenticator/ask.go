@@ -24,6 +24,7 @@ func (authenticator *ask) Scheme() string {
 func (authenticator *ask) Verify(token string) (*Account, error) {
 	bytes, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
+		authenticator.logger.Error(err)
 		return nil, ErrMalformedToken
 	}
 
@@ -39,11 +40,10 @@ func (authenticator *ask) Verify(token string) (*Account, error) {
 	}
 
 	account := &Account{
-		Sub:        authenticator.conf.AccessSecretKey.AccessKey,
-		Iss:        "kanthor.system",
-		Aud:        "kanthor",
-		Name:       "Kanthor",
-		Permission: Permission{Role: PermissionRoot},
+		Sub:  authenticator.conf.AccessSecretKey.AccessKey,
+		Iss:  "kanthor.system",
+		Aud:  "kanthor",
+		Name: "Kanthor",
 	}
 	return account, nil
 }

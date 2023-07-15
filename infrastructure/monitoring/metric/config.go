@@ -14,5 +14,9 @@ func (conf *Config) Validate() error {
 	if !conf.Enable {
 		return nil
 	}
-	return validator.New().Struct(conf)
+
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
 }

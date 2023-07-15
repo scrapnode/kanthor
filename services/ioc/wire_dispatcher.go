@@ -40,28 +40,15 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 }
 
 func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	publisher := conf.Scheduler.Publisher
-	if publisher.ConnectionConfig == nil {
-		publisher.ConnectionConfig = &conf.Streaming
-	}
-	return &publisher
+	return &conf.Scheduler.Publisher
 }
 
 func ResolveDispatcherSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	subscriber := conf.Dispatcher.Subscriber
-	if subscriber.ConnectionConfig == nil {
-		subscriber.ConnectionConfig = &conf.Streaming
-	}
-
-	return &subscriber
+	return &conf.Dispatcher.Subscriber
 }
 
 func ResolveDispatcherCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Dispatcher.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Dispatcher.Cache
+	return &conf.Dispatcher.Cache
 }
 
 func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.Config {

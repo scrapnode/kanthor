@@ -7,8 +7,8 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/enforcer"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -29,8 +29,8 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 		cache.New,
 		ResolveControlplaneAuthenticatorConfig,
 		authenticator.New,
-		ResolveControlplaneEnforcerConfig,
-		enforcer.New,
+		ResolveControlplaneAuthorizatorConfig,
+		authorizator.New,
 		ResolveControlplaneMetricConfig,
 		metric.New,
 	)
@@ -38,19 +38,15 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 }
 
 func ResolveControlplaneCacheConfig(conf *config.Config) *cache.Config {
-	if conf.Controlplane.Cache == nil {
-		return &conf.Cache
-	}
-
-	return conf.Controlplane.Cache
+	return &conf.Controlplane.Cache
 }
 
 func ResolveControlplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.Controlplane.Authenticator
 }
 
-func ResolveControlplaneEnforcerConfig(conf *config.Config) *enforcer.Config {
-	return &conf.Controlplane.Enforcer
+func ResolveControlplaneAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.Controlplane.Authorizator
 }
 
 func ResolveControlplaneMetricConfig(conf *config.Config) *metric.Config {

@@ -1,11 +1,11 @@
-package enforcer
+package authorizator
 
 import (
 	gocasbin "github.com/casbin/casbin/v2"
 	"net/url"
 )
 
-func NewCasbin(conf *Config) Enforcer {
+func NewCasbin(conf *Config) Authorizator {
 	modelUrl, err := url.Parse(conf.Casbin.ModelSource)
 	if err != nil {
 		panic(err)
@@ -16,7 +16,7 @@ func NewCasbin(conf *Config) Enforcer {
 		panic(err)
 	}
 
-	client, err := gocasbin.NewEnforcer(modelUrl.RawPath, policyUrl.RawPath)
+	client, err := gocasbin.NewEnforcer(modelUrl.Host+modelUrl.Path, policyUrl.Host+policyUrl.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -28,6 +28,6 @@ type casbin struct {
 	client *gocasbin.Enforcer
 }
 
-func (enforcer *casbin) Enforce(sub, obj, act string) (bool, error) {
-	return enforcer.client.Enforce(sub, obj, act)
+func (enforcer *casbin) Enforce(sub, dom, obj, act string) (bool, error) {
+	return enforcer.client.Enforce(sub, dom, obj, act)
 }

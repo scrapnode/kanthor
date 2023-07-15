@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/sourcegraph/conc"
 	"github.com/spf13/cobra"
 	"os"
@@ -97,6 +98,13 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 			if !keepRunning {
 				return nil
+			}
+
+			if err := utils.Liveness("kanthor.migrate"); err != nil {
+				return err
+			}
+			if err := utils.Readiness("kanthor.migrate"); err != nil {
+				return err
 			}
 
 			ctx, _ := signal.NotifyContext(context.TODO(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
