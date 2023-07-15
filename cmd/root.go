@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"github.com/scrapnode/kanthor/cmd/migrate"
+	"github.com/scrapnode/kanthor/cmd/serve"
+	"github.com/scrapnode/kanthor/cmd/setup"
+	"github.com/scrapnode/kanthor/cmd/show"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -11,9 +15,10 @@ func New(provider configuration.Provider, conf *config.Config, logger logging.Lo
 	command := &cobra.Command{}
 
 	command.AddCommand(NewVersion(provider, conf))
-	command.AddCommand(NewShow(provider, conf))
-	command.AddCommand(NewServe(conf, logger))
-	command.AddCommand(NewMigrate(conf, logger))
+	command.AddCommand(show.New(provider, conf))
+	command.AddCommand(setup.New(conf, logger))
+	command.AddCommand(migrate.New(conf, logger))
+	command.AddCommand(serve.New(conf, logger))
 
 	command.PersistentFlags().BoolP("verbose", "", false, "--verbose: show more information")
 	return command

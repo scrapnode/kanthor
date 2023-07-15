@@ -21,7 +21,7 @@ type Endpoint struct {
 }
 
 func (entity *Endpoint) TableName() string {
-	return "endpoint"
+	return "kanthor_endpoint"
 }
 
 func (entity *Endpoint) GenId() {
@@ -52,7 +52,7 @@ type EndpointRule struct {
 }
 
 func (entity *EndpointRule) TableName() string {
-	return "endpoint_rule"
+	return "kanthor_endpoint_rule"
 }
 
 func (entity *EndpointRule) GenId() {

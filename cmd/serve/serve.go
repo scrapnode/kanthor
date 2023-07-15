@@ -1,15 +1,12 @@
-package cmd
+package serve
 
 import (
 	"context"
-	"fmt"
+	"github.com/scrapnode/kanthor/cmd/show"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/ioc"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
@@ -17,7 +14,7 @@ import (
 	"time"
 )
 
-func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
+func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "serve",
 		ValidArgs: []string{services.CONTROLPLANE, services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
@@ -28,18 +25,18 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 			if err := conf.Validate(serviceName); err != nil {
 				if verbose {
-					// if we got any error, should show the current configuration to easier debugging
-					_ = showConfig(conf, []configuration.Source{}, false, false)
+					// if we got any error, should show the current configuration for easier debugging
+					_ = show.Config(conf, []configuration.Source{}, false, false)
 				}
 				return err
 			}
 
-			service, err := useService(serviceName, conf, logger)
+			service, err := Service(serviceName, conf, logger)
 			if err != nil {
 				return err
 			}
 
-			exporter, err := useMetricExporter(serviceName, conf, logger)
+			exporter, err := MetricExporter(serviceName, conf, logger)
 			if err != nil {
 				return err
 			}
@@ -93,38 +90,4 @@ func NewServe(conf *config.Config, logger logging.Logger) *cobra.Command {
 	}
 
 	return command
-}
-
-func useService(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
-	if name == services.CONTROLPLANE {
-		return ioc.InitializeControlplane(conf, logger)
-	}
-	if name == services.DATAPLANE {
-		return ioc.InitializeDataplane(conf, logger)
-	}
-	if name == services.SCHEDULER {
-		return ioc.InitializeScheduler(conf, logger)
-	}
-	if name == services.DISPATCHER {
-		return ioc.InitializeDispatcher(conf, logger)
-	}
-
-	return nil, fmt.Errorf("serve.service: unknow service [%s]", name)
-}
-
-func useMetricExporter(name string, conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
-	if name == services.CONTROLPLANE {
-		return metric.NewExporter(&conf.Controlplane.Metrics, logger), nil
-	}
-	if name == services.DATAPLANE {
-		return metric.NewExporter(&conf.Dataplane.Metrics, logger), nil
-	}
-	if name == services.SCHEDULER {
-		return metric.NewExporter(&conf.Scheduler.Metrics, logger), nil
-	}
-	if name == services.DISPATCHER {
-		return metric.NewExporter(&conf.Dispatcher.Metrics, logger), nil
-	}
-
-	return nil, fmt.Errorf("serve.metric.exporter: unknow service [%s]", name)
 }

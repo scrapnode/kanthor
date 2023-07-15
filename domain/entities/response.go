@@ -28,7 +28,7 @@ type Response struct {
 }
 
 func (entity *Response) TableName() string {
-	return "request"
+	return "kanthor_request"
 }
 
 func (entity *Response) GenId() {

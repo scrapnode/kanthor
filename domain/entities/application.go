@@ -12,7 +12,7 @@ type Application struct {
 }
 
 func (entity *Application) TableName() string {
-	return "application"
+	return "kanthor_application"
 }
 
 func (entity *Application) GenId() {

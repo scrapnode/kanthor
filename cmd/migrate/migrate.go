@@ -1,12 +1,9 @@
-package cmd
+package migrate
 
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/database"
-	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
 	"github.com/scrapnode/kanthor/pkg/utils"
@@ -17,7 +14,7 @@ import (
 	"syscall"
 )
 
-func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
+func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use: "migrate",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -36,7 +33,8 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 			var sources []migration.Source
 			var migrators []migration.Migrator
 			for _, t := range conf.Migration.Tasks {
-				source, err := useMigrationSource(&t, logger)
+				task := t
+				source, err := Source(&task, logger)
 				if err != nil {
 					logger.Error(err)
 					continue
@@ -116,15 +114,4 @@ func NewMigrate(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command.Flags().BoolP("keep-running", "", false, "--keep-running: force migration to run once finished to prevent it from keep restarting. It's useful when you deploy it on UAT/PROD.")
 
 	return command
-}
-
-func useMigrationSource(task *config.MigrationTask, logger logging.Logger) (migration.Source, error) {
-	if task.Name == "database" {
-		return database.New(&database.Config{Uri: task.Uri}, logger), nil
-	}
-	if task.Name == "datastore" {
-		return datastore.New(&datastore.Config{Uri: task.Uri}, logger), nil
-	}
-
-	return nil, fmt.Errorf("migrate: unsupport task [%s]", task.Name)
 }

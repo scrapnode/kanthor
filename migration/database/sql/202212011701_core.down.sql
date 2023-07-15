@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS endpoint_rule;
-DROP TABLE IF EXISTS endpoint;
-DROP TABLE IF EXISTS application;
-DROP TABLE IF EXISTS workspace_tier;
-DROP TABLE IF EXISTS workspace;
+DROP TABLE IF EXISTS kanthor_endpoint_rule;
+DROP TABLE IF EXISTS kanthor_endpoint;
+DROP TABLE IF EXISTS kanthor_application;
+DROP TABLE IF EXISTS kanthor_workspace_tier;
+DROP TABLE IF EXISTS kanthor_workspace;

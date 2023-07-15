@@ -24,7 +24,7 @@ type Message struct {
 }
 
 func (entity *Message) TableName() string {
-	return "message"
+	return "kanthor_message"
 }
 
 func (entity *Message) GenId() {

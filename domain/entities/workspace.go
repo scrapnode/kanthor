@@ -14,7 +14,7 @@ type Workspace struct {
 }
 
 func (entity *Workspace) TableName() string {
-	return "workspace"
+	return "kanthor_workspace"
 }
 
 func (entity *Workspace) GenId() {
@@ -27,5 +27,5 @@ type WorkspaceTier struct {
 }
 
 func (entity *WorkspaceTier) TableName() string {
-	return "workspace_tier"
+	return "kanthor_workspace_tier"
 }

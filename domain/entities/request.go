@@ -24,7 +24,7 @@ type Request struct {
 }
 
 func (entity *Request) TableName() string {
-	return "request"
+	return "kanthor_request"
 }
 
 func (entity *Request) GenId() {
