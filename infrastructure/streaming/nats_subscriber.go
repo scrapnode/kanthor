@@ -57,15 +57,21 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 }
 
 func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
-	if err := subscriber.subscription.Unsubscribe(); err != nil {
-		return err
+	if subscriber.subscription.IsValid() {
+		if err := subscriber.subscription.Unsubscribe(); err != nil {
+			return err
+		}
 	}
 	subscriber.subscription = nil
 
-	if err := subscriber.conn.Drain(); err != nil {
-		return err
+	if !subscriber.conn.IsDraining() {
+		if err := subscriber.conn.Drain(); err != nil {
+			subscriber.logger.Error(err)
+		}
 	}
-	subscriber.conn.Close()
+	if !subscriber.conn.IsClosed() {
+		subscriber.conn.Close()
+	}
 	subscriber.conn = nil
 
 	subscriber.js = nil

@@ -53,10 +53,14 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 }
 
 func (publisher *NatsPublisher) Disconnect(ctx context.Context) error {
-	if err := publisher.conn.Drain(); err != nil {
-		return err
+	if !publisher.conn.IsDraining() {
+		if err := publisher.conn.Drain(); err != nil {
+			publisher.logger.Error(err)
+		}
 	}
-	publisher.conn.Close()
+	if !publisher.conn.IsClosed() {
+		publisher.conn.Close()
+	}
 	publisher.conn = nil
 
 	publisher.js = nil

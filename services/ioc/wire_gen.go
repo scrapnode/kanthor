@@ -34,7 +34,7 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	authenticatorConfig := ResolveControlplaneAuthenticatorConfig(conf)
 	authenticatorAuthenticator := authenticator.New(authenticatorConfig, logger)
 	authorizatorConfig := ResolveControlplaneAuthorizatorConfig(conf)
-	authorizatorAuthorizator := authorizator.New(authorizatorConfig)
+	authorizatorAuthorizator := authorizator.New(authorizatorConfig, logger)
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	timerTimer := timer.New()

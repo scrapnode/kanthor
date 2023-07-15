@@ -49,6 +49,9 @@ type controlplane struct {
 }
 
 func (service *controlplane) Start(ctx context.Context) error {
+	if err := service.authorizator.Connect(ctx); err != nil {
+		return err
+	}
 	if err := service.uc.Connect(ctx); err != nil {
 		return err
 	}
@@ -71,6 +74,10 @@ func (service *controlplane) Stop(ctx context.Context) error {
 	service.logger.Info("stopped")
 
 	if err := service.uc.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
+	if err := service.authorizator.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 	}
 

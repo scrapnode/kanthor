@@ -24,6 +24,14 @@ authenticator: &authenticator
     access_key: kanthor_root_key
     secret_key: kanthor_root_password
 
+authorizator: &authorizator
+  engine: casbin
+  casbin:
+    model_uri: file://./data/authorizator/casbin_rbac_model.conf
+    policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.authorizator
+    watcher:
+      uri: nats://127.0.0.1:4222
+
 # common
 bucket:
   layout: "20060102"
@@ -35,28 +43,24 @@ logger:
     environment: localhost
 
 database:
-  uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
+  uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
 
 datastore:
-  uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
+  uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
 
 # services
 migration:
   tasks:
     - name: database
-      uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
+      uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
       source: file://./migration/database/sql
     - name: datastore
-      uri: postgresql://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
+      uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
       source: file://./migration/datastore/sql
 
 controlplane:
   authenticator: *authenticator
-  authorizator:
-    engine: casbin
-    casbin:
-      model_source: file://./data/authorizator/casbin_rbac_model.conf
-      policy_source: file://./data/authorizator/casbin_rbac_policy.csv
+  authorizator: *authorizator
   cache: *cache
   gateway:
     protocol: grpc
