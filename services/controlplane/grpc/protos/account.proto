@@ -12,5 +12,5 @@ message ListWorkspacesReq {
 }
 
 message ListWorkspacesRes {
-  repeated Workspace data = 2;
+  repeated Workspace data = 1;
 }
