@@ -39,24 +39,26 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	timerTimer := timer.New()
-	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
-	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, repositories, cacheCache, meter)
+	databaseConfig := &conf.Database
+	repositories := repos.New(databaseConfig, logger, timerTimer)
+	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
 	service := controlplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, controlplaneControlplane)
 	return service, nil
 }
 
 func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (controlplane2.Controlplane, error) {
 	timerTimer := timer.New()
-	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger, timerTimer)
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
 	cacheCache := cache.New(cacheConfig, logger)
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
-	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, repositories, cacheCache, meter)
+	authorizatorConfig := ResolveControlplaneAuthorizatorConfig(conf)
+	authorizatorAuthorizator := authorizator.New(authorizatorConfig, logger)
+	databaseConfig := &conf.Database
+	repositories := repos.New(databaseConfig, logger, timerTimer)
+	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
 	return controlplaneControlplane, nil
 }
 

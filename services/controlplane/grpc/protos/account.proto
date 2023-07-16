@@ -9,12 +9,8 @@ service Account {
 }
 
 message ListWorkspacesReq {
-  string cursor = 1;
-  string search = 2;
-  int32 limit = 3;
 }
 
 message ListWorkspacesRes {
-  string cursor = 1;
   repeated Workspace data = 2;
 }

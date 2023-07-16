@@ -68,7 +68,6 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 
 func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error) {
 	ws := &entities.Workspace{}
-
 	tx := sql.client.
 		WithContext(ctx).
 		Model(ws).

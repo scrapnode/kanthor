@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 	"google.golang.org/grpc/codes"
@@ -31,7 +32,8 @@ func (server *msg) Put(ctx context.Context, req *protos.MsgPutReq) (*protos.MsgP
 
 	response, err := server.service.uc.Message().Put(ctx, request)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		server.service.logger.Error(err.Error(), "request", utils.Stringify(req))
+		return nil, status.Error(codes.Internal, "oops, something went wrong")
 	}
 
 	res := &protos.MsgPutRes{Id: response.Id, Timestamp: response.Timestamp, Bucket: response.Bucket}

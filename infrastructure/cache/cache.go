@@ -29,5 +29,5 @@ type Cache interface {
 }
 
 func Key(values ...string) string {
-	return strings.Join(values, "::")
+	return strings.Join(values, "/")
 }

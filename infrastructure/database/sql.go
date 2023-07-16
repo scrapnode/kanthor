@@ -122,6 +122,10 @@ func (db *sql) Migrator(source string) (migration.Migrator, error) {
 }
 
 func TxListQuery(tx *gorm.DB, req structure.ListReq) *gorm.DB {
+	if len(req.Ids) > 0 {
+		tx = tx.Where("id IN ?", req.Ids)
+	}
+
 	tx = tx.Order("id DESC")
 
 	if req.Limit > 0 {

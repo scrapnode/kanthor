@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -22,12 +23,13 @@ func NewControlplane(
 	conf *config.Config,
 	logger logging.Logger,
 	timer timer.Timer,
-	repos controlplanerepos.Repositories,
 	cache cache.Cache,
 	meter metric.Meter,
+	authorizator authorizator.Authorizator,
+	repos controlplanerepos.Repositories,
 ) controlplane.Controlplane {
 	logger = logger.With("usecase", "controlplane")
-	return controlplane.New(conf, logger, timer, cache, meter, repos)
+	return controlplane.New(conf, logger, timer, cache, meter, authorizator, repos)
 }
 
 func NewDataplane(

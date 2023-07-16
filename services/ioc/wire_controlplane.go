@@ -46,6 +46,8 @@ func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (
 		repos.New,
 		ResolveControlplaneCacheConfig,
 		cache.New,
+		ResolveControlplaneAuthorizatorConfig,
+		authorizator.New,
 		ResolveControlplaneMetricConfig,
 		metric.New,
 	)

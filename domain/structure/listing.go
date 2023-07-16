@@ -6,9 +6,16 @@ type ListReq struct {
 	Cursor string
 	Search string
 	Limit  int
+	Ids    []string
 }
 
 type ListOps func(req *ListReq)
+
+func WithListIds(ids []string) ListOps {
+	return func(req *ListReq) {
+		req.Ids = ids
+	}
+}
 
 func WithListCursor(cursor string) ListOps {
 	return func(req *ListReq) {

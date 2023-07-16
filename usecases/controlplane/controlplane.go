@@ -3,6 +3,7 @@ package controlplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
@@ -24,28 +25,31 @@ func New(
 	timer timer.Timer,
 	cache cache.Cache,
 	meter metric.Meter,
+	authorizator authorizator.Authorizator,
 	repos repos.Repositories,
 ) Controlplane {
 	return &controlplane{
-		conf:   conf,
-		logger: logger,
-		timer:  timer,
-		cache:  cache,
-		meter:  meter,
-		repos:  repos,
+		conf:         conf,
+		logger:       logger,
+		timer:        timer,
+		cache:        cache,
+		meter:        meter,
+		authorizator: authorizator,
+		repos:        repos,
 	}
 }
 
 type controlplane struct {
-	conf   *config.Config
-	logger logging.Logger
-	timer  timer.Timer
-	cache  cache.Cache
-	meter  metric.Meter
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	timer        timer.Timer
+	cache        cache.Cache
+	meter        metric.Meter
+	authorizator authorizator.Authorizator
+	repos        repos.Repositories
 
 	mu        sync.RWMutex
-	worksapce *worksapce
+	workspace *workspace
 	project   *project
 }
 
@@ -80,18 +84,19 @@ func (usecase *controlplane) Workspace() Workspace {
 	usecase.mu.Lock()
 	defer usecase.mu.Unlock()
 
-	if usecase.worksapce == nil {
-		usecase.worksapce = &worksapce{
-			conf:   usecase.conf,
-			logger: usecase.logger,
-			timer:  usecase.timer,
-			cache:  usecase.cache,
-			meter:  usecase.meter,
-			repos:  usecase.repos,
+	if usecase.workspace == nil {
+		usecase.workspace = &workspace{
+			conf:         usecase.conf,
+			logger:       usecase.logger,
+			timer:        usecase.timer,
+			cache:        usecase.cache,
+			meter:        usecase.meter,
+			repos:        usecase.repos,
+			authorizator: usecase.authorizator,
 		}
 	}
 
-	return usecase.worksapce
+	return usecase.workspace
 }
 
 func (usecase *controlplane) Project() Project {

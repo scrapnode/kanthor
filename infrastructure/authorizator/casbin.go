@@ -37,9 +37,6 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	}
 
 	client, err := gocasbin.NewEnforcer(modelUrl.Host+modelUrl.Path, adapter)
-	client.EnableAutoNotifyDispatcher(true)
-	client.EnableAutoNotifyWatcher(true)
-	client.EnableAutoSave(true)
 	if err != nil {
 		return err
 	}
@@ -80,7 +77,6 @@ func (authorizator *casbin) Disconnect(ctx context.Context) error {
 }
 
 func (authorizator *casbin) Enforce(sub, ws, obj, act string) (bool, error) {
-	// @TODO: use cache here
 	ok, explains, err := authorizator.client.EnforceEx(sub, ws, obj, act)
 	if err != nil {
 		return false, err
@@ -92,7 +88,11 @@ func (authorizator *casbin) Enforce(sub, ws, obj, act string) (bool, error) {
 	return ok, nil
 }
 
-func (authorizator *casbin) AddPolicies(policies [][]string) error {
+func (authorizator *casbin) SetupPermissions(role, ws string, permissions [][]string) error {
+	var policies [][]string
+	for _, permission := range permissions {
+		policies = append(policies, append([]string{role, ws}, permission...))
+	}
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
 	_, err := authorizator.client.AddPolicies(policies)
@@ -103,7 +103,7 @@ func (authorizator *casbin) AddPolicies(policies [][]string) error {
 	return nil
 }
 
-func (authorizator *casbin) Grant(sub, role, ws string) error {
+func (authorizator *casbin) GrantAccess(sub, role, ws string) error {
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
 	_, err := authorizator.client.AddRoleForUserInDomain(sub, role, ws)
@@ -112,4 +112,8 @@ func (authorizator *casbin) Grant(sub, role, ws string) error {
 	}
 
 	return nil
+}
+
+func (authorizator *casbin) Workspaces(sub string) ([]string, error) {
+	return authorizator.client.GetDomainsForUser(sub)
 }

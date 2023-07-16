@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// DefaultPublic returns the list of public method
 func DefaultPublic() map[string]bool {
 	public := map[string]bool{
 		"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo": true,
@@ -33,12 +34,7 @@ func UnaryServerInterceptor(
 	) (resp interface{}, err error) {
 		method := info.FullMethod
 
-		if publicable(method, public) {
-			ctx = context.WithValue(ctx, gateway.AccessPublicable, true)
-			return handler(ctx, req)
-		}
-
-		ctx, err = authenticate(logger, engine, ctx)
+		ctx, err = authenticate(logger, engine, ctx, public, method)
 		if err != nil {
 			logger.Errorw(err.Error(), "method", method)
 			return nil, status.Error(codes.Unauthenticated, err.Error())
@@ -61,16 +57,12 @@ func StreamServerInterceptor(
 		method := info.FullMethod
 		wrapped := stream.WrapServerStream(ss)
 
-		if publicable(method, public) {
-			wrapped.WrappedContext = context.WithValue(wrapped.WrappedContext, gateway.AccessPublicable, true)
-			return handler(srv, wrapped)
-		}
-
-		ctx, err := authenticate(logger, engine, ss.Context())
+		ctx, err := authenticate(logger, engine, ss.Context(), public, method)
 		if err != nil {
 			logger.Errorw(err.Error(), "method", method)
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
+
 		wrapped.WrappedContext = ctx
 		return handler(srv, wrapped)
 	}
@@ -85,7 +77,13 @@ func authenticate(
 	logger logging.Logger,
 	engine authenticator.Authenticator,
 	ctx context.Context,
+	public map[string]bool,
+	method string,
 ) (context.Context, error) {
+	if publicable(method, public) {
+		return context.WithValue(ctx, gateway.AccessPublicable, true), nil
+	}
+
 	t, err := token(ctx, engine.Scheme())
 	if err != nil {
 		return ctx, err

@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 	"google.golang.org/grpc/codes"
@@ -17,18 +17,12 @@ type account struct {
 
 func (server *account) ListWorkspaces(ctx context.Context, req *protos.ListWorkspacesReq) (*protos.ListWorkspacesRes, error) {
 	acc := ctx.Value(authenticator.CtxAuthAccount).(*authenticator.Account)
-	request := &usecase.WorkspaceListOfAccountReq{
-		ListReq: structure.ListReq{
-			Cursor: req.Cursor,
-			Search: req.Search,
-			Limit:  int(req.Limit),
-		},
-		Account: acc,
-	}
 
+	request := &usecase.WorkspaceListOfAccountReq{Account: acc}
 	response, err := server.service.uc.Workspace().ListOfAccount(ctx, request)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		server.service.logger.Error(err.Error(), "request", utils.Stringify(req))
+		return nil, status.Error(codes.Internal, "oops, something went wrong")
 	}
 
 	res := &protos.ListWorkspacesRes{Data: []*protos.Workspace{}}
