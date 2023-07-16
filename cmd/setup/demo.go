@@ -50,11 +50,11 @@ func Demo(conf *config.Config, logger logging.Logger, owner string, verbose bool
 		return err
 	}
 
-	policies := permissions.PoliciesOfRoleInWorkspace(permissions.RoleOwner, project.WorkspaceId)
+	policies := authorizator.PoliciesOfRoleInWorkspace(permissions.RoleAdmin, project.WorkspaceId, permissions.PermissionAll)
 	if err := authz.AddPolicies(policies); err != nil {
 		return err
 	}
-	if err := authz.Grant(acc.Sub, permissions.RoleOwner, project.WorkspaceId); err != nil {
+	if err := authz.Grant(acc.Sub, permissions.RoleAdmin, project.WorkspaceId); err != nil {
 		return err
 	}
 
