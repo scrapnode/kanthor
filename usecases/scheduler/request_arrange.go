@@ -3,7 +3,6 @@ package scheduler
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
@@ -24,8 +23,7 @@ func (usecase *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*R
 		return usecase.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
 	})
 	if err != nil {
-		usecase.logger.Errorw(err.Error(), "app_id", req.Message.AppId)
-		return nil, fmt.Errorf("unable to find application [%s]", req.Message.AppId)
+		return nil, err
 	}
 
 	res := &RequestArrangeRes{

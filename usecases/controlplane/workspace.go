@@ -18,14 +18,6 @@ type Workspace interface {
 	GetByAccount(ctx context.Context, req *WorkspaceGetByAccountReq) (*WorkspaceGetByAccountRes, error)
 }
 
-type WorkspaceGetReq struct {
-	Id string
-}
-
-type WorkspaceGetRes struct {
-	Workspace *entities.Workspace
-}
-
 type WorkspaceGetByAccountReq struct {
 	WorkspaceId string
 	Account     *authenticator.Account

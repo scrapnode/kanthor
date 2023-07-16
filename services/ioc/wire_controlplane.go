@@ -15,6 +15,7 @@ import (
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/controlplane"
 	"github.com/scrapnode/kanthor/usecases"
+	controlplaneuc "github.com/scrapnode/kanthor/usecases/controlplane"
 	"github.com/scrapnode/kanthor/usecases/controlplane/repos"
 )
 
@@ -31,6 +32,20 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 		authenticator.New,
 		ResolveControlplaneAuthorizatorConfig,
 		authorizator.New,
+		ResolveControlplaneMetricConfig,
+		metric.New,
+	)
+	return nil, nil
+}
+
+func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (controlplaneuc.Controlplane, error) {
+	wire.Build(
+		usecases.NewControlplane,
+		timer.New,
+		wire.FieldsOf(new(*config.Config), "Database"),
+		repos.New,
+		ResolveControlplaneCacheConfig,
+		cache.New,
 		ResolveControlplaneMetricConfig,
 		metric.New,
 	)

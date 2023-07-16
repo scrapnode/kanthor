@@ -16,5 +16,7 @@ func (entity *Application) TableName() string {
 }
 
 func (entity *Application) GenId() {
-	entity.Id = utils.ID("app")
+	if entity.Id == "" {
+		entity.Id = utils.ID("app")
+	}
 }

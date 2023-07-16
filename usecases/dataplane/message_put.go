@@ -2,7 +2,6 @@ package dataplane
 
 import (
 	"context"
-	"fmt"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
@@ -20,8 +19,7 @@ func (usecase *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePu
 		return usecase.repos.Application().GetWithWorkspace(ctx, req.AppId)
 	})
 	if err != nil {
-		usecase.logger.Errorw(err.Error(), "app_id", req.AppId)
-		return nil, fmt.Errorf("unable to find application [%s]", req.AppId)
+		return nil, err
 	}
 
 	msg := transformMessagePutReq2Message(app.Workspace.Tier.Name, req, usecase.timer, usecase.conf)
@@ -29,13 +27,11 @@ func (usecase *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePu
 
 	event, err := transformMessage2Event(msg)
 	if err != nil {
-		usecase.logger.Errorw(err.Error(), "app_id", req.AppId, "msg_id", msg.Id)
-		return nil, fmt.Errorf("unable transform message to event [%s/%s]", req.AppId, msg.Id)
+		return nil, err
 	}
 
 	if err := usecase.publisher.Pub(ctx, event); err != nil {
-		usecase.logger.Errorw(err.Error(), "app_id", req.AppId, "msg_id", msg.Id)
-		return nil, fmt.Errorf("unable to publish event for message [%s/%s]", req.AppId, msg.Id)
+		return nil, err
 	}
 
 	res := transformMessage2MessagePutRes(msg)

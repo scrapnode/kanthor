@@ -10,7 +10,7 @@ type Workspace struct {
 	OwnerId string `json:"owner_id"`
 	Name    string `json:"name"`
 
-	Tier *WorkspaceTier
+	Tier *WorkspaceTier `json:"tier"`
 }
 
 func (entity *Workspace) TableName() string {
@@ -18,7 +18,9 @@ func (entity *Workspace) TableName() string {
 }
 
 func (entity *Workspace) GenId() {
-	entity.Id = utils.ID("ws")
+	if entity.Id == "" {
+		entity.Id = utils.ID("ws")
+	}
 }
 
 type WorkspaceTier struct {

@@ -20,8 +20,11 @@ type sql struct {
 	timer  timer.Timer
 	db     database.Database
 
-	client    *gorm.DB
-	workspace *SqlWorkspace
+	client       *gorm.DB
+	workspace    *SqlWorkspace
+	application  *SqlApplication
+	endpoint     *SqlEndpoint
+	endpointRule *SqlEndpointRule
 }
 
 func (repo *sql) Connect(ctx context.Context) error {
@@ -50,4 +53,28 @@ func (repo *sql) Workspace() Workspace {
 	}
 
 	return repo.workspace
+}
+
+func (repo *sql) Application() Application {
+	if repo.application == nil {
+		repo.application = &SqlApplication{client: repo.client, timer: repo.timer}
+	}
+
+	return repo.application
+}
+
+func (repo *sql) Endpoint() Endpoint {
+	if repo.endpoint == nil {
+		repo.endpoint = &SqlEndpoint{client: repo.client, timer: repo.timer}
+	}
+
+	return repo.endpoint
+}
+
+func (repo *sql) EndpointRule() EndpointRule {
+	if repo.endpointRule == nil {
+		repo.endpointRule = &SqlEndpointRule{client: repo.client, timer: repo.timer}
+	}
+
+	return repo.endpointRule
 }

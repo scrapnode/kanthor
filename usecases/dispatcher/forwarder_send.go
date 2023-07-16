@@ -58,12 +58,10 @@ func (usecase *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*For
 
 	event, err := transformResponse2Event(&res.Response)
 	if err != nil {
-		usecase.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
-		return nil, fmt.Errorf("unable transform response to event [%s/%s]", req.Request.EndpointId, req.Request.Id)
+		return nil, err
 	}
 	if err := usecase.publisher.Pub(ctx, event); err != nil {
-		usecase.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
-		return nil, fmt.Errorf("unable publish event for response of request [%s/%s]", req.Request.EndpointId, req.Request.Id)
+		return nil, err
 	}
 
 	return res, nil

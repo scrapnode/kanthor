@@ -23,6 +23,7 @@ import (
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
+	controlplane2 "github.com/scrapnode/kanthor/usecases/controlplane"
 	"github.com/scrapnode/kanthor/usecases/controlplane/repos"
 	repos2 "github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	repos3 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
@@ -45,6 +46,18 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, repositories, cacheCache, meter)
 	service := controlplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, controlplaneControlplane)
 	return service, nil
+}
+
+func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (controlplane2.Controlplane, error) {
+	timerTimer := timer.New()
+	databaseConfig := &conf.Database
+	repositories := repos.New(databaseConfig, logger, timerTimer)
+	cacheConfig := ResolveControlplaneCacheConfig(conf)
+	cacheCache := cache.New(cacheConfig, logger)
+	metricConfig := ResolveControlplaneMetricConfig(conf)
+	meter := metric.New(metricConfig)
+	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, repositories, cacheCache, meter)
+	return controlplaneControlplane, nil
 }
 
 // Injectors from wire_dataplane.go:

@@ -25,7 +25,9 @@ func (entity *Endpoint) TableName() string {
 }
 
 func (entity *Endpoint) GenId() {
-	entity.Id = utils.ID("ep")
+	if entity.Id == "" {
+		entity.Id = utils.ID("ep")
+	}
 }
 
 type EndpointRule struct {
@@ -43,7 +45,9 @@ type EndpointRule struct {
 
 	// examples
 	//  - app_id
+	//  - type
 	//  - body
+	//  - metadata
 	ConditionSource string `json:"condition_source"`
 	// examples:
 	// 	- equal::orders.paid
@@ -56,5 +60,7 @@ func (entity *EndpointRule) TableName() string {
 }
 
 func (entity *EndpointRule) GenId() {
-	entity.Id = utils.ID("epr")
+	if entity.Id == "" {
+		entity.Id = utils.ID("epr")
+	}
 }
