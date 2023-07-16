@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/data/demo"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/cache"
 )
 
 func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*ProjectSetupDemoRes, error) {
@@ -18,8 +19,6 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 	if !owner {
 		return nil, errors.New("only owner of this project can setup the demo")
 	}
-
-	// @TODO: add transaction here
 
 	// demo application
 	app, err := usecase.repos.Application().Create(ctx, &entities.Application{
@@ -39,6 +38,12 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 	// demo rules for endpoints
 	endpointRuleIds, err := usecase.repos.EndpointRule().BulkCreate(ctx, demo.EndpointRules(app.Id, endpointIds))
 	if err != nil {
+		return nil, err
+	}
+
+	// must clear the cache because of new endpoints and rules
+	cacheKey := cache.Key("APP_WITH_ENDPOINTS", app.Id)
+	if err := usecase.cache.Del(cacheKey); err != nil {
 		return nil, err
 	}
 

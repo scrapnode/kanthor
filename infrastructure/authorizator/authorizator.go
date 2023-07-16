@@ -11,5 +11,7 @@ func New(conf *Config, logger logging.Logger) Authorizator {
 
 type Authorizator interface {
 	patterns.Connectable
-	Enforce(sub, dom, obj, act string) (bool, error)
+	Enforce(sub, ws, obj, act string) (bool, error)
+	AddPolicies(policies [][]string) error
+	Grant(sub, role, ws string) error
 }

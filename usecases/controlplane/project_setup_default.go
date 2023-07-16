@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/cache"
 )
 
 func (usecase *project) SetupDefault(ctx context.Context, req *ProjectSetupDefaultReq) (*ProjectSetupDefaultRes, error) {
@@ -21,6 +22,12 @@ func (usecase *project) SetupDefault(ctx context.Context, req *ProjectSetupDefau
 
 	ws, err := usecase.repos.Workspace().Create(ctx, entity)
 	if err != nil {
+		return nil, err
+	}
+
+	// must clear the cache because of new workspace
+	cacheKey := cache.Key("WORKSPACES_OF_ACCOUNT", req.Account.Sub)
+	if err := usecase.cache.Del(cacheKey); err != nil {
 		return nil, err
 	}
 

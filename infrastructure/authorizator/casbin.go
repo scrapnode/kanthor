@@ -4,12 +4,9 @@ import (
 	"context"
 	gocasbin "github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
-	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"net/url"
-	"sync"
 )
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
@@ -40,6 +37,9 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	}
 
 	client, err := gocasbin.NewEnforcer(modelUrl.Host+modelUrl.Path, adapter)
+	client.EnableAutoNotifyDispatcher(true)
+	client.EnableAutoNotifyWatcher(true)
+	client.EnableAutoSave(true)
 	if err != nil {
 		return err
 	}
@@ -79,85 +79,37 @@ func (authorizator *casbin) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (authorizator *casbin) Enforce(sub, dom, obj, act string) (bool, error) {
-	return authorizator.client.Enforce(sub, dom, obj, act)
-}
-
-type watcher struct {
-	nodeid  string
-	conf    *CasbinWatcherConfig
-	logger  logging.Logger
-	subject string
-
-	conn         *nats.Conn
-	subscription *nats.Subscription
-
-	mu       sync.Mutex
-	callback func(string)
-}
-
-func (w *watcher) Connect(ctx context.Context) error {
-	conn, err := streaming.NewNats(&streaming.ConnectionConfig{Uri: w.conf.Uri}, w.logger)
+func (authorizator *casbin) Enforce(sub, ws, obj, act string) (bool, error) {
+	// @TODO: use cache here
+	ok, explains, err := authorizator.client.EnforceEx(sub, ws, obj, act)
 	if err != nil {
-		return err
+		return false, err
 	}
-	w.conn = conn
 
-	subscription, err := w.conn.Subscribe(w.subject, func(msg *nats.Msg) {
-		nodeid := string(msg.Data)
-		// ignore publish node
-		if nodeid == w.nodeid {
-			return
-		}
+	if !ok {
+		authorizator.logger.Warnw("permission denied", "sub", sub, "ws", ws, "obj", obj, "act", act, "explains", explains)
+	}
+	return ok, nil
+}
 
-		w.logger.Debugw("receive changes", "nodeid", nodeid)
-		w.callback(nodeid)
-	})
+func (authorizator *casbin) AddPolicies(policies [][]string) error {
+	// the returning boolean value indicates that whether we can add the entity or not
+	// most time we could not add the new entity because it was exists already
+	_, err := authorizator.client.AddPolicies(policies)
 	if err != nil {
 		return err
 	}
 
-	w.subscription = subscription
-	w.logger.Info("connected")
 	return nil
 }
 
-func (w *watcher) Disconnect(ctx context.Context) error {
-	if w.subscription.IsValid() {
-		if err := w.subscription.Unsubscribe(); err != nil {
-			return err
-		}
+func (authorizator *casbin) Grant(sub, role, ws string) error {
+	// the returning boolean value indicates that whether we can add the entity or not
+	// most time we could not add the new entity because it was exists already
+	_, err := authorizator.client.AddRoleForUserInDomain(sub, role, ws)
+	if err != nil {
+		return err
 	}
-	w.subscription = nil
 
-	if !w.conn.IsDraining() {
-		if err := w.conn.Drain(); err != nil {
-			w.logger.Error(err)
-		}
-	}
-	if !w.conn.IsClosed() {
-		w.conn.Close()
-	}
-	w.conn = nil
-
-	w.logger.Info("disconnected")
 	return nil
-}
-
-func (w *watcher) SetUpdateCallback(callback func(string)) error {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
-	w.callback = callback
-	return nil
-}
-
-func (w *watcher) Update() error {
-	return w.conn.Publish(w.subject, []byte(w.nodeid))
-}
-
-func (w *watcher) Close() {
-	if err := w.Disconnect(context.Background()); err != nil {
-		w.logger.Error(err)
-	}
 }
