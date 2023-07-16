@@ -6,10 +6,16 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/controlplane/repos"
 	"sync"
 )
+
+type Controlplane interface {
+	patterns.Connectable
+	Workspace() Workspace
+}
 
 func New(
 	conf *config.Config,

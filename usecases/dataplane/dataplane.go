@@ -6,11 +6,17 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	"sync"
 )
+
+type Dataplane interface {
+	patterns.Connectable
+	Message() Message
+}
 
 func New(
 	conf *config.Config,

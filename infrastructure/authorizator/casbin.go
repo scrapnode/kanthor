@@ -54,7 +54,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	authorizator.watcher = &watcher{
 		nodeid:  utils.ID("casbin"),
 		conf:    &authorizator.conf.Casbin.Watcher,
-		logger:  authorizator.logger,
+		logger:  authorizator.logger.With("casbin.watcher", "built-in"),
 		subject: "kanthor.authorizator.casbin.watcher",
 	}
 	if err := authorizator.watcher.Connect(ctx); err != nil {
@@ -110,6 +110,7 @@ func (w *watcher) Connect(ctx context.Context) error {
 			return
 		}
 
+		w.logger.Debugw("receive changes", "nodeid", nodeid)
 		w.callback(nodeid)
 	})
 	if err != nil {

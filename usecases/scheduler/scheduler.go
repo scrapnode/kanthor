@@ -6,11 +6,17 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 	"sync"
 )
+
+type Scheduler interface {
+	patterns.Connectable
+	Request() Request
+}
 
 func New(
 	conf *config.Config,
