@@ -54,7 +54,7 @@ func resolve(logger logging.Logger, uc usecase.Controlplane, ctx context.Context
 		return ctx, nil
 	}
 
-	req := &usecase.WorkspaceGetReq{WorkspaceId: wsId}
+	req := &usecase.WorkspaceGetReq{Id: wsId}
 	res, err := uc.Workspace().Get(ctx, req)
 	if err != nil {
 		logger.Errorw(err.Error(), "workspace_id", wsId)

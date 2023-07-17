@@ -19,7 +19,7 @@ type Workspace interface {
 }
 
 type WorkspaceGetReq struct {
-	WorkspaceId string
+	Id string
 }
 
 type WorkspaceGetRes struct {

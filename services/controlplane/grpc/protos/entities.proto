@@ -2,18 +2,17 @@ syntax = "proto3";
 package kanthor.controlplane.v1;
 option go_package = "github.com/scrapnode/kanthor/controlplane/server/grpc/protos";
 
-message Workspace {
+message IWorkspace {
   string id = 1;
   int64 created_at = 2;
   int64 updated_at = 3;
-  int64 deleted_at = 4;
-  string owner_id = 5;
-  string name = 6;
+  string owner_id = 4;
+  string name = 5;
 
-  WorkspaceTier tier = 7;
+  IWorkspaceTier tier = 6;
 }
 
-message WorkspaceTier {
+message IWorkspaceTier {
   string workspace_id = 1;
   string name = 2;
 }

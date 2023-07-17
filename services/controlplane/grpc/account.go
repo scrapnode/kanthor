@@ -25,16 +25,15 @@ func (server *account) ListWorkspaces(ctx context.Context, req *protos.ListWorks
 		return nil, status.Error(codes.Internal, "oops, something went wrong")
 	}
 
-	res := &protos.ListWorkspacesRes{Data: []*protos.Workspace{}}
+	res := &protos.ListWorkspacesRes{Data: []*protos.IWorkspace{}}
 	for _, workspace := range response.Workspaces {
-		res.Data = append(res.Data, &protos.Workspace{
+		res.Data = append(res.Data, &protos.IWorkspace{
 			Id:        workspace.Id,
 			CreatedAt: workspace.CreatedAt,
 			UpdatedAt: workspace.UpdatedAt,
-			DeletedAt: workspace.DeletedAt,
 			OwnerId:   workspace.OwnerId,
 			Name:      workspace.Name,
-			Tier: &protos.WorkspaceTier{
+			Tier: &protos.IWorkspaceTier{
 				WorkspaceId: workspace.Tier.WorkspaceId,
 				Name:        workspace.Tier.Name,
 			},

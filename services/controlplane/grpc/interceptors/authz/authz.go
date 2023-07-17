@@ -91,6 +91,12 @@ func authorize(
 		return ctx, status.Error(codes.Unauthenticated, "unknown workspace")
 	}
 
+	// if authenticated account is owner of this workspace, should allow them does anything they want
+	if acc.Sub == ws.OwnerId {
+		logger.Debugw("owner permissions", "workspace_id", ws, "account_sub", acc.Sub)
+		return ctx, nil
+	}
+
 	obj, act, err := action(method)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())

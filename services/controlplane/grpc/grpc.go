@@ -65,6 +65,7 @@ func (service *controlplane) Start(ctx context.Context) error {
 		interceptors.WithAuthz(service.logger, service.authorizator, authz.DefaultProtected()),
 	)
 	protos.RegisterAccountServer(service.gateway, &account{service: service})
+	protos.RegisterWorkspaceServer(service.gateway, &workspace{service: service})
 	reflection.Register(service.gateway)
 
 	service.logger.Info("started")
