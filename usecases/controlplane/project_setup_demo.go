@@ -7,13 +7,12 @@ import (
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/usecases/controlplane/repos"
 	"time"
 )
 
 func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*ProjectSetupDemoRes, error) {
-	res, err := usecase.repos.Transaction(ctx, func(ctx context.Context, repos repos.Repositories) (interface{}, error) {
-		ws, err := usecase.repos.Workspace().Get(ctx, req.WorkspaceId)
+	res, err := usecase.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		ws, err := usecase.repos.Workspace().Get(txctx, req.WorkspaceId)
 		if err != nil {
 			return nil, err
 		}
@@ -24,7 +23,7 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 		}
 
 		// demo application
-		app, err := usecase.repos.Application().Create(ctx, &entities.Application{
+		app, err := usecase.repos.Application().Create(txctx, &entities.Application{
 			WorkspaceId: ws.Id,
 			Name:        constants.DemoApplicationName + " - " + usecase.timer.Now().Format(time.RFC3339),
 		})
@@ -33,13 +32,13 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 		}
 
 		// demo endpoints
-		endpointIds, err := usecase.repos.Endpoint().BulkCreate(ctx, demo.Endpoints(app.Id))
+		endpointIds, err := usecase.repos.Endpoint().BulkCreate(txctx, demo.Endpoints(app.Id))
 		if err != nil {
 			return nil, err
 		}
 
 		// demo rules for endpoints
-		endpointRuleIds, err := usecase.repos.EndpointRule().BulkCreate(ctx, demo.EndpointRules(app.Id, endpointIds))
+		endpointRuleIds, err := usecase.repos.EndpointRule().BulkCreate(txctx, demo.EndpointRules(app.Id, endpointIds))
 		if err != nil {
 			return nil, err
 		}

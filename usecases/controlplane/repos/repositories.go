@@ -14,7 +14,7 @@ func New(conf *database.Config, logger logging.Logger, timer timer.Timer) Reposi
 
 type Repositories interface {
 	patterns.Connectable
-	Transaction(ctx context.Context, handler func(ctx context.Context, repos Repositories) (interface{}, error)) (res interface{}, err error)
+	Transaction(ctx context.Context, handler func(txctx context.Context) (interface{}, error)) (res interface{}, err error)
 	Workspace() Workspace
 	Application() Application
 	Endpoint() Endpoint

@@ -27,15 +27,6 @@ type sql struct {
 	endpointRule *SqlEndpointRule
 }
 
-func (repos *sql) Transaction(ctx context.Context, handler func(ctx context.Context, repos Repositories) (interface{}, error)) (res interface{}, err error) {
-	err = repos.client.Transaction(func(tx *gorm.DB) error {
-		ctx = context.WithValue(ctx, database.CtxTransaction, tx)
-		res, err = handler(ctx, repos)
-		return err
-	})
-	return
-}
-
 func (repos *sql) Connect(ctx context.Context) error {
 	if err := repos.db.Connect(ctx); err != nil {
 		return err
@@ -56,8 +47,12 @@ func (repos *sql) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (repos *sql) DB() any {
-	return repos.client
+func (repos *sql) Transaction(ctx context.Context, handler func(txctx context.Context) (interface{}, error)) (res interface{}, err error) {
+	err = repos.client.Transaction(func(tx *gorm.DB) error {
+		res, err = handler(context.WithValue(ctx, database.CtxTransaction, tx))
+		return err
+	})
+	return
 }
 
 func (repos *sql) Workspace() Workspace {

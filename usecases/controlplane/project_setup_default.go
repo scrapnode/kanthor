@@ -7,12 +7,11 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/database"
-	"github.com/scrapnode/kanthor/usecases/controlplane/repos"
 )
 
 func (usecase *project) SetupDefault(ctx context.Context, req *ProjectSetupDefaultReq) (*ProjectSetupDefaultRes, error) {
-	res, err := usecase.repos.Transaction(ctx, func(ctx context.Context, repos repos.Repositories) (interface{}, error) {
-		existing, err := usecase.repos.Workspace().GetDefault(ctx, req.Account.Sub)
+	res, err := usecase.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		existing, err := usecase.repos.Workspace().GetDefault(txctx, req.Account.Sub)
 		if err == nil {
 			return &ProjectSetupDefaultRes{WorkspaceId: existing.Id, WorkspaceTier: existing.Tier.Name}, nil
 		}
@@ -34,7 +33,7 @@ func (usecase *project) SetupDefault(ctx context.Context, req *ProjectSetupDefau
 			entity.Tier.Name = constants.DefaultWorkspaceTier
 		}
 
-		ws, err := usecase.repos.Workspace().Create(ctx, entity)
+		ws, err := usecase.repos.Workspace().Create(txctx, entity)
 		if err != nil {
 			return nil, err
 		}
