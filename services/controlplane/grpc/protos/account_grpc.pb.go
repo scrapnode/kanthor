@@ -22,7 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccountClient interface {
-	ListWorkspaces(ctx context.Context, in *ListWorkspacesReq, opts ...grpc.CallOption) (*ListWorkspacesRes, error)
+	Get(ctx context.Context, in *AccountGetReq, opts ...grpc.CallOption) (*IAccount, error)
+	ListWorkspaces(ctx context.Context, in *AccountListWorkspacesReq, opts ...grpc.CallOption) (*AccountListWorkspacesRes, error)
 }
 
 type accountClient struct {
@@ -33,8 +34,17 @@ func NewAccountClient(cc grpc.ClientConnInterface) AccountClient {
 	return &accountClient{cc}
 }
 
-func (c *accountClient) ListWorkspaces(ctx context.Context, in *ListWorkspacesReq, opts ...grpc.CallOption) (*ListWorkspacesRes, error) {
-	out := new(ListWorkspacesRes)
+func (c *accountClient) Get(ctx context.Context, in *AccountGetReq, opts ...grpc.CallOption) (*IAccount, error) {
+	out := new(IAccount)
+	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Account/Get", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountClient) ListWorkspaces(ctx context.Context, in *AccountListWorkspacesReq, opts ...grpc.CallOption) (*AccountListWorkspacesRes, error) {
+	out := new(AccountListWorkspacesRes)
 	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Account/ListWorkspaces", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -46,7 +56,8 @@ func (c *accountClient) ListWorkspaces(ctx context.Context, in *ListWorkspacesRe
 // All implementations must embed UnimplementedAccountServer
 // for forward compatibility
 type AccountServer interface {
-	ListWorkspaces(context.Context, *ListWorkspacesReq) (*ListWorkspacesRes, error)
+	Get(context.Context, *AccountGetReq) (*IAccount, error)
+	ListWorkspaces(context.Context, *AccountListWorkspacesReq) (*AccountListWorkspacesRes, error)
 	mustEmbedUnimplementedAccountServer()
 }
 
@@ -54,7 +65,10 @@ type AccountServer interface {
 type UnimplementedAccountServer struct {
 }
 
-func (UnimplementedAccountServer) ListWorkspaces(context.Context, *ListWorkspacesReq) (*ListWorkspacesRes, error) {
+func (UnimplementedAccountServer) Get(context.Context, *AccountGetReq) (*IAccount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedAccountServer) ListWorkspaces(context.Context, *AccountListWorkspacesReq) (*AccountListWorkspacesRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListWorkspaces not implemented")
 }
 func (UnimplementedAccountServer) mustEmbedUnimplementedAccountServer() {}
@@ -70,8 +84,26 @@ func RegisterAccountServer(s grpc.ServiceRegistrar, srv AccountServer) {
 	s.RegisterService(&Account_ServiceDesc, srv)
 }
 
+func _Account_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccountGetReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kanthor.controlplane.v1.Account/Get",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServer).Get(ctx, req.(*AccountGetReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Account_ListWorkspaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListWorkspacesReq)
+	in := new(AccountListWorkspacesReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -83,7 +115,7 @@ func _Account_ListWorkspaces_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/kanthor.controlplane.v1.Account/ListWorkspaces",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountServer).ListWorkspaces(ctx, req.(*ListWorkspacesReq))
+		return srv.(AccountServer).ListWorkspaces(ctx, req.(*AccountListWorkspacesReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -95,6 +127,10 @@ var Account_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "kanthor.controlplane.v1.Account",
 	HandlerType: (*AccountServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Get",
+			Handler:    _Account_Get_Handler,
+		},
 		{
 			MethodName: "ListWorkspaces",
 			Handler:    _Account_ListWorkspaces_Handler,

@@ -5,9 +5,8 @@ type Account struct {
 	Iss string `json:"iss" yaml:"iss"`
 	Aud string `json:"aud" yaml:"aud"`
 
-	Name    string `json:"name" yaml:"name"`
-	Email   string `json:"email" yaml:"email"`
-	Picture string `json:"picture" yaml:"picture"`
-	Address string `json:"address" yaml:"address"`
-	Phone   string `json:"phone" yaml:"phone"`
+	Name        string `json:"name" yaml:"name"`
+	Picture     string `json:"picture" yaml:"picture"`
+	Email       string `json:"email" yaml:"email"`
+	PhoneNumber string `json:"phone" yaml:"phone_number"`
 }
