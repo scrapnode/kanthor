@@ -10,6 +10,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// SqlWorkspace
+// SqlClientFromContext must be used in all single object action to reuse them in other place: Create, Get, GetDefault
+// Start transaction in listing produces a risk of un-predictable locking row, so we should not use SqlClientFromContext
 type SqlWorkspace struct {
 	client *gorm.DB
 	timer  timer.Timer
@@ -22,10 +25,12 @@ func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace)
 		entity.Tier.WorkspaceId = entity.Id
 	}
 
+	transaction := database.SqlClientFromContext(ctx, sql.client)
 	// if we use the entity to perform creating sql, gorm will use their logic to do the upsert
 	// that leads to the error ON CONFLICT DO UPDATE requires inference specification or constraint name (SQLSTATE 42601)
 	// so copy value and insert them separately is a workaround
-	err := sql.client.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	// NOTE: sub-transaction is needed to use in other places
+	err := transaction.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		ws := &entities.Workspace{}
 		ws.Id = entity.Id
 		ws.CreatedAt = entity.CreatedAt
@@ -53,14 +58,32 @@ func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace)
 }
 
 func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+
 	var ws entities.Workspace
-	tx := sql.client.WithContext(ctx).Model(&ws).Preload("Tier").Where("id = ?", id).First(&ws)
-	if tx.Error != nil {
-		return nil, fmt.Errorf("workspace.get: %w", tx.Error)
+	tx := transaction.WithContext(ctx).Model(&ws).Preload("Tier").Where("id = ?", id).First(&ws)
+	if err := database.ErrGet(tx); err != nil {
+		return nil, fmt.Errorf("workspace.get: %w", err)
 	}
 
 	if ws.DeletedAt >= sql.timer.Now().UnixMilli() {
 		return nil, fmt.Errorf("workspace.get.deleted: deleted_at:%d", ws.DeletedAt)
+	}
+
+	return &ws, nil
+}
+
+func (sql *SqlWorkspace) GetDefault(ctx context.Context, owner string) (*entities.Workspace, error) {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+
+	var ws entities.Workspace
+	tx := transaction.WithContext(ctx).Model(&ws).Preload("Tier").Where("owner_id = ?", owner).First(&ws)
+	if err := database.ErrGet(tx); err != nil {
+		return nil, fmt.Errorf("workspace.get_default: %w", err)
+	}
+
+	if ws.DeletedAt >= sql.timer.Now().UnixMilli() {
+		return nil, fmt.Errorf("workspace.get_default.deleted: deleted_at:%d", ws.DeletedAt)
 	}
 
 	return &ws, nil
@@ -73,7 +96,7 @@ func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*
 		Model(ws).
 		Preload("Tier").
 		Scopes(database.NotDeleted(sql.timer, ws))
-	tx = database.TxListQuery(tx, structure.ListReqBuild(opts))
+	tx = database.SqlToListQuery(tx, structure.ListReqBuild(opts))
 
 	res := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}
 	if tx = tx.Find(&res.Data); tx.Error != nil {

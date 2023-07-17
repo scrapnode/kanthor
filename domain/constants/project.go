@@ -3,5 +3,5 @@ package constants
 const (
 	DefaultWorkspaceName = "main"
 	DefaultWorkspaceTier = "default"
-	DemoApplicationName  = "httpbin"
+	DemoApplicationName  = "demo"
 )

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 )
@@ -17,7 +18,8 @@ func (sql *SqlEndpointRule) Create(ctx context.Context, entity *entities.Endpoin
 	entity.GenId()
 	entity.SetAT(sql.timer.Now())
 
-	if tx := sql.client.WithContext(ctx).Create(entity); tx.Error != nil {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	if tx := transaction.WithContext(ctx).Create(entity); tx.Error != nil {
 		return nil, fmt.Errorf("endpoint_rule.create: %w", tx.Error)
 	}
 	return entity, nil
@@ -33,7 +35,8 @@ func (sql *SqlEndpointRule) BulkCreate(ctx context.Context, entities []entities.
 		entities[i] = entity
 	}
 
-	if tx := sql.client.WithContext(ctx).Create(entities); tx.Error != nil {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	if tx := transaction.WithContext(ctx).Create(entities); tx.Error != nil {
 		return nil, fmt.Errorf("endpoint_rule.bulk_create: %w", tx.Error)
 	}
 	return ids, nil

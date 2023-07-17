@@ -1,11 +1,16 @@
 package permissions
 
 var (
-	RoleAdmin = "owner"
+	RoleAdmin = "admin"
 )
 
-var (
-	PermissionAll = [][]string{
-		{"kanthor.controlplane.v1.Account", "ListWorkspaces"},
-	}
+var PermissionBase = [][]string{
+	{"kanthor.controlplane.v1.Workspace", "Get"},
+}
+
+var PermissionAdmin = append(
+	[][]string{
+		{"kanthor.controlplane.v1.Workspace", "Update"},
+	},
+	PermissionBase...,
 )

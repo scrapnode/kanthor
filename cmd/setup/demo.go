@@ -7,7 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/services/controlplane/permissions"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 	"os"
@@ -43,20 +42,10 @@ func Demo(conf *config.Config, logger logging.Logger, owner string, verbose bool
 	}()
 
 	acc := &authenticator.Account{Sub: owner}
-
-	// @TODO: add transaction from here
 	project, err := uc.Project().SetupDefault(ctx, &usecase.ProjectSetupDefaultReq{Account: acc})
 	if err != nil {
 		return err
 	}
-
-	if err := authz.SetupPermissions(permissions.RoleAdmin, project.WorkspaceId, permissions.PermissionAll); err != nil {
-		return err
-	}
-	if err := authz.GrantAccess(acc.Sub, permissions.RoleAdmin, project.WorkspaceId); err != nil {
-		return err
-	}
-
 	data, err := uc.Project().SetupDemo(ctx, &usecase.ProjectSetupDemoReq{
 		Account:     acc,
 		WorkspaceId: project.WorkspaceId,

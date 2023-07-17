@@ -27,54 +27,67 @@ type sql struct {
 	endpointRule *SqlEndpointRule
 }
 
-func (repo *sql) Connect(ctx context.Context) error {
-	if err := repo.db.Connect(ctx); err != nil {
+func (repos *sql) Transaction(ctx context.Context, handler func(ctx context.Context, repos Repositories) (interface{}, error)) (res interface{}, err error) {
+	err = repos.client.Transaction(func(tx *gorm.DB) error {
+		ctx = context.WithValue(ctx, database.CtxTransaction, tx)
+		res, err = handler(ctx, repos)
+		return err
+	})
+	return
+}
+
+func (repos *sql) Connect(ctx context.Context) error {
+	if err := repos.db.Connect(ctx); err != nil {
 		return err
 	}
 
-	repo.client = repo.db.Client().(*gorm.DB)
-	repo.logger.Info("connected")
+	repos.client = repos.db.Client().(*gorm.DB)
+	repos.logger.Info("connected")
 	return nil
 }
 
-func (repo *sql) Disconnect(ctx context.Context) error {
-	repo.logger.Info("disconnected")
+func (repos *sql) Disconnect(ctx context.Context) error {
+	repos.logger.Info("disconnected")
 
-	if err := repo.db.Disconnect(ctx); err != nil {
+	if err := repos.db.Disconnect(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (repo *sql) Workspace() Workspace {
-	if repo.workspace == nil {
-		repo.workspace = &SqlWorkspace{client: repo.client, timer: repo.timer}
-	}
-
-	return repo.workspace
+func (repos *sql) DB() any {
+	return repos.client
 }
 
-func (repo *sql) Application() Application {
-	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.client, timer: repo.timer}
+func (repos *sql) Workspace() Workspace {
+	if repos.workspace == nil {
+		repos.workspace = &SqlWorkspace{client: repos.client, timer: repos.timer}
 	}
 
-	return repo.application
+	return repos.workspace
 }
 
-func (repo *sql) Endpoint() Endpoint {
-	if repo.endpoint == nil {
-		repo.endpoint = &SqlEndpoint{client: repo.client, timer: repo.timer}
+func (repos *sql) Application() Application {
+	if repos.application == nil {
+		repos.application = &SqlApplication{client: repos.client, timer: repos.timer}
 	}
 
-	return repo.endpoint
+	return repos.application
 }
 
-func (repo *sql) EndpointRule() EndpointRule {
-	if repo.endpointRule == nil {
-		repo.endpointRule = &SqlEndpointRule{client: repo.client, timer: repo.timer}
+func (repos *sql) Endpoint() Endpoint {
+	if repos.endpoint == nil {
+		repos.endpoint = &SqlEndpoint{client: repos.client, timer: repos.timer}
 	}
 
-	return repo.endpointRule
+	return repos.endpoint
+}
+
+func (repos *sql) EndpointRule() EndpointRule {
+	if repos.endpointRule == nil {
+		repos.endpointRule = &SqlEndpointRule{client: repos.client, timer: repos.timer}
+	}
+
+	return repos.endpointRule
 }

@@ -19,6 +19,7 @@ import (
 func DefaultProtected() map[string]bool {
 	public := map[string]bool{
 		"/kanthor.controlplane.v1.Account/ListWorkspaces": true,
+		"/kanthor.controlplane.v1.Account/Get":            true,
 	}
 
 	return public

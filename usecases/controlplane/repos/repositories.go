@@ -1,6 +1,7 @@
 package repos
 
 import (
+	"context"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -13,6 +14,7 @@ func New(conf *database.Config, logger logging.Logger, timer timer.Timer) Reposi
 
 type Repositories interface {
 	patterns.Connectable
+	Transaction(ctx context.Context, handler func(ctx context.Context, repos Repositories) (interface{}, error)) (res interface{}, err error)
 	Workspace() Workspace
 	Application() Application
 	Endpoint() Endpoint
