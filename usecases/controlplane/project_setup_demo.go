@@ -2,12 +2,7 @@ package controlplane
 
 import (
 	"context"
-	"errors"
-	"github.com/scrapnode/kanthor/data/demo"
-	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"time"
 )
 
 func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*ProjectSetupDemoRes, error) {
@@ -17,42 +12,47 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 			return nil, err
 		}
 
-		owner := req.Account.Sub == ws.OwnerId
-		if !owner {
-			return nil, errors.New("only owner of this project can setup the demo")
+		// demo applications
+		var apps []entities.Application
+		for _, app := range req.Entities.Applications {
+			app.GenId()
+			app.WorkspaceId = ws.Id
+			app.SetAT(usecase.timer.Now())
+			apps = append(apps, app)
 		}
-
-		// demo application
-		app, err := usecase.repos.Application().Create(txctx, &entities.Application{
-			WorkspaceId: ws.Id,
-			Name:        constants.DemoApplicationName + " - " + usecase.timer.Now().Format(time.RFC3339),
-		})
+		appIds, err := usecase.repos.Application().BulkCreate(txctx, apps)
 		if err != nil {
 			return nil, err
 		}
 
 		// demo endpoints
-		endpointIds, err := usecase.repos.Endpoint().BulkCreate(txctx, demo.Endpoints(app.Id))
+		var endpoints []entities.Endpoint
+		for _, endpoint := range req.Entities.Endpoints {
+			endpoint.GenId()
+			endpoint.SetAT(usecase.timer.Now())
+			endpoints = append(endpoints, endpoint)
+		}
+		endpointIds, err := usecase.repos.Endpoint().BulkCreate(txctx, endpoints)
 		if err != nil {
 			return nil, err
 		}
 
 		// demo rules for endpoints
-		endpointRuleIds, err := usecase.repos.EndpointRule().BulkCreate(txctx, demo.EndpointRules(app.Id, endpointIds))
+		var rules []entities.EndpointRule
+		for _, rule := range req.Entities.EndpointRules {
+			rule.GenId()
+			rule.SetAT(usecase.timer.Now())
+			rules = append(rules, rule)
+		}
+		endpointRuleIds, err := usecase.repos.EndpointRule().BulkCreate(txctx, rules)
 		if err != nil {
 			return nil, err
 		}
 
-		res := &ProjectSetupDemoRes{ApplicationId: app.Id, EndpointIds: endpointIds, EndpointRuleIds: endpointRuleIds}
+		res := &ProjectSetupDemoRes{ApplicationIds: appIds, EndpointIds: endpointIds, EndpointRuleIds: endpointRuleIds}
 		return res, nil
 	})
 	if err != nil {
-		return nil, err
-	}
-
-	// must clear the cache because of new endpoints and rules
-	cacheKey := cache.Key("APP_WITH_ENDPOINTS", res.(*ProjectSetupDemoRes).ApplicationId)
-	if err := usecase.cache.Del(cacheKey); err != nil {
 		return nil, err
 	}
 

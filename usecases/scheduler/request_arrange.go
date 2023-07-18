@@ -86,12 +86,6 @@ func (usecase *request) generateRequestsFromEndpoints(endpoints []repos.Endpoint
 				continue
 			}
 
-			expression := strings.Split(rule.ConditionExpression, "::")
-			if len(expression) != 2 {
-				subLogger.Errorw("arrange: invalid rule")
-				continue
-			}
-
 			matched := express(source)
 			// once we got exclusionary rule, ignore the rest
 			if rule.Exclusionary && matched {

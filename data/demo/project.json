@@ -1,0 +1,37 @@
+{
+  "projects": [
+    {
+      "applications": [
+        {
+          "name": "demo",
+          "endpoints": [
+            {
+              "name": "POST httpbin.org/post",
+              "method": "POST",
+              "uri": "https://httpbin.org/post",
+              "rules": [
+                {
+                  "name": "pass-through",
+                  "condition_source": "type",
+                  "condition_expression": "regex::.*"
+                }
+              ]
+            },
+            {
+              "name": "PUT httpbin.org/put",
+              "method": "PUT",
+              "uri": "https://httpbin.org/put",
+              "rules": [
+                {
+                  "name": "pass-through",
+                  "condition_source": "type",
+                  "condition_expression": "regex::.*"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

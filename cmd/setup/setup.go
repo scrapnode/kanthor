@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"errors"
 	"fmt"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -25,17 +26,27 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 			name := args[0]
 			if name == "demo" {
-				return Demo(conf, logger, sub, verbose)
+				input, err := cmd.Flags().GetString("demo-input-file")
+				if err != nil {
+					return err
+				}
+				if input == "" {
+					return errors.New("setup.demo: demo input file must be provided")
+				}
+				return Demo(conf, logger, sub, input, verbose)
 			}
 
 			return fmt.Errorf("setup: unknow setup [%s]", name)
 		},
 	}
 
-	command.Flags().StringP("account-sub", "", "", "select account to setup stuffs")
+	command.Flags().StringP("account-sub", "", "", "--account-sub=kanthor_root_key | select account to setup stuffs")
 	if err := command.MarkFlagRequired("account-sub"); err != nil {
 		panic(err)
 	}
+
+	// demo specific flags
+	command.Flags().StringP("demo-input-file", "", "", "--demo-input-file=data/demo/project.json | the json input file to create demo project")
 
 	return command
 }

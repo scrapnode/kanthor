@@ -3,6 +3,7 @@ package controlplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/data/demo"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -30,10 +31,11 @@ type ProjectSetupDefaultRes struct {
 type ProjectSetupDemoReq struct {
 	Account     *authenticator.Account
 	WorkspaceId string
+	Entities    *demo.ProjectEntities
 }
 
 type ProjectSetupDemoRes struct {
-	ApplicationId   string
+	ApplicationIds  []string
 	EndpointIds     []string
 	EndpointRuleIds []string
 }
