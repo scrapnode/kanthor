@@ -2,11 +2,9 @@ package grpc
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/infrastructure/pipeline"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type workspace struct {
@@ -15,22 +13,28 @@ type workspace struct {
 }
 
 func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (*protos.IWorkspace, error) {
-	request := &usecase.WorkspaceGetReq{Id: req.Id}
-	response, err := server.service.uc.Workspace().Get(ctx, request)
+	chain := pipeline.Chain(pipeline.UseGRPCError(server.service.logger), pipeline.UseValidation())
+	pipe := chain(func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		response, err = server.service.uc.Workspace().Get(ctx, request.(*usecase.WorkspaceGetReq))
+		return
+	})
+
+	response, err := pipe(ctx, &usecase.WorkspaceGetReq{Id: req.Id})
 	if err != nil {
-		server.service.logger.Errorw(err.Error(), "request", utils.Stringify(req))
-		return nil, status.Error(codes.Internal, "oops, something went wrong")
+		return nil, err
 	}
 
+	// transformation
+	ws := response.(*usecase.WorkspaceGetRes).Workspace
 	res := &protos.IWorkspace{
-		Id:        response.Workspace.Id,
-		CreatedAt: response.Workspace.CreatedAt,
-		UpdatedAt: response.Workspace.UpdatedAt,
-		OwnerId:   response.Workspace.OwnerId,
-		Name:      response.Workspace.Name,
+		Id:        ws.Id,
+		CreatedAt: ws.CreatedAt,
+		UpdatedAt: ws.UpdatedAt,
+		OwnerId:   ws.OwnerId,
+		Name:      ws.Name,
 		Tier: &protos.IWorkspaceTier{
-			WorkspaceId: response.Workspace.Tier.WorkspaceId,
-			Name:        response.Workspace.Tier.Name,
+			WorkspaceId: ws.Tier.WorkspaceId,
+			Name:        ws.Tier.Name,
 		},
 	}
 	return res, nil

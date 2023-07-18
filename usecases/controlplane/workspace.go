@@ -23,7 +23,7 @@ type WorkspaceGetReq struct {
 }
 
 type WorkspaceGetRes struct {
-	Workspace *entities.Workspace
+	Workspace *entities.Workspace `json:"workspace"`
 }
 
 type WorkspaceGetByAccountReq struct {
@@ -32,7 +32,7 @@ type WorkspaceGetByAccountReq struct {
 }
 
 type WorkspaceGetByAccountRes struct {
-	Workspace *entities.Workspace
+	Workspace *entities.Workspace `json:"workspace"`
 }
 
 type WorkspaceListOfAccountReq struct {
@@ -40,7 +40,7 @@ type WorkspaceListOfAccountReq struct {
 }
 
 type WorkspaceListOfAccountRes struct {
-	Workspaces []entities.Workspace
+	Workspaces []entities.Workspace `json:"workspaces"`
 }
 
 type workspace struct {

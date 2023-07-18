@@ -24,8 +24,8 @@ type ProjectSetupDefaultReq struct {
 }
 
 type ProjectSetupDefaultRes struct {
-	WorkspaceId   string
-	WorkspaceTier string
+	WorkspaceId   string `json:"workspace_id"`
+	WorkspaceTier string `json:"workspace_tier"`
 }
 
 type ProjectSetupDemoReq struct {
@@ -38,9 +38,9 @@ type ProjectSetupDemoReq struct {
 }
 
 type ProjectSetupDemoRes struct {
-	ApplicationIds  []string
-	EndpointIds     []string
-	EndpointRuleIds []string
+	ApplicationIds  []string `json:"application_ids"`
+	EndpointIds     []string `json:"endpoint_ids"`
+	EndpointRuleIds []string `json:"endpoint_rule_ids"`
 }
 
 type project struct {
