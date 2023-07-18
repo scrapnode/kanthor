@@ -58,9 +58,11 @@ func Demo(conf *config.Config, logger logging.Logger, owner, input string, verbo
 		return err
 	}
 	data, err := uc.Project().SetupDemo(ctx, &usecase.ProjectSetupDemoReq{
-		Account:     acc,
-		WorkspaceId: project.WorkspaceId,
-		Entities:    demoEntities,
+		Account:       acc,
+		WorkspaceId:   project.WorkspaceId,
+		Applications:  demoEntities.Applications,
+		Endpoints:     demoEntities.Endpoints,
+		EndpointRules: demoEntities.EndpointRules,
 	})
 	if err != nil {
 		return err

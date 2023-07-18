@@ -3,7 +3,7 @@ package controlplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/data/demo"
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -18,9 +18,9 @@ type Project interface {
 }
 
 type ProjectSetupDefaultReq struct {
-	Account       *authenticator.Account
-	WorkspaceName string
-	WorkspaceTier string
+	Account       *authenticator.Account `json:"account" validate:"required"`
+	WorkspaceName string                 `json:"workspace_name" validate:"required"`
+	WorkspaceTier string                 `json:"workspace_tier" validate:"required"`
 }
 
 type ProjectSetupDefaultRes struct {
@@ -29,9 +29,12 @@ type ProjectSetupDefaultRes struct {
 }
 
 type ProjectSetupDemoReq struct {
-	Account     *authenticator.Account
-	WorkspaceId string
-	Entities    *demo.ProjectEntities
+	Account     *authenticator.Account `json:"account" validate:"required"`
+	WorkspaceId string                 `json:"workspace_id" validate:"required"`
+
+	Applications  []entities.Application  `json:"applications" validate:"required"`
+	Endpoints     []entities.Endpoint     `json:"endpoints" validate:"required"`
+	EndpointRules []entities.EndpointRule `json:"endpoint_rules" validate:"required"`
 }
 
 type ProjectSetupDemoRes struct {

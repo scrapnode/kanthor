@@ -7,10 +7,10 @@ type Workspace struct {
 	AuditTime
 	SoftDelete
 
-	OwnerId string `json:"owner_id"`
-	Name    string `json:"name"`
+	OwnerId string `json:"owner_id" validate:"required"`
+	Name    string `json:"name" validate:"required"`
 
-	Tier *WorkspaceTier `json:"tier"`
+	Tier *WorkspaceTier `json:"tier" validate:"required"`
 }
 
 func (entity *Workspace) TableName() string {
@@ -24,8 +24,8 @@ func (entity *Workspace) GenId() {
 }
 
 type WorkspaceTier struct {
-	WorkspaceId string `json:"workspace_id"`
-	Name        string `json:"name"`
+	WorkspaceId string `json:"workspace_id" validate:"required"`
+	Name        string `json:"name" validate:"required"`
 }
 
 func (entity *WorkspaceTier) TableName() string {

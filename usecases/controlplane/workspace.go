@@ -19,7 +19,7 @@ type Workspace interface {
 }
 
 type WorkspaceGetReq struct {
-	Id string
+	Id string `json:"id" validate:"required"`
 }
 
 type WorkspaceGetRes struct {
@@ -27,8 +27,8 @@ type WorkspaceGetRes struct {
 }
 
 type WorkspaceGetByAccountReq struct {
-	WorkspaceId string
-	Account     *authenticator.Account
+	Account     *authenticator.Account `json:"account" validate:"required"`
+	WorkspaceId string                 `json:"workspace_id" validate:"required"`
 }
 
 type WorkspaceGetByAccountRes struct {
@@ -36,7 +36,7 @@ type WorkspaceGetByAccountRes struct {
 }
 
 type WorkspaceListOfAccountReq struct {
-	Account *authenticator.Account
+	Account *authenticator.Account `json:"account" validate:"required"`
 }
 
 type WorkspaceListOfAccountRes struct {

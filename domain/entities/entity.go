@@ -3,12 +3,12 @@ package entities
 import "time"
 
 type Entity struct {
-	Id string `json:"id"`
+	Id string `json:"id" validate:"required"`
 }
 
 type AuditTime struct {
-	CreatedAt int64 `json:"created_at"`
-	UpdatedAt int64 `json:"updated_at"`
+	CreatedAt int64 `json:"created_at" validate:"required"`
+	UpdatedAt int64 `json:"updated_at" validate:"required"`
 }
 
 func (at *AuditTime) SetAT(now time.Time) {
@@ -21,12 +21,12 @@ func (at *AuditTime) SetAT(now time.Time) {
 }
 
 type SoftDelete struct {
-	DeletedAt int64 `json:"deleted_at"`
+	DeletedAt int64 `json:"deleted_at" validate:"required"`
 }
 
 type TimeSeries struct {
-	Timestamp int64  `json:"timestamp"`
-	Bucket    string `json:"bucket"`
+	Timestamp int64  `json:"timestamp" validate:"required"`
+	Bucket    string `json:"bucket" validate:"required"`
 }
 
 func (ts *TimeSeries) SetTS(now time.Time, layout string) {

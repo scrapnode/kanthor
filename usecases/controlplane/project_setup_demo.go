@@ -14,7 +14,7 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 
 		// demo applications
 		var apps []entities.Application
-		for _, app := range req.Entities.Applications {
+		for _, app := range req.Applications {
 			app.GenId()
 			app.WorkspaceId = ws.Id
 			app.SetAT(usecase.timer.Now())
@@ -27,7 +27,7 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 
 		// demo endpoints
 		var endpoints []entities.Endpoint
-		for _, endpoint := range req.Entities.Endpoints {
+		for _, endpoint := range req.Endpoints {
 			endpoint.GenId()
 			endpoint.SetAT(usecase.timer.Now())
 			endpoints = append(endpoints, endpoint)
@@ -39,7 +39,7 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 
 		// demo rules for endpoints
 		var rules []entities.EndpointRule
-		for _, rule := range req.Entities.EndpointRules {
+		for _, rule := range req.EndpointRules {
 			rule.GenId()
 			rule.SetAT(usecase.timer.Now())
 			rules = append(rules, rule)

@@ -18,7 +18,7 @@ func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (
 	request := &usecase.WorkspaceGetReq{Id: req.Id}
 	response, err := server.service.uc.Workspace().Get(ctx, request)
 	if err != nil {
-		server.service.logger.Error(err.Error(), "request", utils.Stringify(req))
+		server.service.logger.Errorw(err.Error(), "request", utils.Stringify(req))
 		return nil, status.Error(codes.Internal, "oops, something went wrong")
 	}
 

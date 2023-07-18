@@ -7,8 +7,8 @@ type Application struct {
 	AuditTime
 	SoftDelete
 
-	WorkspaceId string `json:"workspace_id"`
-	Name        string `json:"name"`
+	WorkspaceId string `json:"workspace_id" validate:"required"`
+	Name        string `json:"name" validate:"required"`
 }
 
 func (entity *Application) TableName() string {

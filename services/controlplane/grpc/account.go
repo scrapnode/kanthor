@@ -34,7 +34,7 @@ func (server *account) ListWorkspaces(ctx context.Context, req *protos.AccountLi
 	request := &usecase.WorkspaceListOfAccountReq{Account: acc}
 	response, err := server.service.uc.Workspace().ListOfAccount(ctx, request)
 	if err != nil {
-		server.service.logger.Error(err.Error(), "request", utils.Stringify(req))
+		server.service.logger.Errorw(err.Error(), "request", utils.Stringify(req))
 		return nil, status.Error(codes.Internal, "oops, something went wrong")
 	}
 

@@ -9,15 +9,15 @@ type Endpoint struct {
 	AuditTime
 	SoftDelete
 
-	AppId string `json:"app_id"`
-	Name  string `json:"name"`
+	AppId string `json:"app_id" validate:"required"`
+	Name  string `json:"name" validate:"required"`
 
 	// HTTP: POST/PUT/PATCH
-	Method string `json:"method"`
+	Method string `json:"method" validate:"require,oneof=POST PUT PATCH"`
 	// format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
 	// HTTP: https:://httpbin.org/post?app=kanthor.webhook
 	// gRPC: grpc:://app.kanthorlabs.com
-	Uri string `json:"uri"`
+	Uri string `json:"uri" validate:"require,uri"`
 }
 
 func (entity *Endpoint) TableName() string {
@@ -35,24 +35,24 @@ type EndpointRule struct {
 	AuditTime
 	SoftDelete
 
-	EndpointId string `json:"endpoint_id"`
-	Name       string `json:"name"`
+	EndpointId string `json:"endpoint_id" validate:"required"`
+	Name       string `json:"name" validate:"required"`
 
-	Priority int `json:"priority"`
+	Priority int `json:"priority" validate:"required"`
 	// the logic of not-false is true should be used here
 	// to guarantee default all rule will be on include mode
-	Exclusionary bool `json:"exclusionary"`
+	Exclusionary bool `json:"exclusionary" validate:"required"`
 
 	// examples
 	//  - app_id
 	//  - type
 	//  - body
 	//  - metadata
-	ConditionSource string `json:"condition_source"`
+	ConditionSource string `json:"condition_source" validate:"required"`
 	// examples:
 	// 	- equal::orders.paid
 	// 	- regex::.*
-	ConditionExpression string `json:"condition_expression"`
+	ConditionExpression string `json:"condition_expression" validate:"required"`
 }
 
 func (entity *EndpointRule) TableName() string {
