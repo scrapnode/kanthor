@@ -41,11 +41,11 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			ctx, cancel := signal.NotifyContext(context.TODO(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+			defer stop()
 			if err := service.Start(ctx); err != nil {
 				return err
 			}
-
 			if err := exporter.Start(ctx); err != nil {
 				return err
 			}
@@ -53,7 +53,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			go func() {
 				if err := service.Run(ctx); err != nil {
 					logger.Error(err)
-					cancel()
+					stop()
 					return
 				}
 			}()
@@ -61,18 +61,19 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			go func() {
 				if err := exporter.Run(ctx); err != nil {
 					logger.Error(err)
-					cancel()
+					stop()
 					return
 				}
 			}()
 
-			// Listen for the interrupt signal.
+			// listen for the interrupt signal.
 			<-ctx.Done()
-			// make sure once we stop process, we cancel all the execution
-			cancel()
+			// restore default behavior on the interrupt signal and notify user of shutdown.
+			stop()
 
 			// wait a little to stop our service
-			ctx, cancel = context.WithTimeout(cmd.Context(), 11*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 			go func() {
 				if err := exporter.Stop(ctx); err != nil {
 					logger.Error(err)
@@ -81,7 +82,6 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				if err := service.Stop(ctx); err != nil {
 					logger.Error(err)
 				}
-				cancel()
 			}()
 			<-ctx.Done()
 
