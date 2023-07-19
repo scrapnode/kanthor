@@ -74,11 +74,11 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			// wait a little to stop our service
 			ctx, cancel = context.WithTimeout(cmd.Context(), 11*time.Second)
 			go func() {
-				if err := service.Stop(ctx); err != nil {
+				if err := exporter.Stop(ctx); err != nil {
 					logger.Error(err)
 				}
 
-				if err := exporter.Stop(ctx); err != nil {
+				if err := service.Stop(ctx); err != nil {
 					logger.Error(err)
 				}
 				cancel()
