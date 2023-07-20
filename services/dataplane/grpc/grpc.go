@@ -6,7 +6,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc"
 	gatewayinterceptors "github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors"
-	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors/auth"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
@@ -44,8 +43,8 @@ func (service *dataplane) Start(ctx context.Context) error {
 
 	service.gateway = grpc.NewServer(
 		gatewayinterceptors.WithRecovery(service.logger),
+		gatewayinterceptors.WithLog(service.logger),
 		gatewayinterceptors.WithMeasurement(service.meter),
-		gatewayinterceptors.WithAuth(service.logger, service.authenticator, auth.DefaultPublic()),
 	)
 	protos.RegisterMsgServer(service.gateway, &msg{service: service})
 	reflection.Register(service.gateway)

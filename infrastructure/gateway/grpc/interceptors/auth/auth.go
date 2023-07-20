@@ -16,6 +16,8 @@ import (
 func DefaultPublic() map[string]bool {
 	public := map[string]bool{
 		"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo": true,
+		"/grpc.health.v1.Health/Check":                                   true,
+		"/grpc.health.v1.Health/Watch":                                   true,
 	}
 
 	return public

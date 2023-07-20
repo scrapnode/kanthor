@@ -59,6 +59,7 @@ func (service *controlplane) Start(ctx context.Context) error {
 
 	service.gateway = grpc.NewServer(
 		gatewayinterceptors.WithRecovery(service.logger),
+		gatewayinterceptors.WithLog(service.logger),
 		gatewayinterceptors.WithMeasurement(service.meter),
 		gatewayinterceptors.WithAuth(service.logger, service.authenticator, auth.DefaultPublic()),
 		interceptors.WithWorkspace(service.logger, service.uc),

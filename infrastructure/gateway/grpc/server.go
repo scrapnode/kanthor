@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors"
+	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/protos"
 	grpccore "google.golang.org/grpc"
 )
 
@@ -14,8 +15,11 @@ func NewServer(withInterceptors ...interceptors.InterceptorOps) *grpccore.Server
 		withInterceptor(&ics)
 	}
 
-	return grpccore.NewServer(
+	server := grpccore.NewServer(
 		grpccore.ChainUnaryInterceptor(ics.Unary...),
 		grpccore.ChainStreamInterceptor(ics.Stream...),
 	)
+	protos.RegisterHealthServer(server, &healthcheck{})
+
+	return server
 }
