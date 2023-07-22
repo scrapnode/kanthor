@@ -26,7 +26,10 @@ func Demo(conf *config.Config, logger logging.Logger, owner, input string, verbo
 		return err
 	}
 
-	authz := authorizator.New(&conf.Controlplane.Authorizator, logger)
+	authz, err := authorizator.New(&conf.Controlplane.Authorizator, logger)
+	if err != nil {
+		return err
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()

@@ -7,8 +7,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func NewSubscriber(conf *SubscriberConfig, logger logging.Logger) Subscriber {
-	return NewNatsSubscriber(conf, logger)
+func NewSubscriber(conf *SubscriberConfig, logger logging.Logger) (Subscriber, error) {
+	return NewNatsSubscriber(conf, logger), nil
 }
 
 type Subscriber interface {

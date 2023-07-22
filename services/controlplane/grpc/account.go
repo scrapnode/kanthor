@@ -11,6 +11,7 @@ import (
 type account struct {
 	protos.UnimplementedAccountServer
 	service *controlplane
+	pipe    pipeline.Middleware
 }
 
 func (server *account) Get(ctx context.Context, req *protos.AccountGetReq) (*protos.IAccount, error) {

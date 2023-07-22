@@ -2,10 +2,9 @@ package recovery
 
 import (
 	"context"
+	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	grpccore "google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"runtime"
 )
 
@@ -21,8 +20,8 @@ func UnaryServerInterceptor(logger logging.Logger) grpccore.UnaryServerIntercept
 				stack := make([]byte, 64<<10)
 				stack = stack[:runtime.Stack(stack, false)]
 
-				logger.Errorw("SYSTEM.ERROR.RECOVER", "panic", r, "stack", string(stack))
-				err = status.Error(codes.Internal, "SYSTEM.ERROR")
+				logger.Errorw("recover from panic", "panic", r, "stack", string(stack))
+				err = gateway.Err500("SYSTEM.INTERNAL")
 			}
 		}()
 
@@ -42,8 +41,8 @@ func StreamServerInterceptor(logger logging.Logger) grpccore.StreamServerInterce
 				stack := make([]byte, 64<<10)
 				stack = stack[:runtime.Stack(stack, false)]
 
-				logger.Errorw("SYSTEM.ERROR.RECOVER", "panic", r, "stack", string(stack))
-				err = status.Error(codes.Internal, "SYSTEM.ERROR")
+				logger.Errorw("recover from panic", "panic", r, "stack", string(stack))
+				err = gateway.Err500("SYSTEM.INTERNAL")
 			}
 		}()
 

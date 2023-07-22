@@ -4,26 +4,13 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
-	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
-	"time"
 )
 
 func (usecase *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
-	cacheKey := cache.Key("APP_WITH_WORKSPACE", req.AppId)
-	app, err := cache.Warp(usecase.cache, cacheKey, time.Hour, func() (*repos.ApplicationWithWorkspace, error) {
-		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_message_put"))
-		return usecase.repos.Application().GetWithWorkspace(ctx, req.AppId)
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	msg := transformMessagePutReq2Message(app.Workspace.Tier.Name, req, usecase.timer, usecase.conf)
-	msg.Metadata[entities.MetaTier] = app.Workspace.Tier.Name
+	msg := transformMessagePutReq2Message(req.Ws.Tier.Name, req, usecase.timer, usecase.conf)
+	msg.Metadata[entities.MetaTier] = req.Ws.Tier.Name
 
 	event, err := transformMessage2Event(msg)
 	if err != nil {
@@ -41,7 +28,7 @@ func (usecase *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePu
 func transformMessagePutReq2Message(tier string, req *MessagePutReq, timer timer.Timer, conf *config.Config) *entities.Message {
 	msg := &entities.Message{
 		Tier:     tier,
-		AppId:    req.AppId,
+		AppId:    req.App.Id,
 		Type:     req.Type,
 		Headers:  req.Headers,
 		Body:     req.Body,

@@ -5,9 +5,15 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var (
+	EngineAsk    = "ask"
+	EngineCipher = "cipher"
+)
+
 type Config struct {
-	Engine          string                 `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=access_secret_key"`
-	AccessSecretKey *AccessSecretKeyConfig `json:"access_secret_key" yaml:"access_secret_key" mapstructure:"access_secret_key" validate:"-"`
+	Engine string        `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=ask cipher"`
+	Ask    *AskConfig    `json:"ask" yaml:"ask" mapstructure:"ask" validate:"-"`
+	Cipher *CipherConfig `json:"cipher" yaml:"cipher" mapstructure:"cipher" validate:"-"`
 }
 
 func (conf *Config) Validate() error {
@@ -15,11 +21,20 @@ func (conf *Config) Validate() error {
 		return err
 	}
 
-	if conf.Engine == "access_secret_key" {
-		if conf.AccessSecretKey == nil {
-			return errors.New("authenticator.config.access_secret_key: null value")
+	if conf.Engine == EngineAsk {
+		if conf.Ask == nil {
+			return errors.New("authenticator.config.ask: null value")
 		}
-		if err := conf.AccessSecretKey.Validate(); err != nil {
+		if err := conf.Ask.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if conf.Engine == EngineCipher {
+		if conf.Cipher == nil {
+			return errors.New("authenticator.config.cipher: null value")
+		}
+		if err := conf.Cipher.Validate(); err != nil {
 			return err
 		}
 	}
@@ -27,12 +42,23 @@ func (conf *Config) Validate() error {
 	return nil
 }
 
-type AccessSecretKeyConfig struct {
+type AskConfig struct {
 	AccessKey string `json:"access_key" yaml:"access_key" mapstructure:"access_key" validate:"required"`
 	SecretKey string `json:"secret_key" yaml:"secret_key" mapstructure:"secret_key" validate:"required"`
 }
 
-func (conf *AccessSecretKeyConfig) Validate() error {
+func (conf *AskConfig) Validate() error {
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
+}
+
+type CipherConfig struct {
+	Key string `json:"key" yaml:"key" mapstructure:"key" validate:"required,len=32"`
+}
+
+func (conf *CipherConfig) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func (usecase *workspace) ListOfAccount(ctx context.Context, req *WorkspaceListOfAccountReq) (*WorkspaceListOfAccountRes, error) {
-	wsIds, err := usecase.authorizator.Workspaces(req.Account.Sub)
+	wsIds, err := usecase.authorizator.Tenants(req.Account.Sub)
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors/auth"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
+	"github.com/scrapnode/kanthor/infrastructure/pipeline"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/interceptors"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/interceptors/authz"
@@ -65,8 +66,10 @@ func (service *controlplane) Start(ctx context.Context) error {
 		interceptors.WithWorkspace(service.logger, service.uc),
 		interceptors.WithAuthz(service.logger, service.authorizator, authz.DefaultProtected()),
 	)
-	protos.RegisterAccountServer(service.gateway, &account{service: service})
-	protos.RegisterWorkspaceServer(service.gateway, &workspace{service: service})
+
+	pipe := pipeline.Chain(pipeline.UseGRPCError(service.logger), pipeline.UseValidation())
+	protos.RegisterAccountServer(service.gateway, &account{service: service, pipe: pipe})
+	protos.RegisterWorkspaceServer(service.gateway, &workspace{service: service, pipe: pipe})
 	reflection.Register(service.gateway)
 
 	service.logger.Info("started")

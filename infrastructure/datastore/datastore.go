@@ -6,8 +6,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func New(conf *Config, logger logging.Logger) Datastore {
-	return NewSQL(conf, logger)
+func New(conf *Config, logger logging.Logger) (Datastore, error) {
+	return NewSQL(conf, logger), nil
 }
 
 type Datastore interface {

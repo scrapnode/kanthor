@@ -4,11 +4,15 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc"
 	gatewayinterceptors "github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors"
+	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/interceptors/auth"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/services/controlplane/grpc/interceptors/authz"
+	"github.com/scrapnode/kanthor/services/dataplane/grpc/interceptors"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 	grpccore "google.golang.org/grpc"
@@ -20,11 +24,19 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	authenticator authenticator.Authenticator,
+	authorizator authorizator.Authorizator,
 	meter metric.Meter,
 	uc usecase.Dataplane,
 ) services.Service {
 	logger = logger.With("gateway", "grpc")
-	return &dataplane{conf: conf, logger: logger, authenticator: authenticator, meter: meter, uc: uc}
+	return &dataplane{
+		conf:          conf,
+		logger:        logger,
+		authenticator: authenticator,
+		authorizator:  authorizator,
+		meter:         meter,
+		uc:            uc,
+	}
 }
 
 type dataplane struct {
@@ -32,6 +44,7 @@ type dataplane struct {
 	logger        logging.Logger
 	gateway       *grpccore.Server
 	authenticator authenticator.Authenticator
+	authorizator  authorizator.Authorizator
 	meter         metric.Meter
 	uc            usecase.Dataplane
 }
@@ -45,6 +58,9 @@ func (service *dataplane) Start(ctx context.Context) error {
 		gatewayinterceptors.WithRecovery(service.logger),
 		gatewayinterceptors.WithLog(service.logger),
 		gatewayinterceptors.WithMeasurement(service.meter),
+		gatewayinterceptors.WithAuth(service.logger, service.authenticator, auth.DefaultPublic()),
+		interceptors.WithApplication(service.logger, service.uc),
+		interceptors.WithAuthz(service.logger, service.authorizator, authz.DefaultProtected()),
 	)
 	protos.RegisterMsgServer(service.gateway, &msg{service: service})
 	reflection.Register(service.gateway)

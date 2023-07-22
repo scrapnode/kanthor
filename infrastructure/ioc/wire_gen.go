@@ -24,16 +24,25 @@ func InitializeLogger(conf *logging.Config) (logging.Logger, error) {
 }
 
 func InitializeStreamingPublisher(conf *streaming.PublisherConfig, logger logging.Logger) (streaming.Publisher, error) {
-	publisher := streaming.NewPublisher(conf, logger)
+	publisher, err := streaming.NewPublisher(conf, logger)
+	if err != nil {
+		return nil, err
+	}
 	return publisher, nil
 }
 
 func InitializeDatabase(conf *database.Config, logger logging.Logger) (database.Database, error) {
-	databaseDatabase := database.New(conf, logger)
+	databaseDatabase, err := database.New(conf, logger)
+	if err != nil {
+		return nil, err
+	}
 	return databaseDatabase, nil
 }
 
 func InitializeDatastore(conf *datastore.Config, logger logging.Logger) (datastore.Datastore, error) {
-	datastoreDatastore := datastore.New(conf, logger)
+	datastoreDatastore, err := datastore.New(conf, logger)
+	if err != nil {
+		return nil, err
+	}
 	return datastoreDatastore, nil
 }

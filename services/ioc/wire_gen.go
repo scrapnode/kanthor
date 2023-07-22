@@ -33,14 +33,23 @@ import (
 
 func InitializeControlplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	authenticatorConfig := ResolveControlplaneAuthenticatorConfig(conf)
-	authenticatorAuthenticator := authenticator.New(authenticatorConfig, logger)
+	authenticatorAuthenticator, err := authenticator.New(authenticatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	authorizatorConfig := ResolveControlplaneAuthorizatorConfig(conf)
-	authorizatorAuthorizator := authorizator.New(authorizatorConfig, logger)
+	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	timerTimer := timer.New()
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
-	cacheCache := cache.New(cacheConfig, logger)
+	cacheCache, err := cache.New(cacheConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	databaseConfig := &conf.Database
 	repositories := repos.New(databaseConfig, logger, timerTimer)
 	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
@@ -51,11 +60,17 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (controlplane2.Controlplane, error) {
 	timerTimer := timer.New()
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
-	cacheCache := cache.New(cacheConfig, logger)
+	cacheCache, err := cache.New(cacheConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	authorizatorConfig := ResolveControlplaneAuthorizatorConfig(conf)
-	authorizatorAuthorizator := authorizator.New(authorizatorConfig, logger)
+	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	databaseConfig := &conf.Database
 	repositories := repos.New(databaseConfig, logger, timerTimer)
 	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
@@ -66,18 +81,32 @@ func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (
 
 func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	authenticatorConfig := ResolveDataplaneAuthenticatorConfig(conf)
-	authenticatorAuthenticator := authenticator.New(authenticatorConfig, logger)
+	authenticatorAuthenticator, err := authenticator.New(authenticatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	authorizatorConfig := ResolveDataplaneAuthorizatorConfig(conf)
+	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	metricConfig := ResolveDataplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	timerTimer := timer.New()
 	publisherConfig := ResolveDataplanePublisherConfig(conf)
-	publisher := streaming.NewPublisher(publisherConfig, logger)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	cacheConfig := ResolveDataplaneCacheConfig(conf)
-	cacheCache := cache.New(cacheConfig, logger)
+	cacheCache, err := cache.New(cacheConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger, timerTimer)
 	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
-	service := dataplane.New(conf, logger, authenticatorAuthenticator, meter, dataplaneDataplane)
+	service := dataplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, dataplaneDataplane)
 	return service, nil
 }
 
@@ -85,16 +114,28 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 
 func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	subscriberConfig := ResolveDispatcherSubscriberConfig(conf)
-	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
+	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	timerTimer := timer.New()
 	publisherConfig := ResolveDispatcherPublisherConfig(conf)
-	publisher := streaming.NewPublisher(publisherConfig, logger)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	senderConfig := ResolveDispatcherSenderConfig(conf, logger)
 	send := sender.New(senderConfig, logger)
 	cacheConfig := ResolveDispatcherCacheConfig(conf)
-	cacheCache := cache.New(cacheConfig, logger)
+	cacheCache, err := cache.New(cacheConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	circuitbreakerConfig := ResolveDispatcherCircuitBreakerConfig(conf)
-	circuitBreaker := circuitbreaker.New(circuitbreakerConfig, logger)
+	circuitBreaker, err := circuitbreaker.New(circuitbreakerConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	metricConfig := ResolveDispatcherMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, meter)
@@ -106,12 +147,21 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	subscriberConfig := ResolveSchedulerSubscriberConfig(conf)
-	subscriber := streaming.NewSubscriber(subscriberConfig, logger)
+	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	timerTimer := timer.New()
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
-	publisher := streaming.NewPublisher(publisherConfig, logger)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	cacheConfig := ResolveSchedulerCacheConfig(conf)
-	cacheCache := cache.New(cacheConfig, logger)
+	cacheCache, err := cache.New(cacheConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	metricConfig := ResolveSchedulerMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	databaseConfig := &conf.Database
@@ -151,6 +201,10 @@ func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveDataplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.Dataplane.Authenticator
+}
+
+func ResolveDataplaneAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.Dataplane.Authorizator
 }
 
 func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {

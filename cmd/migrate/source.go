@@ -11,10 +11,10 @@ import (
 
 func Source(task *config.MigrationTask, logger logging.Logger) (migration.Source, error) {
 	if task.Name == "database" {
-		return database.New(&database.Config{Uri: task.Uri}, logger), nil
+		return database.New(&database.Config{Uri: task.Uri}, logger)
 	}
 	if task.Name == "datastore" {
-		return datastore.New(&datastore.Config{Uri: task.Uri}, logger), nil
+		return datastore.New(&datastore.Config{Uri: task.Uri}, logger)
 	}
 
 	return nil, fmt.Errorf("migrate: unsupport task [%s]", task.Name)

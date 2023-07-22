@@ -16,6 +16,7 @@ import (
 type Dataplane interface {
 	patterns.Connectable
 	Message() Message
+	Application() Application
 }
 
 func New(
@@ -47,8 +48,9 @@ type dataplane struct {
 	meter     metric.Meter
 	repos     repos.Repositories
 
-	mu      sync.RWMutex
-	message *message
+	mu          sync.RWMutex
+	message     *message
+	application *application
 }
 
 func (usecase *dataplane) Connect(ctx context.Context) error {
@@ -103,4 +105,22 @@ func (usecase *dataplane) Message() Message {
 	}
 
 	return usecase.message
+}
+
+func (usecase *dataplane) Application() Application {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.application == nil {
+		usecase.application = &application{
+			conf:   usecase.conf,
+			logger: usecase.logger,
+			timer:  usecase.timer,
+			repos:  usecase.repos,
+			cache:  usecase.cache,
+			meter:  usecase.meter,
+		}
+	}
+
+	return usecase.application
 }

@@ -10,16 +10,16 @@ import (
 type workspace struct {
 	protos.UnimplementedWorkspaceServer
 	service *controlplane
+	pipe    pipeline.Middleware
 }
 
 func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (*protos.IWorkspace, error) {
-	chain := pipeline.Chain(pipeline.UseGRPCError(server.service.logger), pipeline.UseValidation())
-	pipe := chain(func(ctx context.Context, request interface{}) (response interface{}, err error) {
+	run := server.pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = server.service.uc.Workspace().Get(ctx, request.(*usecase.WorkspaceGetReq))
 		return
 	})
 
-	response, err := pipe(ctx, &usecase.WorkspaceGetReq{Id: req.Id})
+	response, err := run(ctx, &usecase.WorkspaceGetReq{Id: req.Id})
 	if err != nil {
 		return nil, err
 	}

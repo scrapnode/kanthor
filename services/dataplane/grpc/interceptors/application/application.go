@@ -1,15 +1,15 @@
-package workspace
+package application
 
 import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/stream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
+	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 	grpccore "google.golang.org/grpc"
 )
 
-func UnaryServerInterceptor(logger logging.Logger, uc usecase.Controlplane) grpccore.UnaryServerInterceptor {
+func UnaryServerInterceptor(logger logging.Logger, uc usecase.Dataplane) grpccore.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req interface{},
@@ -25,7 +25,7 @@ func UnaryServerInterceptor(logger logging.Logger, uc usecase.Controlplane) grpc
 	}
 }
 
-func StreamServerInterceptor(logger logging.Logger, uc usecase.Controlplane) grpccore.StreamServerInterceptor {
+func StreamServerInterceptor(logger logging.Logger, uc usecase.Dataplane) grpccore.StreamServerInterceptor {
 	return func(
 		srv interface{},
 		ss grpccore.ServerStream,
@@ -43,24 +43,25 @@ func StreamServerInterceptor(logger logging.Logger, uc usecase.Controlplane) grp
 	}
 }
 
-func resolve(logger logging.Logger, uc usecase.Controlplane, ctx context.Context) (context.Context, error) {
+func resolve(logger logging.Logger, uc usecase.Dataplane, ctx context.Context) (context.Context, error) {
 	meta := gateway.ExtractIncoming(ctx)
-	wsId := meta.Get("x-kanthor-ws")
+	appId := meta.Get("x-kanthor-app")
 	// we don't need to ensure the existing of workspace at this place
 	// because we have to check the value of ctx.Value(usecase.CtxWorkspace) later whenever we use it
-	if wsId == "" {
+	if appId == "" {
 		return ctx, nil
 	}
 
-	req := &usecase.WorkspaceGetReq{Id: wsId}
-	res, err := uc.Workspace().Get(ctx, req)
+	req := &usecase.ApplicationGetReq{Id: appId}
+	res, err := uc.Application().Get(ctx, req)
 	if err != nil {
-		logger.Errorw(err.Error(), "workspace_id", wsId)
-		return ctx, gateway.Err404("WORKSPACE.NOT_FOUND")
+		logger.Errorw(err.Error(), "app_id", appId)
+		return ctx, gateway.Err404("APPLICATION.NOT_FOUND")
 	}
 
-	logger.Debugw("resolve workspace", "workspace_id", res.Workspace.Id, "workspace_tier", res.Workspace.Tier)
+	logger.Debugw("resolve application", "app_id", appId, "workspace_id", res.Workspace.Id, "workspace_tier", res.Workspace.Tier)
 
 	ctx = context.WithValue(ctx, usecase.CtxWorkspace, res.Workspace)
+	ctx = context.WithValue(ctx, usecase.CtxApplication, res.Application)
 	return ctx, nil
 }

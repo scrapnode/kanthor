@@ -23,6 +23,7 @@ type sql struct {
 
 	mu          sync.RWMutex
 	client      *gorm.DB
+	worksapce   *SqlWorkspace
 	application *SqlApplication
 }
 
@@ -44,6 +45,17 @@ func (repo *sql) Disconnect(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (repo *sql) Workspace() Workspace {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
+	if repo.worksapce == nil {
+		repo.worksapce = &SqlWorkspace{client: repo.client, timer: repo.timer}
+	}
+
+	return repo.worksapce
 }
 
 func (repo *sql) Application() Application {

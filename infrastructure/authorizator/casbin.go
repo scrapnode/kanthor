@@ -76,22 +76,22 @@ func (authorizator *casbin) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (authorizator *casbin) Enforce(sub, ws, obj, act string) (bool, error) {
-	ok, explains, err := authorizator.client.EnforceEx(sub, ws, obj, act)
+func (authorizator *casbin) Enforce(sub, tenant, obj, act string) (bool, error) {
+	ok, explains, err := authorizator.client.EnforceEx(sub, tenant, obj, act)
 	if err != nil {
 		return false, err
 	}
 
 	if !ok {
-		authorizator.logger.Warnw("permission denied", "sub", sub, "ws", ws, "obj", obj, "act", act, "explains", explains)
+		authorizator.logger.Warnw("permission denied", "sub", sub, "tenant", tenant, "obj", obj, "act", act, "explains", explains)
 	}
 	return ok, nil
 }
 
-func (authorizator *casbin) SetupPermissions(role, ws string, permissions [][]string) error {
+func (authorizator *casbin) SetupPermissions(role, tenant string, permissions [][]string) error {
 	var policies [][]string
 	for _, permission := range permissions {
-		policies = append(policies, append([]string{role, ws}, permission...))
+		policies = append(policies, append([]string{role, tenant}, permission...))
 	}
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
@@ -103,10 +103,10 @@ func (authorizator *casbin) SetupPermissions(role, ws string, permissions [][]st
 	return nil
 }
 
-func (authorizator *casbin) GrantAccess(sub, role, ws string) error {
+func (authorizator *casbin) GrantAccess(sub, role, tenant string) error {
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
-	_, err := authorizator.client.AddRoleForUserInDomain(sub, role, ws)
+	_, err := authorizator.client.AddRoleForUserInDomain(sub, role, tenant)
 	if err != nil {
 		return err
 	}
@@ -114,6 +114,6 @@ func (authorizator *casbin) GrantAccess(sub, role, ws string) error {
 	return nil
 }
 
-func (authorizator *casbin) Workspaces(sub string) ([]string, error) {
+func (authorizator *casbin) Tenants(sub string) ([]string, error) {
 	return authorizator.client.GetDomainsForUser(sub)
 }

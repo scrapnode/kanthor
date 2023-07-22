@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/dataplane/grpc/protos"
 	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
@@ -16,8 +17,12 @@ type msg struct {
 }
 
 func (server *msg) Put(ctx context.Context, req *protos.MsgPutReq) (*protos.MsgPutRes, error) {
+	app := ctx.Value(usecase.CtxApplication).(*entities.Application)
+	ws := ctx.Value(usecase.CtxWorkspace).(*entities.Workspace)
 	request := &usecase.MessagePutReq{
-		AppId:    req.AppId,
+		App: app,
+		Ws:  ws,
+
 		Type:     req.Type,
 		Headers:  http.Header{},
 		Body:     req.Body,

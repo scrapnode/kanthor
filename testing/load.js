@@ -23,11 +23,11 @@ export default () => {
         "appId": "app_2IJycYlPREw5nqMDss3TCdQhotU",
         "type": "test.demo",
         "headers": {
-            "x-kanthor-client": "kreya"
+            "x-kanthor-client": "k6"
         },
         "body": "{\"author\":\"Tuan Nguyen\"}",
         "metadata": {
-            "x-kanthor-client": "kreya"
+            "x-kanthor-client": "k6"
         }
     };
     const response = client.invoke('kanthor.dataplane.v1.Message/Put', data);

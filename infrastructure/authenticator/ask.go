@@ -1,12 +1,10 @@
 package authenticator
 
 import (
-	"encoding/base64"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"strings"
 )
 
-func NewASK(conf *Config, logger logging.Logger) Authenticator {
+func NewAsk(conf *Config, logger logging.Logger) Authenticator {
 	logger = logger.With("authenticator", "ask")
 	return &ask{conf: conf, logger: logger}
 }
@@ -22,28 +20,23 @@ func (authenticator *ask) Scheme() string {
 }
 
 func (authenticator *ask) Verify(token string) (*Account, error) {
-	bytes, err := base64.StdEncoding.DecodeString(token)
+	ak, sk, err := ParseBasicCredentials(token)
 	if err != nil {
 		authenticator.logger.Error(err)
 		return nil, ErrMalformedToken
 	}
 
-	as := strings.Split(string(bytes), ":")
-	if len(as) != 2 {
-		return nil, ErrMalformedPayload
-	}
-
-	accessOK := as[0] == authenticator.conf.AccessSecretKey.AccessKey
-	secretOk := as[1] == authenticator.conf.AccessSecretKey.SecretKey
+	accessOK := ak == authenticator.conf.Ask.AccessKey
+	secretOk := sk == authenticator.conf.Ask.SecretKey
 	if !accessOK || !secretOk {
 		return nil, ErrInvalidCredentials
 	}
 
 	account := &Account{
-		Sub:  authenticator.conf.AccessSecretKey.AccessKey,
-		Iss:  "kanthor.system",
+		Sub:  ak,
+		Iss:  "kanthor.authenticator.ask",
 		Aud:  "kanthor",
-		Name: "Kanthor",
+		Name: "Kanthor Ask",
 	}
 	return account, nil
 }

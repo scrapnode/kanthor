@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
@@ -31,6 +32,8 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 		cache.New,
 		ResolveDataplaneAuthenticatorConfig,
 		authenticator.New,
+		ResolveDataplaneAuthorizatorConfig,
+		authorizator.New,
 		ResolveDataplaneMetricConfig,
 		metric.New,
 	)
@@ -47,6 +50,10 @@ func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveDataplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.Dataplane.Authenticator
+}
+
+func ResolveDataplaneAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.Dataplane.Authorizator
 }
 
 func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {

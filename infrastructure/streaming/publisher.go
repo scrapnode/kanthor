@@ -7,8 +7,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func NewPublisher(conf *PublisherConfig, logger logging.Logger) Publisher {
-	return NewNatsPublisher(conf, logger)
+func NewPublisher(conf *PublisherConfig, logger logging.Logger) (Publisher, error) {
+	return NewNatsPublisher(conf, logger), nil
 }
 
 type Publisher interface {

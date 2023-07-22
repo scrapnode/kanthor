@@ -6,10 +6,5 @@ import (
 )
 
 type Application interface {
-	GetWithWorkspace(ctx context.Context, id string) (*ApplicationWithWorkspace, error)
-}
-
-type ApplicationWithWorkspace struct {
-	entities.Application
-	Workspace entities.Workspace
+	Get(ctx context.Context, id string) (*entities.Application, error)
 }

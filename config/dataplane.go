@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
@@ -15,6 +16,7 @@ type Dataplane struct {
 	Publisher     streaming.PublisherConfig `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
 	Cache         cache.Config              `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 	Authenticator authenticator.Config      `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator" validate:"required"`
+	Authorizator  authorizator.Config       `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator" validate:"required"`
 
 	Metrics metric.Config `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"-"`
 }

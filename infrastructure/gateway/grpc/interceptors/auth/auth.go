@@ -7,8 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/stream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	grpccore "google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 )
 
@@ -38,8 +36,7 @@ func UnaryServerInterceptor(
 
 		ctx, err = authenticate(logger, engine, ctx, public, method)
 		if err != nil {
-			logger.Errorw(err.Error(), "method", method)
-			return nil, status.Error(codes.Unauthenticated, err.Error())
+			return nil, err
 		}
 		return handler(ctx, req)
 	}
@@ -61,8 +58,7 @@ func StreamServerInterceptor(
 
 		ctx, err := authenticate(logger, engine, ss.Context(), public, method)
 		if err != nil {
-			logger.Errorw(err.Error(), "method", method)
-			return status.Error(codes.Unauthenticated, err.Error())
+			return err
 		}
 
 		wrapped.WrappedContext = ctx
@@ -86,34 +82,36 @@ func authenticate(
 		return context.WithValue(ctx, gateway.AccessPublicable, true), nil
 	}
 
-	t, err := token(ctx, engine.Scheme())
+	t, err := TokenFromContext(ctx, engine.Scheme())
 	if err != nil {
+		logger.Errorw(err.Error())
 		return ctx, err
 	}
 
 	account, err := engine.Verify(t)
 	if err != nil {
-		return ctx, err
+		logger.Errorw(err.Error())
+		return ctx, gateway.Err401("AUTH.VERIFY_FAILED")
 	}
 
 	logger.Debugw("authenticated", "account_sub", account.Sub)
 	return context.WithValue(ctx, authenticator.CtxAuthAccount, account), nil
 }
 
-func token(ctx context.Context, scheme string) (string, error) {
+func TokenFromContext(ctx context.Context, scheme string) (string, error) {
 	meta := gateway.ExtractIncoming(ctx)
 
 	authorization := meta.Get("authorization")
 	if authorization == "" {
-		return "", status.Error(codes.Unauthenticated, "AUTH.HEADERS.AUTHORIZATION_EMPTY")
+		return "", gateway.Err401("AUTH.HEADERS.AUTHORIZATION_EMPTY")
 	}
 
 	segments := strings.Split(authorization, " ")
 	if len(segments) != 2 {
-		return "", status.Errorf(codes.Unauthenticated, "AUTH.HEADERS.AUTHORIZATION_MALFORMED")
+		return "", gateway.Err401("AUTH.HEADERS.AUTHORIZATION_MALFORMED")
 	}
 	if !strings.EqualFold(segments[0], scheme) {
-		return "", status.Errorf(codes.Unauthenticated, "AUTH.HEADERS.AUTHORIZATION_SCHEME_INVALID")
+		return "", gateway.Err401("AUTH.HEADERS.AUTHORIZATION_SCHEME_INVALID")
 	}
 
 	return segments[1], nil

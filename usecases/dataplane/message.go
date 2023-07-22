@@ -3,6 +3,7 @@ package dataplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
@@ -17,7 +18,9 @@ type Message interface {
 }
 
 type MessagePutReq struct {
-	AppId    string
+	App *entities.Application
+	Ws  *entities.Workspace
+
 	Type     string
 	Headers  http.Header
 	Body     string

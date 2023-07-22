@@ -9,20 +9,10 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/gateway/grpc/stream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
+	usecase "github.com/scrapnode/kanthor/usecases/dataplane"
 	grpccore "google.golang.org/grpc"
 	"strings"
 )
-
-// DefaultProtected returns the list of method that is protected only by authentication not authorization
-func DefaultProtected() map[string]bool {
-	protected := map[string]bool{
-		"/kanthor.controlplane.v1.Account/ListWorkspaces": true,
-		"/kanthor.controlplane.v1.Account/Get":            true,
-	}
-
-	return protected
-}
 
 func UnaryServerInterceptor(
 	logger logging.Logger,
@@ -86,15 +76,9 @@ func authorize(
 		return ctx, gateway.Err401("ACCOUNT.UNKNOWN")
 	}
 
-	ws, ok := ctx.Value(usecase.CtxWorkspace).(*entities.Workspace)
+	app, ok := ctx.Value(usecase.CtxApplication).(*entities.Application)
 	if !ok {
-		return ctx, gateway.Err401("WORKSPACE.UNKNOWN")
-	}
-
-	// if authenticated account is owner of this workspace, should allow them does anything they want
-	if acc.Sub == ws.OwnerId {
-		logger.Debugw("owner permissions", "ws_id", ws.Id, "account_sub", acc.Sub)
-		return ctx, nil
+		return ctx, gateway.Err401("APPLICATION.UNKNOWN")
 	}
 
 	obj, act, err := action(method)
@@ -103,9 +87,9 @@ func authorize(
 		return ctx, gateway.Err400("METHOD.INVALID")
 	}
 
-	ok, err = engine.Enforce(acc.Sub, ws.Id, obj, act)
+	ok, err = engine.Enforce(acc.Sub, app.Id, obj, act)
 	if err != nil {
-		logger.Errorw(err.Error(), "ws_id", ws.Id, "account_sub", acc.Sub)
+		logger.Errorw(err.Error(), "app_id", app.Id, "account_sub", acc.Sub)
 
 		return ctx, gateway.Err500("AUTHORIZATOR.INTERNAL")
 	}
@@ -114,7 +98,7 @@ func authorize(
 		return ctx, gateway.Err403("AUTHORIZATOR.FORBIDDEN")
 	}
 
-	logger.Debugw("granted permission", "ws_id", ws.Id, "account_sub", acc.Sub)
+	logger.Debugw("granted permission", "app_id", app.Id, "account_sub", acc.Sub)
 	return ctx, nil
 }
 

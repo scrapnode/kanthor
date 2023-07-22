@@ -6,8 +6,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func New(conf *Config, logger logging.Logger) Database {
-	return NewSQL(conf, logger)
+func New(conf *Config, logger logging.Logger) (Database, error) {
+	return NewSQL(conf, logger), nil
 }
 
 type Database interface {
