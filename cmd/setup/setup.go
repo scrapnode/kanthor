@@ -33,7 +33,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				if input == "" {
 					return errors.New("setup.demo: demo input file must be provided")
 				}
-				return Demo(conf, logger, sub, input, verbose)
+				return demo(conf, logger, sub, input, verbose)
 			}
 
 			return fmt.Errorf("setup: unknow setup [%s]", name)

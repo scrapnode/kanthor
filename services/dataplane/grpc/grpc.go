@@ -54,6 +54,10 @@ func (service *dataplane) Start(ctx context.Context) error {
 		return err
 	}
 
+	if err := service.authorizator.Connect(ctx); err != nil {
+		return err
+	}
+
 	service.gateway = grpc.NewServer(
 		gatewayinterceptors.WithRecovery(service.logger),
 		gatewayinterceptors.WithLog(service.logger),
@@ -72,6 +76,10 @@ func (service *dataplane) Start(ctx context.Context) error {
 func (service *dataplane) Stop(ctx context.Context) error {
 	service.gateway.GracefulStop()
 	service.logger.Info("stopped")
+
+	if err := service.authorizator.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
 
 	if err := service.uc.Disconnect(ctx); err != nil {
 		service.logger.Error(err)

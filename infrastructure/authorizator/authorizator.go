@@ -7,10 +7,6 @@ import (
 )
 
 func New(conf *Config, logger logging.Logger) (Authorizator, error) {
-	if conf.Engine == EngineNoop {
-		return NewNoop(conf, logger), nil
-	}
-
 	if conf.Engine == EngineCasbin {
 		return NewCasbin(conf, logger), nil
 	}

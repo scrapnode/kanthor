@@ -10,9 +10,15 @@ import (
 	"github.com/scrapnode/kanthor/services"
 )
 
+func New(provider configuration.Provider) (*Config, error) {
+	var conf Config
+	return &conf, provider.Unmarshal(&conf)
+}
+
 type Config struct {
 	Version string
 	Bucket  Bucket `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
+	Crypto  Crypto `json:"crypto" yaml:"crypto" mapstructure:"crypto" validate:"required"`
 
 	Logger   logging.Config  `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
 	Database database.Config `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
@@ -30,6 +36,9 @@ func (conf *Config) Validate(service string) error {
 		return err
 	}
 
+	if err := conf.Crypto.Validate(); err != nil {
+		return fmt.Errorf("config.Crypto: %v", err)
+	}
 	if err := conf.Bucket.Validate(); err != nil {
 		return fmt.Errorf("config.Bucket: %v", err)
 	}
@@ -62,15 +71,24 @@ func (conf *Config) Validate(service string) error {
 	return fmt.Errorf("config: unknow service [%s]", service)
 }
 
+type Crypto struct {
+	Key string `json:"key" yaml:"key" mapstructure:"key" validate:"required,len=32"`
+}
+
+func (conf *Crypto) Validate() error {
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
+}
+
 type Bucket struct {
 	Layout string `json:"layout" yaml:"layout" mapstructure:"layout" validate:"required"`
 }
 
 func (conf *Bucket) Validate() error {
-	return validator.New().Struct(conf)
-}
-
-func New(provider configuration.Provider) (*Config, error) {
-	var conf Config
-	return &conf, provider.Unmarshal(&conf)
+	if err := validator.New().Struct(conf); err != nil {
+		return err
+	}
+	return nil
 }

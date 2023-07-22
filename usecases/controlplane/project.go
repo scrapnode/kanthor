@@ -38,6 +38,8 @@ type ProjectSetupDemoReq struct {
 }
 
 type ProjectSetupDemoRes struct {
+	WorkspaceId     string   `json:"workspace_id"`
+	WorkspaceTier   string   `json:"workspace_tier"`
 	ApplicationIds  []string `json:"application_ids"`
 	EndpointIds     []string `json:"endpoint_ids"`
 	EndpointRuleIds []string `json:"endpoint_rule_ids"`

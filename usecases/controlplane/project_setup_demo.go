@@ -5,9 +5,9 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 )
 
-func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*ProjectSetupDemoRes, error) {
-	res, err := usecase.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ws, err := usecase.repos.Workspace().Get(txctx, req.WorkspaceId)
+func (uc *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*ProjectSetupDemoRes, error) {
+	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		ws, err := uc.repos.Workspace().Get(txctx, req.WorkspaceId)
 		if err != nil {
 			return nil, err
 		}
@@ -17,10 +17,10 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 		for _, app := range req.Applications {
 			app.GenId()
 			app.WorkspaceId = ws.Id
-			app.SetAT(usecase.timer.Now())
+			app.SetAT(uc.timer.Now())
 			apps = append(apps, app)
 		}
-		appIds, err := usecase.repos.Application().BulkCreate(txctx, apps)
+		appIds, err := uc.repos.Application().BulkCreate(txctx, apps)
 		if err != nil {
 			return nil, err
 		}
@@ -29,10 +29,10 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 		var endpoints []entities.Endpoint
 		for _, endpoint := range req.Endpoints {
 			endpoint.GenId()
-			endpoint.SetAT(usecase.timer.Now())
+			endpoint.SetAT(uc.timer.Now())
 			endpoints = append(endpoints, endpoint)
 		}
-		endpointIds, err := usecase.repos.Endpoint().BulkCreate(txctx, endpoints)
+		endpointIds, err := uc.repos.Endpoint().BulkCreate(txctx, endpoints)
 		if err != nil {
 			return nil, err
 		}
@@ -41,15 +41,21 @@ func (usecase *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq)
 		var rules []entities.EndpointRule
 		for _, rule := range req.EndpointRules {
 			rule.GenId()
-			rule.SetAT(usecase.timer.Now())
+			rule.SetAT(uc.timer.Now())
 			rules = append(rules, rule)
 		}
-		endpointRuleIds, err := usecase.repos.EndpointRule().BulkCreate(txctx, rules)
+		endpointRuleIds, err := uc.repos.EndpointRule().BulkCreate(txctx, rules)
 		if err != nil {
 			return nil, err
 		}
 
-		res := &ProjectSetupDemoRes{ApplicationIds: appIds, EndpointIds: endpointIds, EndpointRuleIds: endpointRuleIds}
+		res := &ProjectSetupDemoRes{
+			WorkspaceId:     ws.Id,
+			WorkspaceTier:   ws.Tier.Name,
+			ApplicationIds:  appIds,
+			EndpointIds:     endpointIds,
+			EndpointRuleIds: endpointRuleIds,
+		}
 		return res, nil
 	})
 	if err != nil {

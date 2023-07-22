@@ -6,28 +6,17 @@ import (
 )
 
 var (
-	EngineNoop   = "noop"
 	EngineCasbin = "casbin"
 )
 
 type Config struct {
 	Engine string        `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=noop casbin"`
-	Noop   *NoopConfig   `json:"noop" yaml:"noop" mapstructure:"noop" validate:"-"`
 	Casbin *CasbinConfig `json:"casbin" yaml:"casbin" mapstructure:"casbin" validate:"-"`
 }
 
 func (conf *Config) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return err
-	}
-
-	if conf.Engine == EngineNoop {
-		if conf.Noop == nil {
-			return errors.New("authorizator.config.noop: null value")
-		}
-		if err := conf.Noop.Validate(); err != nil {
-			return err
-		}
 	}
 
 	if conf.Engine == EngineCasbin {
@@ -42,22 +31,11 @@ func (conf *Config) Validate() error {
 	return nil
 }
 
-type NoopConfig struct {
-	AlwaysPass bool `json:"always_pass" yaml:"always_pass" mapstructure:"always_pass" validate:"required"`
-}
-
-func (conf *NoopConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 type CasbinConfig struct {
-	ModelUri  string              `json:"model_uri" yaml:"model_uri" mapstructure:"model_uri" validate:"required,uri"`
-	PolicyUri string              `json:"policy_uri" yaml:"policy_uri" mapstructure:"policy_uri" validate:"required,uri"`
-	Watcher   CasbinWatcherConfig `json:"watcher" yaml:"watcher" mapstructure:"watcher" validate:"-"`
+	ModelUri        string              `json:"model_uri" yaml:"model_uri" mapstructure:"model_uri" validate:"required,uri"`
+	PolicyUri       string              `json:"policy_uri" yaml:"policy_uri" mapstructure:"policy_uri" validate:"required,uri"`
+	PolicyNamespace string              `json:"policy_namespace" yaml:"policy_namespace" mapstructure:"policy_namespace" validate:"required"`
+	Watcher         CasbinWatcherConfig `json:"watcher" yaml:"watcher" mapstructure:"watcher" validate:"-"`
 }
 
 func (conf *CasbinConfig) Validate() error {

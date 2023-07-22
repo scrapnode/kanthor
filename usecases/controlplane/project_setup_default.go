@@ -9,9 +9,9 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
 )
 
-func (usecase *project) SetupDefault(ctx context.Context, req *ProjectSetupDefaultReq) (*ProjectSetupDefaultRes, error) {
-	res, err := usecase.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		existing, err := usecase.repos.Workspace().GetDefault(txctx, req.Account.Sub)
+func (uc *project) SetupDefault(ctx context.Context, req *ProjectSetupDefaultReq) (*ProjectSetupDefaultRes, error) {
+	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		existing, err := uc.repos.Workspace().GetDefault(txctx, req.Account.Sub)
 		if err == nil {
 			return &ProjectSetupDefaultRes{WorkspaceId: existing.Id, WorkspaceTier: existing.Tier.Name}, nil
 		}
@@ -33,7 +33,7 @@ func (usecase *project) SetupDefault(ctx context.Context, req *ProjectSetupDefau
 			entity.Tier.Name = constants.DefaultWorkspaceTier
 		}
 
-		ws, err := usecase.repos.Workspace().Create(txctx, entity)
+		ws, err := uc.repos.Workspace().Create(txctx, entity)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +47,7 @@ func (usecase *project) SetupDefault(ctx context.Context, req *ProjectSetupDefau
 
 	// must clear the cache because of new workspace
 	cacheKey := cache.Key("WORKSPACES_OF_ACCOUNT", req.Account.Sub)
-	if err := usecase.cache.Del(cacheKey); err != nil {
+	if err := uc.cache.Del(cacheKey); err != nil {
 		return nil, err
 	}
 	return res.(*ProjectSetupDefaultRes), err

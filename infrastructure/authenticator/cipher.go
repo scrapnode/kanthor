@@ -23,7 +23,7 @@ func (authenticator *cipher) Scheme() string {
 }
 
 func (authenticator *cipher) Verify(token string) (*Account, error) {
-	sub, err := authenticator.ase.Decrypt(token)
+	sub, err := authenticator.ase.DecryptString(token)
 	if err != nil {
 		authenticator.logger.Error(err)
 		return nil, ErrMalformedToken

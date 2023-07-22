@@ -16,6 +16,7 @@ import (
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dataplane"
 	"github.com/scrapnode/kanthor/usecases"
+	dataplaneuc "github.com/scrapnode/kanthor/usecases/dataplane"
 	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
 )
 
@@ -32,6 +33,24 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 		cache.New,
 		ResolveDataplaneAuthenticatorConfig,
 		authenticator.New,
+		ResolveDataplaneAuthorizatorConfig,
+		authorizator.New,
+		ResolveDataplaneMetricConfig,
+		metric.New,
+	)
+	return nil, nil
+}
+
+func InitializeDataplaneUsecase(conf *config.Config, logger logging.Logger) (dataplaneuc.Dataplane, error) {
+	wire.Build(
+		usecases.NewDataplane,
+		timer.New,
+		ResolveDataplanePublisherConfig,
+		streaming.NewPublisher,
+		wire.FieldsOf(new(*config.Config), "Database"),
+		repos.New,
+		ResolveDataplaneCacheConfig,
+		cache.New,
 		ResolveDataplaneAuthorizatorConfig,
 		authorizator.New,
 		ResolveDataplaneMetricConfig,

@@ -3,7 +3,9 @@ package dataplane
 import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/crypto"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -26,27 +28,30 @@ func New(
 	publisher streaming.Publisher,
 	cache cache.Cache,
 	meter metric.Meter,
+	authorizator authorizator.Authorizator,
 	repos repos.Repositories,
 ) Dataplane {
 	return &dataplane{
-		conf:      conf,
-		logger:    logger,
-		timer:     timer,
-		publisher: publisher,
-		cache:     cache,
-		meter:     meter,
-		repos:     repos,
+		conf:         conf,
+		logger:       logger,
+		timer:        timer,
+		publisher:    publisher,
+		cache:        cache,
+		meter:        meter,
+		authorizator: authorizator,
+		repos:        repos,
 	}
 }
 
 type dataplane struct {
-	conf      *config.Config
-	logger    logging.Logger
-	timer     timer.Timer
-	publisher streaming.Publisher
-	cache     cache.Cache
-	meter     metric.Meter
-	repos     repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	timer        timer.Timer
+	publisher    streaming.Publisher
+	cache        cache.Cache
+	meter        metric.Meter
+	authorizator authorizator.Authorizator
+	repos        repos.Repositories
 
 	mu          sync.RWMutex
 	message     *message
@@ -54,15 +59,19 @@ type dataplane struct {
 }
 
 func (usecase *dataplane) Connect(ctx context.Context) error {
+	if err := usecase.cache.Connect(ctx); err != nil {
+		return err
+	}
+
 	if err := usecase.repos.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.publisher.Connect(ctx); err != nil {
+	if err := usecase.authorizator.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.cache.Connect(ctx); err != nil {
+	if err := usecase.publisher.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -73,11 +82,15 @@ func (usecase *dataplane) Connect(ctx context.Context) error {
 func (usecase *dataplane) Disconnect(ctx context.Context) error {
 	usecase.logger.Info("disconnected")
 
-	if err := usecase.repos.Disconnect(ctx); err != nil {
+	if err := usecase.publisher.Disconnect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.publisher.Disconnect(ctx); err != nil {
+	if err := usecase.authorizator.Disconnect(ctx); err != nil {
+		return err
+	}
+
+	if err := usecase.repos.Disconnect(ctx); err != nil {
 		return err
 	}
 
@@ -113,12 +126,14 @@ func (usecase *dataplane) Application() Application {
 
 	if usecase.application == nil {
 		usecase.application = &application{
-			conf:   usecase.conf,
-			logger: usecase.logger,
-			timer:  usecase.timer,
-			repos:  usecase.repos,
-			cache:  usecase.cache,
-			meter:  usecase.meter,
+			conf:         usecase.conf,
+			logger:       usecase.logger,
+			timer:        usecase.timer,
+			repos:        usecase.repos,
+			cache:        usecase.cache,
+			meter:        usecase.meter,
+			authorizator: usecase.authorizator,
+			aes:          crypto.NewAES(usecase.conf.Crypto.Key),
 		}
 	}
 

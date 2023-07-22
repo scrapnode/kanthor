@@ -14,6 +14,22 @@ type SqlApplication struct {
 	timer  timer.Timer
 }
 
+func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Application, error) {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+
+	var app entities.Application
+	tx := transaction.WithContext(ctx).Model(&app).Where("id = ?", id).First(&app)
+	if err := database.ErrGet(tx); err != nil {
+		return nil, fmt.Errorf("application.get: %w", err)
+	}
+
+	if app.DeletedAt >= sql.timer.Now().UnixMilli() {
+		return nil, fmt.Errorf("application.get.deleted: deleted_at:%d", app.DeletedAt)
+	}
+
+	return &app, nil
+}
+
 func (sql *SqlApplication) Create(ctx context.Context, entity *entities.Application) (*entities.Application, error) {
 	entity.GenId()
 	entity.SetAT(sql.timer.Now())

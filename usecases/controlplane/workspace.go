@@ -36,7 +36,8 @@ type WorkspaceGetByAccountRes struct {
 }
 
 type WorkspaceListOfAccountReq struct {
-	Account *authenticator.Account `json:"account" validate:"required"`
+	Account      *authenticator.Account `json:"account" validate:"required"`
+	WorkspaceIds []string               `json:"workspace_ids" validate:"required,gt=0"`
 }
 
 type WorkspaceListOfAccountRes struct {

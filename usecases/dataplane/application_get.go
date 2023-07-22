@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-func (usecase *application) Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error) {
-	res, err := cache.Warp(usecase.cache,
+func (uc *application) Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error) {
+	res, err := cache.Warp(uc.cache,
 		cache.Key("APPLICATION_WITH_WORKSPACE", req.Id),
 		time.Hour*24,
 		func() (*ApplicationGetRes, error) {
-			usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_application_get"))
+			uc.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_application_get"))
 
-			app, err := usecase.repos.Application().Get(ctx, req.Id)
+			app, err := uc.repos.Application().Get(ctx, req.Id)
 			if err != nil {
 				return nil, err
 			}
-			ws, err := usecase.repos.Workspace().Get(ctx, req.Id)
+			ws, err := uc.repos.Workspace().Get(ctx, app.WorkspaceId)
 			if err != nil {
 				return nil, err
 			}

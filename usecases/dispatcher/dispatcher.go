@@ -56,11 +56,11 @@ type dispatcher struct {
 }
 
 func (usecase *dispatcher) Connect(ctx context.Context) error {
-	if err := usecase.publisher.Connect(ctx); err != nil {
+	if err := usecase.cache.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.cache.Connect(ctx); err != nil {
+	if err := usecase.publisher.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -72,6 +72,10 @@ func (usecase *dispatcher) Disconnect(ctx context.Context) error {
 	usecase.logger.Info("disconnected")
 
 	if err := usecase.publisher.Disconnect(ctx); err != nil {
+		return err
+	}
+
+	if err := usecase.cache.Disconnect(ctx); err != nil {
 		return err
 	}
 

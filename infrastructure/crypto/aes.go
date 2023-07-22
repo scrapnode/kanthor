@@ -42,17 +42,17 @@ func (c *AES) Cipher() (cipher.AEAD, error) {
 	return c.gcm, nil
 }
 
-func (c *AES) Encrypt(plaintext string) (string, error) {
+func (c *AES) Encrypt(plaintext []byte) ([]byte, error) {
 	gcm, err := c.Cipher()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// create a new byte array the size of the nonce which must be passed to Seal
 	nonce := make([]byte, gcm.NonceSize())
 	// populates our nonce with a cryptographically secure random sequence
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// here we encrypt our text using the Seal function
@@ -60,30 +60,42 @@ func (c *AES) Encrypt(plaintext string) (string, error) {
 	// additional data and appends the result to dst, returning the updated
 	// slice. The nonce must be NonceSize() bytes long and unique for all
 	// time, for a given key.
-	bytes := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
-	return hex.EncodeToString(bytes), nil
+	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-func (c *AES) Decrypt(hextext string) (string, error) {
-	gcm, err := c.Cipher()
+func (c *AES) EncryptString(plaintext string) (string, error) {
+	bytes, err := c.Encrypt([]byte(plaintext))
 	if err != nil {
 		return "", err
 	}
 
-	ciphertext, err := hex.DecodeString(hextext)
+	return hex.EncodeToString(bytes), nil
+}
+
+func (c *AES) Decrypt(ciphertext []byte) ([]byte, error) {
+	gcm, err := c.Cipher()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	nonceSize := gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
-		return "", errors.New("invalid ciphertext")
+		return nil, errors.New("invalid ciphertext")
 	}
 
 	// since we know the ciphertext is actually nonce+ciphertext
 	// and len(nonce) == NonceSize(). We can separate the two.
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	bytes, err := gcm.Open(nil, nonce, ciphertext, nil)
+	return gcm.Open(nil, nonce, ciphertext, nil)
+}
+
+func (c *AES) DecryptString(hextext string) (string, error) {
+	ciphertext, err := hex.DecodeString(hextext)
+	if err != nil {
+		return "", err
+	}
+
+	bytes, err := c.Decrypt(ciphertext)
 	if err != nil {
 		return "", err
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/sender"
 )
 
-func (usecase *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*ForwarderSendRes, error) {
+func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*ForwarderSendRes, error) {
 	request := &sender.Request{
 		Method:  req.Request.Method,
 		Headers: req.Request.Headers,
@@ -19,10 +19,10 @@ func (usecase *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*For
 	request.Headers.Set("Idempotency-Key", req.Request.Id)
 
 	response, err := circuitbreaker.Do[sender.Response](
-		usecase.cb,
+		uc.cb,
 		req.Request.EndpointId,
 		func() (interface{}, error) {
-			return usecase.dispatch(request)
+			return uc.dispatch(request)
 		},
 		func(err error) error {
 			return err
@@ -38,7 +38,7 @@ func (usecase *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*For
 		},
 	}
 	res.Response.GenId()
-	res.Response.SetTS(usecase.timer.Now(), usecase.conf.Bucket.Layout)
+	res.Response.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
 	res.Response.Metadata[entities.MetaReqId] = req.Request.Id
 	res.Response.Metadata[entities.MetaReqBucket] = req.Request.Bucket
 	res.Response.Metadata[entities.MetaReqTs] = fmt.Sprintf("%d", req.Request.Timestamp)
@@ -51,7 +51,7 @@ func (usecase *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*For
 		res.Response.Headers = response.Headers
 		res.Response.Body = response.Body
 	} else {
-		usecase.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
+		uc.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
 		res.Response.Status = entities.ResponseStatusErr
 		res.Response.Error = err.Error()
 	}
@@ -60,7 +60,7 @@ func (usecase *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*For
 	if err != nil {
 		return nil, err
 	}
-	if err := usecase.publisher.Pub(ctx, event); err != nil {
+	if err := uc.publisher.Pub(ctx, event); err != nil {
 		return nil, err
 	}
 

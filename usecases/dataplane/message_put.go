@@ -8,8 +8,8 @@ import (
 	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
-func (usecase *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
-	msg := transformMessagePutReq2Message(req.Ws.Tier.Name, req, usecase.timer, usecase.conf)
+func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
+	msg := transformMessagePutReq2Message(req.Ws.Tier.Name, req, uc.timer, uc.conf)
 	msg.Metadata[entities.MetaTier] = req.Ws.Tier.Name
 
 	event, err := transformMessage2Event(msg)
@@ -17,7 +17,7 @@ func (usecase *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePu
 		return nil, err
 	}
 
-	if err := usecase.publisher.Pub(ctx, event); err != nil {
+	if err := uc.publisher.Pub(ctx, event); err != nil {
 		return nil, err
 	}
 

@@ -9,16 +9,11 @@ import (
 	"time"
 )
 
-func (usecase *workspace) ListOfAccount(ctx context.Context, req *WorkspaceListOfAccountReq) (*WorkspaceListOfAccountRes, error) {
-	wsIds, err := usecase.authorizator.Tenants(req.Account.Sub)
-	if err != nil {
-		return nil, err
-	}
-
+func (uc *workspace) ListOfAccount(ctx context.Context, req *WorkspaceListOfAccountReq) (*WorkspaceListOfAccountRes, error) {
 	cacheKey := cache.Key("WORKSPACES_OF_ACCOUNT", req.Account.Sub)
-	list, err := cache.Warp(usecase.cache, cacheKey, time.Hour*24, func() (*structure.ListRes[entities.Workspace], error) {
-		usecase.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_workspace_list_of_accounts"))
-		return usecase.repos.Workspace().List(ctx, structure.WithListIds(wsIds))
+	list, err := cache.Warp(uc.cache, cacheKey, time.Hour*24, func() (*structure.ListRes[entities.Workspace], error) {
+		uc.meter.Count("cache_miss_total", 1, metric.Label("source", "dataplane_workspace_list_of_accounts"))
+		return uc.repos.Workspace().List(ctx, structure.WithListIds(req.WorkspaceIds))
 	})
 	if err != nil {
 		return nil, err

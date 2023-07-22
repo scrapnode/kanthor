@@ -87,19 +87,17 @@ func (db *sql) Migrator(source string) (migration.Migrator, error) {
 		return nil, err
 	}
 
+	tableName := "kanthor_database_migration"
 	var driver database.Driver
+
 	if db.client.Config.Dialector.Name() == "sqlite" {
-		conf := &sqlite3.Config{
-			MigrationsTable: "datastore_migration",
-		}
+		conf := &sqlite3.Config{MigrationsTable: tableName}
 		driver, err = sqlite3.WithInstance(instance, conf)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		conf := &postgres.Config{
-			MigrationsTable: "datastore_migration",
-		}
+		conf := &postgres.Config{MigrationsTable: tableName}
 		driver, err = postgres.WithInstance(instance, conf)
 		if err != nil {
 			return nil, err

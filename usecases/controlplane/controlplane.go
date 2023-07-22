@@ -5,6 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/crypto"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -49,16 +50,21 @@ type controlplane struct {
 	repos        repos.Repositories
 
 	mu        sync.RWMutex
+	aes       *crypto.AES
 	workspace *workspace
 	project   *project
 }
 
 func (usecase *controlplane) Connect(ctx context.Context) error {
+	if err := usecase.cache.Connect(ctx); err != nil {
+		return err
+	}
+
 	if err := usecase.repos.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.cache.Connect(ctx); err != nil {
+	if err := usecase.authorizator.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -69,6 +75,10 @@ func (usecase *controlplane) Connect(ctx context.Context) error {
 func (usecase *controlplane) Disconnect(ctx context.Context) error {
 	usecase.logger.Info("disconnected")
 
+	if err := usecase.authorizator.Disconnect(ctx); err != nil {
+		return err
+	}
+
 	if err := usecase.repos.Disconnect(ctx); err != nil {
 		return err
 	}
@@ -78,25 +88,6 @@ func (usecase *controlplane) Disconnect(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (usecase *controlplane) Workspace() Workspace {
-	usecase.mu.Lock()
-	defer usecase.mu.Unlock()
-
-	if usecase.workspace == nil {
-		usecase.workspace = &workspace{
-			conf:         usecase.conf,
-			logger:       usecase.logger,
-			timer:        usecase.timer,
-			cache:        usecase.cache,
-			meter:        usecase.meter,
-			repos:        usecase.repos,
-			authorizator: usecase.authorizator,
-		}
-	}
-
-	return usecase.workspace
 }
 
 func (usecase *controlplane) Project() Project {
@@ -115,4 +106,22 @@ func (usecase *controlplane) Project() Project {
 	}
 
 	return usecase.project
+}
+
+func (usecase *controlplane) Workspace() Workspace {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.workspace == nil {
+		usecase.workspace = &workspace{
+			conf:   usecase.conf,
+			logger: usecase.logger,
+			timer:  usecase.timer,
+			cache:  usecase.cache,
+			meter:  usecase.meter,
+			repos:  usecase.repos,
+		}
+	}
+
+	return usecase.workspace
 }

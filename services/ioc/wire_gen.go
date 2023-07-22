@@ -25,6 +25,7 @@ import (
 	"github.com/scrapnode/kanthor/usecases"
 	controlplane2 "github.com/scrapnode/kanthor/usecases/controlplane"
 	"github.com/scrapnode/kanthor/usecases/controlplane/repos"
+	dataplane2 "github.com/scrapnode/kanthor/usecases/dataplane"
 	repos2 "github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	repos3 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
@@ -105,9 +106,34 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger, timerTimer)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, cacheCache, meter, authorizatorAuthorizator, repositories)
 	service := dataplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, dataplaneDataplane)
 	return service, nil
+}
+
+func InitializeDataplaneUsecase(conf *config.Config, logger logging.Logger) (dataplane2.Dataplane, error) {
+	timerTimer := timer.New()
+	publisherConfig := ResolveDataplanePublisherConfig(conf)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	cacheConfig := ResolveDataplaneCacheConfig(conf)
+	cacheCache, err := cache.New(cacheConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	metricConfig := ResolveDataplaneMetricConfig(conf)
+	meter := metric.New(metricConfig)
+	authorizatorConfig := ResolveDataplaneAuthorizatorConfig(conf)
+	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	databaseConfig := &conf.Database
+	repositories := repos2.New(databaseConfig, logger, timerTimer)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, cacheCache, meter, authorizatorAuthorizator, repositories)
+	return dataplaneDataplane, nil
 }
 
 // Injectors from wire_dispatcher.go:

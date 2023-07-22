@@ -39,10 +39,11 @@ func NewDataplane(
 	publisher streaming.Publisher,
 	cache cache.Cache,
 	meter metric.Meter,
+	authorizator authorizator.Authorizator,
 	repos dataplanerepos.Repositories,
 ) dataplane.Dataplane {
 	logger = logger.With("usecase", "dataplane")
-	return dataplane.New(conf, logger, timer, publisher, cache, meter, repos)
+	return dataplane.New(conf, logger, timer, publisher, cache, meter, authorizator, repos)
 }
 
 func NewScheduler(

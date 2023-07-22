@@ -2,11 +2,13 @@ package authorizator
 
 import (
 	"context"
+	"fmt"
 	gocasbin "github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"net/url"
+	"strings"
 )
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
@@ -27,11 +29,15 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	policyUrl, err := url.Parse(authorizator.conf.Casbin.PolicyUri)
 	if err != nil {
 		return err
 	}
-	adapter, err := gormadapter.NewAdapter(policyUrl.Scheme, authorizator.conf.Casbin.PolicyUri, true)
+	databaseName := strings.ReplaceAll(policyUrl.Path, "/", "")
+	tableName := fmt.Sprintf("kanthor_%s_rule", authorizator.conf.Casbin.PolicyNamespace)
+
+	adapter, err := gormadapter.NewAdapter(policyUrl.Scheme, authorizator.conf.Casbin.PolicyUri, databaseName, tableName)
 	if err != nil {
 		return err
 	}

@@ -28,6 +28,8 @@ func (server *account) Get(ctx context.Context, req *protos.AccountGetReq) (*pro
 
 func (server *account) ListWorkspaces(ctx context.Context, req *protos.AccountListWorkspacesReq) (*protos.AccountListWorkspacesRes, error) {
 	acc := ctx.Value(authenticator.CtxAuthAccount).(*authenticator.Account)
+	wsIds, err := server.service.authorizator.Tenants(acc.Sub)
+	request := &usecase.WorkspaceListOfAccountReq{Account: acc, WorkspaceIds: wsIds}
 
 	chain := pipeline.Chain(pipeline.UseGRPCError(server.service.logger), pipeline.UseValidation())
 	pipe := chain(func(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -35,7 +37,7 @@ func (server *account) ListWorkspaces(ctx context.Context, req *protos.AccountLi
 		return
 	})
 
-	response, err := pipe(ctx, &usecase.WorkspaceListOfAccountReq{Account: acc})
+	response, err := pipe(ctx, request)
 	if err != nil {
 		return nil, err
 	}
