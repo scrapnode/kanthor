@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -23,6 +24,8 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	wire.Build(
 		controlplane.New,
 		usecases.NewControlplane,
+		wire.FieldsOf(new(*config.Config), "Symmetric"),
+		cryptography.NewSymmetric,
 		timer.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
@@ -41,6 +44,8 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (controlplaneuc.Controlplane, error) {
 	wire.Build(
 		usecases.NewControlplane,
+		wire.FieldsOf(new(*config.Config), "Symmetric"),
+		cryptography.NewSymmetric,
 		timer.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,

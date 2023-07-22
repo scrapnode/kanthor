@@ -5,7 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/crypto"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -23,6 +23,7 @@ type Controlplane interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
+	symmetric cryptography.Symmetric,
 	timer timer.Timer,
 	cache cache.Cache,
 	meter metric.Meter,
@@ -32,6 +33,7 @@ func New(
 	return &controlplane{
 		conf:         conf,
 		logger:       logger,
+		symmetric:    symmetric,
 		timer:        timer,
 		cache:        cache,
 		meter:        meter,
@@ -43,6 +45,7 @@ func New(
 type controlplane struct {
 	conf         *config.Config
 	logger       logging.Logger
+	symmetric    cryptography.Symmetric
 	timer        timer.Timer
 	cache        cache.Cache
 	meter        metric.Meter
@@ -50,7 +53,6 @@ type controlplane struct {
 	repos        repos.Repositories
 
 	mu        sync.RWMutex
-	aes       *crypto.AES
 	workspace *workspace
 	project   *project
 }

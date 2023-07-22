@@ -19,7 +19,7 @@ cache: &cache
   time_to_live: 300000
 
 # common
-crypto: &crypto
+symmetric: &symmetric
   key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
 
 bucket:
@@ -75,7 +75,7 @@ controlplane:
 dataplane:
   authenticator:
     engine: cipher
-    cipher: *crypto
+    cipher: *symmetric
   authorizator:
     engine: casbin
     casbin:

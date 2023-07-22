@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/crypto"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -41,10 +41,10 @@ type ApplicationGenTokenRes struct {
 type application struct {
 	conf         *config.Config
 	logger       logging.Logger
+	symmetric    cryptography.Symmetric
 	timer        timer.Timer
 	cache        cache.Cache
 	meter        metric.Meter
 	authorizator authorizator.Authorizator
-	aes          *crypto.AES
 	repos        repos.Repositories
 }

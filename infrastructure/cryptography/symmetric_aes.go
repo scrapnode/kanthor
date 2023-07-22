@@ -1,7 +1,7 @@
-package crypto
+package cryptography
 
 import (
-	"crypto/aes"
+	aescore "crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
@@ -9,23 +9,9 @@ import (
 	"io"
 )
 
-func NewAES(key string) *AES {
-	return &AES{key: []byte(key)}
-}
-
-type AES struct {
-	key []byte
-
-	gcm cipher.AEAD
-}
-
-func (c *AES) Cipher() (cipher.AEAD, error) {
-	if c.gcm != nil {
-		return c.gcm, nil
-	}
-
+func NewAES(conf *SymmetricConfig) (Symmetric, error) {
 	// generate a new aes cipher using our 32 byte long key
-	block, err := aes.NewCipher(c.key)
+	block, err := aescore.NewCipher([]byte(conf.Key))
 	if err != nil {
 		return nil, err
 	}
@@ -38,18 +24,16 @@ func (c *AES) Cipher() (cipher.AEAD, error) {
 		return nil, err
 	}
 
-	c.gcm = gcm
-	return c.gcm, nil
+	return &aes{gcm: gcm}, nil
 }
 
-func (c *AES) Encrypt(plaintext []byte) ([]byte, error) {
-	gcm, err := c.Cipher()
-	if err != nil {
-		return nil, err
-	}
+type aes struct {
+	gcm cipher.AEAD
+}
 
+func (symmetric *aes) Encrypt(plaintext []byte) ([]byte, error) {
 	// create a new byte array the size of the nonce which must be passed to Seal
-	nonce := make([]byte, gcm.NonceSize())
+	nonce := make([]byte, symmetric.gcm.NonceSize())
 	// populates our nonce with a cryptographically secure random sequence
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, err
@@ -60,11 +44,11 @@ func (c *AES) Encrypt(plaintext []byte) ([]byte, error) {
 	// additional data and appends the result to dst, returning the updated
 	// slice. The nonce must be NonceSize() bytes long and unique for all
 	// time, for a given key.
-	return gcm.Seal(nonce, nonce, plaintext, nil), nil
+	return symmetric.gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-func (c *AES) EncryptString(plaintext string) (string, error) {
-	bytes, err := c.Encrypt([]byte(plaintext))
+func (symmetric *aes) StringEncrypt(plaintext string) (string, error) {
+	bytes, err := symmetric.Encrypt([]byte(plaintext))
 	if err != nil {
 		return "", err
 	}
@@ -72,13 +56,8 @@ func (c *AES) EncryptString(plaintext string) (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-func (c *AES) Decrypt(ciphertext []byte) ([]byte, error) {
-	gcm, err := c.Cipher()
-	if err != nil {
-		return nil, err
-	}
-
-	nonceSize := gcm.NonceSize()
+func (symmetric *aes) Decrypt(ciphertext []byte) ([]byte, error) {
+	nonceSize := symmetric.gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
 		return nil, errors.New("invalid ciphertext")
 	}
@@ -86,16 +65,16 @@ func (c *AES) Decrypt(ciphertext []byte) ([]byte, error) {
 	// since we know the ciphertext is actually nonce+ciphertext
 	// and len(nonce) == NonceSize(). We can separate the two.
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	return gcm.Open(nil, nonce, ciphertext, nil)
+	return symmetric.gcm.Open(nil, nonce, ciphertext, nil)
 }
 
-func (c *AES) DecryptString(hextext string) (string, error) {
+func (symmetric *aes) StringDecrypt(hextext string) (string, error) {
 	ciphertext, err := hex.DecodeString(hextext)
 	if err != nil {
 		return "", err
 	}
 
-	bytes, err := c.Decrypt(ciphertext)
+	bytes, err := symmetric.Decrypt(ciphertext)
 	if err != nil {
 		return "", err
 	}

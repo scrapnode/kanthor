@@ -4,9 +4,9 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
-func NewAsk(conf *Config, logger logging.Logger) Authenticator {
+func NewAsk(conf *Config, logger logging.Logger) (Authenticator, error) {
 	logger = logger.With("authenticator", "ask")
-	return &ask{conf: conf, logger: logger}
+	return &ask{conf: conf, logger: logger}, nil
 }
 
 // short of Access Secret Key

@@ -1,10 +1,13 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
@@ -16,9 +19,9 @@ func New(provider configuration.Provider) (*Config, error) {
 }
 
 type Config struct {
-	Version string
-	Bucket  Bucket `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
-	Crypto  Crypto `json:"crypto" yaml:"crypto" mapstructure:"crypto" validate:"required"`
+	Version   string
+	Bucket    Bucket                       `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
+	Symmetric cryptography.SymmetricConfig `json:"symmetric" yaml:"symmetric" mapstructure:"symmetric" validate:"required"`
 
 	Logger   logging.Config  `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
 	Database database.Config `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
@@ -36,7 +39,7 @@ func (conf *Config) Validate(service string) error {
 		return err
 	}
 
-	if err := conf.Crypto.Validate(); err != nil {
+	if err := conf.Symmetric.Validate(); err != nil {
 		return fmt.Errorf("config.Crypto: %v", err)
 	}
 	if err := conf.Bucket.Validate(); err != nil {
@@ -59,7 +62,16 @@ func (conf *Config) Validate(service string) error {
 		return conf.Controlplane.Validate()
 	}
 	if service == services.ALL || service == services.DATAPLANE {
-		return conf.Dataplane.Validate()
+		if err := conf.Dataplane.Validate(); err != nil {
+			return err
+		}
+		// custom validations
+		if conf.Dataplane.Authenticator.Engine == authenticator.EngineCipher {
+			if conf.Dataplane.Authenticator.Cipher.Key != conf.Symmetric.Key {
+				return errors.New("Dataplane.Authenticator.Cipher.Key and Symmetric.Key must be the same")
+			}
+		}
+		return nil
 	}
 	if service == services.ALL || service == services.SCHEDULER {
 		return conf.Scheduler.Validate()
@@ -69,17 +81,6 @@ func (conf *Config) Validate(service string) error {
 	}
 
 	return fmt.Errorf("config: unknow service [%s]", service)
-}
-
-type Crypto struct {
-	Key string `json:"key" yaml:"key" mapstructure:"key" validate:"required,len=32"`
-}
-
-func (conf *Crypto) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-	return nil
 }
 
 type Bucket struct {

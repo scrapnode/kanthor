@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -24,6 +25,8 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	wire.Build(
 		dataplane.New,
 		usecases.NewDataplane,
+		wire.FieldsOf(new(*config.Config), "Symmetric"),
+		cryptography.NewSymmetric,
 		timer.New,
 		ResolveDataplanePublisherConfig,
 		streaming.NewPublisher,
@@ -44,6 +47,8 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 func InitializeDataplaneUsecase(conf *config.Config, logger logging.Logger) (dataplaneuc.Dataplane, error) {
 	wire.Build(
 		usecases.NewDataplane,
+		wire.FieldsOf(new(*config.Config), "Symmetric"),
+		cryptography.NewSymmetric,
 		timer.New,
 		ResolveDataplanePublisherConfig,
 		streaming.NewPublisher,

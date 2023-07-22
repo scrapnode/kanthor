@@ -5,6 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -22,6 +23,7 @@ import (
 func NewControlplane(
 	conf *config.Config,
 	logger logging.Logger,
+	symmetric cryptography.Symmetric,
 	timer timer.Timer,
 	cache cache.Cache,
 	meter metric.Meter,
@@ -29,12 +31,13 @@ func NewControlplane(
 	repos controlplanerepos.Repositories,
 ) controlplane.Controlplane {
 	logger = logger.With("usecase", "controlplane")
-	return controlplane.New(conf, logger, timer, cache, meter, authorizator, repos)
+	return controlplane.New(conf, logger, symmetric, timer, cache, meter, authorizator, repos)
 }
 
 func NewDataplane(
 	conf *config.Config,
 	logger logging.Logger,
+	symmetric cryptography.Symmetric,
 	timer timer.Timer,
 	publisher streaming.Publisher,
 	cache cache.Cache,
@@ -43,7 +46,7 @@ func NewDataplane(
 	repos dataplanerepos.Repositories,
 ) dataplane.Dataplane {
 	logger = logger.With("usecase", "dataplane")
-	return dataplane.New(conf, logger, timer, publisher, cache, meter, authorizator, repos)
+	return dataplane.New(conf, logger, symmetric, timer, publisher, cache, meter, authorizator, repos)
 }
 
 func NewScheduler(

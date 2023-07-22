@@ -3,6 +3,7 @@ package authenticator
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 )
 
 var (
@@ -11,9 +12,9 @@ var (
 )
 
 type Config struct {
-	Engine string        `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=ask cipher"`
-	Ask    *AskConfig    `json:"ask" yaml:"ask" mapstructure:"ask" validate:"-"`
-	Cipher *CipherConfig `json:"cipher" yaml:"cipher" mapstructure:"cipher" validate:"-"`
+	Engine string                        `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=ask cipher"`
+	Ask    *AskConfig                    `json:"ask" yaml:"ask" mapstructure:"ask" validate:"-"`
+	Cipher *cryptography.SymmetricConfig `json:"cipher" yaml:"cipher" mapstructure:"cipher" validate:"-"`
 }
 
 func (conf *Config) Validate() error {
@@ -48,17 +49,6 @@ type AskConfig struct {
 }
 
 func (conf *AskConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-	return nil
-}
-
-type CipherConfig struct {
-	Key string `json:"key" yaml:"key" mapstructure:"key" validate:"required,len=32"`
-}
-
-func (conf *CipherConfig) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return err
 	}

@@ -7,10 +7,10 @@ import (
 
 func New(conf *Config, logger logging.Logger) (Authenticator, error) {
 	if conf.Engine == EngineAsk {
-		return NewAsk(conf, logger), nil
+		return NewAsk(conf, logger)
 	}
 	if conf.Engine == EngineCipher {
-		return NewCipher(conf, logger), nil
+		return NewCipher(conf, logger)
 	}
 
 	return nil, fmt.Errorf("authenticator: unknow engine")

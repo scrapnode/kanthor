@@ -12,6 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -45,6 +46,11 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	}
 	metricConfig := ResolveControlplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
+	symmetricConfig := &conf.Symmetric
+	symmetric, err := cryptography.NewSymmetric(symmetricConfig)
+	if err != nil {
+		return nil, err
+	}
 	timerTimer := timer.New()
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
 	cacheCache, err := cache.New(cacheConfig, logger)
@@ -53,12 +59,17 @@ func InitializeControlplane(conf *config.Config, logger logging.Logger) (service
 	}
 	databaseConfig := &conf.Database
 	repositories := repos.New(databaseConfig, logger, timerTimer)
-	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
+	controlplaneControlplane := usecases.NewControlplane(conf, logger, symmetric, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
 	service := controlplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, controlplaneControlplane)
 	return service, nil
 }
 
 func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (controlplane2.Controlplane, error) {
+	symmetricConfig := &conf.Symmetric
+	symmetric, err := cryptography.NewSymmetric(symmetricConfig)
+	if err != nil {
+		return nil, err
+	}
 	timerTimer := timer.New()
 	cacheConfig := ResolveControlplaneCacheConfig(conf)
 	cacheCache, err := cache.New(cacheConfig, logger)
@@ -74,7 +85,7 @@ func InitializeControlplaneUsecase(conf *config.Config, logger logging.Logger) (
 	}
 	databaseConfig := &conf.Database
 	repositories := repos.New(databaseConfig, logger, timerTimer)
-	controlplaneControlplane := usecases.NewControlplane(conf, logger, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
+	controlplaneControlplane := usecases.NewControlplane(conf, logger, symmetric, timerTimer, cacheCache, meter, authorizatorAuthorizator, repositories)
 	return controlplaneControlplane, nil
 }
 
@@ -93,6 +104,11 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	}
 	metricConfig := ResolveDataplaneMetricConfig(conf)
 	meter := metric.New(metricConfig)
+	symmetricConfig := &conf.Symmetric
+	symmetric, err := cryptography.NewSymmetric(symmetricConfig)
+	if err != nil {
+		return nil, err
+	}
 	timerTimer := timer.New()
 	publisherConfig := ResolveDataplanePublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
@@ -106,12 +122,17 @@ func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.S
 	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger, timerTimer)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, cacheCache, meter, authorizatorAuthorizator, repositories)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, symmetric, timerTimer, publisher, cacheCache, meter, authorizatorAuthorizator, repositories)
 	service := dataplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, dataplaneDataplane)
 	return service, nil
 }
 
 func InitializeDataplaneUsecase(conf *config.Config, logger logging.Logger) (dataplane2.Dataplane, error) {
+	symmetricConfig := &conf.Symmetric
+	symmetric, err := cryptography.NewSymmetric(symmetricConfig)
+	if err != nil {
+		return nil, err
+	}
 	timerTimer := timer.New()
 	publisherConfig := ResolveDataplanePublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
@@ -132,7 +153,7 @@ func InitializeDataplaneUsecase(conf *config.Config, logger logging.Logger) (dat
 	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger, timerTimer)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, timerTimer, publisher, cacheCache, meter, authorizatorAuthorizator, repositories)
+	dataplaneDataplane := usecases.NewDataplane(conf, logger, symmetric, timerTimer, publisher, cacheCache, meter, authorizatorAuthorizator, repositories)
 	return dataplaneDataplane, nil
 }
 

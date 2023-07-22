@@ -5,7 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/crypto"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -24,6 +24,7 @@ type Dataplane interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
+	symmetric cryptography.Symmetric,
 	timer timer.Timer,
 	publisher streaming.Publisher,
 	cache cache.Cache,
@@ -34,6 +35,7 @@ func New(
 	return &dataplane{
 		conf:         conf,
 		logger:       logger,
+		symmetric:    symmetric,
 		timer:        timer,
 		publisher:    publisher,
 		cache:        cache,
@@ -46,6 +48,7 @@ func New(
 type dataplane struct {
 	conf         *config.Config
 	logger       logging.Logger
+	symmetric    cryptography.Symmetric
 	timer        timer.Timer
 	publisher    streaming.Publisher
 	cache        cache.Cache
@@ -128,12 +131,12 @@ func (usecase *dataplane) Application() Application {
 		usecase.application = &application{
 			conf:         usecase.conf,
 			logger:       usecase.logger,
+			symmetric:    usecase.symmetric,
 			timer:        usecase.timer,
 			repos:        usecase.repos,
 			cache:        usecase.cache,
 			meter:        usecase.meter,
 			authorizator: usecase.authorizator,
-			aes:          crypto.NewAES(usecase.conf.Crypto.Key),
 		}
 	}
 

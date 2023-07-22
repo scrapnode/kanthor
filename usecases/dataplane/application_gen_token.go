@@ -30,7 +30,7 @@ func (uc *application) GenToken(ctx context.Context, req *ApplicationGenTokenReq
 
 	// generate the account
 	sub := utils.ID("appsub")
-	token, err := uc.aes.EncryptString(sub)
+	token, err := uc.symmetric.StringEncrypt(sub)
 	if err != nil {
 		return nil, err
 	}
