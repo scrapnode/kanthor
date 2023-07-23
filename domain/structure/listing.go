@@ -6,7 +6,8 @@ type ListReq struct {
 	Cursor string
 	Search string
 	Limit  int
-	Ids    []string
+
+	Ids []string
 }
 
 type ListOps func(req *ListReq)
@@ -31,7 +32,7 @@ func WithListSearch(search string) ListOps {
 
 func WithListLimit(limit int) ListOps {
 	return func(req *ListReq) {
-		req.Limit = limit
+		req.Limit = int(limit)
 	}
 }
 

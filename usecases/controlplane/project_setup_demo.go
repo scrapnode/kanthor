@@ -13,7 +13,7 @@ func (uc *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*Pr
 		}
 
 		// demo applications
-		var apps []entities.Application
+		apps := []entities.Application{}
 		for _, app := range req.Applications {
 			app.GenId()
 			app.WorkspaceId = ws.Id
@@ -26,7 +26,7 @@ func (uc *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*Pr
 		}
 
 		// demo endpoints
-		var endpoints []entities.Endpoint
+		endpoints := []entities.Endpoint{}
 		for _, endpoint := range req.Endpoints {
 			endpoint.GenId()
 			endpoint.SetAT(uc.timer.Now())
@@ -38,7 +38,7 @@ func (uc *project) SetupDemo(ctx context.Context, req *ProjectSetupDemoReq) (*Pr
 		}
 
 		// demo rules for endpoints
-		var rules []entities.EndpointRule
+		rules := []entities.EndpointRule{}
 		for _, rule := range req.EndpointRules {
 			rule.GenId()
 			rule.SetAT(uc.timer.Now())

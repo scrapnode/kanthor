@@ -11,7 +11,7 @@ import (
 )
 
 // SqlWorkspace
-// SqlClientFromContext must be used in all single object action to reuse them in other place: Create, Get, GetDefault
+// SqlClientFromContext must be used in all single object action to reuse them in other place: Create, Get, GetOwned
 // Start transaction in listing produces a risk of un-predictable locking row, so we should not use SqlClientFromContext
 type SqlWorkspace struct {
 	client *gorm.DB
@@ -73,7 +73,7 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	return &ws, nil
 }
 
-func (sql *SqlWorkspace) GetDefault(ctx context.Context, owner string) (*entities.Workspace, error) {
+func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 
 	var ws entities.Workspace

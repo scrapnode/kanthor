@@ -88,8 +88,8 @@ func demoControlplane(conf *config.Config, logger logging.Logger, owner, input s
 	})
 }
 
-func demoDataplane(conf *config.Config, logger logging.Logger, appIds []string) (map[string]*dataplaneuc.ApplicationGenTokenRes, error) {
-	maps := map[string]*dataplaneuc.ApplicationGenTokenRes{}
+func demoDataplane(conf *config.Config, logger logging.Logger, appIds []string) (map[string]*dataplaneuc.AppCredsCreateRes, error) {
+	maps := map[string]*dataplaneuc.AppCredsCreateRes{}
 
 	uc, err := ioc.InitializeDataplaneUsecase(conf, logger)
 	if err != nil {
@@ -109,12 +109,12 @@ func demoDataplane(conf *config.Config, logger logging.Logger, appIds []string) 
 	}()
 
 	for _, appId := range appIds {
-		req := &dataplaneuc.ApplicationGenTokenReq{
-			Id:          appId,
+		req := &dataplaneuc.AppCredsCreateReq{
+			AppId:       appId,
 			Role:        permissions.Admin,
 			Permissions: permissions.AdminPermission,
 		}
-		if res, err := uc.Application().GenToken(ctx, req); err == nil {
+		if res, err := uc.AppCreds().Create(ctx, req); err == nil {
 			maps[appId] = res
 		}
 	}

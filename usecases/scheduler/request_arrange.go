@@ -64,7 +64,7 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 }
 
 func (uc *request) generateRequestsFromEndpoints(endpoints []repos.EndpointWithRules, msg entities.Message) []entities.Request {
-	var requests []entities.Request
+	requests := []entities.Request{}
 
 	for _, endpoint := range endpoints {
 		// with this for loop, we enforce endpoint must have at least one rule to construct scheduled request

@@ -30,8 +30,8 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			}
 
 			var undo bool
-			var sources []migration.Source
-			var migrators []migration.Migrator
+			sources := []migration.Source{}
+			migrators := []migration.Migrator{}
 			for _, t := range conf.Migration.Tasks {
 				task := t
 				source, err := Source(&task, logger)

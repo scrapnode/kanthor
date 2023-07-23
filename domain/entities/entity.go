@@ -21,7 +21,7 @@ func (at *AuditTime) SetAT(now time.Time) {
 }
 
 type SoftDelete struct {
-	DeletedAt int64 `json:"deleted_at" validate:"required"`
+	DeletedAt int64 `json:"deleted_at"`
 }
 
 type TimeSeries struct {

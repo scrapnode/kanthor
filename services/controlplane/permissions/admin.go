@@ -1,10 +1,10 @@
 package permissions
 
+import "github.com/scrapnode/kanthor/infrastructure/authorizator"
+
 var Admin = "admin"
 
 var AdminPermission = append(
-	[][]string{
-		{"kanthor.controlplane.v1.Workspace", "Update"},
-	},
-	BasePermission...,
+	BasePermission,
+	authorizator.Permission{Object: "kanthor.controlplane.v1.Workspace", Action: "Update"},
 )

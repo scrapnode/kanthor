@@ -16,8 +16,15 @@ func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 
 type Authorizator interface {
 	patterns.Connectable
-	Enforce(sub, ws, obj, act string) (bool, error)
-	SetupPermissions(role, tenant string, permissions [][]string) error
-	GrantAccess(sub, role, tenant string) error
+	Enforce(sub, tenant, obj, act string) (bool, error)
+	GrantPermissionsToRole(tenant, role string, permissions []Permission) error
+	GrantRoleToSub(tenant, sub, role string) error
 	Tenants(sub string) ([]string, error)
+	UsersOfTenant(tenant string) ([]string, error)
+	UserPermissionsInTenant(tenant, sub string) ([]Permission, error)
+}
+
+type Permission struct {
+	Object string `json:"object"`
+	Action string `json:"action"`
 }

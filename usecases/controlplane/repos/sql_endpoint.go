@@ -26,7 +26,7 @@ func (sql *SqlEndpoint) Create(ctx context.Context, entity *entities.Endpoint) (
 }
 
 func (sql *SqlEndpoint) BulkCreate(ctx context.Context, entities []entities.Endpoint) ([]string, error) {
-	var ids []string
+	ids := []string{}
 	for i, entity := range entities {
 		entity.GenId()
 		entity.SetAT(sql.timer.Now())

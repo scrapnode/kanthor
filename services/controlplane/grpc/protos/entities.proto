@@ -16,3 +16,21 @@ message IWorkspaceTier {
   string workspace_id = 1;
   string name = 2;
 }
+
+message IApplication {
+  string id = 1;
+  int64 created_at = 2;
+  int64 updated_at = 3;
+  string workspace_id = 4;
+  string name = 5;
+}
+
+message IApplicationCredentials {
+  string sub = 1;
+  repeated IPermission permissions = 2;
+}
+
+message IPermission {
+  string subject = 1;
+  string action = 2;
+}

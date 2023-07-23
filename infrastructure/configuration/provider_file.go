@@ -17,7 +17,7 @@ func NewFile(dirs []string) (Provider, error) {
 	instance.SetConfigName(FileName) // name of config file (without extension)
 	instance.SetConfigType(FileExt)  // extension
 
-	var sources []Source
+	sources := []Source{}
 	for _, dir := range dirs {
 		dir = strings.Trim(dir, " ")
 		filename := FileName + "." + FileExt

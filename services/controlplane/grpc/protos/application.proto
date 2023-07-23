@@ -1,0 +1,26 @@
+syntax = "proto3";
+package kanthor.controlplane.v1;
+option go_package = "github.com/scrapnode/kanthor/controlplane/server/grpc/protos";
+
+import "entities.proto";
+
+service Application {
+  rpc List(ApllicationListReq) returns (ApllicationListRes) {}
+  rpc Get(ApllicationGetReq) returns (IApplication) {}
+}
+
+message ApllicationListReq {
+  string cursor = 1;
+  string search = 2;
+  int32 limit = 3;
+  repeated string ids = 4;
+}
+
+message ApllicationListRes {
+  string cursor = 1;
+  repeated IApplication data = 2;
+}
+
+message ApllicationGetReq {
+  string id = 1;
+}

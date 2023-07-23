@@ -18,6 +18,7 @@ type Controlplane interface {
 	patterns.Connectable
 	Project() Project
 	Workspace() Workspace
+	Application() Application
 }
 
 func New(
@@ -52,9 +53,10 @@ type controlplane struct {
 	authorizator authorizator.Authorizator
 	repos        repos.Repositories
 
-	mu        sync.RWMutex
-	workspace *workspace
-	project   *project
+	mu          sync.RWMutex
+	workspace   *workspace
+	project     *project
+	application *application
 }
 
 func (usecase *controlplane) Connect(ctx context.Context) error {
@@ -108,6 +110,24 @@ func (usecase *controlplane) Project() Project {
 	}
 
 	return usecase.project
+}
+
+func (usecase *controlplane) Application() Application {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.application == nil {
+		usecase.application = &application{
+			conf:   usecase.conf,
+			logger: usecase.logger,
+			timer:  usecase.timer,
+			cache:  usecase.cache,
+			meter:  usecase.meter,
+			repos:  usecase.repos,
+		}
+	}
+
+	return usecase.application
 }
 
 func (usecase *controlplane) Workspace() Workspace {

@@ -19,7 +19,8 @@ func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (
 		return
 	})
 
-	response, err := run(ctx, &usecase.WorkspaceGetReq{Id: req.Id})
+	request := &usecase.WorkspaceGetReq{Id: req.Id}
+	response, err := run(ctx, request)
 	if err != nil {
 		return nil, err
 	}

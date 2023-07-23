@@ -11,7 +11,7 @@ import (
 
 func (uc *project) SetupDefault(ctx context.Context, req *ProjectSetupDefaultReq) (*ProjectSetupDefaultRes, error) {
 	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		existing, err := uc.repos.Workspace().GetDefault(txctx, req.Account.Sub)
+		existing, err := uc.repos.Workspace().GetOwned(txctx, req.Account.Sub)
 		if err == nil {
 			return &ProjectSetupDefaultRes{WorkspaceId: existing.Id, WorkspaceTier: existing.Tier.Name}, nil
 		}

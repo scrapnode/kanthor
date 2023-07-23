@@ -26,18 +26,9 @@ type WorkspaceGetRes struct {
 	Workspace *entities.Workspace `json:"workspace"`
 }
 
-type WorkspaceGetByAccountReq struct {
-	Account     *authenticator.Account `json:"account" validate:"required"`
-	WorkspaceId string                 `json:"workspace_id" validate:"required"`
-}
-
-type WorkspaceGetByAccountRes struct {
-	Workspace *entities.Workspace `json:"workspace"`
-}
-
 type WorkspaceListOfAccountReq struct {
-	Account      *authenticator.Account `json:"account" validate:"required"`
-	WorkspaceIds []string               `json:"workspace_ids" validate:"required,gt=0"`
+	Account              *authenticator.Account `json:"account" validate:"required"`
+	AssignedWorkspaceIds []string               `json:"assigned_workspace_ids" validate:"required"`
 }
 
 type WorkspaceListOfAccountRes struct {

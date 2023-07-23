@@ -19,6 +19,7 @@ type Dataplane interface {
 	patterns.Connectable
 	Message() Message
 	Application() Application
+	AppCreds() AppCreds
 }
 
 func New(
@@ -59,6 +60,7 @@ type dataplane struct {
 	mu          sync.RWMutex
 	message     *message
 	application *application
+	appcreds    *appcreds
 }
 
 func (usecase *dataplane) Connect(ctx context.Context) error {
@@ -141,4 +143,24 @@ func (usecase *dataplane) Application() Application {
 	}
 
 	return usecase.application
+}
+
+func (usecase *dataplane) AppCreds() AppCreds {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.appcreds == nil {
+		usecase.appcreds = &appcreds{
+			conf:         usecase.conf,
+			logger:       usecase.logger,
+			symmetric:    usecase.symmetric,
+			timer:        usecase.timer,
+			repos:        usecase.repos,
+			cache:        usecase.cache,
+			meter:        usecase.meter,
+			authorizator: usecase.authorizator,
+		}
+	}
+
+	return usecase.appcreds
 }

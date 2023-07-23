@@ -70,6 +70,7 @@ func (service *controlplane) Start(ctx context.Context) error {
 	pipe := pipeline.Chain(pipeline.UseGRPCError(service.logger), pipeline.UseValidation())
 	protos.RegisterAccountServer(service.gateway, &account{service: service, pipe: pipe})
 	protos.RegisterWorkspaceServer(service.gateway, &workspace{service: service, pipe: pipe})
+	protos.RegisterApplicationServer(service.gateway, &application{service: service, pipe: pipe})
 	reflection.Register(service.gateway)
 
 	service.logger.Info("started")

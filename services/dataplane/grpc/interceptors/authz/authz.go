@@ -87,7 +87,7 @@ func authorize(
 		return ctx, gateway.Err400("METHOD.INVALID")
 	}
 
-	ok, err = engine.Enforce(acc.Sub, app.Id, obj, act)
+	ok, err = engine.Enforce(app.Id, acc.Sub, obj, act)
 	if err != nil {
 		logger.Errorw(err.Error(), "app_id", app.Id, "account_sub", acc.Sub)
 
