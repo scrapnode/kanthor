@@ -6,8 +6,10 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/scrapnode/kanthor/config"
 	demodata "github.com/scrapnode/kanthor/data/demo"
+	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/pipeline"
 	"github.com/scrapnode/kanthor/services/dataplane/permissions"
 	"github.com/scrapnode/kanthor/services/ioc"
 	controlplaneuc "github.com/scrapnode/kanthor/usecases/controlplane"
@@ -69,23 +71,37 @@ func demoControlplane(conf *config.Config, logger logging.Logger, owner, input s
 		}
 	}()
 
+	pipe := pipeline.Chain(pipeline.UseValidation())
+
 	acc := &authenticator.Account{Sub: owner}
-	project, err := uc.Project().SetupDefault(ctx, &controlplaneuc.ProjectSetupDefaultReq{Account: acc})
+	project, err := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		response, err = uc.Project().SetupDefault(ctx, request.(*controlplaneuc.ProjectSetupDefaultReq))
+		return
+	})(ctx, &controlplaneuc.ProjectSetupDefaultReq{Account: acc, WorkspaceName: constants.DefaultWorkspaceName, WorkspaceTier: constants.DefaultWorkspaceTier})
 	if err != nil {
 		return nil, err
 	}
 
-	entities, err := demodata.Project(project.WorkspaceId, bytes)
+	entities, err := demodata.Project(project.(*controlplaneuc.ProjectSetupDefaultRes).WorkspaceId, acc, bytes)
 	if err != nil {
 		return nil, err
 	}
-	return uc.Project().SetupDemo(ctx, &controlplaneuc.ProjectSetupDemoReq{
+
+	data, err := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		response, err = uc.Project().SetupDemo(ctx, request.(*controlplaneuc.ProjectSetupDemoReq))
+		return
+	})(ctx, &controlplaneuc.ProjectSetupDemoReq{
 		Account:       acc,
-		WorkspaceId:   project.WorkspaceId,
+		WorkspaceId:   project.(*controlplaneuc.ProjectSetupDefaultRes).WorkspaceId,
 		Applications:  entities.Applications,
 		Endpoints:     entities.Endpoints,
 		EndpointRules: entities.EndpointRules,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return data.(*controlplaneuc.ProjectSetupDemoRes), nil
 }
 
 func demoDataplane(conf *config.Config, logger logging.Logger, appIds []string) (map[string]*dataplaneuc.AppCredsCreateRes, error) {

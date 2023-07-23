@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 	"strings"
@@ -19,10 +18,6 @@ func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Applic
 	var app entities.Application
 	if tx := sql.client.Model(&app).Where("id = ?", id).First(&app); tx.Error != nil {
 		return nil, fmt.Errorf("application.get: %w", tx.Error)
-	}
-
-	if app.DeletedAt >= sql.timer.Now().UnixMilli() {
-		return nil, fmt.Errorf("application.get.deleted: deleted_at:%d", app.DeletedAt)
 	}
 
 	return &app, nil
@@ -53,8 +48,6 @@ func (sql *SqlApplication) ListEndpointsWithRules(ctx context.Context, id string
 		Model(ep).
 		Joins(join).
 		Where(fmt.Sprintf("%s.app_id = ?", ep.TableName()), app.Id).
-		Scopes(database.NotDeleted(sql.timer, ep)).
-		Scopes(database.NotDeleted(sql.timer, epr)).
 		Select(selects).
 		Rows()
 	if err != nil {

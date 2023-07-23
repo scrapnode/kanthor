@@ -1,57 +1,62 @@
 CREATE TABLE IF NOT EXISTS kanthor_workspace
 (
-    id         VARCHAR(64)  NOT NULL PRIMARY KEY,
-    created_at BIGINT       NOT NULL DEFAULT 0,
-    updated_at BIGINT       NOT NULL DEFAULT 0,
-    deleted_at BIGINT       NOT NULL DEFAULT 0,
+    id          VARCHAR(64)  NOT NULL PRIMARY KEY,
+    modified_by VARCHAR(64)  NOT NULL,
+    created_at  BIGINT       NOT NULL DEFAULT 0,
+    updated_at  BIGINT       NOT NULL DEFAULT 0,
 
-    owner_id   VARCHAR(64)  NOT NULL,
-    name       VARCHAR(256) NOT NULL
+    owner_id    VARCHAR(64)  NOT NULL,
+    name        VARCHAR(256) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS kanthor_workspace_tier
 (
+    id           VARCHAR(64)  NOT NULL PRIMARY KEY,
+    modified_by  VARCHAR(64)  NOT NULL,
+    created_at   BIGINT       NOT NULL DEFAULT 0,
+    updated_at   BIGINT       NOT NULL DEFAULT 0,
+
     workspace_id VARCHAR(64)  NOT NULL,
     name         VARCHAR(256) NOT NULL,
 
     CONSTRAINT workspace_unique UNIQUE (workspace_id),
-    FOREIGN KEY (workspace_id) REFERENCES kanthor_workspace(id) ON DELETE CASCADE
+    FOREIGN KEY (workspace_id) REFERENCES kanthor_workspace (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS kanthor_application
 (
     id           VARCHAR(64)  NOT NULL PRIMARY KEY,
+    modified_by  VARCHAR(64)  NOT NULL,
     created_at   BIGINT       NOT NULL DEFAULT 0,
     updated_at   BIGINT       NOT NULL DEFAULT 0,
-    deleted_at   BIGINT       NOT NULL DEFAULT 0,
 
     workspace_id VARCHAR(64)  NOT NULL,
     name         VARCHAR(256) NOT NULL,
 
-    FOREIGN KEY (workspace_id) REFERENCES kanthor_workspace(id) ON DELETE CASCADE
+    FOREIGN KEY (workspace_id) REFERENCES kanthor_workspace (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS kanthor_endpoint
 (
-    id         VARCHAR(64)  NOT NULL PRIMARY KEY,
-    created_at BIGINT       NOT NULL DEFAULT 0,
-    updated_at BIGINT       NOT NULL DEFAULT 0,
-    deleted_at BIGINT       NOT NULL DEFAULT 0,
+    id          VARCHAR(64)  NOT NULL PRIMARY KEY,
+    modified_by VARCHAR(64)  NOT NULL,
+    created_at  BIGINT       NOT NULL DEFAULT 0,
+    updated_at  BIGINT       NOT NULL DEFAULT 0,
 
-    app_id     VARCHAR(64)  NOT NULL,
-    name       VARCHAR(256) NOT NULL,
-    uri        TEXT         NOT NULL,
-    method     VARCHAR(64)  NOT NULL,
+    app_id      VARCHAR(64)  NOT NULL,
+    name        VARCHAR(256) NOT NULL,
+    uri         TEXT         NOT NULL,
+    method      VARCHAR(64)  NOT NULL,
 
-    FOREIGN KEY (app_id) REFERENCES kanthor_application(id) ON DELETE CASCADE
+    FOREIGN KEY (app_id) REFERENCES kanthor_application (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS kanthor_endpoint_rule
 (
     id                   VARCHAR(64)  NOT NULL PRIMARY KEY,
+    modified_by          VARCHAR(64)  NOT NULL,
     created_at           BIGINT       NOT NULL DEFAULT 0,
     updated_at           BIGINT       NOT NULL DEFAULT 0,
-    deleted_at           BIGINT       NOT NULL DEFAULT 0,
 
     endpoint_id          VARCHAR(64)  NOT NULL,
     name                 VARCHAR(256) NOT NULL,
@@ -60,5 +65,5 @@ CREATE TABLE IF NOT EXISTS kanthor_endpoint_rule
     priority             SMALLINT     NOT NULL DEFAULT 0,
     exclusionary         BOOLEAN      NOT NULL DEFAULT FALSE,
 
-    FOREIGN KEY (endpoint_id) REFERENCES kanthor_endpoint(id) ON DELETE CASCADE
+    FOREIGN KEY (endpoint_id) REFERENCES kanthor_endpoint (id) ON DELETE CASCADE
 );

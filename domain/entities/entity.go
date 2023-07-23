@@ -7,8 +7,9 @@ type Entity struct {
 }
 
 type AuditTime struct {
-	CreatedAt int64 `json:"created_at" validate:"required"`
-	UpdatedAt int64 `json:"updated_at" validate:"required"`
+	ModifiedBy string `json:"modified_by" validate:"required"`
+	CreatedAt  int64  `json:"created_at" validate:"required"`
+	UpdatedAt  int64  `json:"updated_at" validate:"required"`
 }
 
 func (at *AuditTime) SetAT(now time.Time) {
@@ -18,10 +19,6 @@ func (at *AuditTime) SetAT(now time.Time) {
 	if at.UpdatedAt == 0 {
 		at.UpdatedAt = now.UnixMilli()
 	}
-}
-
-type SoftDelete struct {
-	DeletedAt int64 `json:"deleted_at"`
 }
 
 type TimeSeries struct {

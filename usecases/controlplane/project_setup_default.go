@@ -3,9 +3,7 @@ package controlplane
 import (
 	"context"
 	"errors"
-	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 )
 
@@ -25,13 +23,9 @@ func (uc *project) SetupDefault(ctx context.Context, req *ProjectSetupDefaultReq
 			OwnerId: req.Account.Sub,
 			Name:    req.WorkspaceName,
 		}
-		if entity.Name == "" {
-			entity.Name = constants.DefaultWorkspaceName
-		}
+		entity.ModifiedBy = req.Account.Sub
 		entity.Tier = &entities.WorkspaceTier{Name: req.WorkspaceTier}
-		if entity.Tier.Name == "" {
-			entity.Tier.Name = constants.DefaultWorkspaceTier
-		}
+		entity.Tier.ModifiedBy = req.Account.Sub
 
 		ws, err := uc.repos.Workspace().Create(txctx, entity)
 		if err != nil {
@@ -45,10 +39,5 @@ func (uc *project) SetupDefault(ctx context.Context, req *ProjectSetupDefaultReq
 		return nil, err
 	}
 
-	// must clear the cache because of new workspace
-	cacheKey := cache.Key("WORKSPACES_OF_ACCOUNT", req.Account.Sub)
-	if err := uc.cache.Del(cacheKey); err != nil {
-		return nil, err
-	}
 	return res.(*ProjectSetupDefaultRes), err
 }

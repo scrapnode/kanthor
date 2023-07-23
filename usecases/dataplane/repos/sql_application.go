@@ -23,9 +23,5 @@ func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Applic
 		return nil, fmt.Errorf("application.get: %w", err)
 	}
 
-	if app.DeletedAt >= sql.timer.Now().UnixMilli() {
-		return nil, fmt.Errorf("application.get.deleted: deleted_at:%d", app.DeletedAt)
-	}
-
 	return &app, nil
 }

@@ -23,9 +23,5 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 		return nil, fmt.Errorf("workspace.get: %w", err)
 	}
 
-	if ws.DeletedAt >= sql.timer.Now().UnixMilli() {
-		return nil, fmt.Errorf("workspace.get.deleted: deleted_at:%d", ws.DeletedAt)
-	}
-
 	return &ws, nil
 }

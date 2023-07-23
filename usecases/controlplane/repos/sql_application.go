@@ -48,7 +48,6 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...struct
 	tx := sql.client.
 		WithContext(ctx).
 		Model(app).
-		Scopes(database.NotDeleted(sql.timer, app)).
 		Where("workspace_id = ?", wsId)
 	tx = database.SqlToListQuery(tx, structure.ListReqBuild(opts))
 
@@ -70,10 +69,6 @@ func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.
 		First(&app)
 	if err := database.ErrGet(tx); err != nil {
 		return nil, fmt.Errorf("application.get: %w", err)
-	}
-
-	if app.DeletedAt >= sql.timer.Now().UnixMilli() {
-		return nil, fmt.Errorf("application.get.deleted: deleted_at:%d", app.DeletedAt)
 	}
 
 	return &app, nil

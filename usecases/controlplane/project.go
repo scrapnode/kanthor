@@ -32,9 +32,9 @@ type ProjectSetupDemoReq struct {
 	Account     *authenticator.Account `json:"account" validate:"required"`
 	WorkspaceId string                 `json:"workspace_id" validate:"required"`
 
-	Applications  []entities.Application  `json:"applications" validate:"required"`
-	Endpoints     []entities.Endpoint     `json:"endpoints" validate:"required"`
-	EndpointRules []entities.EndpointRule `json:"endpoint_rules" validate:"required"`
+	Applications  []entities.Application  `json:"applications" validate:"required,dive,required"`
+	Endpoints     []entities.Endpoint     `json:"endpoints" validate:"required,dive,required"`
+	EndpointRules []entities.EndpointRule `json:"endpoint_rules" validate:"required,dive,required"`
 }
 
 type ProjectSetupDemoRes struct {

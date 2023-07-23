@@ -5,7 +5,6 @@ import "github.com/scrapnode/kanthor/pkg/utils"
 type Application struct {
 	Entity
 	AuditTime
-	SoftDelete
 
 	WorkspaceId string `json:"workspace_id" validate:"required"`
 	Name        string `json:"name" validate:"required"`

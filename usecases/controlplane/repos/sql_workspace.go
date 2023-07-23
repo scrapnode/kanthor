@@ -19,11 +19,14 @@ type SqlWorkspace struct {
 }
 
 func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace) (*entities.Workspace, error) {
+	now := sql.timer.Now()
+
 	entity.GenId()
-	entity.SetAT(sql.timer.Now())
-	if entity.Tier != nil {
-		entity.Tier.WorkspaceId = entity.Id
-	}
+	entity.SetAT(now)
+
+	entity.Tier.WorkspaceId = entity.Id
+	entity.Tier.GenId()
+	entity.Tier.SetAT(now)
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	// if we use the entity to perform creating sql, gorm will use their logic to do the upsert
@@ -33,9 +36,9 @@ func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace)
 	err := transaction.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		ws := &entities.Workspace{}
 		ws.Id = entity.Id
+		ws.ModifiedBy = entity.ModifiedBy
 		ws.CreatedAt = entity.CreatedAt
 		ws.UpdatedAt = entity.UpdatedAt
-		ws.DeletedAt = entity.DeletedAt
 		ws.OwnerId = entity.OwnerId
 		ws.Name = entity.Name
 
@@ -44,6 +47,10 @@ func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace)
 		}
 
 		tier := &entities.WorkspaceTier{WorkspaceId: entity.Tier.WorkspaceId, Name: entity.Tier.Name}
+		tier.ModifiedBy = entity.Tier.ModifiedBy
+		tier.CreatedAt = entity.Tier.CreatedAt
+		tier.UpdatedAt = entity.Tier.UpdatedAt
+
 		if wsttx := tx.Create(tier); wsttx.Error != nil {
 			return wsttx.Error
 		}
@@ -66,10 +73,6 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 		return nil, fmt.Errorf("workspace.get: %w", err)
 	}
 
-	if ws.DeletedAt >= sql.timer.Now().UnixMilli() {
-		return nil, fmt.Errorf("workspace.get.deleted: deleted_at:%d", ws.DeletedAt)
-	}
-
 	return &ws, nil
 }
 
@@ -82,10 +85,6 @@ func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.
 		return nil, fmt.Errorf("workspace.get_default: %w", err)
 	}
 
-	if ws.DeletedAt >= sql.timer.Now().UnixMilli() {
-		return nil, fmt.Errorf("workspace.get_default.deleted: deleted_at:%d", ws.DeletedAt)
-	}
-
 	return &ws, nil
 }
 
@@ -94,8 +93,7 @@ func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*
 	tx := sql.client.
 		WithContext(ctx).
 		Model(ws).
-		Preload("Tier").
-		Scopes(database.NotDeleted(sql.timer, ws))
+		Preload("Tier")
 	tx = database.SqlToListQuery(tx, structure.ListReqBuild(opts))
 
 	res := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}

@@ -17,7 +17,8 @@ func (uc *workspace) ListOfAccount(ctx context.Context, req *WorkspaceListOfAcco
 
 		result := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}
 
-		// get assigned workspaces
+		// only get the list of assigned workspace if the id slice is not empty
+		// otherwise we ended up with returning all workspace in the system
 		if len(req.AssignedWorkspaceIds) > 0 {
 			assigned, err := uc.repos.Workspace().List(ctx, structure.WithListIds(req.AssignedWorkspaceIds))
 			if err != nil {

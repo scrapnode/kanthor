@@ -5,7 +5,6 @@ import "github.com/scrapnode/kanthor/pkg/utils"
 type Workspace struct {
 	Entity
 	AuditTime
-	SoftDelete
 
 	OwnerId string `json:"owner_id" validate:"required"`
 	Name    string `json:"name" validate:"required"`
@@ -24,10 +23,19 @@ func (entity *Workspace) GenId() {
 }
 
 type WorkspaceTier struct {
+	Entity
+	AuditTime
+
 	WorkspaceId string `json:"workspace_id" validate:"required"`
 	Name        string `json:"name" validate:"required"`
 }
 
 func (entity *WorkspaceTier) TableName() string {
 	return "kanthor_workspace_tier"
+}
+
+func (entity *WorkspaceTier) GenId() {
+	if entity.Id == "" {
+		entity.Id = utils.ID("wst")
+	}
 }

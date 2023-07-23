@@ -4,10 +4,11 @@ import (
 	_ "embed"
 	"encoding/json"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
-func Project(wsId string, bytes []byte) (*ProjectEntities, error) {
+func Project(wsId string, acc *authenticator.Account, bytes []byte) (*ProjectEntities, error) {
 	var in struct {
 		Projects []project `json:"projects"`
 	}
@@ -20,6 +21,7 @@ func Project(wsId string, bytes []byte) (*ProjectEntities, error) {
 	for _, project := range in.Projects {
 		for _, application := range project.Applications {
 			app := &entities.Application{WorkspaceId: wsId, Name: application.Name}
+			app.ModifiedBy = acc.Sub
 			app.GenId()
 			app.SetAT(now)
 			results.Applications = append(results.Applications, *app)
@@ -31,6 +33,7 @@ func Project(wsId string, bytes []byte) (*ProjectEntities, error) {
 					Method: endpoint.Method,
 					Uri:    endpoint.Uri,
 				}
+				ep.ModifiedBy = acc.Sub
 				ep.GenId()
 				ep.SetAT(now)
 				results.Endpoints = append(results.Endpoints, *ep)
@@ -42,6 +45,7 @@ func Project(wsId string, bytes []byte) (*ProjectEntities, error) {
 						ConditionSource:     rule.ConditionSource,
 						ConditionExpression: rule.ConditionExpression,
 					}
+					epr.ModifiedBy = acc.Sub
 					epr.GenId()
 					epr.SetAT(now)
 					results.EndpointRules = append(results.EndpointRules, *epr)

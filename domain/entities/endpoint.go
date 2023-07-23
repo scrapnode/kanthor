@@ -7,17 +7,16 @@ import (
 type Endpoint struct {
 	Entity
 	AuditTime
-	SoftDelete
 
 	AppId string `json:"app_id" validate:"required"`
 	Name  string `json:"name" validate:"required"`
 
 	// HTTP: POST/PUT/PATCH
-	Method string `json:"method" validate:"require,oneof=POST PUT PATCH"`
+	Method string `json:"method" validate:"required,oneof=POST PUT PATCH"`
 	// format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
 	// HTTP: https:://httpbin.org/post?app=kanthor.webhook
 	// gRPC: grpc:://app.kanthorlabs.com
-	Uri string `json:"uri" validate:"require,uri"`
+	Uri string `json:"uri" validate:"required,uri"`
 }
 
 func (entity *Endpoint) TableName() string {
@@ -33,15 +32,14 @@ func (entity *Endpoint) GenId() {
 type EndpointRule struct {
 	Entity
 	AuditTime
-	SoftDelete
 
 	EndpointId string `json:"endpoint_id" validate:"required"`
 	Name       string `json:"name" validate:"required"`
 
-	Priority int `json:"priority" validate:"required"`
+	Priority int `json:"priority"`
 	// the logic of not-false is true should be used here
 	// to guarantee default all rule will be on include mode
-	Exclusionary bool `json:"exclusionary" validate:"required"`
+	Exclusionary bool `json:"exclusionary"`
 
 	// examples
 	//  - app_id
