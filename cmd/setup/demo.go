@@ -31,24 +31,33 @@ func demo(conf *config.Config, logger logging.Logger, owner, input string, verbo
 
 	if verbose {
 		t := table.NewWriter()
-		t.AppendHeader(table.Row{"workspace_id", "workspace_tier", "application_id", "auth_sub", "auth_token"})
+		t.SetOutputMirror(os.Stdout)
+		t.AppendHeader(table.Row{"WS - TIER", fmt.Sprintf("%s - %s", cpdata.WorkspaceId, cpdata.WorkspaceTier)})
+
 		for _, appId := range cpdata.ApplicationIds {
+			t.AppendRow([]interface{}{"app_id", appId})
+
 			sub := "-"
 			token := fmt.Sprintf("unable to generate access token for [%s]", appId)
 			if authdata, ok := dpdata[appId]; ok {
 				sub = authdata.Sub
 				token = authdata.Token
 			}
-			t.AppendRow([]interface{}{cpdata.WorkspaceTier, cpdata.WorkspaceTier, appId, sub, token})
+			t.AppendRow([]interface{}{"app_sub", sub})
+			t.AppendRow([]interface{}{"app_sub_token", token})
+			t.AppendSeparator()
 		}
-		t.SetOutputMirror(os.Stdout)
 		t.Render()
 	}
 
 	return nil
 }
 
-func demoControlplane(conf *config.Config, logger logging.Logger, owner, input string) (*controlplaneuc.ProjectSetupDemoRes, error) {
+func demoControlplane(
+	conf *config.Config,
+	logger logging.Logger,
+	owner, input string,
+) (*controlplaneuc.ProjectSetupDemoRes, error) {
 	bytes, err := os.ReadFile(input)
 	if err != nil {
 		return nil, err
@@ -71,37 +80,78 @@ func demoControlplane(conf *config.Config, logger logging.Logger, owner, input s
 		}
 	}()
 
-	pipe := pipeline.Chain(pipeline.UseValidation())
-
 	acc := &authenticator.Account{Sub: owner}
-	project, err := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
+	ctx = context.WithValue(ctx, authenticator.CtxAuthAccount, acc)
+
+	project, err := demoControlplaneProjectDefault(acc, uc, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := demoControlplaneProjectData(acc, uc, ctx, project, bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func demoControlplaneProjectDefault(
+	acc *authenticator.Account,
+	uc controlplaneuc.Controlplane,
+	ctx context.Context,
+) (*controlplaneuc.ProjectSetupDefaultRes, error) {
+	pipe := pipeline.Chain(pipeline.UseValidation())
+	run := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = uc.Project().SetupDefault(ctx, request.(*controlplaneuc.ProjectSetupDefaultReq))
 		return
-	})(ctx, &controlplaneuc.ProjectSetupDefaultReq{Account: acc, WorkspaceName: constants.DefaultWorkspaceName, WorkspaceTier: constants.DefaultWorkspaceTier})
+	})
+
+	request := &controlplaneuc.ProjectSetupDefaultReq{
+		Account:       acc,
+		WorkspaceName: constants.DefaultWorkspaceName,
+		WorkspaceTier: constants.DefaultWorkspaceTier,
+	}
+	response, err := run(ctx, request)
+
 	if err != nil {
 		return nil, err
 	}
+	return response.(*controlplaneuc.ProjectSetupDefaultRes), nil
+}
 
-	entities, err := demodata.Project(project.(*controlplaneuc.ProjectSetupDefaultRes).WorkspaceId, acc, bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
+func demoControlplaneProjectData(
+	acc *authenticator.Account,
+	uc controlplaneuc.Controlplane,
+	ctx context.Context,
+	project *controlplaneuc.ProjectSetupDefaultRes,
+	bytes []byte,
+) (*controlplaneuc.ProjectSetupDemoRes, error) {
+	pipe := pipeline.Chain(pipeline.UseValidation())
+	run := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = uc.Project().SetupDemo(ctx, request.(*controlplaneuc.ProjectSetupDemoReq))
 		return
-	})(ctx, &controlplaneuc.ProjectSetupDemoReq{
+	})
+
+	entities, err := demodata.Project(project.WorkspaceId, acc, bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	request := &controlplaneuc.ProjectSetupDemoReq{
 		Account:       acc,
-		WorkspaceId:   project.(*controlplaneuc.ProjectSetupDefaultRes).WorkspaceId,
+		WorkspaceId:   project.WorkspaceId,
 		Applications:  entities.Applications,
 		Endpoints:     entities.Endpoints,
 		EndpointRules: entities.EndpointRules,
-	})
+	}
+	response, err := run(ctx, request)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return data.(*controlplaneuc.ProjectSetupDemoRes), nil
+	return response.(*controlplaneuc.ProjectSetupDemoRes), nil
 }
 
 func demoDataplane(conf *config.Config, logger logging.Logger, appIds []string) (map[string]*dataplaneuc.AppCredsCreateRes, error) {
