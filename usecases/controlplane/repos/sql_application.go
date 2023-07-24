@@ -44,19 +44,22 @@ func (sql *SqlApplication) BulkCreate(ctx context.Context, entities []entities.A
 }
 
 func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.Application], error) {
+	req := structure.ListReqBuild(opts)
+
 	app := &entities.Application{}
+
 	tx := sql.client.
 		WithContext(ctx).
 		Model(app).
 		Where("workspace_id = ?", wsId)
-	tx = database.SqlToListQuery(tx, structure.ListReqBuild(opts))
+	tx = database.SqlToListQuery(tx, req, `"id"`)
 
 	res := &structure.ListRes[entities.Application]{Data: []entities.Application{}}
 	if tx = tx.Find(&res.Data); tx.Error != nil {
-		return nil, tx.Error
+		return nil, fmt.Errorf("application.list: %w", tx.Error)
 	}
 
-	return res, nil
+	return structure.ListResBuild(res, req), nil
 }
 
 func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.Application, error) {

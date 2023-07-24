@@ -19,6 +19,7 @@ type Controlplane interface {
 	Project() Project
 	Workspace() Workspace
 	Application() Application
+	Endpoint() Endpoint
 }
 
 func New(
@@ -57,6 +58,7 @@ type controlplane struct {
 	workspace   *workspace
 	project     *project
 	application *application
+	endpoint    *endpoint
 }
 
 func (usecase *controlplane) Connect(ctx context.Context) error {
@@ -111,6 +113,23 @@ func (usecase *controlplane) Project() Project {
 
 	return usecase.project
 }
+func (usecase *controlplane) Workspace() Workspace {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.workspace == nil {
+		usecase.workspace = &workspace{
+			conf:   usecase.conf,
+			logger: usecase.logger,
+			timer:  usecase.timer,
+			cache:  usecase.cache,
+			meter:  usecase.meter,
+			repos:  usecase.repos,
+		}
+	}
+
+	return usecase.workspace
+}
 
 func (usecase *controlplane) Application() Application {
 	usecase.mu.Lock()
@@ -130,12 +149,12 @@ func (usecase *controlplane) Application() Application {
 	return usecase.application
 }
 
-func (usecase *controlplane) Workspace() Workspace {
+func (usecase *controlplane) Endpoint() Endpoint {
 	usecase.mu.Lock()
 	defer usecase.mu.Unlock()
 
-	if usecase.workspace == nil {
-		usecase.workspace = &workspace{
+	if usecase.endpoint == nil {
+		usecase.endpoint = &endpoint{
 			conf:   usecase.conf,
 			logger: usecase.logger,
 			timer:  usecase.timer,
@@ -145,5 +164,5 @@ func (usecase *controlplane) Workspace() Workspace {
 		}
 	}
 
-	return usecase.workspace
+	return usecase.endpoint
 }

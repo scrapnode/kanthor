@@ -42,3 +42,24 @@ message PermissionEntity {
   string subject = 1;
   string action = 2;
 }
+
+message EndpointEntity {
+  string id = 1;
+  int64 created_at = 2;
+  int64 updated_at = 3;
+  string app_id = 4;
+  string name = 5;
+  string method = 6;
+  string uri = 7;
+}
+
+message EndpointRuleEntity {
+  string id = 1;
+  int64 created_at = 2;
+  int64 updated_at = 3;
+  string endpoint_id = 4;
+  int32 priority = 5;
+  bool exclusionary = 6;
+  string condition_source = 7;
+  string condition_expression = 8;
+}

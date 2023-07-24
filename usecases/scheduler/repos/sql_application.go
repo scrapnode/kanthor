@@ -104,7 +104,7 @@ type epwr struct {
 	EndpointUri             string `json:"endpoint_uri"`
 	EndpointMethod          string `json:"endpoint_method"`
 	RuleId                  string `json:"rule_id"`
-	RulePriority            int    `json:"rule_priority"`
+	RulePriority            int32  `json:"rule_priority"`
 	RuleExclusionary        bool   `json:"rule_exclusionary"`
 	RuleConditionSource     string `json:"rule_condition_source"`
 	RuleConditionExpression string `json:"rule_condition_expression"`

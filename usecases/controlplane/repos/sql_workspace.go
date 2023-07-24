@@ -59,7 +59,7 @@ func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace)
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("workspace.create: %w", err)
 	}
 
 	return entity, nil
@@ -83,23 +83,26 @@ func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.
 	var ws entities.Workspace
 	tx := transaction.WithContext(ctx).Model(&ws).Preload("Tier").Where("owner_id = ?", owner).First(&ws)
 	if err := database.ErrGet(tx); err != nil {
-		return nil, fmt.Errorf("workspace.get_default: %w", err)
+		return nil, fmt.Errorf("workspace.get_owned: %w", err)
 	}
 
 	return &ws, nil
 }
 
 func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error) {
+	req := structure.ListReqBuild(opts)
+
 	ws := &entities.Workspace{}
+
 	tx := sql.client.
 		WithContext(ctx).
 		Model(ws).
 		Preload("Tier")
-	tx = database.SqlToListQuery(tx, structure.ListReqBuild(opts))
+	tx = database.SqlToListQuery(tx, req, `"id"`)
 
 	res := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}
 	if tx = tx.Find(&res.Data); tx.Error != nil {
-		return nil, tx.Error
+		return nil, fmt.Errorf("workspace.list: %w", tx.Error)
 	}
 
 	return res, nil

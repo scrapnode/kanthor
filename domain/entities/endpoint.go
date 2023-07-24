@@ -36,7 +36,7 @@ type EndpointRule struct {
 	EndpointId string `json:"endpoint_id" validate:"required"`
 	Name       string `json:"name" validate:"required"`
 
-	Priority int `json:"priority"`
+	Priority int32 `json:"priority"`
 	// the logic of not-false is true should be used here
 	// to guarantee default all rule will be on include mode
 	Exclusionary bool `json:"exclusionary"`

@@ -1,6 +1,6 @@
 package structure
 
-import "github.com/scrapnode/kanthor/domain/entities"
+import "reflect"
 
 type ListReq struct {
 	Cursor string
@@ -32,25 +32,38 @@ func WithListSearch(search string) ListOps {
 
 func WithListLimit(limit int) ListOps {
 	return func(req *ListReq) {
-		req.Limit = int(limit)
+		req.Limit = limit
 	}
 }
 
-func ListReqBuild(opts []ListOps) ListReq {
+func ListReqBuild(opts []ListOps) *ListReq {
 	req := ListReq{}
 	for _, opt := range opts {
 		opt(&req)
 	}
-	return req
+	return &req
 }
 
-func ListResBuild[T any](res *ListRes[T]) *ListRes[T] {
+func ListResBuild[T any](res *ListRes[T], req *ListReq) *ListRes[T] {
 	if len(res.Data) == 0 {
 		return res
 	}
 
+	if req.Limit <= 0 {
+		return res
+	}
+
+	if len(res.Data) < req.Limit {
+		return res
+	}
+
 	latest := any(res.Data[len(res.Data)-1])
-	res.Cursor = latest.(entities.Entity).Id
+	value := reflect.ValueOf(latest)
+	field := value.FieldByName("Id")
+
+	if field.IsValid() {
+		res.Cursor = field.String()
+	}
 	return res
 }
 

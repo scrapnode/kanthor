@@ -10,7 +10,7 @@ import (
 
 func (uc *application) Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error) {
 	app, err := cache.Warp(uc.cache,
-		cache.Key("APPLICATION", req.Id),
+		cache.Key("APPLICATION", req.Workspace.Id, req.Id),
 		time.Hour*24,
 		func() (*entities.Application, error) {
 			uc.meter.Count("cache_miss_total", 1, metric.Label("source", "controlplane_application_get"))
