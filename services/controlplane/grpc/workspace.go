@@ -26,16 +26,16 @@ func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (
 	}
 
 	// transformation
-	ws := response.(*usecase.WorkspaceGetRes).Workspace
+	cast := response.(*usecase.WorkspaceGetRes)
 	res := &protos.WorkspaceEntity{
-		Id:        ws.Id,
-		CreatedAt: ws.CreatedAt,
-		UpdatedAt: ws.UpdatedAt,
-		OwnerId:   ws.OwnerId,
-		Name:      ws.Name,
+		Id:        cast.Workspace.Id,
+		CreatedAt: cast.Workspace.CreatedAt,
+		UpdatedAt: cast.Workspace.UpdatedAt,
+		OwnerId:   cast.Workspace.OwnerId,
+		Name:      cast.Workspace.Name,
 		Tier: &protos.WorkspaceTierEntity{
-			WorkspaceId: ws.Tier.WorkspaceId,
-			Name:        ws.Tier.Name,
+			WorkspaceId: cast.Workspace.Tier.WorkspaceId,
+			Name:        cast.Workspace.Tier.Name,
 		},
 	}
 	return res, nil

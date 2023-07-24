@@ -34,8 +34,7 @@ type EndpointGetReq struct {
 }
 
 type EndpointGetRes struct {
-	Endpoint *entities.Endpoint      `json:"endpoint"`
-	Rules    []entities.EndpointRule `json:"rules"`
+	Endpoint *entities.Endpoint `json:"endpoint"`
 }
 
 type endpoint struct {

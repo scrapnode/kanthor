@@ -45,18 +45,18 @@ func (server *account) ListWorkspaces(ctx context.Context, req *protos.AccountLi
 	}
 
 	// transformation
-	workspaces := response.(*usecase.WorkspaceListOfAccountRes).Workspaces
+	cast := response.(*usecase.WorkspaceListOfAccountRes)
 	res := &protos.AccountListWorkspacesRes{Data: []*protos.WorkspaceEntity{}}
-	for _, workspace := range workspaces {
+	for _, ws := range cast.Workspaces {
 		res.Data = append(res.Data, &protos.WorkspaceEntity{
-			Id:        workspace.Id,
-			CreatedAt: workspace.CreatedAt,
-			UpdatedAt: workspace.UpdatedAt,
-			OwnerId:   workspace.OwnerId,
-			Name:      workspace.Name,
+			Id:        ws.Id,
+			CreatedAt: ws.CreatedAt,
+			UpdatedAt: ws.UpdatedAt,
+			OwnerId:   ws.OwnerId,
+			Name:      ws.Name,
 			Tier: &protos.WorkspaceTierEntity{
-				WorkspaceId: workspace.Tier.WorkspaceId,
-				Name:        workspace.Tier.Name,
+				WorkspaceId: ws.Tier.WorkspaceId,
+				Name:        ws.Tier.Name,
 			},
 		})
 	}

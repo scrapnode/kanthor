@@ -6,7 +6,7 @@ import "entities.proto";
 
 service Endpoint {
   rpc List(EndpointListReq) returns (EndpointListRes) {}
-  rpc Get(EndpointGetReq) returns (EndpointGetRes) {}
+  rpc Get(EndpointGetReq) returns (EndpointEntity) {}
 }
 
 message EndpointListReq {
@@ -27,13 +27,3 @@ message EndpointGetReq {
   string app_id = 2;
 }
 
-message EndpointGetRes {
-  string id = 1;
-  int64 created_at = 2;
-  int64 updated_at = 3;
-  string app_id = 4;
-  string name = 5;
-  string method = 6;
-  string uri = 7;
-  repeated EndpointRuleEntity rules = 8;
-}

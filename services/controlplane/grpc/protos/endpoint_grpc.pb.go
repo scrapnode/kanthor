@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EndpointClient interface {
 	List(ctx context.Context, in *EndpointListReq, opts ...grpc.CallOption) (*EndpointListRes, error)
-	Get(ctx context.Context, in *EndpointGetReq, opts ...grpc.CallOption) (*EndpointGetRes, error)
+	Get(ctx context.Context, in *EndpointGetReq, opts ...grpc.CallOption) (*EndpointEntity, error)
 }
 
 type endpointClient struct {
@@ -43,8 +43,8 @@ func (c *endpointClient) List(ctx context.Context, in *EndpointListReq, opts ...
 	return out, nil
 }
 
-func (c *endpointClient) Get(ctx context.Context, in *EndpointGetReq, opts ...grpc.CallOption) (*EndpointGetRes, error) {
-	out := new(EndpointGetRes)
+func (c *endpointClient) Get(ctx context.Context, in *EndpointGetReq, opts ...grpc.CallOption) (*EndpointEntity, error) {
+	out := new(EndpointEntity)
 	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Endpoint/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (c *endpointClient) Get(ctx context.Context, in *EndpointGetReq, opts ...gr
 // for forward compatibility
 type EndpointServer interface {
 	List(context.Context, *EndpointListReq) (*EndpointListRes, error)
-	Get(context.Context, *EndpointGetReq) (*EndpointGetRes, error)
+	Get(context.Context, *EndpointGetReq) (*EndpointEntity, error)
 	mustEmbedUnimplementedEndpointServer()
 }
 
@@ -68,7 +68,7 @@ type UnimplementedEndpointServer struct {
 func (UnimplementedEndpointServer) List(context.Context, *EndpointListReq) (*EndpointListRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
-func (UnimplementedEndpointServer) Get(context.Context, *EndpointGetReq) (*EndpointGetRes, error) {
+func (UnimplementedEndpointServer) Get(context.Context, *EndpointGetReq) (*EndpointEntity, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedEndpointServer) mustEmbedUnimplementedEndpointServer() {}

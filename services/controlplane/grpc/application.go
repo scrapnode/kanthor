@@ -61,13 +61,13 @@ func (server *application) Get(ctx context.Context, req *protos.ApllicationGetRe
 	}
 
 	// transformation
-	app := response.(*usecase.ApplicationGetRes).Application
+	cast := response.(*usecase.ApplicationGetRes)
 	res := &protos.ApplicationEntity{
-		Id:          app.Id,
-		CreatedAt:   app.CreatedAt,
-		UpdatedAt:   app.UpdatedAt,
-		WorkspaceId: app.WorkspaceId,
-		Name:        app.Name,
+		Id:          cast.Application.Id,
+		CreatedAt:   cast.Application.CreatedAt,
+		UpdatedAt:   cast.Application.UpdatedAt,
+		WorkspaceId: cast.Application.WorkspaceId,
+		Name:        cast.Application.Name,
 	}
 	return res, nil
 }

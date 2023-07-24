@@ -51,7 +51,7 @@ func (server *endpoint) List(ctx context.Context, req *protos.EndpointListReq) (
 	return res, nil
 }
 
-func (server *endpoint) Get(ctx context.Context, req *protos.EndpointGetReq) (*protos.EndpointGetRes, error) {
+func (server *endpoint) Get(ctx context.Context, req *protos.EndpointGetReq) (*protos.EndpointEntity, error) {
 	run := server.pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = server.service.uc.Endpoint().Get(ctx, request.(*usecase.EndpointGetReq))
 		return
@@ -66,7 +66,7 @@ func (server *endpoint) Get(ctx context.Context, req *protos.EndpointGetReq) (*p
 
 	// transformation
 	cast := response.(*usecase.EndpointGetRes)
-	res := &protos.EndpointGetRes{
+	res := &protos.EndpointEntity{
 		Id:        cast.Endpoint.Id,
 		CreatedAt: cast.Endpoint.CreatedAt,
 		UpdatedAt: cast.Endpoint.UpdatedAt,
@@ -74,20 +74,6 @@ func (server *endpoint) Get(ctx context.Context, req *protos.EndpointGetReq) (*p
 		Name:      cast.Endpoint.Name,
 		Method:    cast.Endpoint.Method,
 		Uri:       cast.Endpoint.Uri,
-		Rules:     []*protos.EndpointRuleEntity{},
-	}
-	for _, epr := range cast.Rules {
-		rule := &protos.EndpointRuleEntity{
-			Id:                  epr.Id,
-			CreatedAt:           epr.CreatedAt,
-			UpdatedAt:           epr.UpdatedAt,
-			EndpointId:          epr.EndpointId,
-			Priority:            epr.Priority,
-			Exclusionary:        epr.Exclusionary,
-			ConditionSource:     epr.ConditionSource,
-			ConditionExpression: epr.ConditionExpression,
-		}
-		res.Rules = append(res.Rules, rule)
 	}
 	return res, nil
 }
