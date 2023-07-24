@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WorkspaceClient interface {
-	Get(ctx context.Context, in *WorkspaceGetReq, opts ...grpc.CallOption) (*IWorkspace, error)
+	Get(ctx context.Context, in *WorkspaceGetReq, opts ...grpc.CallOption) (*WorkspaceEntity, error)
 }
 
 type workspaceClient struct {
@@ -33,8 +33,8 @@ func NewWorkspaceClient(cc grpc.ClientConnInterface) WorkspaceClient {
 	return &workspaceClient{cc}
 }
 
-func (c *workspaceClient) Get(ctx context.Context, in *WorkspaceGetReq, opts ...grpc.CallOption) (*IWorkspace, error) {
-	out := new(IWorkspace)
+func (c *workspaceClient) Get(ctx context.Context, in *WorkspaceGetReq, opts ...grpc.CallOption) (*WorkspaceEntity, error) {
+	out := new(WorkspaceEntity)
 	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Workspace/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (c *workspaceClient) Get(ctx context.Context, in *WorkspaceGetReq, opts ...
 // All implementations must embed UnimplementedWorkspaceServer
 // for forward compatibility
 type WorkspaceServer interface {
-	Get(context.Context, *WorkspaceGetReq) (*IWorkspace, error)
+	Get(context.Context, *WorkspaceGetReq) (*WorkspaceEntity, error)
 	mustEmbedUnimplementedWorkspaceServer()
 }
 
@@ -54,7 +54,7 @@ type WorkspaceServer interface {
 type UnimplementedWorkspaceServer struct {
 }
 
-func (UnimplementedWorkspaceServer) Get(context.Context, *WorkspaceGetReq) (*IWorkspace, error) {
+func (UnimplementedWorkspaceServer) Get(context.Context, *WorkspaceGetReq) (*WorkspaceEntity, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedWorkspaceServer) mustEmbedUnimplementedWorkspaceServer() {}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/scrapnode/kanthor/config"
 	demodata "github.com/scrapnode/kanthor/data/demo"
 	"github.com/scrapnode/kanthor/domain/constants"
@@ -32,6 +33,9 @@ func demo(conf *config.Config, logger logging.Logger, owner, input string, verbo
 	if verbose {
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
+		style := table.StyleDefault
+		style.Format.Header = text.FormatDefault
+		t.SetStyle(style)
 		t.AppendHeader(table.Row{"WS - TIER", fmt.Sprintf("%s - %s", cpdata.WorkspaceId, cpdata.WorkspaceTier)})
 
 		for _, appId := range cpdata.ApplicationIds {

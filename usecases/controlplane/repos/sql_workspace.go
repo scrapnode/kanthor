@@ -47,6 +47,7 @@ func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace)
 		}
 
 		tier := &entities.WorkspaceTier{WorkspaceId: entity.Tier.WorkspaceId, Name: entity.Tier.Name}
+		tier.Id = entity.Tier.Id
 		tier.ModifiedBy = entity.Tier.ModifiedBy
 		tier.CreatedAt = entity.Tier.CreatedAt
 		tier.UpdatedAt = entity.Tier.UpdatedAt

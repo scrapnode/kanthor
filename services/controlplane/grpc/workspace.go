@@ -13,7 +13,7 @@ type workspace struct {
 	pipe    pipeline.Middleware
 }
 
-func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (*protos.IWorkspace, error) {
+func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (*protos.WorkspaceEntity, error) {
 	run := server.pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = server.service.uc.Workspace().Get(ctx, request.(*usecase.WorkspaceGetReq))
 		return
@@ -27,13 +27,13 @@ func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (
 
 	// transformation
 	ws := response.(*usecase.WorkspaceGetRes).Workspace
-	res := &protos.IWorkspace{
+	res := &protos.WorkspaceEntity{
 		Id:        ws.Id,
 		CreatedAt: ws.CreatedAt,
 		UpdatedAt: ws.UpdatedAt,
 		OwnerId:   ws.OwnerId,
 		Name:      ws.Name,
-		Tier: &protos.IWorkspaceTier{
+		Tier: &protos.WorkspaceTierEntity{
 			WorkspaceId: ws.Tier.WorkspaceId,
 			Name:        ws.Tier.Name,
 		},

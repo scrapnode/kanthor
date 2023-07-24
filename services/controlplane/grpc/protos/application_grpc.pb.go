@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ApplicationClient interface {
 	List(ctx context.Context, in *ApllicationListReq, opts ...grpc.CallOption) (*ApllicationListRes, error)
-	Get(ctx context.Context, in *ApllicationGetReq, opts ...grpc.CallOption) (*IApplication, error)
+	Get(ctx context.Context, in *ApllicationGetReq, opts ...grpc.CallOption) (*ApplicationEntity, error)
 }
 
 type applicationClient struct {
@@ -43,8 +43,8 @@ func (c *applicationClient) List(ctx context.Context, in *ApllicationListReq, op
 	return out, nil
 }
 
-func (c *applicationClient) Get(ctx context.Context, in *ApllicationGetReq, opts ...grpc.CallOption) (*IApplication, error) {
-	out := new(IApplication)
+func (c *applicationClient) Get(ctx context.Context, in *ApllicationGetReq, opts ...grpc.CallOption) (*ApplicationEntity, error) {
+	out := new(ApplicationEntity)
 	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Application/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (c *applicationClient) Get(ctx context.Context, in *ApllicationGetReq, opts
 // for forward compatibility
 type ApplicationServer interface {
 	List(context.Context, *ApllicationListReq) (*ApllicationListRes, error)
-	Get(context.Context, *ApllicationGetReq) (*IApplication, error)
+	Get(context.Context, *ApllicationGetReq) (*ApplicationEntity, error)
 	mustEmbedUnimplementedApplicationServer()
 }
 
@@ -68,7 +68,7 @@ type UnimplementedApplicationServer struct {
 func (UnimplementedApplicationServer) List(context.Context, *ApllicationListReq) (*ApllicationListRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
-func (UnimplementedApplicationServer) Get(context.Context, *ApllicationGetReq) (*IApplication, error) {
+func (UnimplementedApplicationServer) Get(context.Context, *ApllicationGetReq) (*ApplicationEntity, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedApplicationServer) mustEmbedUnimplementedApplicationServer() {}

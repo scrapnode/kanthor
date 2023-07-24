@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccountClient interface {
-	Get(ctx context.Context, in *AccountGetReq, opts ...grpc.CallOption) (*IAccount, error)
+	Get(ctx context.Context, in *AccountGetReq, opts ...grpc.CallOption) (*AccountEntity, error)
 	ListWorkspaces(ctx context.Context, in *AccountListWorkspacesReq, opts ...grpc.CallOption) (*AccountListWorkspacesRes, error)
 }
 
@@ -34,8 +34,8 @@ func NewAccountClient(cc grpc.ClientConnInterface) AccountClient {
 	return &accountClient{cc}
 }
 
-func (c *accountClient) Get(ctx context.Context, in *AccountGetReq, opts ...grpc.CallOption) (*IAccount, error) {
-	out := new(IAccount)
+func (c *accountClient) Get(ctx context.Context, in *AccountGetReq, opts ...grpc.CallOption) (*AccountEntity, error) {
+	out := new(AccountEntity)
 	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Account/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (c *accountClient) ListWorkspaces(ctx context.Context, in *AccountListWorks
 // All implementations must embed UnimplementedAccountServer
 // for forward compatibility
 type AccountServer interface {
-	Get(context.Context, *AccountGetReq) (*IAccount, error)
+	Get(context.Context, *AccountGetReq) (*AccountEntity, error)
 	ListWorkspaces(context.Context, *AccountListWorkspacesReq) (*AccountListWorkspacesRes, error)
 	mustEmbedUnimplementedAccountServer()
 }
@@ -65,7 +65,7 @@ type AccountServer interface {
 type UnimplementedAccountServer struct {
 }
 
-func (UnimplementedAccountServer) Get(context.Context, *AccountGetReq) (*IAccount, error) {
+func (UnimplementedAccountServer) Get(context.Context, *AccountGetReq) (*AccountEntity, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedAccountServer) ListWorkspaces(context.Context, *AccountListWorkspacesReq) (*AccountListWorkspacesRes, error) {

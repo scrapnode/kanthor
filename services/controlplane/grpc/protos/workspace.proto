@@ -5,7 +5,7 @@ option go_package = "github.com/scrapnode/kanthor/controlplane/server/grpc/proto
 import "entities.proto";
 
 service Workspace {
-  rpc Get(WorkspaceGetReq) returns (IWorkspace) {}
+  rpc Get(WorkspaceGetReq) returns (WorkspaceEntity) {}
 }
 
 message WorkspaceGetReq {

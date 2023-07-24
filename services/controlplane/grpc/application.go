@@ -33,9 +33,9 @@ func (server *application) List(ctx context.Context, req *protos.ApllicationList
 
 	// transformation
 	cast := response.(*usecase.ApplicationListRes)
-	res := &protos.ApllicationListRes{Cursor: cast.Cursor, Data: []*protos.IApplication{}}
+	res := &protos.ApllicationListRes{Cursor: cast.Cursor, Data: []*protos.ApplicationEntity{}}
 	for _, app := range cast.Data {
-		res.Data = append(res.Data, &protos.IApplication{
+		res.Data = append(res.Data, &protos.ApplicationEntity{
 			Id:          app.Id,
 			CreatedAt:   app.CreatedAt,
 			UpdatedAt:   app.UpdatedAt,
@@ -47,7 +47,7 @@ func (server *application) List(ctx context.Context, req *protos.ApllicationList
 	return res, nil
 }
 
-func (server *application) Get(ctx context.Context, req *protos.ApllicationGetReq) (*protos.IApplication, error) {
+func (server *application) Get(ctx context.Context, req *protos.ApllicationGetReq) (*protos.ApplicationEntity, error) {
 	run := server.pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = server.service.uc.Application().Get(ctx, request.(*usecase.ApplicationGetReq))
 		return
@@ -62,7 +62,7 @@ func (server *application) Get(ctx context.Context, req *protos.ApllicationGetRe
 
 	// transformation
 	app := response.(*usecase.ApplicationGetRes).Application
-	res := &protos.IApplication{
+	res := &protos.ApplicationEntity{
 		Id:          app.Id,
 		CreatedAt:   app.CreatedAt,
 		UpdatedAt:   app.UpdatedAt,

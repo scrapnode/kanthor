@@ -4,16 +4,8 @@ option go_package = "github.com/scrapnode/kanthor/controlplane/server/grpc/proto
 
 import "entities.proto";
 
-message IAccount {
-  string sub = 1;
-  string name = 2;
-  string picture = 3;
-  string email = 4;
-  string phone_number = 5;
-}
-
 service Account {
-  rpc Get(AccountGetReq) returns (IAccount) {}
+  rpc Get(AccountGetReq) returns (AccountEntity) {}
   rpc ListWorkspaces(AccountListWorkspacesReq) returns (AccountListWorkspacesRes) {}
 }
 
@@ -22,5 +14,5 @@ message AccountGetReq {}
 message AccountListWorkspacesReq {}
 
 message AccountListWorkspacesRes {
-  repeated IWorkspace data = 1;
+  repeated WorkspaceEntity data = 1;
 }

@@ -6,7 +6,7 @@ import "entities.proto";
 
 service Application {
   rpc List(ApllicationListReq) returns (ApllicationListRes) {}
-  rpc Get(ApllicationGetReq) returns (IApplication) {}
+  rpc Get(ApllicationGetReq) returns (ApplicationEntity) {}
 }
 
 message ApllicationListReq {
@@ -18,7 +18,7 @@ message ApllicationListReq {
 
 message ApllicationListRes {
   string cursor = 1;
-  repeated IApplication data = 2;
+  repeated ApplicationEntity data = 2;
 }
 
 message ApllicationGetReq {
