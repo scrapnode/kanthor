@@ -14,6 +14,7 @@ func EndpointRule(epr *entities.EndpointRule) *protos.EndpointRuleEntity {
 		CreatedAt:           epr.CreatedAt,
 		UpdatedAt:           epr.UpdatedAt,
 		EndpointId:          epr.EndpointId,
+		Name:                epr.Name,
 		Priority:            epr.Priority,
 		Exclusionary:        epr.Exclusionary,
 		ConditionSource:     epr.ConditionSource,

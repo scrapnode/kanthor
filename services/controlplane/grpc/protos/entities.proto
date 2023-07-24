@@ -58,8 +58,9 @@ message EndpointRuleEntity {
   int64 created_at = 2;
   int64 updated_at = 3;
   string endpoint_id = 4;
-  int32 priority = 5;
-  bool exclusionary = 6;
-  string condition_source = 7;
-  string condition_expression = 8;
+  string name = 5;
+  int32 priority = 6;
+  bool exclusionary = 7;
+  string condition_source = 8;
+  string condition_expression = 9;
 }
