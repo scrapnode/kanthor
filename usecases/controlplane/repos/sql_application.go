@@ -46,12 +46,12 @@ func (sql *SqlApplication) BulkCreate(ctx context.Context, entities []entities.A
 func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.Application], error) {
 	req := structure.ListReqBuild(opts)
 
+	ws := &entities.Workspace{}
 	app := &entities.Application{}
 
-	tx := sql.client.
-		WithContext(ctx).
-		Model(app).
-		Where("workspace_id = ?", wsId)
+	tx := sql.client.WithContext(ctx).Model(app).
+		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId)
 	tx = database.SqlToListQuery(tx, req, `"id"`)
 
 	res := &structure.ListRes[entities.Application]{Data: []entities.Application{}}
@@ -65,14 +65,17 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...struct
 func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.Application, error) {
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 
-	var app entities.Application
+	ws := &entities.Workspace{}
+	app := &entities.Application{}
+
 	tx := transaction.WithContext(ctx).Model(&app).
-		Where("workspace_id = ?", wsId).
-		Where("id = ?", id).
-		First(&app)
+		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), id).
+		First(app)
 	if err := database.ErrGet(tx); err != nil {
 		return nil, fmt.Errorf("application.get: %w", err)
 	}
 
-	return &app, nil
+	return app, nil
 }

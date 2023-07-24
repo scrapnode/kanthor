@@ -51,15 +51,13 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 	ep := &entities.Endpoint{}
 	epr := &entities.EndpointRule{}
 
-	tx := sql.client.
-		WithContext(ctx).
-		Model(epr).
+	tx := sql.client.WithContext(ctx).Model(epr).
 		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."endpoint_id"`, ep.TableName(), ep.TableName(), epr.TableName())).
 		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
 		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
-		Where(fmt.Sprintf(`"%s"."app_id" = ?`, ep.TableName()), appId).
-		Where(fmt.Sprintf(`"%s"."endpoint_id" = ?`, epr.TableName()), epId)
+		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), epId)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, epr.TableName()))
 
 	res := &structure.ListRes[entities.EndpointRule]{Data: []entities.EndpointRule{}}
@@ -68,4 +66,28 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 	}
 
 	return structure.ListResBuild(res, req), nil
+}
+
+func (sql *SqlEndpointRule) Get(ctx context.Context, wsId, appId, epId, id string) (*entities.EndpointRule, error) {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+
+	ws := &entities.Workspace{}
+	app := &entities.Application{}
+	ep := &entities.Endpoint{}
+	epr := &entities.EndpointRule{}
+
+	tx := transaction.WithContext(ctx).Model(epr).
+		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."endpoint_id"`, ep.TableName(), ep.TableName(), epr.TableName())).
+		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
+		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), epId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, epr.TableName()), id).
+		First(epr)
+	if err := database.ErrGet(tx); err != nil {
+		return nil, fmt.Errorf("endpoint_rule.get: %w", err)
+	}
+
+	return epr, nil
 }

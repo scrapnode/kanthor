@@ -20,7 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ApllicationListReq struct {
+type ApplicationListReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -31,8 +31,8 @@ type ApllicationListReq struct {
 	Ids    []string `protobuf:"bytes,4,rep,name=ids,proto3" json:"ids,omitempty"`
 }
 
-func (x *ApllicationListReq) Reset() {
-	*x = ApllicationListReq{}
+func (x *ApplicationListReq) Reset() {
+	*x = ApplicationListReq{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_application_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -40,13 +40,13 @@ func (x *ApllicationListReq) Reset() {
 	}
 }
 
-func (x *ApllicationListReq) String() string {
+func (x *ApplicationListReq) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ApllicationListReq) ProtoMessage() {}
+func (*ApplicationListReq) ProtoMessage() {}
 
-func (x *ApllicationListReq) ProtoReflect() protoreflect.Message {
+func (x *ApplicationListReq) ProtoReflect() protoreflect.Message {
 	mi := &file_application_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -58,40 +58,40 @@ func (x *ApllicationListReq) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ApllicationListReq.ProtoReflect.Descriptor instead.
-func (*ApllicationListReq) Descriptor() ([]byte, []int) {
+// Deprecated: Use ApplicationListReq.ProtoReflect.Descriptor instead.
+func (*ApplicationListReq) Descriptor() ([]byte, []int) {
 	return file_application_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ApllicationListReq) GetCursor() string {
+func (x *ApplicationListReq) GetCursor() string {
 	if x != nil {
 		return x.Cursor
 	}
 	return ""
 }
 
-func (x *ApllicationListReq) GetSearch() string {
+func (x *ApplicationListReq) GetSearch() string {
 	if x != nil {
 		return x.Search
 	}
 	return ""
 }
 
-func (x *ApllicationListReq) GetLimit() int32 {
+func (x *ApplicationListReq) GetLimit() int32 {
 	if x != nil {
 		return x.Limit
 	}
 	return 0
 }
 
-func (x *ApllicationListReq) GetIds() []string {
+func (x *ApplicationListReq) GetIds() []string {
 	if x != nil {
 		return x.Ids
 	}
 	return nil
 }
 
-type ApllicationListRes struct {
+type ApplicationListRes struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -100,8 +100,8 @@ type ApllicationListRes struct {
 	Data   []*ApplicationEntity `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
 }
 
-func (x *ApllicationListRes) Reset() {
-	*x = ApllicationListRes{}
+func (x *ApplicationListRes) Reset() {
+	*x = ApplicationListRes{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_application_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -109,13 +109,13 @@ func (x *ApllicationListRes) Reset() {
 	}
 }
 
-func (x *ApllicationListRes) String() string {
+func (x *ApplicationListRes) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ApllicationListRes) ProtoMessage() {}
+func (*ApplicationListRes) ProtoMessage() {}
 
-func (x *ApllicationListRes) ProtoReflect() protoreflect.Message {
+func (x *ApplicationListRes) ProtoReflect() protoreflect.Message {
 	mi := &file_application_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -127,26 +127,26 @@ func (x *ApllicationListRes) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ApllicationListRes.ProtoReflect.Descriptor instead.
-func (*ApllicationListRes) Descriptor() ([]byte, []int) {
+// Deprecated: Use ApplicationListRes.ProtoReflect.Descriptor instead.
+func (*ApplicationListRes) Descriptor() ([]byte, []int) {
 	return file_application_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ApllicationListRes) GetCursor() string {
+func (x *ApplicationListRes) GetCursor() string {
 	if x != nil {
 		return x.Cursor
 	}
 	return ""
 }
 
-func (x *ApllicationListRes) GetData() []*ApplicationEntity {
+func (x *ApplicationListRes) GetData() []*ApplicationEntity {
 	if x != nil {
 		return x.Data
 	}
 	return nil
 }
 
-type ApllicationGetReq struct {
+type ApplicationGetReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -154,8 +154,8 @@ type ApllicationGetReq struct {
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
-func (x *ApllicationGetReq) Reset() {
-	*x = ApllicationGetReq{}
+func (x *ApplicationGetReq) Reset() {
+	*x = ApplicationGetReq{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_application_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -163,13 +163,13 @@ func (x *ApllicationGetReq) Reset() {
 	}
 }
 
-func (x *ApllicationGetReq) String() string {
+func (x *ApplicationGetReq) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ApllicationGetReq) ProtoMessage() {}
+func (*ApplicationGetReq) ProtoMessage() {}
 
-func (x *ApllicationGetReq) ProtoReflect() protoreflect.Message {
+func (x *ApplicationGetReq) ProtoReflect() protoreflect.Message {
 	mi := &file_application_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -181,12 +181,12 @@ func (x *ApllicationGetReq) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ApllicationGetReq.ProtoReflect.Descriptor instead.
-func (*ApllicationGetReq) Descriptor() ([]byte, []int) {
+// Deprecated: Use ApplicationGetReq.ProtoReflect.Descriptor instead.
+func (*ApplicationGetReq) Descriptor() ([]byte, []int) {
 	return file_application_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ApllicationGetReq) GetId() string {
+func (x *ApplicationGetReq) GetId() string {
 	if x != nil {
 		return x.Id
 	}
@@ -200,32 +200,32 @@ var file_application_proto_rawDesc = []byte{
 	0x6f, 0x74, 0x6f, 0x12, 0x17, 0x6b, 0x61, 0x6e, 0x74, 0x68, 0x6f, 0x72, 0x2e, 0x63, 0x6f, 0x6e,
 	0x74, 0x72, 0x6f, 0x6c, 0x70, 0x6c, 0x61, 0x6e, 0x65, 0x2e, 0x76, 0x31, 0x1a, 0x0e, 0x65, 0x6e,
 	0x74, 0x69, 0x74, 0x69, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x6c, 0x0a, 0x12,
-	0x41, 0x70, 0x6c, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52,
+	0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52,
 	0x65, 0x71, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x75, 0x72, 0x73, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x06, 0x63, 0x75, 0x72, 0x73, 0x6f, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65,
 	0x61, 0x72, 0x63, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x61, 0x72,
 	0x63, 0x68, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28,
 	0x05, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x69, 0x64, 0x73, 0x18,
 	0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x03, 0x69, 0x64, 0x73, 0x22, 0x6c, 0x0a, 0x12, 0x41, 0x70,
-	0x6c, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73,
+	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73,
 	0x12, 0x16, 0x0a, 0x06, 0x63, 0x75, 0x72, 0x73, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x06, 0x63, 0x75, 0x72, 0x73, 0x6f, 0x72, 0x12, 0x3e, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61,
 	0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x6b, 0x61, 0x6e, 0x74, 0x68, 0x6f, 0x72,
 	0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x6f, 0x6c, 0x70, 0x6c, 0x61, 0x6e, 0x65, 0x2e, 0x76, 0x31,
 	0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x6e, 0x74, 0x69,
-	0x74, 0x79, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x23, 0x0a, 0x11, 0x41, 0x70, 0x6c, 0x6c,
+	0x74, 0x79, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x23, 0x0a, 0x11, 0x41, 0x70, 0x70, 0x6c,
 	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x12, 0x0e, 0x0a,
 	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x32, 0xd2, 0x01,
 	0x0a, 0x0b, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x62, 0x0a,
 	0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b, 0x2e, 0x6b, 0x61, 0x6e, 0x74, 0x68, 0x6f, 0x72, 0x2e,
 	0x63, 0x6f, 0x6e, 0x74, 0x72, 0x6f, 0x6c, 0x70, 0x6c, 0x61, 0x6e, 0x65, 0x2e, 0x76, 0x31, 0x2e,
-	0x41, 0x70, 0x6c, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52,
+	0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52,
 	0x65, 0x71, 0x1a, 0x2b, 0x2e, 0x6b, 0x61, 0x6e, 0x74, 0x68, 0x6f, 0x72, 0x2e, 0x63, 0x6f, 0x6e,
-	0x74, 0x72, 0x6f, 0x6c, 0x70, 0x6c, 0x61, 0x6e, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x6c,
+	0x74, 0x72, 0x6f, 0x6c, 0x70, 0x6c, 0x61, 0x6e, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70,
 	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x22,
 	0x00, 0x12, 0x5f, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x2a, 0x2e, 0x6b, 0x61, 0x6e, 0x74, 0x68,
 	0x6f, 0x72, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x6f, 0x6c, 0x70, 0x6c, 0x61, 0x6e, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x41, 0x70, 0x6c, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x65,
+	0x76, 0x31, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x65,
 	0x74, 0x52, 0x65, 0x71, 0x1a, 0x2a, 0x2e, 0x6b, 0x61, 0x6e, 0x74, 0x68, 0x6f, 0x72, 0x2e, 0x63,
 	0x6f, 0x6e, 0x74, 0x72, 0x6f, 0x6c, 0x70, 0x6c, 0x61, 0x6e, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x41,
 	0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79,
@@ -250,16 +250,16 @@ func file_application_proto_rawDescGZIP() []byte {
 
 var file_application_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_application_proto_goTypes = []interface{}{
-	(*ApllicationListReq)(nil), // 0: kanthor.controlplane.v1.ApllicationListReq
-	(*ApllicationListRes)(nil), // 1: kanthor.controlplane.v1.ApllicationListRes
-	(*ApllicationGetReq)(nil),  // 2: kanthor.controlplane.v1.ApllicationGetReq
+	(*ApplicationListReq)(nil), // 0: kanthor.controlplane.v1.ApplicationListReq
+	(*ApplicationListRes)(nil), // 1: kanthor.controlplane.v1.ApplicationListRes
+	(*ApplicationGetReq)(nil),  // 2: kanthor.controlplane.v1.ApplicationGetReq
 	(*ApplicationEntity)(nil),  // 3: kanthor.controlplane.v1.ApplicationEntity
 }
 var file_application_proto_depIdxs = []int32{
-	3, // 0: kanthor.controlplane.v1.ApllicationListRes.data:type_name -> kanthor.controlplane.v1.ApplicationEntity
-	0, // 1: kanthor.controlplane.v1.Application.List:input_type -> kanthor.controlplane.v1.ApllicationListReq
-	2, // 2: kanthor.controlplane.v1.Application.Get:input_type -> kanthor.controlplane.v1.ApllicationGetReq
-	1, // 3: kanthor.controlplane.v1.Application.List:output_type -> kanthor.controlplane.v1.ApllicationListRes
+	3, // 0: kanthor.controlplane.v1.ApplicationListRes.data:type_name -> kanthor.controlplane.v1.ApplicationEntity
+	0, // 1: kanthor.controlplane.v1.Application.List:input_type -> kanthor.controlplane.v1.ApplicationListReq
+	2, // 2: kanthor.controlplane.v1.Application.Get:input_type -> kanthor.controlplane.v1.ApplicationGetReq
+	1, // 3: kanthor.controlplane.v1.Application.List:output_type -> kanthor.controlplane.v1.ApplicationListRes
 	3, // 4: kanthor.controlplane.v1.Application.Get:output_type -> kanthor.controlplane.v1.ApplicationEntity
 	3, // [3:5] is the sub-list for method output_type
 	1, // [1:3] is the sub-list for method input_type
@@ -276,7 +276,7 @@ func file_application_proto_init() {
 	file_entities_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_application_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApllicationListReq); i {
+			switch v := v.(*ApplicationListReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -288,7 +288,7 @@ func file_application_proto_init() {
 			}
 		}
 		file_application_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApllicationListRes); i {
+			switch v := v.(*ApplicationListRes); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -300,7 +300,7 @@ func file_application_proto_init() {
 			}
 		}
 		file_application_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApllicationGetReq); i {
+			switch v := v.(*ApplicationGetReq); i {
 			case 0:
 				return &v.state
 			case 1:

@@ -5,22 +5,22 @@ option go_package = "github.com/scrapnode/kanthor/controlplane/server/grpc/proto
 import "entities.proto";
 
 service Application {
-  rpc List(ApllicationListReq) returns (ApllicationListRes) {}
-  rpc Get(ApllicationGetReq) returns (ApplicationEntity) {}
+  rpc List(ApplicationListReq) returns (ApplicationListRes) {}
+  rpc Get(ApplicationGetReq) returns (ApplicationEntity) {}
 }
 
-message ApllicationListReq {
+message ApplicationListReq {
   string cursor = 1;
   string search = 2;
   int32 limit = 3;
   repeated string ids = 4;
 }
 
-message ApllicationListRes {
+message ApplicationListRes {
   string cursor = 1;
   repeated ApplicationEntity data = 2;
 }
 
-message ApllicationGetReq {
+message ApplicationGetReq {
   string id = 1;
 }

@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ApplicationClient interface {
-	List(ctx context.Context, in *ApllicationListReq, opts ...grpc.CallOption) (*ApllicationListRes, error)
-	Get(ctx context.Context, in *ApllicationGetReq, opts ...grpc.CallOption) (*ApplicationEntity, error)
+	List(ctx context.Context, in *ApplicationListReq, opts ...grpc.CallOption) (*ApplicationListRes, error)
+	Get(ctx context.Context, in *ApplicationGetReq, opts ...grpc.CallOption) (*ApplicationEntity, error)
 }
 
 type applicationClient struct {
@@ -34,8 +34,8 @@ func NewApplicationClient(cc grpc.ClientConnInterface) ApplicationClient {
 	return &applicationClient{cc}
 }
 
-func (c *applicationClient) List(ctx context.Context, in *ApllicationListReq, opts ...grpc.CallOption) (*ApllicationListRes, error) {
-	out := new(ApllicationListRes)
+func (c *applicationClient) List(ctx context.Context, in *ApplicationListReq, opts ...grpc.CallOption) (*ApplicationListRes, error) {
+	out := new(ApplicationListRes)
 	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Application/List", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (c *applicationClient) List(ctx context.Context, in *ApllicationListReq, op
 	return out, nil
 }
 
-func (c *applicationClient) Get(ctx context.Context, in *ApllicationGetReq, opts ...grpc.CallOption) (*ApplicationEntity, error) {
+func (c *applicationClient) Get(ctx context.Context, in *ApplicationGetReq, opts ...grpc.CallOption) (*ApplicationEntity, error) {
 	out := new(ApplicationEntity)
 	err := c.cc.Invoke(ctx, "/kanthor.controlplane.v1.Application/Get", in, out, opts...)
 	if err != nil {
@@ -56,8 +56,8 @@ func (c *applicationClient) Get(ctx context.Context, in *ApllicationGetReq, opts
 // All implementations must embed UnimplementedApplicationServer
 // for forward compatibility
 type ApplicationServer interface {
-	List(context.Context, *ApllicationListReq) (*ApllicationListRes, error)
-	Get(context.Context, *ApllicationGetReq) (*ApplicationEntity, error)
+	List(context.Context, *ApplicationListReq) (*ApplicationListRes, error)
+	Get(context.Context, *ApplicationGetReq) (*ApplicationEntity, error)
 	mustEmbedUnimplementedApplicationServer()
 }
 
@@ -65,10 +65,10 @@ type ApplicationServer interface {
 type UnimplementedApplicationServer struct {
 }
 
-func (UnimplementedApplicationServer) List(context.Context, *ApllicationListReq) (*ApllicationListRes, error) {
+func (UnimplementedApplicationServer) List(context.Context, *ApplicationListReq) (*ApplicationListRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
-func (UnimplementedApplicationServer) Get(context.Context, *ApllicationGetReq) (*ApplicationEntity, error) {
+func (UnimplementedApplicationServer) Get(context.Context, *ApplicationGetReq) (*ApplicationEntity, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedApplicationServer) mustEmbedUnimplementedApplicationServer() {}
@@ -85,7 +85,7 @@ func RegisterApplicationServer(s grpc.ServiceRegistrar, srv ApplicationServer) {
 }
 
 func _Application_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ApllicationListReq)
+	in := new(ApplicationListReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -97,13 +97,13 @@ func _Application_List_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/kanthor.controlplane.v1.Application/List",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServer).List(ctx, req.(*ApllicationListReq))
+		return srv.(ApplicationServer).List(ctx, req.(*ApplicationListReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Application_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ApllicationGetReq)
+	in := new(ApplicationGetReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func _Application_Get_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/kanthor.controlplane.v1.Application/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServer).Get(ctx, req.(*ApllicationGetReq))
+		return srv.(ApplicationServer).Get(ctx, req.(*ApplicationGetReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }

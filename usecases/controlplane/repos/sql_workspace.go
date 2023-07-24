@@ -64,39 +64,12 @@ func (sql *SqlWorkspace) Create(ctx context.Context, entity *entities.Workspace)
 
 	return entity, nil
 }
-
-func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
-
-	var ws entities.Workspace
-	tx := transaction.WithContext(ctx).Model(&ws).Preload("Tier").Where("id = ?", id).First(&ws)
-	if err := database.ErrGet(tx); err != nil {
-		return nil, fmt.Errorf("workspace.get: %w", err)
-	}
-
-	return &ws, nil
-}
-
-func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
-
-	var ws entities.Workspace
-	tx := transaction.WithContext(ctx).Model(&ws).Preload("Tier").Where("owner_id = ?", owner).First(&ws)
-	if err := database.ErrGet(tx); err != nil {
-		return nil, fmt.Errorf("workspace.get_owned: %w", err)
-	}
-
-	return &ws, nil
-}
-
 func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error) {
 	req := structure.ListReqBuild(opts)
 
 	ws := &entities.Workspace{}
 
-	tx := sql.client.
-		WithContext(ctx).
-		Model(ws).
+	tx := sql.client.WithContext(ctx).Model(ws).
 		Preload("Tier")
 	tx = database.SqlToListQuery(tx, req, `"id"`)
 
@@ -106,4 +79,35 @@ func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*
 	}
 
 	return res, nil
+}
+
+func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+
+	ws := &entities.Workspace{}
+
+	tx := transaction.WithContext(ctx).Model(&ws).
+		Preload("Tier").
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), id).
+		First(ws)
+	if err := database.ErrGet(tx); err != nil {
+		return nil, fmt.Errorf("workspace.get: %w", err)
+	}
+
+	return ws, nil
+}
+
+func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+
+	var ws entities.Workspace
+	tx := transaction.WithContext(ctx).Model(&ws).
+		Preload("Tier").
+		Where("owner_id = ?", owner).
+		First(&ws)
+	if err := database.ErrGet(tx); err != nil {
+		return nil, fmt.Errorf("workspace.get_owned: %w", err)
+	}
+
+	return &ws, nil
 }

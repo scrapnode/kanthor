@@ -2,10 +2,9 @@ package grpc
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/pipeline"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/protos"
+	"github.com/scrapnode/kanthor/services/controlplane/grpc/transform"
 	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 )
 
@@ -15,59 +14,30 @@ type application struct {
 	pipe    pipeline.Middleware
 }
 
-func (server *application) List(ctx context.Context, req *protos.ApllicationListReq) (*protos.ApllicationListRes, error) {
+func (server *application) List(ctx context.Context, req *protos.ApplicationListReq) (*protos.ApplicationListRes, error) {
 	run := server.pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = server.service.uc.Application().List(ctx, request.(*usecase.ApplicationListReq))
 		return
 	})
 
-	ws := ctx.Value(usecase.CtxWorkspace).(*entities.Workspace)
-	request := &usecase.ApplicationListReq{
-		Workspace: ws,
-		ListReq:   structure.ListReq{Cursor: req.Cursor, Search: req.Search, Limit: int(req.Limit), Ids: req.Ids},
-	}
-	response, err := run(ctx, request)
+	response, err := run(ctx, transform.ApplicationListReq(ctx, req))
 	if err != nil {
 		return nil, err
 	}
 
-	// transformation
-	cast := response.(*usecase.ApplicationListRes)
-	res := &protos.ApllicationListRes{Cursor: cast.Cursor, Data: []*protos.ApplicationEntity{}}
-	for _, app := range cast.Data {
-		res.Data = append(res.Data, &protos.ApplicationEntity{
-			Id:          app.Id,
-			CreatedAt:   app.CreatedAt,
-			UpdatedAt:   app.UpdatedAt,
-			WorkspaceId: app.WorkspaceId,
-			Name:        app.Name,
-		})
-	}
-
-	return res, nil
+	return transform.ApplicationListRes(ctx, response.(*usecase.ApplicationListRes)), nil
 }
 
-func (server *application) Get(ctx context.Context, req *protos.ApllicationGetReq) (*protos.ApplicationEntity, error) {
+func (server *application) Get(ctx context.Context, req *protos.ApplicationGetReq) (*protos.ApplicationEntity, error) {
 	run := server.pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		response, err = server.service.uc.Application().Get(ctx, request.(*usecase.ApplicationGetReq))
 		return
 	})
 
-	ws := ctx.Value(usecase.CtxWorkspace).(*entities.Workspace)
-	request := &usecase.ApplicationGetReq{Workspace: ws, Id: req.Id}
-	response, err := run(ctx, request)
+	response, err := run(ctx, transform.ApplicationGetReq(ctx, req))
 	if err != nil {
 		return nil, err
 	}
 
-	// transformation
-	cast := response.(*usecase.ApplicationGetRes)
-	res := &protos.ApplicationEntity{
-		Id:          cast.Application.Id,
-		CreatedAt:   cast.Application.CreatedAt,
-		UpdatedAt:   cast.Application.UpdatedAt,
-		WorkspaceId: cast.Application.WorkspaceId,
-		Name:        cast.Application.Name,
-	}
-	return res, nil
+	return transform.ApplicationGetRes(ctx, response.(*usecase.ApplicationGetRes)), nil
 }

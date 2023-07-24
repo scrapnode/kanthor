@@ -20,6 +20,7 @@ type Controlplane interface {
 	Workspace() Workspace
 	Application() Application
 	Endpoint() Endpoint
+	EndpointRule() EndpointRule
 }
 
 func New(
@@ -54,11 +55,12 @@ type controlplane struct {
 	authorizator authorizator.Authorizator
 	repos        repos.Repositories
 
-	mu          sync.RWMutex
-	workspace   *workspace
-	project     *project
-	application *application
-	endpoint    *endpoint
+	mu           sync.RWMutex
+	workspace    *workspace
+	project      *project
+	application  *application
+	endpoint     *endpoint
+	endpointRule *endpointRule
 }
 
 func (usecase *controlplane) Connect(ctx context.Context) error {
@@ -165,4 +167,22 @@ func (usecase *controlplane) Endpoint() Endpoint {
 	}
 
 	return usecase.endpoint
+}
+
+func (usecase *controlplane) EndpointRule() EndpointRule {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.endpointRule == nil {
+		usecase.endpointRule = &endpointRule{
+			conf:   usecase.conf,
+			logger: usecase.logger,
+			timer:  usecase.timer,
+			cache:  usecase.cache,
+			meter:  usecase.meter,
+			repos:  usecase.repos,
+		}
+	}
+
+	return usecase.endpointRule
 }

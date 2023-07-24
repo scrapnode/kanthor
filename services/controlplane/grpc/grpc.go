@@ -72,6 +72,7 @@ func (service *controlplane) Start(ctx context.Context) error {
 	protos.RegisterWorkspaceServer(service.gateway, &workspace{service: service, pipe: pipe})
 	protos.RegisterApplicationServer(service.gateway, &application{service: service, pipe: pipe})
 	protos.RegisterEndpointServer(service.gateway, &endpoint{service: service, pipe: pipe})
+	protos.RegisterEndpointRuleServer(service.gateway, &endpointRule{service: service, pipe: pipe})
 	reflection.Register(service.gateway)
 
 	service.logger.Info("started")

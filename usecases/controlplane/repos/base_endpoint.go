@@ -19,4 +19,5 @@ type EndpointRule interface {
 	BulkCreate(ctx context.Context, entities []entities.EndpointRule) ([]string, error)
 
 	List(ctx context.Context, wsId, appId, epId string, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error)
+	Get(ctx context.Context, wsId, appId, epId, id string) (*entities.EndpointRule, error)
 }

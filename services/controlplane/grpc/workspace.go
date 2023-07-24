@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/pipeline"
 	"github.com/scrapnode/kanthor/services/controlplane/grpc/protos"
+	"github.com/scrapnode/kanthor/services/controlplane/grpc/transform"
 	usecase "github.com/scrapnode/kanthor/usecases/controlplane"
 )
 
@@ -19,24 +20,10 @@ func (server *workspace) Get(ctx context.Context, req *protos.WorkspaceGetReq) (
 		return
 	})
 
-	request := &usecase.WorkspaceGetReq{Id: req.Id}
-	response, err := run(ctx, request)
+	response, err := run(ctx, transform.WorkspaceGetReq(ctx, req))
 	if err != nil {
 		return nil, err
 	}
 
-	// transformation
-	cast := response.(*usecase.WorkspaceGetRes)
-	res := &protos.WorkspaceEntity{
-		Id:        cast.Workspace.Id,
-		CreatedAt: cast.Workspace.CreatedAt,
-		UpdatedAt: cast.Workspace.UpdatedAt,
-		OwnerId:   cast.Workspace.OwnerId,
-		Name:      cast.Workspace.Name,
-		Tier: &protos.WorkspaceTierEntity{
-			WorkspaceId: cast.Workspace.Tier.WorkspaceId,
-			Name:        cast.Workspace.Tier.Name,
-		},
-	}
-	return res, nil
+	return transform.WorkspaceGetRes(ctx, response.(*usecase.WorkspaceGetRes)), nil
 }

@@ -54,7 +54,7 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, opts ...st
 		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
 		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
-		Where(fmt.Sprintf(`"%s"."app_id" = ?`, ep.TableName()), appId)
+		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, ep.TableName()))
 
 	res := &structure.ListRes[entities.Endpoint]{Data: []entities.Endpoint{}}
@@ -76,8 +76,8 @@ func (sql *SqlEndpoint) Get(ctx context.Context, wsId, appId, id string) (*entit
 		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
 		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
-		Where(fmt.Sprintf(`"%s"."app_id" = ?`, ep.TableName()), appId).
-		//Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), id).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), id).
 		First(ep)
 	if err := database.ErrGet(tx); err != nil {
 		return nil, fmt.Errorf("endpoint.get: %w", err)
