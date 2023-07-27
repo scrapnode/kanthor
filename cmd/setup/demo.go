@@ -104,12 +104,24 @@ func demo(conf *config.Config, logger logging.Logger, input, ownerId string, ver
 		count := len(res.WorkspaceIds) + len(res.WorkspaceTierIds) + len(res.WorkspaceCredentialsIds) + len(res.ApplicationIds) + len(res.EndpointIds) + len(res.EndpointRuleIds)
 		t.SetTitle(fmt.Sprintf("Import Count: %d items", count))
 
-		for _, workspace := range in.Workspaces {
-			credentials := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", workspace.Credentials[0].Id, workspace.Credentials[0].Id)))
-			t.AppendHeader(table.Row{"WS - TIER - Credentials", fmt.Sprintf("%s - %s - %s", workspace.Id, workspace.Tier.Name, credentials)})
+		for _, ws := range in.Workspaces {
+			wscId := ws.Credentials[0].Id
+			token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", wscId, wscId)))
 
-			for _, app := range workspace.Applications {
+			t.AppendRow([]interface{}{"ws_id", ws.Id})
+			t.AppendRow([]interface{}{"ws_tier", ws.Tier.Name})
+			t.AppendRow([]interface{}{"ws_token", token})
+			t.AppendSeparator()
+
+			for _, app := range ws.Applications {
 				t.AppendRow([]interface{}{"app_id", app.Id})
+				for _, ep := range app.Endpoints {
+					t.AppendRow([]interface{}{"ep_id", ep.Id})
+					for _, epr := range ep.Rules {
+						t.AppendRow([]interface{}{"epr_id", epr.Id})
+					}
+				}
+				t.AppendSeparator()
 			}
 
 			t.AppendSeparator()
