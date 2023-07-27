@@ -56,8 +56,6 @@ func InitializeDataplaneUsecase(conf *config.Config, logger logging.Logger) (dat
 		repos.New,
 		ResolveDataplaneCacheConfig,
 		cache.New,
-		ResolveDataplaneAuthorizatorConfig,
-		authorizator.New,
 		ResolveDataplaneMetricConfig,
 		metric.New,
 	)

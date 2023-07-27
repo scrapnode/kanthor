@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
@@ -11,27 +10,26 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
-	"github.com/scrapnode/kanthor/usecases/controlplane"
-	controlplanerepos "github.com/scrapnode/kanthor/usecases/controlplane/repos"
 	"github.com/scrapnode/kanthor/usecases/dataplane"
 	dataplanerepos "github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	"github.com/scrapnode/kanthor/usecases/dispatcher"
+	"github.com/scrapnode/kanthor/usecases/portal"
+	portalrepos "github.com/scrapnode/kanthor/usecases/portal/repos"
 	"github.com/scrapnode/kanthor/usecases/scheduler"
 	schedulerrepos "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
-func NewControlplane(
+func NewPortal(
 	conf *config.Config,
 	logger logging.Logger,
-	symmetric cryptography.Symmetric,
+	cryptography cryptography.Cryptography,
 	timer timer.Timer,
 	cache cache.Cache,
 	meter metric.Meter,
-	authorizator authorizator.Authorizator,
-	repos controlplanerepos.Repositories,
-) controlplane.Controlplane {
-	logger = logger.With("usecase", "controlplane")
-	return controlplane.New(conf, logger, symmetric, timer, cache, meter, authorizator, repos)
+	repos portalrepos.Repositories,
+) portal.Portal {
+	logger = logger.With("usecase", "dataplane")
+	return portal.New(conf, logger, cryptography, timer, cache, meter, repos)
 }
 
 func NewDataplane(
@@ -42,11 +40,10 @@ func NewDataplane(
 	publisher streaming.Publisher,
 	cache cache.Cache,
 	meter metric.Meter,
-	authorizator authorizator.Authorizator,
 	repos dataplanerepos.Repositories,
 ) dataplane.Dataplane {
 	logger = logger.With("usecase", "dataplane")
-	return dataplane.New(conf, logger, symmetric, timer, publisher, cache, meter, authorizator, repos)
+	return dataplane.New(conf, logger, symmetric, timer, publisher, cache, meter, repos)
 }
 
 func NewScheduler(

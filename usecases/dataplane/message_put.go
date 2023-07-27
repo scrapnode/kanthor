@@ -9,8 +9,8 @@ import (
 )
 
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
-	msg := transformMessagePutReq2Message(req.Ws.Tier.Name, req, uc.timer, uc.conf)
-	msg.Metadata[entities.MetaTier] = req.Ws.Tier.Name
+	msg := transformMessagePutReq2Message(req.Tier.Name, req, uc.timer, uc.conf)
+	msg.Metadata[entities.MetaTier] = req.Tier.Name
 
 	event, err := transformMessage2Event(msg)
 	if err != nil {

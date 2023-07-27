@@ -9,8 +9,8 @@ import (
 )
 
 func Service(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
-	if name == services.CONTROLPLANE {
-		return ioc.InitializeControlplane(conf, logger)
+	if name == services.PORTAL {
+		//return ioc.InitializeControlplane(conf, logger)
 	}
 	if name == services.DATAPLANE {
 		return ioc.InitializeDataplane(conf, logger)

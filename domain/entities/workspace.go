@@ -8,8 +8,6 @@ type Workspace struct {
 
 	OwnerId string `json:"owner_id" validate:"required"`
 	Name    string `json:"name" validate:"required"`
-
-	Tier *WorkspaceTier `json:"tier" validate:"required"`
 }
 
 func (entity *Workspace) TableName() string {
@@ -37,5 +35,23 @@ func (entity *WorkspaceTier) TableName() string {
 func (entity *WorkspaceTier) GenId() {
 	if entity.Id == "" {
 		entity.Id = utils.ID("wst")
+	}
+}
+
+type WorkspaceCredentials struct {
+	Entity
+	AuditTime
+
+	WorkspaceId string `json:"workspace_id" validate:"required"`
+	Hash        string `json:"hash" validate:"required"`
+}
+
+func (entity *WorkspaceCredentials) TableName() string {
+	return "kanthor_workspace_credentials"
+}
+
+func (entity *WorkspaceCredentials) GenId() {
+	if entity.Id == "" {
+		entity.Id = utils.ID("wsc")
 	}
 }

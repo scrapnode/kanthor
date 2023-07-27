@@ -14,6 +14,11 @@ import (
 	"strings"
 )
 
+func DefaultProtected() map[string]bool {
+	protected := map[string]bool{}
+	return protected
+}
+
 func UnaryServerInterceptor(
 	logger logging.Logger,
 	engine authorizator.Authorizator,

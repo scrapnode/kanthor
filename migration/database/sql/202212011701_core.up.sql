@@ -23,6 +23,19 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace_tier
     FOREIGN KEY (workspace_id) REFERENCES kanthor_workspace (id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS kanthor_workspace_credentials
+(
+    id           VARCHAR(64)  NOT NULL PRIMARY KEY,
+    modified_by  VARCHAR(64)  NOT NULL,
+    created_at   BIGINT       NOT NULL DEFAULT 0,
+    updated_at   BIGINT       NOT NULL DEFAULT 0,
+
+    workspace_id VARCHAR(64)  NOT NULL,
+    hash         VARCHAR(256) NOT NULL,
+
+    FOREIGN KEY (workspace_id) REFERENCES kanthor_workspace (id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS kanthor_application
 (
     id           VARCHAR(64)  NOT NULL PRIMARY KEY,

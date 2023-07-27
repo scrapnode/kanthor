@@ -47,15 +47,6 @@ func (symmetric *aes) Encrypt(plaintext []byte) ([]byte, error) {
 	return symmetric.gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-func (symmetric *aes) StringEncrypt(plaintext string) (string, error) {
-	bytes, err := symmetric.Encrypt([]byte(plaintext))
-	if err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(bytes), nil
-}
-
 func (symmetric *aes) Decrypt(ciphertext []byte) ([]byte, error) {
 	nonceSize := symmetric.gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
@@ -66,6 +57,15 @@ func (symmetric *aes) Decrypt(ciphertext []byte) ([]byte, error) {
 	// and len(nonce) == NonceSize(). We can separate the two.
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	return symmetric.gcm.Open(nil, nonce, ciphertext, nil)
+}
+
+func (symmetric *aes) StringEncrypt(plaintext string) (string, error) {
+	bytes, err := symmetric.Encrypt([]byte(plaintext))
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(bytes), nil
 }
 
 func (symmetric *aes) StringDecrypt(hextext string) (string, error) {

@@ -18,8 +18,8 @@ type Message interface {
 }
 
 type MessagePutReq struct {
-	App *entities.Application
-	Ws  *entities.Workspace
+	App  *entities.Application
+	Tier *entities.WorkspaceTier
 
 	Type     string
 	Headers  http.Header

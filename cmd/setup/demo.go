@@ -2,30 +2,95 @@ package setup
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/scrapnode/kanthor/config"
-	demodata "github.com/scrapnode/kanthor/data/demo"
-	"github.com/scrapnode/kanthor/domain/constants"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/data/interchange"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/pipeline"
-	"github.com/scrapnode/kanthor/services/dataplane/permissions"
 	"github.com/scrapnode/kanthor/services/ioc"
-	controlplaneuc "github.com/scrapnode/kanthor/usecases/controlplane"
-	dataplaneuc "github.com/scrapnode/kanthor/usecases/dataplane"
+	usecase "github.com/scrapnode/kanthor/usecases/portal"
+	"github.com/spf13/cobra"
 	"os"
 	"time"
 )
 
-func demo(conf *config.Config, logger logging.Logger, owner, input string, verbose bool) error {
-	cpdata, err := demoControlplane(conf, logger, owner, input)
+func NewDemo(conf *config.Config, logger logging.Logger) *cobra.Command {
+	command := &cobra.Command{
+		Use:  "demo",
+		Args: cobra.MatchAll(cobra.MinimumNArgs(1)),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			verbose, err := cmd.Flags().GetBool("verbose")
+			if err != nil {
+				return err
+			}
+			ownerId, err := cmd.Flags().GetString("account-sub")
+			if err != nil {
+				return err
+			}
+			input := args[0]
+
+			return demo(conf, logger, input, ownerId, verbose)
+		},
+	}
+
+	return command
+}
+
+func demo(conf *config.Config, logger logging.Logger, input, ownerId string, verbose bool) error {
+	bytes, err := os.ReadFile(input)
 	if err != nil {
 		return err
 	}
 
-	dpdata, err := demoDataplane(conf, logger, cpdata.ApplicationIds)
+	cryptor, err := cryptography.New(&conf.Cryptography)
+	if err != nil {
+		return err
+	}
+
+	in, err := interchange.Demo(cryptor, ownerId, bytes)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Minute*2)
+	defer cancel()
+
+	uc, err := ioc.InitializePortalUsecase(conf, logger)
+	if err != nil {
+		return err
+	}
+	if err := uc.Connect(ctx); err != nil {
+		return err
+	}
+	defer func() {
+		if err := uc.Disconnect(ctx); err != nil {
+			logger.Error(err)
+		}
+	}()
+
+	req := &usecase.WorkspaceImportReq{}
+	for _, workspace := range in.Workspaces {
+		req.Workspaces = append(req.Workspaces, *workspace.Workspace)
+		req.WorkspaceTiers = append(req.WorkspaceTiers, *workspace.Tier)
+		req.WorkspaceCredentials = append(req.WorkspaceCredentials, workspace.Credentials...)
+
+		for _, app := range workspace.Applications {
+			req.Applications = append(req.Applications, *app.Application)
+
+			for _, ep := range app.Endpoints {
+				req.Endpoints = append(req.Endpoints, *ep.Endpoint)
+
+				for _, epr := range ep.Rules {
+					req.EndpointRules = append(req.EndpointRules, *epr.EndpointRule)
+				}
+			}
+		}
+	}
+
+	res, err := uc.Workspace().Import(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -36,158 +101,22 @@ func demo(conf *config.Config, logger logging.Logger, owner, input string, verbo
 		style := table.StyleDefault
 		style.Format.Header = text.FormatDefault
 		t.SetStyle(style)
-		t.AppendHeader(table.Row{"WS - TIER", fmt.Sprintf("%s - %s", cpdata.WorkspaceId, cpdata.WorkspaceTier)})
+		count := len(res.WorkspaceIds) + len(res.WorkspaceTierIds) + len(res.WorkspaceCredentialsIds) + len(res.ApplicationIds) + len(res.EndpointIds) + len(res.EndpointRuleIds)
+		t.SetTitle(fmt.Sprintf("Import Count: %d items", count))
 
-		for _, appId := range cpdata.ApplicationIds {
-			t.AppendRow([]interface{}{"app_id", appId})
+		for _, workspace := range in.Workspaces {
+			credentials := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", workspace.Credentials[0].Id, workspace.Credentials[0].Id)))
+			t.AppendHeader(table.Row{"WS - TIER - Credentials", fmt.Sprintf("%s - %s - %s", workspace.Id, workspace.Tier.Name, credentials)})
 
-			sub := "-"
-			token := fmt.Sprintf("unable to generate access token for [%s]", appId)
-			if authdata, ok := dpdata[appId]; ok {
-				sub = authdata.Sub
-				token = authdata.Token
+			for _, app := range workspace.Applications {
+				t.AppendRow([]interface{}{"app_id", app.Id})
 			}
-			t.AppendRow([]interface{}{"app_sub", sub})
-			t.AppendRow([]interface{}{"app_sub_token", token})
+
 			t.AppendSeparator()
 		}
+
 		t.Render()
 	}
 
 	return nil
-}
-
-func demoControlplane(
-	conf *config.Config,
-	logger logging.Logger,
-	owner, input string,
-) (*controlplaneuc.ProjectSetupDemoRes, error) {
-	bytes, err := os.ReadFile(input)
-	if err != nil {
-		return nil, err
-	}
-
-	uc, err := ioc.InitializeControlplaneUsecase(conf, logger)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-	defer cancel()
-
-	if err := uc.Connect(ctx); err != nil {
-		return nil, err
-	}
-	defer func() {
-		if err := uc.Disconnect(ctx); err != nil {
-			logger.Error(err)
-		}
-	}()
-
-	acc := &authenticator.Account{Sub: owner}
-	ctx = context.WithValue(ctx, authenticator.CtxAuthAccount, acc)
-
-	project, err := demoControlplaneProjectDefault(acc, uc, ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := demoControlplaneProjectData(acc, uc, ctx, project, bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
-}
-
-func demoControlplaneProjectDefault(
-	acc *authenticator.Account,
-	uc controlplaneuc.Controlplane,
-	ctx context.Context,
-) (*controlplaneuc.ProjectSetupDefaultRes, error) {
-	pipe := pipeline.Chain(pipeline.UseValidation())
-	run := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		response, err = uc.Project().SetupDefault(ctx, request.(*controlplaneuc.ProjectSetupDefaultReq))
-		return
-	})
-
-	request := &controlplaneuc.ProjectSetupDefaultReq{
-		Account:       acc,
-		WorkspaceName: constants.DefaultWorkspaceName,
-		WorkspaceTier: constants.DefaultWorkspaceTier,
-	}
-	response, err := run(ctx, request)
-
-	if err != nil {
-		return nil, err
-	}
-	return response.(*controlplaneuc.ProjectSetupDefaultRes), nil
-}
-
-func demoControlplaneProjectData(
-	acc *authenticator.Account,
-	uc controlplaneuc.Controlplane,
-	ctx context.Context,
-	project *controlplaneuc.ProjectSetupDefaultRes,
-	bytes []byte,
-) (*controlplaneuc.ProjectSetupDemoRes, error) {
-	pipe := pipeline.Chain(pipeline.UseValidation())
-	run := pipe(func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		response, err = uc.Project().SetupDemo(ctx, request.(*controlplaneuc.ProjectSetupDemoReq))
-		return
-	})
-
-	entities, err := demodata.Project(project.WorkspaceId, acc, bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	request := &controlplaneuc.ProjectSetupDemoReq{
-		Account:       acc,
-		WorkspaceId:   project.WorkspaceId,
-		Applications:  entities.Applications,
-		Endpoints:     entities.Endpoints,
-		EndpointRules: entities.EndpointRules,
-	}
-	response, err := run(ctx, request)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return response.(*controlplaneuc.ProjectSetupDemoRes), nil
-}
-
-func demoDataplane(conf *config.Config, logger logging.Logger, appIds []string) (map[string]*dataplaneuc.AppCredsCreateRes, error) {
-	maps := map[string]*dataplaneuc.AppCredsCreateRes{}
-
-	uc, err := ioc.InitializeDataplaneUsecase(conf, logger)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-	defer cancel()
-
-	if err := uc.Connect(ctx); err != nil {
-		return nil, err
-	}
-	defer func() {
-		if err := uc.Disconnect(ctx); err != nil {
-			logger.Error(err)
-		}
-	}()
-
-	for _, appId := range appIds {
-		req := &dataplaneuc.AppCredsCreateReq{
-			AppId:       appId,
-			Role:        permissions.Admin,
-			Permissions: permissions.AdminPermission,
-		}
-		if res, err := uc.AppCreds().Create(ctx, req); err == nil {
-			maps[appId] = res
-		}
-	}
-
-	return maps, nil
 }

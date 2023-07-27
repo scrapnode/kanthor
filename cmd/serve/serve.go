@@ -17,7 +17,7 @@ import (
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "serve",
-		ValidArgs: []string{services.CONTROLPLANE, services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
+		ValidArgs: []string{services.PORTAL, services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]

@@ -2,7 +2,6 @@ package repos
 
 import (
 	"context"
-	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -19,8 +18,8 @@ func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Applic
 
 	var app entities.Application
 	tx := transaction.WithContext(ctx).Model(&app).Where("id = ?", id).First(&app)
-	if err := database.ErrGet(tx); err != nil {
-		return nil, fmt.Errorf("application.get: %w", err)
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
 
 	return &app, nil

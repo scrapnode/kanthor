@@ -59,7 +59,7 @@ func resolve(logger logging.Logger, uc usecase.Dataplane, ctx context.Context) (
 		return ctx, gateway.Err404("APPLICATION.NOT_FOUND")
 	}
 
-	logger.Debugw("resolve application", "app_id", appId, "workspace_id", res.Workspace.Id, "workspace_tier", res.Workspace.Tier)
+	logger.Debugw("resolve application", "app_id", appId, "workspace_id", res.Workspace.Id)
 
 	ctx = context.WithValue(ctx, usecase.CtxWorkspace, res.Workspace)
 	ctx = context.WithValue(ctx, usecase.CtxApplication, res.Application)

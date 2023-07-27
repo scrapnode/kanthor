@@ -10,8 +10,8 @@ import (
 )
 
 func MetricExporter(name string, conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
-	if name == services.CONTROLPLANE {
-		return metric.NewExporter(&conf.Controlplane.Metrics, logger), nil
+	if name == services.PORTAL {
+		return metric.NewExporter(&conf.Portal.Metrics, logger), nil
 	}
 	if name == services.DATAPLANE {
 		return metric.NewExporter(&conf.Dataplane.Metrics, logger), nil

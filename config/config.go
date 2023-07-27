@@ -19,19 +19,20 @@ func New(provider configuration.Provider) (*Config, error) {
 }
 
 type Config struct {
-	Version   string
-	Bucket    Bucket                       `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
-	Symmetric cryptography.SymmetricConfig `json:"symmetric" yaml:"symmetric" mapstructure:"symmetric" validate:"required"`
+	Version      string
+	Bucket       Bucket                       `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
+	Symmetric    cryptography.SymmetricConfig `json:"symmetric" yaml:"symmetric" mapstructure:"symmetric" validate:"required"`
+	Cryptography cryptography.Config          `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography" validate:"required"`
 
 	Logger   logging.Config  `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
 	Database database.Config `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
 	Cache    cache.Config    `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 
-	Migration    Migration    `json:"migration" yaml:"migration" mapstructure:"migration"`
-	Controlplane Controlplane `json:"controlplane" yaml:"controlplane" mapstructure:"controlplane"`
-	Dataplane    Dataplane    `json:"dataplane" yaml:"dataplane" mapstructure:"dataplane"`
-	Scheduler    Scheduler    `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
-	Dispatcher   Dispatcher   `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
+	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
+	Portal     Portal     `json:"portal" yaml:"portal" mapstructure:"portal"`
+	Dataplane  Dataplane  `json:"dataplane" yaml:"dataplane" mapstructure:"dataplane"`
+	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
+	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
 }
 
 func (conf *Config) Validate(service string) error {
@@ -40,7 +41,10 @@ func (conf *Config) Validate(service string) error {
 	}
 
 	if err := conf.Symmetric.Validate(); err != nil {
-		return fmt.Errorf("config.Crypto: %v", err)
+		return fmt.Errorf("config.Symmetric: %v", err)
+	}
+	if err := conf.Cryptography.Validate(); err != nil {
+		return fmt.Errorf("config.Cryptography: %v", err)
 	}
 	if err := conf.Bucket.Validate(); err != nil {
 		return fmt.Errorf("config.Bucket: %v", err)
@@ -58,8 +62,8 @@ func (conf *Config) Validate(service string) error {
 	if service == services.ALL || service == services.MIGRATION {
 		return conf.Migration.Validate()
 	}
-	if service == services.ALL || service == services.CONTROLPLANE {
-		return conf.Controlplane.Validate()
+	if service == services.ALL || service == services.PORTAL {
+		return conf.Portal.Validate()
 	}
 	if service == services.ALL || service == services.DATAPLANE {
 		if err := conf.Dataplane.Validate(); err != nil {

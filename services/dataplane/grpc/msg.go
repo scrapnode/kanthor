@@ -18,10 +18,8 @@ type msg struct {
 
 func (server *msg) Put(ctx context.Context, req *protos.MsgPutReq) (*protos.MsgPutRes, error) {
 	app := ctx.Value(usecase.CtxApplication).(*entities.Application)
-	ws := ctx.Value(usecase.CtxWorkspace).(*entities.Workspace)
 	request := &usecase.MessagePutReq{
 		App: app,
-		Ws:  ws,
 
 		Type:     req.Type,
 		Headers:  http.Header{},
