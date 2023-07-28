@@ -1,4 +1,4 @@
-package setup
+package do
 
 import (
 	"github.com/scrapnode/kanthor/config"
@@ -8,12 +8,12 @@ import (
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
-		Use: "setup",
+		Use: "do",
 	}
 
-	command.AddCommand(NewDemo(conf, logger))
+	command.AddCommand(NewImport(conf, logger))
 
-	command.PersistentFlags().StringP("account-sub", "", "", "--account-sub=kanthor_root_key | select account to setup stuffs")
+	command.PersistentFlags().StringP("account-sub", "", "", "--account-sub=kanthor_root_key | select account to interact with")
 	if err := command.MarkPersistentFlagRequired("account-sub"); err != nil {
 		panic(err)
 	}

@@ -1,4 +1,4 @@
-package setup
+package do
 
 import (
 	"context"
@@ -17,9 +17,9 @@ import (
 	"time"
 )
 
-func NewDemo(conf *config.Config, logger logging.Logger) *cobra.Command {
+func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
-		Use:  "demo",
+		Use:  "import",
 		Args: cobra.MatchAll(cobra.MinimumNArgs(1)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			verbose, err := cmd.Flags().GetBool("verbose")
@@ -32,14 +32,14 @@ func NewDemo(conf *config.Config, logger logging.Logger) *cobra.Command {
 			}
 			input := args[0]
 
-			return demo(conf, logger, input, ownerId, verbose)
+			return doImport(conf, logger, input, ownerId, verbose)
 		},
 	}
 
 	return command
 }
 
-func demo(conf *config.Config, logger logging.Logger, input, ownerId string, verbose bool) error {
+func doImport(conf *config.Config, logger logging.Logger, input, ownerId string, verbose bool) error {
 	bytes, err := os.ReadFile(input)
 	if err != nil {
 		return err
@@ -95,24 +95,32 @@ func demo(conf *config.Config, logger logging.Logger, input, ownerId string, ver
 		return err
 	}
 
-	if verbose {
-		t := table.NewWriter()
-		t.SetOutputMirror(os.Stdout)
-		style := table.StyleDefault
-		style.Format.Header = text.FormatDefault
-		t.SetStyle(style)
-		count := len(res.WorkspaceIds) + len(res.WorkspaceTierIds) + len(res.WorkspaceCredentialsIds) + len(res.ApplicationIds) + len(res.EndpointIds) + len(res.EndpointRuleIds)
-		t.SetTitle(fmt.Sprintf("Import Count: %d items", count))
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	style := table.StyleDefault
+	style.Format.Header = text.FormatDefault
+	t.SetStyle(style)
+	title := fmt.Sprintf(
+		"Summary: %d worksapces, %d tiers, %d credentials, %d apps, %d endpoints, %d rules",
+		len(res.WorkspaceIds),
+		len(res.WorkspaceTierIds),
+		len(res.WorkspaceCredentialsIds),
+		len(res.ApplicationIds),
+		len(res.EndpointIds),
+		len(res.EndpointRuleIds),
+	)
+	t.SetTitle(title)
 
-		for _, ws := range in.Workspaces {
-			wscId := ws.Credentials[0].Id
-			token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", wscId, wscId)))
+	for _, ws := range in.Workspaces {
+		wscId := ws.Credentials[0].Id
+		token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", wscId, wscId)))
 
-			t.AppendRow([]interface{}{"ws_id", ws.Id})
-			t.AppendRow([]interface{}{"ws_tier", ws.Tier.Name})
-			t.AppendRow([]interface{}{"ws_token", token})
-			t.AppendSeparator()
+		t.AppendRow([]interface{}{"ws_id", ws.Id})
+		t.AppendRow([]interface{}{"ws_tier", ws.Tier.Name})
+		t.AppendRow([]interface{}{"ws_token", token})
+		t.AppendSeparator()
 
+		if verbose {
 			for _, app := range ws.Applications {
 				t.AppendRow([]interface{}{"app_id", app.Id})
 				for _, ep := range app.Endpoints {
@@ -123,12 +131,11 @@ func demo(conf *config.Config, logger logging.Logger, input, ownerId string, ver
 				}
 				t.AppendSeparator()
 			}
-
-			t.AppendSeparator()
 		}
 
-		t.Render()
+		t.AppendSeparator()
 	}
 
+	t.Render()
 	return nil
 }
