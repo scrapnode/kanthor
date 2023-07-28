@@ -10,8 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
-	"github.com/scrapnode/kanthor/usecases/dataplane"
-	dataplanerepos "github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	"github.com/scrapnode/kanthor/usecases/dispatcher"
 	"github.com/scrapnode/kanthor/usecases/portal"
 	portalrepos "github.com/scrapnode/kanthor/usecases/portal/repos"
@@ -30,20 +28,6 @@ func NewPortal(
 ) portal.Portal {
 	logger = logger.With("usecase", "dataplane")
 	return portal.New(conf, logger, cryptography, timer, cache, meter, repos)
-}
-
-func NewDataplane(
-	conf *config.Config,
-	logger logging.Logger,
-	symmetric cryptography.Symmetric,
-	timer timer.Timer,
-	publisher streaming.Publisher,
-	cache cache.Cache,
-	meter metric.Meter,
-	repos dataplanerepos.Repositories,
-) dataplane.Dataplane {
-	logger = logger.With("usecase", "dataplane")
-	return dataplane.New(conf, logger, symmetric, timer, publisher, cache, meter, repos)
 }
 
 func NewScheduler(

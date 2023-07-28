@@ -17,7 +17,7 @@ import (
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "serve",
-		ValidArgs: []string{services.PORTAL, services.DATAPLANE, services.SCHEDULER, services.DISPATCHER},
+		ValidArgs: []string{services.PORTAL, services.SCHEDULER, services.DISPATCHER},
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
@@ -36,30 +36,14 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			exporter, err := MetricExporter(serviceName, conf, logger)
-			if err != nil {
-				return err
-			}
-
 			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 			defer stop()
 			if err := service.Start(ctx); err != nil {
 				return err
 			}
-			if err := exporter.Start(ctx); err != nil {
-				return err
-			}
 
 			go func() {
 				if err := service.Run(ctx); err != nil {
-					logger.Error(err)
-					stop()
-					return
-				}
-			}()
-
-			go func() {
-				if err := exporter.Run(ctx); err != nil {
 					logger.Error(err)
 					stop()
 					return
@@ -75,10 +59,6 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			go func() {
-				if err := exporter.Stop(ctx); err != nil {
-					logger.Error(err)
-				}
-
 				if err := service.Stop(ctx); err != nil {
 					logger.Error(err)
 				}

@@ -18,10 +18,6 @@ cache: &cache
   uri: redis://127.0.0.1:6379/1
   time_to_live: 300000
 
-# common
-symmetric: &symmetric
-  key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
-
 cryptography:
   kdf: {}
   symmetric:
@@ -53,6 +49,7 @@ migration:
       source: file://./migration/datastore/sql
 
 portal:
+  cache: *cache
   authenticator:
     engine: ask
     ask:
@@ -66,43 +63,9 @@ portal:
       policy_namespace: controlplane
       watcher:
         uri: nats://127.0.0.1:4222
-  cache: *cache
-  gateway:
-    protocol: grpc
-    grpc:
-      addr: ":8081"
-  metrics:
-    enable: false
-    namespace: kanthor
-    exporter:
-      addr: ":9090"
-
-dataplane:
-  authenticator:
-    engine: cipher
-    cipher: *symmetric
-  authorizator:
-    engine: casbin
-    casbin:
-      model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.authorizator
-      policy_namespace: dataplane
-      watcher:
-        uri: nats://127.0.0.1:4222
-  publisher:
-    connection: *streaming
-  cache: *cache
-  gateway:
-    protocol: grpc
-    grpc:
-      addr: ":8181"
-  metrics:
-    enable: false
-    namespace: kanthor
-    exporter:
-      addr: ":9190"
 
 scheduler:
+  cache: *cache
   publisher:
     connection: *streaming
   subscriber:
@@ -115,14 +78,9 @@ scheduler:
   request:
     arrange:
       concurrency: 100
-  cache: *cache
-  metrics:
-    enable: false
-    namespace: kanthor
-    exporter:
-      addr: ":9290"
 
 dispatcher:
+  cache: *cache
   publisher:
     connection: *streaming
   subscriber:
@@ -144,9 +102,3 @@ dispatcher:
     half_open_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
     open_state_duration: 300000
-  cache: *cache
-  metrics:
-    enable: false
-    namespace: kanthor
-    exporter:
-      addr: ":9390"

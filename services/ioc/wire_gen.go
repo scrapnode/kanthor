@@ -8,8 +8,6 @@ package ioc
 
 import (
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
@@ -19,79 +17,13 @@ import (
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/dataplane"
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/usecases"
-	dataplane2 "github.com/scrapnode/kanthor/usecases/dataplane"
-	"github.com/scrapnode/kanthor/usecases/dataplane/repos"
 	"github.com/scrapnode/kanthor/usecases/portal"
-	repos2 "github.com/scrapnode/kanthor/usecases/portal/repos"
-	repos3 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
+	"github.com/scrapnode/kanthor/usecases/portal/repos"
+	repos2 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
-
-// Injectors from wire_dataplane.go:
-
-func InitializeDataplane(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	authenticatorConfig := ResolveDataplaneAuthenticatorConfig(conf)
-	authenticatorAuthenticator, err := authenticator.New(authenticatorConfig, logger)
-	if err != nil {
-		return nil, err
-	}
-	authorizatorConfig := ResolveDataplaneAuthorizatorConfig(conf)
-	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
-	if err != nil {
-		return nil, err
-	}
-	metricConfig := ResolveDataplaneMetricConfig(conf)
-	meter := metric.New(metricConfig)
-	symmetricConfig := &conf.Symmetric
-	symmetric, err := cryptography.NewSymmetric(symmetricConfig)
-	if err != nil {
-		return nil, err
-	}
-	timerTimer := timer.New()
-	publisherConfig := ResolveDataplanePublisherConfig(conf)
-	publisher, err := streaming.NewPublisher(publisherConfig, logger)
-	if err != nil {
-		return nil, err
-	}
-	cacheConfig := ResolveDataplaneCacheConfig(conf)
-	cacheCache, err := cache.New(cacheConfig, logger)
-	if err != nil {
-		return nil, err
-	}
-	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger, timerTimer)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, symmetric, timerTimer, publisher, cacheCache, meter, repositories)
-	service := dataplane.New(conf, logger, authenticatorAuthenticator, authorizatorAuthorizator, meter, dataplaneDataplane)
-	return service, nil
-}
-
-func InitializeDataplaneUsecase(conf *config.Config, logger logging.Logger) (dataplane2.Dataplane, error) {
-	symmetricConfig := &conf.Symmetric
-	symmetric, err := cryptography.NewSymmetric(symmetricConfig)
-	if err != nil {
-		return nil, err
-	}
-	timerTimer := timer.New()
-	publisherConfig := ResolveDataplanePublisherConfig(conf)
-	publisher, err := streaming.NewPublisher(publisherConfig, logger)
-	if err != nil {
-		return nil, err
-	}
-	cacheConfig := ResolveDataplaneCacheConfig(conf)
-	cacheCache, err := cache.New(cacheConfig, logger)
-	if err != nil {
-		return nil, err
-	}
-	metricConfig := ResolveDataplaneMetricConfig(conf)
-	meter := metric.New(metricConfig)
-	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger, timerTimer)
-	dataplaneDataplane := usecases.NewDataplane(conf, logger, symmetric, timerTimer, publisher, cacheCache, meter, repositories)
-	return dataplaneDataplane, nil
-}
 
 // Injectors from wire_dispatcher.go:
 
@@ -143,7 +75,7 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal
 	metricConfig := ResolvePortalMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	databaseConfig := &conf.Database
-	repositories := repos2.New(databaseConfig, logger, timerTimer)
+	repositories := repos.New(databaseConfig, logger, timerTimer)
 	portalPortal := usecases.NewPortal(conf, logger, cryptographyCryptography, timerTimer, cacheCache, meter, repositories)
 	return portalPortal, nil
 }
@@ -170,32 +102,10 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	metricConfig := ResolveSchedulerMetricConfig(conf)
 	meter := metric.New(metricConfig)
 	databaseConfig := &conf.Database
-	repositories := repos3.New(databaseConfig, logger, timerTimer)
+	repositories := repos2.New(databaseConfig, logger, timerTimer)
 	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
 	service := scheduler.New(conf, logger, subscriber, schedulerScheduler, meter)
 	return service, nil
-}
-
-// wire_dataplane.go:
-
-func ResolveDataplanePublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	return &conf.Dataplane.Publisher
-}
-
-func ResolveDataplaneCacheConfig(conf *config.Config) *cache.Config {
-	return &conf.Dataplane.Cache
-}
-
-func ResolveDataplaneAuthenticatorConfig(conf *config.Config) *authenticator.Config {
-	return &conf.Dataplane.Authenticator
-}
-
-func ResolveDataplaneAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.Dataplane.Authorizator
-}
-
-func ResolveDataplaneMetricConfig(conf *config.Config) *metric.Config {
-	return &conf.Dataplane.Metrics
 }
 
 // wire_dispatcher.go:
