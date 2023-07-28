@@ -8,7 +8,6 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/data/interchange"
-	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
@@ -45,12 +44,7 @@ func doImport(conf *config.Config, logger logging.Logger, input, ownerId string,
 		return err
 	}
 
-	cryptor, err := cryptography.New(&conf.Cryptography)
-	if err != nil {
-		return err
-	}
-
-	in, err := interchange.Demo(cryptor, ownerId, bytes)
+	in, err := interchange.Demo(ownerId, bytes)
 	if err != nil {
 		return err
 	}
@@ -74,8 +68,6 @@ func doImport(conf *config.Config, logger logging.Logger, input, ownerId string,
 	req := &usecase.WorkspaceImportReq{}
 	for _, workspace := range in.Workspaces {
 		req.Workspaces = append(req.Workspaces, *workspace.Workspace)
-		req.WorkspaceTiers = append(req.WorkspaceTiers, *workspace.Tier)
-		req.WorkspaceCredentials = append(req.WorkspaceCredentials, workspace.Credentials...)
 
 		for _, app := range workspace.Applications {
 			req.Applications = append(req.Applications, *app.Application)
@@ -101,10 +93,9 @@ func doImport(conf *config.Config, logger logging.Logger, input, ownerId string,
 	style.Format.Header = text.FormatDefault
 	t.SetStyle(style)
 	title := fmt.Sprintf(
-		"Summary: %d worksapces, %d tiers, %d credentials, %d apps, %d endpoints, %d rules",
+		"Summary: %d worksapces, %d tiers, %d apps, %d endpoints, %d rules",
 		len(res.WorkspaceIds),
 		len(res.WorkspaceTierIds),
-		len(res.WorkspaceCredentialsIds),
 		len(res.ApplicationIds),
 		len(res.EndpointIds),
 		len(res.EndpointRuleIds),

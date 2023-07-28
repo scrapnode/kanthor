@@ -2,12 +2,10 @@ package interchange
 
 import (
 	"encoding/json"
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"time"
 )
 
-func Demo(cryptor cryptography.Cryptography, ownerId string, bytes []byte) (*Interchange, error) {
+func Demo(ownerId string, bytes []byte) (*Interchange, error) {
 	var in Interchange
 	if err := json.Unmarshal(bytes, &in); err != nil {
 		return nil, err
@@ -19,26 +17,6 @@ func Demo(cryptor cryptography.Cryptography, ownerId string, bytes []byte) (*Int
 		workspace.SetAT(now)
 		workspace.OwnerId = ownerId
 		workspace.ModifiedBy = ownerId
-
-		tier := workspace.Tier
-		tier.GenId()
-		tier.SetAT(now)
-		tier.WorkspaceId = workspace.Id
-		tier.ModifiedBy = ownerId
-		workspace.Tier = tier
-
-		credentials := entities.WorkspaceCredentials{}
-		credentials.GenId()
-		credentials.SetAT(now)
-		credentials.WorkspaceId = workspace.Id
-		credentials.ModifiedBy = ownerId
-		hashed, err := cryptor.KDF().StringHash(credentials.Id)
-		if err != nil {
-			return nil, err
-		}
-		credentials.Hash = hashed
-
-		workspace.Credentials = append(workspace.Credentials, credentials)
 
 		for j, application := range workspace.Applications {
 			application.GenId()

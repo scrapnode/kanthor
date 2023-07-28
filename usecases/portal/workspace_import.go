@@ -1,18 +1,31 @@
 package portal
 
-import "context"
+import (
+	"context"
+	"github.com/scrapnode/kanthor/domain/constants"
+	"github.com/scrapnode/kanthor/domain/entities"
+)
 
 func (uc *workspace) Import(ctx context.Context, req *WorkspaceImportReq) (*WorkspaceImportRes, error) {
+	// by default all imported workspace must be start with default tier
+	// the reason why we have to do that is because of security risk
+	// let image a customer export data with their workspace tier
+	// they can change it to whatever tier they want then import back to the system
+	now := uc.timer.Now()
+	var tiers []entities.WorkspaceTier
+	for _, ws := range req.Workspaces {
+		tier := entities.WorkspaceTier{WorkspaceId: ws.Id, Name: constants.DefaultWorkspaceTier}
+		tier.GenId()
+		tier.SetAT(now)
+		tiers = append(tiers, tier)
+	}
+
 	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
 		wsIds, err := uc.repos.Workspace().BulkCreate(txctx, req.Workspaces)
 		if err != nil {
 			return nil, err
 		}
-		wstIds, err := uc.repos.WorkspaceTier().BulkCreate(txctx, req.WorkspaceTiers)
-		if err != nil {
-			return nil, err
-		}
-		wscIds, err := uc.repos.WorkspaceCredentials().BulkCreate(txctx, req.WorkspaceCredentials)
+		wstIds, err := uc.repos.WorkspaceTier().BulkCreate(txctx, tiers)
 		if err != nil {
 			return nil, err
 		}
@@ -30,12 +43,11 @@ func (uc *workspace) Import(ctx context.Context, req *WorkspaceImportReq) (*Work
 		}
 
 		res := &WorkspaceImportRes{
-			WorkspaceIds:            wsIds,
-			WorkspaceTierIds:        wstIds,
-			WorkspaceCredentialsIds: wscIds,
-			ApplicationIds:          appIds,
-			EndpointIds:             epIds,
-			EndpointRuleIds:         eprIds,
+			WorkspaceIds:     wsIds,
+			WorkspaceTierIds: wstIds,
+			ApplicationIds:   appIds,
+			EndpointIds:      epIds,
+			EndpointRuleIds:  eprIds,
 		}
 		return res, nil
 	})

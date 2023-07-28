@@ -18,7 +18,7 @@ type Forwarder interface {
 }
 
 type ForwarderSendReq struct {
-	Request entities.Request
+	Request entities.Request `validate:"required"`
 }
 
 type ForwarderSendRes struct {

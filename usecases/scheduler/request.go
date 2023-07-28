@@ -18,7 +18,7 @@ type Request interface {
 }
 
 type RequestArrangeReq struct {
-	Message entities.Message
+	Message entities.Message `validate:"required"`
 }
 
 type RequestArrangeRes struct {
