@@ -15,21 +15,16 @@ type SqlEndpointRule struct {
 	timer  timer.Timer
 }
 
-func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error) {
+func (sql *SqlEndpointRule) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error) {
 	req := structure.ListReqBuild(opts)
 
-	ws := &entities.Workspace{}
-	app := &entities.Application{}
 	ep := &entities.Endpoint{}
 	epr := &entities.EndpointRule{}
 
 	tx := sql.client.WithContext(ctx).Model(epr).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."endpoint_id"`, ep.TableName(), ep.TableName(), epr.TableName())).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), epId)
+		Scopes(UseWsId(wsId)).
+		Scopes(JoinApp(ep)).
+		Scopes(JoinEp(epr))
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, epr.TableName()))
 
 	res := &structure.ListRes[entities.EndpointRule]{Data: []entities.EndpointRule{}}
@@ -40,20 +35,16 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 	return structure.ListResBuild(res, req), nil
 }
 
-func (sql *SqlEndpointRule) Get(ctx context.Context, wsId, appId, epId, id string) (*entities.EndpointRule, error) {
-	ws := &entities.Workspace{}
-	app := &entities.Application{}
+func (sql *SqlEndpointRule) Get(ctx context.Context, wsId, id string) (*entities.EndpointRule, error) {
 	ep := &entities.Endpoint{}
 	epr := &entities.EndpointRule{}
+	epr.Id = id
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(epr).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."endpoint_id"`, ep.TableName(), ep.TableName(), epr.TableName())).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), epId).
+		Scopes(UseWsId(wsId)).
+		Scopes(JoinApp(ep)).
+		Scopes(JoinEp(epr)).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, epr.TableName()), id).
 		First(epr)
 	if tx.Error != nil {
@@ -74,31 +65,34 @@ func (sql *SqlEndpointRule) Create(ctx context.Context, doc *entities.EndpointRu
 	return doc, nil
 }
 
-func (sql *SqlEndpointRule) Update(ctx context.Context, doc *entities.EndpointRule) (*entities.EndpointRule, error) {
+func (sql *SqlEndpointRule) Update(ctx context.Context, wsId string, doc *entities.EndpointRule) (*entities.EndpointRule, error) {
+	ep := &entities.Endpoint{}
+	epr := &entities.EndpointRule{}
 	doc.SetAT(sql.timer.Now())
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
-	if tx := transaction.WithContext(ctx).Updates(doc); tx.Error != nil {
+	tx := transaction.WithContext(ctx).
+		Scopes(UseWsId(wsId)).
+		Scopes(JoinApp(ep)).
+		Scopes(JoinEp(epr)).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		Updates(doc)
+	if tx.Error != nil {
 		return nil, tx.Error
 	}
 	return doc, nil
 }
 
-func (sql *SqlEndpointRule) Delete(ctx context.Context, wsId, appId, epId, id string) error {
-	ws := &entities.Workspace{}
-	app := &entities.Application{}
+func (sql *SqlEndpointRule) Delete(ctx context.Context, wsId, id string) error {
 	ep := &entities.Endpoint{}
 	epr := &entities.EndpointRule{}
 	epr.Id = id
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(epr).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."endpoint_id"`, ep.TableName(), ep.TableName(), epr.TableName())).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
-		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), epId).
+		Scopes(UseWsId(wsId)).
+		Scopes(JoinApp(ep)).
+		Scopes(JoinEp(epr)).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, epr.TableName()), id).
 		Delete(epr)
 	if tx.Error != nil {

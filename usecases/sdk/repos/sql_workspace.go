@@ -17,7 +17,6 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	ws := &entities.Workspace{}
 
 	tx := sql.client.WithContext(ctx).Model(&ws).
-		Preload("Tier").
 		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), id).
 		First(ws)
 	if tx.Error != nil {

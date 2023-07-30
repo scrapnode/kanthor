@@ -11,6 +11,6 @@ type Application interface {
 	Get(ctx context.Context, wsId, id string) (*entities.Application, error)
 
 	Create(ctx context.Context, doc *entities.Application) (*entities.Application, error)
-	Update(ctx context.Context, doc *entities.Application) (*entities.Application, error)
+	Update(ctx context.Context, wsId string, doc *entities.Application) (*entities.Application, error)
 	Delete(ctx context.Context, wsId, id string) error
 }
