@@ -4,17 +4,20 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
 func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error) {
+	acc := ctx.Value(CtxAcc).(*authenticator.Account)
+
 	now := uc.timer.Now()
 	passwords := map[string]string{}
 	var docs []entities.WorkspaceCredentials
 	for i := 0; i < req.Count; i++ {
 		credentials := entities.WorkspaceCredentials{WorkspaceId: req.WorkspaceId}
 		credentials.GenId()
-		credentials.SetAT(now)
+		credentials.SetAT(acc.Modifier(), now)
 
 		password := utils.RandomString(constants.GlobalPasswordLength)
 		passwords[credentials.Id] = password

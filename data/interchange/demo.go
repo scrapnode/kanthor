@@ -2,10 +2,11 @@ package interchange
 
 import (
 	"encoding/json"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"time"
 )
 
-func Demo(ownerId string, bytes []byte) (*Interchange, error) {
+func Demo(acc *authenticator.Account, bytes []byte) (*Interchange, error) {
 	var in Interchange
 	if err := json.Unmarshal(bytes, &in); err != nil {
 		return nil, err
@@ -14,27 +15,23 @@ func Demo(ownerId string, bytes []byte) (*Interchange, error) {
 	now := time.Now().UTC()
 	for i, workspace := range in.Workspaces {
 		workspace.GenId()
-		workspace.SetAT(ownerId, now)
-		workspace.OwnerId = ownerId
-		workspace.ModifiedBy = ownerId
+		workspace.SetAT(acc.Modifier(), now)
+		workspace.OwnerId = acc.Sub
 
 		for j, application := range workspace.Applications {
 			application.GenId()
-			application.SetAT(ownerId, now)
-			application.ModifiedBy = ownerId
+			application.SetAT(acc.Modifier(), now)
 
 			for k, endpoint := range application.Endpoints {
 				endpoint.GenId()
-				endpoint.SetAT(ownerId, now)
+				endpoint.SetAT(acc.Modifier(), now)
 				endpoint.GenSecretKey()
 				endpoint.AppId = application.Id
-				endpoint.ModifiedBy = ownerId
 
 				for h, rule := range endpoint.Rules {
 					rule.GenId()
-					rule.SetAT(ownerId, now)
+					rule.SetAT(acc.Modifier(), now)
 					rule.EndpointId = endpoint.Id
-					rule.ModifiedBy = ownerId
 
 					endpoint.Rules[h] = rule
 				}

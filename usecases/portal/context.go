@@ -3,5 +3,7 @@ package portal
 type ctxkey string
 
 const (
-	CtxWorkspace ctxkey = "kanthor.usecase.controlplane.workspace"
+	CtxAcc ctxkey = "usecases.portal.account"
+	CtxWs  ctxkey = "usecases.portal.workspace"
+	CtxWst ctxkey = "usecases.portal.workspace.tier"
 )

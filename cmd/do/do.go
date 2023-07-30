@@ -13,9 +13,12 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 	command.AddCommand(NewImport(conf, logger))
 
-	command.PersistentFlags().StringP("account-sub", "", "", "--account-sub=kanthor_root_key | select account to interact with")
+	command.PersistentFlags().StringP("account-sub", "", "", "--account-sub=kanthor_root_key | select account sub to interact with")
 	if err := command.MarkPersistentFlagRequired("account-sub"); err != nil {
 		panic(err)
 	}
+
+	command.PersistentFlags().StringP("account-name", "", "", "--account-name=kanthor_root_key | specify name of the account you are using")
+
 	return command
 }

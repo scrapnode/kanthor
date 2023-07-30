@@ -1,6 +1,8 @@
 package entities
 
-import "time"
+import (
+	"time"
+)
 
 type Entity struct {
 	Id string `json:"id" validate:"required"`
@@ -14,7 +16,7 @@ type AuditTime struct {
 
 func (at *AuditTime) SetAT(modifier string, now time.Time) {
 	at.ModifiedBy = modifier
-	
+
 	if at.CreatedAt == 0 {
 		at.CreatedAt = now.UnixMilli()
 	}

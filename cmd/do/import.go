@@ -8,6 +8,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/data/interchange"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
@@ -26,9 +27,16 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ownerId, err := cmd.Flags().GetString("account-sub")
+			sub, err := cmd.Flags().GetString("account-sub")
 			if err != nil {
 				return err
+			}
+			name, err := cmd.Flags().GetString("account-name")
+			if err != nil {
+				return err
+			}
+			if name == "" {
+				name = sub
 			}
 			needs, err := cmd.Flags().GetStringArray("auto-generate")
 			if err != nil {
@@ -53,11 +61,13 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 			}()
 
 			// prepare the data
+			acc := &authenticator.Account{Sub: sub, Name: name}
+			ctx = context.WithValue(ctx, usecase.CtxAcc, acc)
 			bytes, err := os.ReadFile(input)
 			if err != nil {
 				return err
 			}
-			in, err := interchange.Demo(ownerId, bytes)
+			in, err := interchange.Demo(acc, bytes)
 			if err != nil {
 				return err
 			}
@@ -68,7 +78,7 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			metadata := importAutoGenerate(logger, uc, res, needs)
+			metadata := importAutoGenerate(logger, uc, res, ctx, needs)
 
 			importReport(in, req, res, metadata, verbose)
 			return nil
@@ -101,11 +111,8 @@ func importPrepareRequest(in *interchange.Interchange) *usecase.WorkspaceImportR
 	return req
 }
 
-func importAutoGenerate(logger logging.Logger, uc usecase.Portal, res *usecase.WorkspaceImportRes, needs []string) http.Header {
+func importAutoGenerate(logger logging.Logger, uc usecase.Portal, res *usecase.WorkspaceImportRes, ctx context.Context, needs []string) http.Header {
 	meta := http.Header{}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-	defer cancel()
 
 	for _, need := range needs {
 		if need == "workspace_credentials" {
