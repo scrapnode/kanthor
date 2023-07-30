@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
-	"sync"
 )
 
 type Portal interface {
@@ -28,7 +27,7 @@ func New(
 	meter metric.Meter,
 	repos repos.Repositories,
 ) Portal {
-	return &portal{
+	uc := &portal{
 		conf:         conf,
 		logger:       logger,
 		cryptography: cryptography,
@@ -37,6 +36,27 @@ func New(
 		meter:        meter,
 		repos:        repos,
 	}
+
+	uc.workspace = &workspace{
+		conf:         uc.conf,
+		logger:       uc.logger,
+		cryptography: uc.cryptography,
+		timer:        uc.timer,
+		cache:        uc.cache,
+		meter:        uc.meter,
+		repos:        uc.repos,
+	}
+	uc.workspaceCredentials = &workspaceCredentials{
+		conf:         uc.conf,
+		logger:       uc.logger,
+		cryptography: uc.cryptography,
+		timer:        uc.timer,
+		cache:        uc.cache,
+		meter:        uc.meter,
+		repos:        uc.repos,
+	}
+
+	return uc
 }
 
 type portal struct {
@@ -48,72 +68,41 @@ type portal struct {
 	meter        metric.Meter
 	repos        repos.Repositories
 
-	mu                   sync.RWMutex
 	workspace            *workspace
 	workspaceCredentials *workspaceCredentials
 }
 
-func (usecase *portal) Connect(ctx context.Context) error {
-	if err := usecase.cache.Connect(ctx); err != nil {
+func (uc *portal) Connect(ctx context.Context) error {
+	if err := uc.cache.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.repos.Connect(ctx); err != nil {
+	if err := uc.repos.Connect(ctx); err != nil {
 		return err
 	}
 
-	usecase.logger.Info("connected")
+	uc.logger.Info("connected")
 	return nil
 }
 
-func (usecase *portal) Disconnect(ctx context.Context) error {
-	usecase.logger.Info("disconnected")
+func (uc *portal) Disconnect(ctx context.Context) error {
+	uc.logger.Info("disconnected")
 
-	if err := usecase.repos.Disconnect(ctx); err != nil {
+	if err := uc.repos.Disconnect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.cache.Disconnect(ctx); err != nil {
+	if err := uc.cache.Disconnect(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (usecase *portal) Workspace() Workspace {
-	usecase.mu.Lock()
-	defer usecase.mu.Unlock()
-
-	if usecase.workspace == nil {
-		usecase.workspace = &workspace{
-			conf:         usecase.conf,
-			logger:       usecase.logger,
-			cryptography: usecase.cryptography,
-			timer:        usecase.timer,
-			cache:        usecase.cache,
-			meter:        usecase.meter,
-			repos:        usecase.repos,
-		}
-	}
-
-	return usecase.workspace
+func (uc *portal) Workspace() Workspace {
+	return uc.workspace
 }
 
-func (usecase *portal) WorkspaceCredentials() WorkspaceCredentials {
-	usecase.mu.Lock()
-	defer usecase.mu.Unlock()
-
-	if usecase.workspaceCredentials == nil {
-		usecase.workspaceCredentials = &workspaceCredentials{
-			conf:         usecase.conf,
-			logger:       usecase.logger,
-			cryptography: usecase.cryptography,
-			timer:        usecase.timer,
-			cache:        usecase.cache,
-			meter:        usecase.meter,
-			repos:        usecase.repos,
-		}
-	}
-
-	return usecase.workspaceCredentials
+func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
+	return uc.workspaceCredentials
 }

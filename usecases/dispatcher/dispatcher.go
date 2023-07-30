@@ -11,7 +11,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
-	"sync"
 )
 
 type Dispatcher interface {
@@ -29,7 +28,7 @@ func New(
 	cb circuitbreaker.CircuitBreaker,
 	meter metric.Meter,
 ) Dispatcher {
-	return &dispatcher{
+	uc := &dispatcher{
 		conf:      conf,
 		logger:    logger,
 		timer:     timer,
@@ -39,6 +38,17 @@ func New(
 		cb:        cb,
 		meter:     meter,
 	}
+
+	uc.forwarder = &forwarder{
+		conf:      uc.conf,
+		logger:    uc.logger,
+		timer:     uc.timer,
+		publisher: uc.publisher,
+		cache:     uc.cache,
+		meter:     uc.meter,
+	}
+
+	return uc
 }
 
 type dispatcher struct {
@@ -51,51 +61,36 @@ type dispatcher struct {
 	cb        circuitbreaker.CircuitBreaker
 	meter     metric.Meter
 
-	mu        sync.RWMutex
 	forwarder *forwarder
 }
 
-func (usecase *dispatcher) Connect(ctx context.Context) error {
-	if err := usecase.cache.Connect(ctx); err != nil {
+func (uc *dispatcher) Connect(ctx context.Context) error {
+	if err := uc.cache.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.publisher.Connect(ctx); err != nil {
+	if err := uc.publisher.Connect(ctx); err != nil {
 		return err
 	}
 
-	usecase.logger.Info("connected")
+	uc.logger.Info("connected")
 	return nil
 }
 
-func (usecase *dispatcher) Disconnect(ctx context.Context) error {
-	usecase.logger.Info("disconnected")
+func (uc *dispatcher) Disconnect(ctx context.Context) error {
+	uc.logger.Info("disconnected")
 
-	if err := usecase.publisher.Disconnect(ctx); err != nil {
+	if err := uc.publisher.Disconnect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.cache.Disconnect(ctx); err != nil {
+	if err := uc.cache.Disconnect(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (usecase *dispatcher) Forwarder() Forwarder {
-	usecase.mu.Lock()
-	defer usecase.mu.Unlock()
-
-	if usecase.forwarder == nil {
-		usecase.forwarder = &forwarder{
-			conf:      usecase.conf,
-			logger:    usecase.logger,
-			timer:     usecase.timer,
-			publisher: usecase.publisher,
-			cache:     usecase.cache,
-			meter:     usecase.meter,
-		}
-	}
-
-	return usecase.forwarder
+func (uc *dispatcher) Forwarder() Forwarder {
+	return uc.forwarder
 }

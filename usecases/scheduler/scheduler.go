@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
-	"sync"
 )
 
 type Scheduler interface {
@@ -27,7 +26,7 @@ func New(
 	meter metric.Meter,
 	repos repos.Repositories,
 ) Scheduler {
-	return &scheduler{
+	uc := &scheduler{
 		conf:      conf,
 		logger:    logger,
 		timer:     timer,
@@ -36,6 +35,18 @@ func New(
 		meter:     meter,
 		repos:     repos,
 	}
+
+	uc.request = &request{
+		conf:      uc.conf,
+		logger:    uc.logger,
+		timer:     uc.timer,
+		publisher: uc.publisher,
+		repos:     uc.repos,
+		cache:     uc.cache,
+		meter:     uc.meter,
+	}
+	
+	return uc
 }
 
 type scheduler struct {
@@ -47,60 +58,44 @@ type scheduler struct {
 	meter     metric.Meter
 	repos     repos.Repositories
 
-	mu      sync.RWMutex
 	request *request
 }
 
-func (usecase *scheduler) Connect(ctx context.Context) error {
-	if err := usecase.cache.Connect(ctx); err != nil {
+func (uc *scheduler) Connect(ctx context.Context) error {
+	if err := uc.cache.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.repos.Connect(ctx); err != nil {
+	if err := uc.repos.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.publisher.Connect(ctx); err != nil {
+	if err := uc.publisher.Connect(ctx); err != nil {
 		return err
 	}
 
-	usecase.logger.Info("connected")
+	uc.logger.Info("connected")
 	return nil
 }
 
-func (usecase *scheduler) Disconnect(ctx context.Context) error {
-	usecase.logger.Info("disconnected")
+func (uc *scheduler) Disconnect(ctx context.Context) error {
+	uc.logger.Info("disconnected")
 
-	if err := usecase.publisher.Disconnect(ctx); err != nil {
+	if err := uc.publisher.Disconnect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.repos.Disconnect(ctx); err != nil {
+	if err := uc.repos.Disconnect(ctx); err != nil {
 		return err
 	}
 
-	if err := usecase.cache.Disconnect(ctx); err != nil {
+	if err := uc.cache.Disconnect(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (usecase *scheduler) Request() Request {
-	usecase.mu.Lock()
-	defer usecase.mu.Unlock()
-
-	if usecase.request == nil {
-		usecase.request = &request{
-			conf:      usecase.conf,
-			logger:    usecase.logger,
-			timer:     usecase.timer,
-			publisher: usecase.publisher,
-			repos:     usecase.repos,
-			cache:     usecase.cache,
-			meter:     usecase.meter,
-		}
-	}
-
-	return usecase.request
+func (uc *scheduler) Request() Request {
+	return uc.request
 }
