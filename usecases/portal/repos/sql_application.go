@@ -16,9 +16,6 @@ type SqlApplication struct {
 }
 
 func (sql *SqlApplication) Create(ctx context.Context, doc *entities.Application) (*entities.Application, error) {
-	doc.GenId()
-	doc.SetAT(sql.timer.Now())
-
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	if tx := transaction.WithContext(ctx).Create(doc); tx.Error != nil {
 		return nil, tx.Error
@@ -32,11 +29,7 @@ func (sql *SqlApplication) BulkCreate(ctx context.Context, docs []entities.Appli
 		return ids, nil
 	}
 
-	now := sql.timer.Now()
 	for i, doc := range docs {
-		doc.GenId()
-		doc.SetAT(now)
-
 		ids = append(ids, doc.Id)
 		docs[i] = doc
 	}

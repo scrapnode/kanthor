@@ -14,25 +14,25 @@ func Demo(ownerId string, bytes []byte) (*Interchange, error) {
 	now := time.Now().UTC()
 	for i, workspace := range in.Workspaces {
 		workspace.GenId()
-		workspace.SetAT(now)
+		workspace.SetAT(ownerId, now)
 		workspace.OwnerId = ownerId
 		workspace.ModifiedBy = ownerId
 
 		for j, application := range workspace.Applications {
 			application.GenId()
-			application.SetAT(now)
+			application.SetAT(ownerId, now)
 			application.ModifiedBy = ownerId
 
 			for k, endpoint := range application.Endpoints {
 				endpoint.GenId()
-				endpoint.SetAT(now)
+				endpoint.SetAT(ownerId, now)
 				endpoint.GenSecretKey()
 				endpoint.AppId = application.Id
 				endpoint.ModifiedBy = ownerId
 
 				for h, rule := range endpoint.Rules {
 					rule.GenId()
-					rule.SetAT(now)
+					rule.SetAT(ownerId, now)
 					rule.EndpointId = endpoint.Id
 					rule.ModifiedBy = ownerId
 

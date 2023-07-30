@@ -32,8 +32,7 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace_credentials
 
     workspace_id VARCHAR(64)  NOT NULL,
     hash         VARCHAR(256) NOT NULL,
-    -- expired_at: 3000-01-01
-    expired_at   BIGINT       NOT NULL DEFAULT 32503680000000000,
+    expired_at   BIGINT       NOT NULL DEFAULT 0,
 
     FOREIGN KEY (workspace_id) REFERENCES kanthor_workspace (id) ON DELETE CASCADE
 );

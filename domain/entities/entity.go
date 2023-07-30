@@ -12,7 +12,9 @@ type AuditTime struct {
 	UpdatedAt  int64  `json:"updated_at" validate:"required"`
 }
 
-func (at *AuditTime) SetAT(now time.Time) {
+func (at *AuditTime) SetAT(modifier string, now time.Time) {
+	at.ModifiedBy = modifier
+	
 	if at.CreatedAt == 0 {
 		at.CreatedAt = now.UnixMilli()
 	}

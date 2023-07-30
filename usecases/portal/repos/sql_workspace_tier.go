@@ -14,9 +14,6 @@ type SqlWorkspaceTier struct {
 }
 
 func (sql *SqlWorkspaceTier) Create(ctx context.Context, doc *entities.WorkspaceTier) (*entities.WorkspaceTier, error) {
-	doc.GenId()
-	doc.SetAT(sql.timer.Now())
-
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	if tx := transaction.Create(doc); tx.Error != nil {
 		return nil, tx.Error
@@ -31,11 +28,7 @@ func (sql *SqlWorkspaceTier) BulkCreate(ctx context.Context, docs []entities.Wor
 		return ids, nil
 	}
 
-	now := sql.timer.Now()
 	for i, doc := range docs {
-		doc.GenId()
-		doc.SetAT(now)
-
 		ids = append(ids, doc.Id)
 		docs[i] = doc
 	}
