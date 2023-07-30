@@ -2,7 +2,6 @@ package do
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
@@ -31,33 +30,41 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 			}
 			input := args[0]
 
-			return doImport(conf, logger, input, ownerId, verbose)
+			// prepare the data
+			bytes, err := os.ReadFile(input)
+			if err != nil {
+				return err
+			}
+			in, err := interchange.Demo(ownerId, bytes)
+			if err != nil {
+				return err
+			}
+
+			req, res, err := importDo(conf, logger, in)
+			if err != nil {
+				return err
+			}
+
+			importReport(in, req, res, verbose)
+			return nil
 		},
 	}
+
+	command.Flags().StringArrayP("auto-generate", "", []string{}, "--auto-generate=workspace_credentials | auto generate some value that could not be exported & imported")
 
 	return command
 }
 
-func doImport(conf *config.Config, logger logging.Logger, input, ownerId string, verbose bool) error {
-	bytes, err := os.ReadFile(input)
-	if err != nil {
-		return err
-	}
-
-	in, err := interchange.Demo(ownerId, bytes)
-	if err != nil {
-		return err
-	}
-
+func importDo(conf *config.Config, logger logging.Logger, in *interchange.Interchange) (*usecase.WorkspaceImportReq, *usecase.WorkspaceImportRes, error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Minute*2)
 	defer cancel()
 
 	uc, err := ioc.InitializePortalUsecase(conf, logger)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	if err := uc.Connect(ctx); err != nil {
-		return err
+		return nil, nil, err
 	}
 	defer func() {
 		if err := uc.Disconnect(ctx); err != nil {
@@ -84,31 +91,30 @@ func doImport(conf *config.Config, logger logging.Logger, input, ownerId string,
 
 	res, err := uc.Workspace().Import(ctx, req)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
+	return req, res, nil
+}
+
+func importReport(in *interchange.Interchange, req *usecase.WorkspaceImportReq, res *usecase.WorkspaceImportRes, verbose bool) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	style := table.StyleDefault
 	style.Format.Header = text.FormatDefault
 	t.SetStyle(style)
 	title := fmt.Sprintf(
-		"Summary: %d worksapces, %d tiers, %d apps, %d endpoints, %d rules",
-		len(res.WorkspaceIds),
+		"Summary: %d/%d worksapces, %d tiers, %d/%d apps, %d/%d endpoints, %d/%d rules",
+		len(res.WorkspaceIds), len(req.Workspaces),
 		len(res.WorkspaceTierIds),
-		len(res.ApplicationIds),
-		len(res.EndpointIds),
-		len(res.EndpointRuleIds),
+		len(res.ApplicationIds), len(req.Applications),
+		len(res.EndpointIds), len(req.Endpoints),
+		len(res.EndpointRuleIds), len(req.EndpointRules),
 	)
 	t.SetTitle(title)
 
 	for _, ws := range in.Workspaces {
-		wscId := ws.Credentials[0].Id
-		token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", wscId, wscId)))
-
 		t.AppendRow([]interface{}{"ws_id", ws.Id})
-		t.AppendRow([]interface{}{"ws_tier", ws.Tier.Name})
-		t.AppendRow([]interface{}{"ws_token", token})
 		t.AppendSeparator()
 
 		if verbose {
@@ -128,5 +134,4 @@ func doImport(conf *config.Config, logger logging.Logger, input, ownerId string,
 	}
 
 	t.Render()
-	return nil
 }

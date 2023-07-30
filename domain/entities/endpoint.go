@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
@@ -8,8 +9,9 @@ type Endpoint struct {
 	Entity
 	AuditTime
 
-	AppId string `json:"app_id" validate:"required"`
-	Name  string `json:"name" validate:"required"`
+	AppId     string `json:"app_id" validate:"required"`
+	SecretKey string `json:"secret_key" validate:"required,startswith=epsk_"`
+	Name      string `json:"name" validate:"required"`
 
 	// HTTP: POST/PUT/PATCH
 	Method string `json:"method" validate:"required,oneof=POST PUT PATCH"`
@@ -29,11 +31,17 @@ func (entity *Endpoint) GenId() {
 	}
 }
 
+func (entity *Endpoint) GenSecretKey() {
+	if entity.SecretKey == "" {
+		entity.SecretKey = fmt.Sprintf("epsk_%s", utils.RandomString(32))
+	}
+}
+
 type EndpointRule struct {
 	Entity
 	AuditTime
 
-	EndpointId string `json:"endpoint_id" validate:"required"`
+	EndpointId string `json:"endpoint_id" validate:"required,startswith=ep_"`
 	Name       string `json:"name" validate:"required"`
 
 	Priority int32 `json:"priority"`

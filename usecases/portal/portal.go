@@ -16,6 +16,7 @@ import (
 type Portal interface {
 	patterns.Connectable
 	Workspace() Workspace
+	WorkspaceCredentials() WorkspaceCredentials
 }
 
 func New(
@@ -47,8 +48,9 @@ type portal struct {
 	meter        metric.Meter
 	repos        repos.Repositories
 
-	mu        sync.RWMutex
-	workspace *workspace
+	mu                   sync.RWMutex
+	workspace            *workspace
+	workspaceCredentials *workspaceCredentials
 }
 
 func (usecase *portal) Connect(ctx context.Context) error {
@@ -94,4 +96,22 @@ func (usecase *portal) Workspace() Workspace {
 	}
 
 	return usecase.workspace
+}
+
+func (usecase *portal) WorkspaceCredentials() WorkspaceCredentials {
+	usecase.mu.Lock()
+	defer usecase.mu.Unlock()
+
+	if usecase.workspaceCredentials == nil {
+		usecase.workspaceCredentials = &workspaceCredentials{
+			conf:   usecase.conf,
+			logger: usecase.logger,
+			timer:  usecase.timer,
+			cache:  usecase.cache,
+			meter:  usecase.meter,
+			repos:  usecase.repos,
+		}
+	}
+
+	return usecase.workspaceCredentials
 }

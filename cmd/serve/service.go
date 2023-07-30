@@ -12,9 +12,6 @@ func Service(name string, conf *config.Config, logger logging.Logger) (services.
 	if name == services.PORTAL {
 		//return ioc.InitializeControlplane(conf, logger)
 	}
-	if name == services.DATAPLANE {
-		return ioc.InitializeDataplane(conf, logger)
-	}
 	if name == services.SCHEDULER {
 		return ioc.InitializeScheduler(conf, logger)
 	}

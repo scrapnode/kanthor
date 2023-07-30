@@ -3,24 +3,22 @@ package interchange
 import "github.com/scrapnode/kanthor/domain/entities"
 
 type Interchange struct {
-	Workspaces []Workspace `json:"workspaces" validate:"required,dive,required"`
+	Workspaces []Workspace `json:"workspaces"`
 }
 
 type Workspace struct {
 	*entities.Workspace
-	Tier         *entities.WorkspaceTier
-	Credentials  []entities.WorkspaceCredentials `json:"credentials" validate:"required"`
-	Applications []Application                   `json:"applications" validate:"required"`
+	Applications []Application `json:"applications"`
 }
 
 type Application struct {
 	*entities.Application
-	Endpoints []Endpoint `json:"endpoints" validate:"required"`
+	Endpoints []Endpoint `json:"endpoints"`
 }
 
 type Endpoint struct {
 	*entities.Endpoint
-	Rules []EndpointRule `json:"rules" validate:"required"`
+	Rules []EndpointRule `json:"rules"`
 }
 
 type EndpointRule struct {

@@ -35,6 +35,7 @@ func (sql *SqlWorkspaceCredentials) BulkCreate(ctx context.Context, docs []entit
 	for i, doc := range docs {
 		doc.GenId()
 		doc.SetAT(now)
+		doc.SetDefaultExpired(now)
 
 		ids = append(ids, doc.Id)
 		docs[i] = doc

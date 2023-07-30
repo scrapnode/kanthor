@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/segmentio/ksuid"
 	"strings"
 )
@@ -24,4 +25,14 @@ func Stringify(value interface{}) string {
 func MD5(values ...string) string {
 	hash := md5.Sum([]byte(strings.Join(values, "/")))
 	return hex.EncodeToString(hash[:])
+}
+
+func RandomString(n int) string {
+	var str string
+	count := n / 32
+	for i := 0; i <= count; i++ {
+		str += strings.ReplaceAll(uuid.New().String(), "-", "")
+	}
+
+	return str[:n]
 }

@@ -26,6 +26,7 @@ func Demo(ownerId string, bytes []byte) (*Interchange, error) {
 			for k, endpoint := range application.Endpoints {
 				endpoint.GenId()
 				endpoint.SetAT(now)
+				endpoint.GenSecretKey()
 				endpoint.AppId = application.Id
 				endpoint.ModifiedBy = ownerId
 
