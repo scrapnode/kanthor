@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/spf13/cobra"
+	"net/http"
 	"os"
 	"time"
 )
@@ -28,7 +29,27 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			needs, err := cmd.Flags().GetStringArray("auto-generate")
+			if err != nil {
+				return err
+			}
 			input := args[0]
+
+			ctx, cancel := context.WithTimeout(context.TODO(), time.Minute*2)
+			defer cancel()
+
+			uc, err := ioc.InitializePortalUsecase(conf, logger)
+			if err != nil {
+				return err
+			}
+			if err := uc.Connect(ctx); err != nil {
+				return err
+			}
+			defer func() {
+				if err := uc.Disconnect(ctx); err != nil {
+					logger.Error(err)
+				}
+			}()
 
 			// prepare the data
 			bytes, err := os.ReadFile(input)
@@ -39,13 +60,16 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			req := importPrepareRequest(in)
 
-			req, res, err := importDo(conf, logger, in)
+			res, err := uc.Workspace().Import(ctx, req)
 			if err != nil {
 				return err
 			}
 
-			importReport(in, req, res, verbose)
+			metadata := importAutoGenerate(logger, uc, res, needs)
+
+			importReport(in, req, res, metadata, verbose)
 			return nil
 		},
 	}
@@ -55,23 +79,7 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 	return command
 }
 
-func importDo(conf *config.Config, logger logging.Logger, in *interchange.Interchange) (*usecase.WorkspaceImportReq, *usecase.WorkspaceImportRes, error) {
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Minute*2)
-	defer cancel()
-
-	uc, err := ioc.InitializePortalUsecase(conf, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	if err := uc.Connect(ctx); err != nil {
-		return nil, nil, err
-	}
-	defer func() {
-		if err := uc.Disconnect(ctx); err != nil {
-			logger.Error(err)
-		}
-	}()
-
+func importPrepareRequest(in *interchange.Interchange) *usecase.WorkspaceImportReq {
 	req := &usecase.WorkspaceImportReq{}
 	for _, workspace := range in.Workspaces {
 		req.Workspaces = append(req.Workspaces, *workspace.Workspace)
@@ -89,15 +97,47 @@ func importDo(conf *config.Config, logger logging.Logger, in *interchange.Interc
 		}
 	}
 
-	res, err := uc.Workspace().Import(ctx, req)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return req, res, nil
+	return req
 }
 
-func importReport(in *interchange.Interchange, req *usecase.WorkspaceImportReq, res *usecase.WorkspaceImportRes, verbose bool) {
+func importAutoGenerate(logger logging.Logger, uc usecase.Portal, res *usecase.WorkspaceImportRes, needs []string) http.Header {
+	meta := http.Header{}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+	defer cancel()
+
+	for _, need := range needs {
+		if need == "workspace_credentials" {
+			importAutoGenerateWorkspaceCredentials(logger, uc, res, ctx, meta)
+		}
+	}
+
+	return meta
+}
+
+func importAutoGenerateWorkspaceCredentials(logger logging.Logger, uc usecase.Portal, res *usecase.WorkspaceImportRes, ctx context.Context, meta http.Header) {
+	for _, wsId := range res.WorkspaceIds {
+		cred, err := uc.WorkspaceCredentials().Generate(
+			ctx,
+			&usecase.WorkspaceCredentialsGenerateReq{WorkspaceId: wsId, Count: 1},
+		)
+
+		if err != nil {
+			logger.Error(err)
+			continue
+		}
+
+		meta.Set(wsId, fmt.Sprintf("password:%s", cred.Passwords[cred.Credentials[0].Id]))
+	}
+}
+
+func importReport(
+	in *interchange.Interchange,
+	req *usecase.WorkspaceImportReq,
+	res *usecase.WorkspaceImportRes,
+	metadata http.Header,
+	verbose bool,
+) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	style := table.StyleDefault
@@ -113,17 +153,18 @@ func importReport(in *interchange.Interchange, req *usecase.WorkspaceImportReq, 
 	)
 	t.SetTitle(title)
 
+	t.AppendHeader([]interface{}{"key", "value", "meta"})
 	for _, ws := range in.Workspaces {
-		t.AppendRow([]interface{}{"ws_id", ws.Id})
+		t.AppendRow([]interface{}{"ws_id", ws.Id, metadata.Get(ws.Id)})
 		t.AppendSeparator()
 
 		if verbose {
 			for _, app := range ws.Applications {
-				t.AppendRow([]interface{}{"app_id", app.Id})
+				t.AppendRow([]interface{}{"app_id", app.Id, metadata.Get(app.Id)})
 				for _, ep := range app.Endpoints {
-					t.AppendRow([]interface{}{"ep_id", ep.Id})
+					t.AppendRow([]interface{}{"ep_id", ep.Id, metadata.Get(ep.Id)})
 					for _, epr := range ep.Rules {
-						t.AppendRow([]interface{}{"epr_id", epr.Id})
+						t.AppendRow([]interface{}{"epr_id", epr.Id, metadata.Get(epr.Id)})
 					}
 				}
 				t.AppendSeparator()

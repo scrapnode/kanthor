@@ -86,12 +86,13 @@ func (usecase *portal) Workspace() Workspace {
 
 	if usecase.workspace == nil {
 		usecase.workspace = &workspace{
-			conf:   usecase.conf,
-			logger: usecase.logger,
-			timer:  usecase.timer,
-			cache:  usecase.cache,
-			meter:  usecase.meter,
-			repos:  usecase.repos,
+			conf:         usecase.conf,
+			logger:       usecase.logger,
+			cryptography: usecase.cryptography,
+			timer:        usecase.timer,
+			cache:        usecase.cache,
+			meter:        usecase.meter,
+			repos:        usecase.repos,
 		}
 	}
 
@@ -104,12 +105,13 @@ func (usecase *portal) WorkspaceCredentials() WorkspaceCredentials {
 
 	if usecase.workspaceCredentials == nil {
 		usecase.workspaceCredentials = &workspaceCredentials{
-			conf:   usecase.conf,
-			logger: usecase.logger,
-			timer:  usecase.timer,
-			cache:  usecase.cache,
-			meter:  usecase.meter,
-			repos:  usecase.repos,
+			conf:         usecase.conf,
+			logger:       usecase.logger,
+			cryptography: usecase.cryptography,
+			timer:        usecase.timer,
+			cache:        usecase.cache,
+			meter:        usecase.meter,
+			repos:        usecase.repos,
 		}
 	}
 

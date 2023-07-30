@@ -5,6 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -41,10 +42,11 @@ type WorkspaceExportRes struct {
 }
 
 type workspace struct {
-	conf   *config.Config
-	logger logging.Logger
-	timer  timer.Timer
-	cache  cache.Cache
-	meter  metric.Meter
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	cryptography cryptography.Cryptography
+	timer        timer.Timer
+	cache        cache.Cache
+	meter        metric.Meter
+	repos        repos.Repositories
 }

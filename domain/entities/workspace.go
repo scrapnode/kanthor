@@ -2,7 +2,6 @@ package entities
 
 import (
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"time"
 )
 
 type Workspace struct {
@@ -57,12 +56,5 @@ func (entity *WorkspaceCredentials) TableName() string {
 func (entity *WorkspaceCredentials) GenId() {
 	if entity.Id == "" {
 		entity.Id = utils.ID("wsc")
-	}
-}
-
-func (entity *WorkspaceCredentials) SetDefaultExpired(now time.Time) {
-	if entity.ExpiredAt == 0 {
-		a1000year := 1000 * 365 * 24 * time.Hour
-		entity.ExpiredAt = now.UnixMilli() + a1000year.Milliseconds()
 	}
 }
