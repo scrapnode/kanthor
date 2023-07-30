@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
+	"sync"
 )
 
 type Dispatcher interface {
@@ -28,7 +29,7 @@ func New(
 	cb circuitbreaker.CircuitBreaker,
 	meter metric.Meter,
 ) Dispatcher {
-	uc := &dispatcher{
+	return &dispatcher{
 		conf:      conf,
 		logger:    logger,
 		timer:     timer,
@@ -38,17 +39,6 @@ func New(
 		cb:        cb,
 		meter:     meter,
 	}
-
-	uc.forwarder = &forwarder{
-		conf:      uc.conf,
-		logger:    uc.logger,
-		timer:     uc.timer,
-		publisher: uc.publisher,
-		cache:     uc.cache,
-		meter:     uc.meter,
-	}
-
-	return uc
 }
 
 type dispatcher struct {
@@ -61,6 +51,7 @@ type dispatcher struct {
 	cb        circuitbreaker.CircuitBreaker
 	meter     metric.Meter
 
+	mu        sync.RWMutex
 	forwarder *forwarder
 }
 
@@ -92,5 +83,18 @@ func (uc *dispatcher) Disconnect(ctx context.Context) error {
 }
 
 func (uc *dispatcher) Forwarder() Forwarder {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.forwarder == nil {
+		uc.forwarder = &forwarder{
+			conf:      uc.conf,
+			logger:    uc.logger,
+			timer:     uc.timer,
+			publisher: uc.publisher,
+			cache:     uc.cache,
+			meter:     uc.meter,
+		}
+	}
 	return uc.forwarder
 }

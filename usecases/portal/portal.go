@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
+	"sync"
 )
 
 type Portal interface {
@@ -27,7 +28,7 @@ func New(
 	meter metric.Meter,
 	repos repos.Repositories,
 ) Portal {
-	uc := &portal{
+	return &portal{
 		conf:         conf,
 		logger:       logger,
 		cryptography: cryptography,
@@ -36,27 +37,6 @@ func New(
 		meter:        meter,
 		repos:        repos,
 	}
-
-	uc.workspace = &workspace{
-		conf:         uc.conf,
-		logger:       uc.logger,
-		cryptography: uc.cryptography,
-		timer:        uc.timer,
-		cache:        uc.cache,
-		meter:        uc.meter,
-		repos:        uc.repos,
-	}
-	uc.workspaceCredentials = &workspaceCredentials{
-		conf:         uc.conf,
-		logger:       uc.logger,
-		cryptography: uc.cryptography,
-		timer:        uc.timer,
-		cache:        uc.cache,
-		meter:        uc.meter,
-		repos:        uc.repos,
-	}
-
-	return uc
 }
 
 type portal struct {
@@ -68,6 +48,7 @@ type portal struct {
 	meter        metric.Meter
 	repos        repos.Repositories
 
+	mu                   sync.RWMutex
 	workspace            *workspace
 	workspaceCredentials *workspaceCredentials
 }
@@ -100,9 +81,37 @@ func (uc *portal) Disconnect(ctx context.Context) error {
 }
 
 func (uc *portal) Workspace() Workspace {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.workspace == nil {
+		uc.workspace = &workspace{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			meter:        uc.meter,
+			repos:        uc.repos,
+		}
+	}
 	return uc.workspace
 }
 
 func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.workspaceCredentials == nil {
+		uc.workspaceCredentials = &workspaceCredentials{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			meter:        uc.meter,
+			repos:        uc.repos,
+		}
+	}
 	return uc.workspaceCredentials
 }

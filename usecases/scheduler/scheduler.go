@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
+	"sync"
 )
 
 type Scheduler interface {
@@ -26,7 +27,7 @@ func New(
 	meter metric.Meter,
 	repos repos.Repositories,
 ) Scheduler {
-	uc := &scheduler{
+	return &scheduler{
 		conf:      conf,
 		logger:    logger,
 		timer:     timer,
@@ -35,18 +36,6 @@ func New(
 		meter:     meter,
 		repos:     repos,
 	}
-
-	uc.request = &request{
-		conf:      uc.conf,
-		logger:    uc.logger,
-		timer:     uc.timer,
-		publisher: uc.publisher,
-		repos:     uc.repos,
-		cache:     uc.cache,
-		meter:     uc.meter,
-	}
-	
-	return uc
 }
 
 type scheduler struct {
@@ -58,6 +47,7 @@ type scheduler struct {
 	meter     metric.Meter
 	repos     repos.Repositories
 
+	mu      sync.RWMutex
 	request *request
 }
 
@@ -97,5 +87,19 @@ func (uc *scheduler) Disconnect(ctx context.Context) error {
 }
 
 func (uc *scheduler) Request() Request {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.request == nil {
+		uc.request = &request{
+			conf:      uc.conf,
+			logger:    uc.logger,
+			timer:     uc.timer,
+			publisher: uc.publisher,
+			repos:     uc.repos,
+			cache:     uc.cache,
+			meter:     uc.meter,
+		}
+	}
 	return uc.request
 }

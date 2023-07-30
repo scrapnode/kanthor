@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
+	"sync"
 )
 
 func NewSql(conf *database.Config, logger logging.Logger, timer timer.Timer) Repositories {
@@ -20,6 +21,7 @@ type sql struct {
 	timer  timer.Timer
 	db     database.Database
 
+	mu          sync.RWMutex
 	client      *gorm.DB
 	application *SqlApplication
 }
@@ -47,6 +49,9 @@ func (repo *sql) Disconnect(ctx context.Context) error {
 }
 
 func (repo *sql) Application() Application {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	if repo.application == nil {
 		repo.application = &SqlApplication{client: repo.client, timer: repo.timer}
 	}

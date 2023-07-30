@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
+	"sync"
 )
 
 func NewSql(conf *database.Config, logger logging.Logger, timer timer.Timer) Repositories {
@@ -20,6 +21,7 @@ type sql struct {
 	timer  timer.Timer
 	db     database.Database
 
+	mu            sync.RWMutex
 	client        *gorm.DB
 	workspace     *SqlWorkspace
 	workspaceTier *SqlWorkspaceTier
@@ -59,6 +61,9 @@ func (repo *sql) Transaction(ctx context.Context, handler func(txctx context.Con
 }
 
 func (repo *sql) Workspace() Workspace {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	if repo.workspace == nil {
 		repo.workspace = &SqlWorkspace{client: repo.client, timer: repo.timer}
 	}
@@ -67,6 +72,9 @@ func (repo *sql) Workspace() Workspace {
 }
 
 func (repo *sql) WorkspaceTier() WorkspaceTier {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	if repo.workspaceTier == nil {
 		repo.workspaceTier = &SqlWorkspaceTier{client: repo.client, timer: repo.timer}
 	}
@@ -75,6 +83,9 @@ func (repo *sql) WorkspaceTier() WorkspaceTier {
 }
 
 func (repo *sql) Application() Application {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	if repo.application == nil {
 		repo.application = &SqlApplication{client: repo.client, timer: repo.timer}
 	}
@@ -83,6 +94,9 @@ func (repo *sql) Application() Application {
 }
 
 func (repo *sql) Endpoint() Endpoint {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	if repo.endpoint == nil {
 		repo.endpoint = &SqlEndpoint{client: repo.client, timer: repo.timer}
 	}
@@ -91,6 +105,9 @@ func (repo *sql) Endpoint() Endpoint {
 }
 
 func (repo *sql) EndpointRule() EndpointRule {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	if repo.endpointRule == nil {
 		repo.endpointRule = &SqlEndpointRule{client: repo.client, timer: repo.timer}
 	}

@@ -25,7 +25,7 @@ func New(
 	meter metric.Meter,
 	repos repos.Repositories,
 ) SDK {
-	uc := &sdk{
+	return &sdk{
 		conf:         conf,
 		logger:       logger,
 		cryptography: cryptography,
@@ -34,8 +34,6 @@ func New(
 		meter:        meter,
 		repos:        repos,
 	}
-
-	return uc
 }
 
 type sdk struct {
