@@ -41,6 +41,8 @@ func (repo *sql) Disconnect(ctx context.Context) error {
 		return err
 	}
 
+	repo.client = nil
+
 	return nil
 }
 

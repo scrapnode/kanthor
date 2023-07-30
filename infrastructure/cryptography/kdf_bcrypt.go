@@ -5,10 +5,11 @@ import (
 )
 
 func NewBcrypt(conf *KDFConfig) (KDF, error) {
-	return &bcrypt{}, nil
+	return &bcrypt{conf: conf}, nil
 }
 
 type bcrypt struct {
+	conf *KDFConfig
 }
 
 func (kdf *bcrypt) Hash(value []byte) ([]byte, error) {

@@ -9,7 +9,7 @@ import (
 
 func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error) {
 	now := uc.timer.Now()
-	passowrds := map[string]string{}
+	passwords := map[string]string{}
 	var docs []entities.WorkspaceCredentials
 	for i := 0; i < req.Count; i++ {
 		credentials := entities.WorkspaceCredentials{WorkspaceId: req.WorkspaceId}
@@ -17,7 +17,7 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCred
 		credentials.SetAT(now)
 
 		password := utils.RandomString(constants.GlobalPasswordLength)
-		passowrds[credentials.Id] = password
+		passwords[credentials.Id] = password
 		// once we got error, reject entirely request instead of do a partial success request
 		hash, err := uc.cryptography.KDF().StringHash(password)
 		if err != nil {
@@ -33,6 +33,6 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCred
 		return nil, err
 	}
 
-	res := &WorkspaceCredentialsGenerateRes{Credentials: docs, Passwords: passowrds}
+	res := &WorkspaceCredentialsGenerateRes{Credentials: docs, Passwords: passwords}
 	return res, nil
 }

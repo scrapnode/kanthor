@@ -20,13 +20,12 @@ type sql struct {
 	timer  timer.Timer
 	db     database.Database
 
-	client               *gorm.DB
-	workspace            *SqlWorkspace
-	workspaceTier        *SqlWorkspaceTier
-	workspaceCredentials *SqlWorkspaceCredentials
-	application          *SqlApplication
-	endpoint             *SqlEndpoint
-	endpointRule         *SqlEndpointRule
+	client        *gorm.DB
+	workspace     *SqlWorkspace
+	workspaceTier *SqlWorkspaceTier
+	application   *SqlApplication
+	endpoint      *SqlEndpoint
+	endpointRule  *SqlEndpointRule
 }
 
 func (repo *sql) Connect(ctx context.Context) error {
@@ -73,14 +72,6 @@ func (repo *sql) WorkspaceTier() WorkspaceTier {
 	}
 
 	return repo.workspaceTier
-}
-
-func (repo *sql) WorkspaceCredentials() WorkspaceCredentials {
-	if repo.workspaceCredentials == nil {
-		repo.workspaceCredentials = &SqlWorkspaceCredentials{client: repo.client, timer: repo.timer}
-	}
-
-	return repo.workspaceCredentials
 }
 
 func (repo *sql) Application() Application {

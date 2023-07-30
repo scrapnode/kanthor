@@ -15,39 +15,6 @@ type SqlEndpoint struct {
 	timer  timer.Timer
 }
 
-func (sql *SqlEndpoint) Create(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error) {
-	doc.GenId()
-	doc.SetAT(sql.timer.Now())
-
-	transaction := database.SqlClientFromContext(ctx, sql.client)
-	if tx := transaction.WithContext(ctx).Create(doc); tx.Error != nil {
-		return nil, tx.Error
-	}
-	return doc, nil
-}
-
-func (sql *SqlEndpoint) BulkCreate(ctx context.Context, docs []entities.Endpoint) ([]string, error) {
-	ids := []string{}
-	if len(docs) == 0 {
-		return ids, nil
-	}
-
-	now := sql.timer.Now()
-	for i, doc := range docs {
-		doc.GenId()
-		doc.SetAT(now)
-
-		ids = append(ids, doc.Id)
-		docs[i] = doc
-	}
-
-	transaction := database.SqlClientFromContext(ctx, sql.client)
-	if tx := transaction.WithContext(ctx).Create(docs); tx.Error != nil {
-		return nil, tx.Error
-	}
-	return ids, nil
-}
-
 func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, opts ...structure.ListOps) (*structure.ListRes[entities.Endpoint], error) {
 	req := structure.ListReqBuild(opts)
 
@@ -88,4 +55,46 @@ func (sql *SqlEndpoint) Get(ctx context.Context, wsId, appId, id string) (*entit
 	}
 
 	return ep, nil
+}
+
+func (sql *SqlEndpoint) Create(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error) {
+	doc.GenId()
+	doc.SetAT(sql.timer.Now())
+
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	if tx := transaction.WithContext(ctx).Create(doc); tx.Error != nil {
+		return nil, tx.Error
+	}
+	return doc, nil
+}
+
+func (sql *SqlEndpoint) Update(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error) {
+	doc.SetAT(sql.timer.Now())
+
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	if tx := transaction.WithContext(ctx).Updates(doc); tx.Error != nil {
+		return nil, tx.Error
+	}
+	return doc, nil
+}
+
+func (sql *SqlEndpoint) Delete(ctx context.Context, wsId, appId, id string) error {
+	ws := &entities.Workspace{}
+	app := &entities.Application{}
+	ep := &entities.Endpoint{}
+	ep.Id = id
+
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	tx := transaction.WithContext(ctx).
+		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), ep.TableName())).
+		Joins(fmt.Sprintf(`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`, ws.TableName(), ws.TableName(), app.TableName())).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), wsId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), appId).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, ep.TableName()), id).
+		Delete(ep)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }
