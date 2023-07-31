@@ -9,14 +9,11 @@ type Entity struct {
 }
 
 type AuditTime struct {
-	ModifiedBy string `json:"modified_by" validate:"required"`
-	CreatedAt  int64  `json:"created_at" validate:"required"`
-	UpdatedAt  int64  `json:"updated_at" validate:"required"`
+	CreatedAt int64 `json:"created_at" validate:"required"`
+	UpdatedAt int64 `json:"updated_at" validate:"required"`
 }
 
-func (at *AuditTime) SetAT(modifier string, now time.Time) {
-	at.ModifiedBy = modifier
-
+func (at *AuditTime) SetAT(now time.Time) {
 	if at.CreatedAt == 0 {
 		at.CreatedAt = now.UnixMilli()
 	}

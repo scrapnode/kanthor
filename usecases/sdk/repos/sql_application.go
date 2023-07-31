@@ -6,51 +6,14 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/database"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 )
 
 type SqlApplication struct {
 	client *gorm.DB
-	timer  timer.Timer
-}
-
-func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.Application], error) {
-	req := structure.ListReqBuild(opts)
-
-	app := &entities.Application{}
-
-	tx := sql.client.WithContext(ctx).Model(app).
-		Scopes(UseWsId(wsId))
-	tx = database.SqlToListQuery(tx, req, `"id"`)
-
-	res := &structure.ListRes[entities.Application]{Data: []entities.Application{}}
-	if tx = tx.Find(&res.Data); tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return structure.ListResBuild(res, req), nil
-}
-
-func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.Application, error) {
-	app := &entities.Application{}
-
-	transaction := database.SqlClientFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(&app).
-		Scopes(UseWsId(wsId)).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), id).
-		First(app)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return app, nil
 }
 
 func (sql *SqlApplication) Create(ctx context.Context, doc *entities.Application) (*entities.Application, error) {
-	doc.GenId()
-	doc.SetAT(sql.timer.Now())
-
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	if tx := transaction.WithContext(ctx).Create(doc); tx.Error != nil {
 		return nil, tx.Error
@@ -59,8 +22,6 @@ func (sql *SqlApplication) Create(ctx context.Context, doc *entities.Application
 }
 
 func (sql *SqlApplication) Update(ctx context.Context, wsId string, doc *entities.Application) (*entities.Application, error) {
-	doc.SetAT(sql.timer.Now())
-
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
 		Scopes(UseWsId(wsId)).
@@ -87,4 +48,35 @@ func (sql *SqlApplication) Delete(ctx context.Context, wsId, id string) error {
 		return tx.Error
 	}
 	return nil
+}
+
+func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.Application], error) {
+	app := &entities.Application{}
+	tx := sql.client.WithContext(ctx).Model(app).
+		Scopes(UseWsId(wsId))
+
+	req := structure.ListReqBuild(opts)
+	tx = database.SqlToListQuery(tx, req, `"id"`)
+
+	res := &structure.ListRes[entities.Application]{Data: []entities.Application{}}
+	if tx = tx.Find(&res.Data); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return structure.ListResBuild(res, req), nil
+}
+
+func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.Application, error) {
+	app := &entities.Application{}
+
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	tx := transaction.WithContext(ctx).Model(&app).
+		Scopes(UseWsId(wsId)).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, app.TableName()), id).
+		First(app)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return app, nil
 }

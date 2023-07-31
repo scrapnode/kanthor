@@ -4,13 +4,11 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/database"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 )
 
 type SqlWorkspaceCredentials struct {
 	client *gorm.DB
-	timer  timer.Timer
 }
 
 func (sql *SqlWorkspaceCredentials) Create(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error) {

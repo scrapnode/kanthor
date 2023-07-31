@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 	"strings"
 )
 
 type SqlApplication struct {
 	client *gorm.DB
-	timer  timer.Timer
 }
 
 func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Application, error) {

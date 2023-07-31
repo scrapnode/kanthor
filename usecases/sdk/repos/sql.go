@@ -4,21 +4,19 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 	"sync"
 )
 
-func NewSql(conf *database.Config, logger logging.Logger, timer timer.Timer) Repositories {
+func NewSql(conf *database.Config, logger logging.Logger) Repositories {
 	db := database.NewSQL(conf, logger)
 
-	logger = logger.With("component", "repoitories.sql")
-	return &sql{logger: logger, timer: timer, db: db}
+	logger = logger.With("repositories", "sql")
+	return &sql{logger: logger, db: db}
 }
 
 type sql struct {
 	logger logging.Logger
-	timer  timer.Timer
 	db     database.Database
 
 	mu            sync.RWMutex
@@ -65,7 +63,7 @@ func (repo *sql) Workspace() Workspace {
 	defer repo.mu.Unlock()
 
 	if repo.workspace == nil {
-		repo.workspace = &SqlWorkspace{client: repo.client, timer: repo.timer}
+		repo.workspace = &SqlWorkspace{client: repo.client}
 	}
 
 	return repo.workspace
@@ -76,7 +74,7 @@ func (repo *sql) WorkspaceTier() WorkspaceTier {
 	defer repo.mu.Unlock()
 
 	if repo.workspaceTier == nil {
-		repo.workspaceTier = &SqlWorkspaceTier{client: repo.client, timer: repo.timer}
+		repo.workspaceTier = &SqlWorkspaceTier{client: repo.client}
 	}
 
 	return repo.workspaceTier
@@ -87,7 +85,7 @@ func (repo *sql) Application() Application {
 	defer repo.mu.Unlock()
 
 	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.client, timer: repo.timer}
+		repo.application = &SqlApplication{client: repo.client}
 	}
 
 	return repo.application
@@ -98,7 +96,7 @@ func (repo *sql) Endpoint() Endpoint {
 	defer repo.mu.Unlock()
 
 	if repo.endpoint == nil {
-		repo.endpoint = &SqlEndpoint{client: repo.client, timer: repo.timer}
+		repo.endpoint = &SqlEndpoint{client: repo.client}
 	}
 
 	return repo.endpoint
@@ -109,7 +107,7 @@ func (repo *sql) EndpointRule() EndpointRule {
 	defer repo.mu.Unlock()
 
 	if repo.endpointRule == nil {
-		repo.endpointRule = &SqlEndpointRule{client: repo.client, timer: repo.timer}
+		repo.endpointRule = &SqlEndpointRule{client: repo.client}
 	}
 
 	return repo.endpointRule

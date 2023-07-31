@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS kanthor_workspace
 (
     id          VARCHAR(64)  NOT NULL PRIMARY KEY,
-    modified_by VARCHAR(64)  NOT NULL,
     created_at  BIGINT       NOT NULL DEFAULT 0,
     updated_at  BIGINT       NOT NULL DEFAULT 0,
 
@@ -12,7 +11,6 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace
 CREATE TABLE IF NOT EXISTS kanthor_workspace_tier
 (
     id           VARCHAR(64)  NOT NULL PRIMARY KEY,
-    modified_by  TEXT         NOT NULL,
     created_at   BIGINT       NOT NULL DEFAULT 0,
     updated_at   BIGINT       NOT NULL DEFAULT 0,
 
@@ -26,7 +24,6 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace_tier
 CREATE TABLE IF NOT EXISTS kanthor_workspace_credentials
 (
     id           VARCHAR(64)  NOT NULL PRIMARY KEY,
-    modified_by  TEXT         NOT NULL,
     created_at   BIGINT       NOT NULL DEFAULT 0,
     updated_at   BIGINT       NOT NULL DEFAULT 0,
 
@@ -40,7 +37,6 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace_credentials
 CREATE TABLE IF NOT EXISTS kanthor_application
 (
     id           VARCHAR(64)  NOT NULL PRIMARY KEY,
-    modified_by  TEXT         NOT NULL,
     created_at   BIGINT       NOT NULL DEFAULT 0,
     updated_at   BIGINT       NOT NULL DEFAULT 0,
 
@@ -53,7 +49,6 @@ CREATE TABLE IF NOT EXISTS kanthor_application
 CREATE TABLE IF NOT EXISTS kanthor_endpoint
 (
     id          VARCHAR(64)  NOT NULL PRIMARY KEY,
-    modified_by VARCHAR(64)  NOT NULL,
     created_at  BIGINT       NOT NULL DEFAULT 0,
     updated_at  BIGINT       NOT NULL DEFAULT 0,
 
@@ -69,7 +64,6 @@ CREATE TABLE IF NOT EXISTS kanthor_endpoint
 CREATE TABLE IF NOT EXISTS kanthor_endpoint_rule
 (
     id                   VARCHAR(64)  NOT NULL PRIMARY KEY,
-    modified_by          VARCHAR(64)  NOT NULL,
     created_at           BIGINT       NOT NULL DEFAULT 0,
     updated_at           BIGINT       NOT NULL DEFAULT 0,
 

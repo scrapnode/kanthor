@@ -10,10 +10,12 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
+	"sync"
 )
 
 type SDK interface {
 	patterns.Connectable
+	Application() Application
 }
 
 func New(
@@ -44,6 +46,9 @@ type sdk struct {
 	cache        cache.Cache
 	meter        metric.Meter
 	repos        repos.Repositories
+
+	mu          sync.RWMutex
+	application *application
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {
@@ -71,4 +76,14 @@ func (uc *sdk) Disconnect(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (uc *sdk) Application() Application {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.application == nil {
+		uc.application = &application{}
+	}
+	return uc.application
 }

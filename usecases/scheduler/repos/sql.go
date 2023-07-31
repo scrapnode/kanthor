@@ -4,21 +4,19 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 	"sync"
 )
 
-func NewSql(conf *database.Config, logger logging.Logger, timer timer.Timer) Repositories {
+func NewSql(conf *database.Config, logger logging.Logger) Repositories {
 	db := database.NewSQL(conf, logger)
 
 	logger = logger.With("component", "repositories.sql")
-	return &sql{logger: logger, timer: timer, db: db}
+	return &sql{logger: logger, db: db}
 }
 
 type sql struct {
 	logger logging.Logger
-	timer  timer.Timer
 	db     database.Database
 
 	mu          sync.RWMutex
@@ -53,7 +51,7 @@ func (repo *sql) Application() Application {
 	defer repo.mu.Unlock()
 
 	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.client, timer: repo.timer}
+		repo.application = &SqlApplication{client: repo.client}
 	}
 
 	return repo.application
