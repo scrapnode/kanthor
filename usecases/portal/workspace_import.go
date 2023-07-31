@@ -8,7 +8,7 @@ import (
 )
 
 func (uc *workspace) Import(ctx context.Context, req *WorkspaceImportReq) (*WorkspaceImportRes, error) {
-	acc := ctx.Value(CtxAcc).(*authenticator.Account)
+	acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
 	// by default all imported workspace must be start with default tier
 	// the reason why we have to do that is because of security risk

@@ -62,7 +62,7 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 			// prepare the data
 			acc := &authenticator.Account{Sub: sub, Name: name}
-			ctx = context.WithValue(ctx, usecase.CtxAcc, acc)
+			ctx = context.WithValue(ctx, authenticator.CtxAcc, acc)
 			bytes, err := os.ReadFile(input)
 			if err != nil {
 				return err

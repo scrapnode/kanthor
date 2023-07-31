@@ -3,18 +3,15 @@ package authenticator
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
-	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 )
 
 var (
-	EngineAsk    = "ask"
-	EngineCipher = "cipher"
+	EngineAsk = "ask"
 )
 
 type Config struct {
-	Engine string                        `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=ask cipher"`
-	Ask    *AskConfig                    `json:"ask" yaml:"ask" mapstructure:"ask" validate:"-"`
-	Cipher *cryptography.SymmetricConfig `json:"cipher" yaml:"cipher" mapstructure:"cipher" validate:"-"`
+	Engine string     `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=ask"`
+	Ask    *AskConfig `json:"ask" yaml:"ask" mapstructure:"ask" validate:"-"`
 }
 
 func (conf *Config) Validate() error {
@@ -27,15 +24,6 @@ func (conf *Config) Validate() error {
 			return errors.New("authenticator.config.ask: null value")
 		}
 		if err := conf.Ask.Validate(); err != nil {
-			return err
-		}
-	}
-
-	if conf.Engine == EngineCipher {
-		if conf.Cipher == nil {
-			return errors.New("authenticator.config.cipher: null value")
-		}
-		if err := conf.Cipher.Validate(); err != nil {
 			return err
 		}
 	}

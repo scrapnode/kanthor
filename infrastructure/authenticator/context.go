@@ -3,5 +3,5 @@ package authenticator
 type ctxkey string
 
 const (
-	CtxAuthAccount ctxkey = "kanthor.auth.account"
+	CtxAcc ctxkey = "kanthor.auth.account"
 )

@@ -10,7 +10,8 @@ import (
 
 func Service(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
 	if name == services.PORTAL {
-		//return ioc.InitializeControlplane(conf, logger)
+	}
+	if name == services.SDK {
 	}
 	if name == services.SCHEDULER {
 		return ioc.InitializeScheduler(conf, logger)

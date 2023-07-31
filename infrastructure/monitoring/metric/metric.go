@@ -1,24 +1,13 @@
 package metric
 
-import (
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
-)
+import "fmt"
 
-func New(conf *Config) Meter {
-	if !conf.Enable {
+func New(conf *Config) (Meter, error) {
+	if conf.Engine == EngineNoop {
 		return NewNoop(conf)
 	}
 
-	return NewPrometheus(conf)
-}
-
-func NewExporter(conf *Config, logger logging.Logger) patterns.Runnable {
-	if !conf.Enable {
-		return NewNoopExporter(conf, logger.With("monitoring.metrics.exporter", "noop"))
-	}
-
-	return NewPrometheusExporter(conf, logger.With("monitoring.metrics.exporter", "prometheus"))
+	return nil, fmt.Errorf("monitoring.metric: unknown engine")
 }
 
 type Meter interface {

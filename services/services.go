@@ -8,7 +8,8 @@ type Service interface {
 
 const (
 	ALL        = "all"
-	PORTAL     = "PORTAL"
+	PORTAL     = "portal"
+	SDK        = "sdk"
 	SCHEDULER  = "scheduler"
 	DISPATCHER = "dispatcher"
 	MIGRATION  = "migration"

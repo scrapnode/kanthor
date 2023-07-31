@@ -9,7 +9,7 @@ import (
 )
 
 func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error) {
-	acc := ctx.Value(CtxAcc).(*authenticator.Account)
+	acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
 	now := uc.timer.Now()
 	passwords := map[string]string{}

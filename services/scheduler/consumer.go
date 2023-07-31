@@ -2,9 +2,9 @@ package scheduler
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/services/scheduler/transformation"
 	usecase "github.com/scrapnode/kanthor/usecases/scheduler"
 )
 
@@ -15,9 +15,9 @@ func Consumer(service *scheduler) streaming.SubHandler {
 		service.meter.Count("scheduler_arrange_request_total", 1)
 
 		service.logger.Debugw("received event", "event_id", event.Id)
-		msg, err := transformEventToMessage(event)
+		msg, err := transformation.EventToMessage(event)
 		if err != nil {
-			service.meter.Count("scheduler_arrange_request_error", 1, metric.Label("action", "transform"))
+			service.meter.Count("scheduler_arrange_request_error", 1, metric.Label("action", "transformation"))
 			service.logger.Error(err)
 			return nil
 		}
@@ -31,7 +31,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 		}
 
 		service.meter.Count("scheduler_arrange_request_entity_total", int64(len(response.Entities)))
-		// @TODO: use deadletter
+		// @TODO: use dead-letter
 		if len(response.FailKeys) > 0 {
 			service.meter.Count("scheduler_arrange_request_entity_fail_total", int64(len(response.FailKeys)))
 			service.logger.Errorw("got some errors", "fail_keys", response.FailKeys)
@@ -40,12 +40,4 @@ func Consumer(service *scheduler) streaming.SubHandler {
 		service.logger.Debugw("scheduled requested", "success_count", len(response.SuccessKeys))
 		return nil
 	}
-}
-
-func transformEventToMessage(event *streaming.Event) (*entities.Message, error) {
-	var msg entities.Message
-	if err := msg.Unmarshal(event.Data); err != nil {
-		return nil, err
-	}
-	return &msg, nil
 }

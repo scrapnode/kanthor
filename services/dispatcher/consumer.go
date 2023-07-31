@@ -2,9 +2,9 @@ package dispatcher
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/services/dispatcher/transformation"
 	usecase "github.com/scrapnode/kanthor/usecases/dispatcher"
 )
 
@@ -15,15 +15,15 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 		service.meter.Count("dispatcher_send_request_total", 1)
 
 		service.logger.Debugw("received event", "event_id", event.Id)
-		req, err := transformEventToRequest(event)
+		req, err := transformation.EventToRequest(event)
 		if err != nil {
-			service.meter.Count("dispatcher_consume_event_error", 1, metric.Label("action", "transform"))
+			service.meter.Count("dispatcher_consume_event_error", 1, metric.Label("action", "transformation"))
 			service.logger.Error(err)
 			return nil
 		}
 
 		request := &usecase.ForwarderSendReq{Request: *req}
-		response, err := service.uc.Forwarder().Send(context.TODO(), request)
+		response, err := service.uc.Forwarder().Send(context.Background(), request)
 		if err != nil {
 			service.meter.Count("dispatcher_send_request_error", 1)
 			service.logger.Error(err)
@@ -37,12 +37,4 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 		service.logger.Debugw("received response", "response_id", response.Response.Id, "response_status", response.Response.Status)
 		return nil
 	}
-}
-
-func transformEventToRequest(event *streaming.Event) (*entities.Request, error) {
-	var req entities.Request
-	if err := req.Unmarshal(event.Data); err != nil {
-		return nil, err
-	}
-	return &req, nil
 }
