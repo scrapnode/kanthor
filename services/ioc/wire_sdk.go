@@ -11,30 +11,30 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/timer"
-	portaluc "github.com/scrapnode/kanthor/usecases/portal"
-	"github.com/scrapnode/kanthor/usecases/portal/repos"
+	sdkuc "github.com/scrapnode/kanthor/usecases/sdk"
+	"github.com/scrapnode/kanthor/usecases/sdk/repos"
 )
 
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portaluc.Portal, error) {
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdkuc.Sdk, error) {
 	wire.Build(
-		portaluc.New,
+		sdkuc.New,
 		wire.FieldsOf(new(*config.Config), "Cryptography"),
 		cryptography.New,
 		timer.New,
-		ResolvePortalCacheConfig,
-		cache.New,
-		ResolvePortalMetricConfig,
-		metric.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
+		ResolveSdkCacheConfig,
+		cache.New,
+		ResolveSdkMetricConfig,
+		metric.New,
 	)
 	return nil, nil
 }
 
-func ResolvePortalCacheConfig(conf *config.Config) *cache.Config {
-	return &conf.Portal.Cache
+func ResolveSdkCacheConfig(conf *config.Config) *cache.Config {
+	return &conf.Sdk.Cache
 }
 
-func ResolvePortalMetricConfig(conf *config.Config) *metric.Config {
-	return &conf.Portal.Metrics
+func ResolveSdkMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Sdk.Metrics
 }

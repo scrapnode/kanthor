@@ -14,11 +14,17 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	subscriber streaming.Subscriber,
-	uc usecase.Dispatcher,
 	meter metric.Meter,
+	uc usecase.Dispatcher,
 ) services.Service {
 	logger = logger.With("service", "dispatcher")
-	return &dispatcher{conf: conf, logger: logger, subscriber: subscriber, uc: uc, meter: meter}
+	return &dispatcher{
+		conf:       conf,
+		logger:     logger,
+		subscriber: subscriber,
+		meter:      meter,
+		uc:         uc,
+	}
 }
 
 type dispatcher struct {

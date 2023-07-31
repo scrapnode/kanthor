@@ -15,18 +15,27 @@ import (
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dispatcher"
-	"github.com/scrapnode/kanthor/usecases"
+	dispatcheruc "github.com/scrapnode/kanthor/usecases/dispatcher"
 )
 
 func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		dispatcher.New,
-		usecases.NewDispatcher,
+		ResolveDispatcherSubscriberConfig,
+		streaming.NewSubscriber,
+		ResolveDispatcherMetricConfig,
+		metric.New,
+		InitializeDispatcherUsecase,
+	)
+	return nil, nil
+}
+
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger) (dispatcheruc.Dispatcher, error) {
+	wire.Build(
+		dispatcheruc.New,
 		timer.New,
 		ResolveDispatcherPublisherConfig,
 		streaming.NewPublisher,
-		ResolveDispatcherSubscriberConfig,
-		streaming.NewSubscriber,
 		ResolveDispatcherSenderConfig,
 		sender.New,
 		ResolveDispatcherCacheConfig,

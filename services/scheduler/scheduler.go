@@ -14,11 +14,17 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	subscriber streaming.Subscriber,
-	uc usecase.Scheduler,
 	meter metric.Meter,
+	uc usecase.Scheduler,
 ) services.Service {
 	logger = logger.With("service", "scheduler")
-	return &scheduler{conf: conf, logger: logger, subscriber: subscriber, uc: uc, meter: meter}
+	return &scheduler{
+		conf:       conf,
+		logger:     logger,
+		subscriber: subscriber,
+		meter:      meter,
+		uc:         uc,
+	}
 }
 
 type scheduler struct {

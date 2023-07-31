@@ -13,25 +13,34 @@ import (
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/scheduler"
-	"github.com/scrapnode/kanthor/usecases"
+	scheduleruc "github.com/scrapnode/kanthor/usecases/scheduler"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		scheduler.New,
-		usecases.NewScheduler,
+		ResolveSchedulerSubscriberConfig,
+		streaming.NewSubscriber,
+		ResolveSchedulerMetricConfig,
+		metric.New,
+		InitializeSchedulerUsecase,
+	)
+	return nil, nil
+}
+
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (scheduleruc.Scheduler, error) {
+	wire.Build(
+		scheduleruc.New,
 		timer.New,
 		ResolveSchedulerPublisherConfig,
 		streaming.NewPublisher,
-		ResolveSchedulerSubscriberConfig,
-		streaming.NewSubscriber,
-		wire.FieldsOf(new(*config.Config), "Database"),
-		repos.New,
 		ResolveSchedulerCacheConfig,
 		cache.New,
 		ResolveSchedulerMetricConfig,
 		metric.New,
+		wire.FieldsOf(new(*config.Config), "Database"),
+		repos.New,
 	)
 	return nil, nil
 }

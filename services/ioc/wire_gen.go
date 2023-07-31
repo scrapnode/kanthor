@@ -19,10 +19,13 @@ import (
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
-	"github.com/scrapnode/kanthor/usecases"
+	dispatcher2 "github.com/scrapnode/kanthor/usecases/dispatcher"
 	"github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
+	scheduler2 "github.com/scrapnode/kanthor/usecases/scheduler"
 	repos2 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
+	"github.com/scrapnode/kanthor/usecases/sdk"
+	repos3 "github.com/scrapnode/kanthor/usecases/sdk/repos"
 )
 
 // Injectors from wire_dispatcher.go:
@@ -33,6 +36,20 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	if err != nil {
 		return nil, err
 	}
+	metricConfig := ResolveDispatcherMetricConfig(conf)
+	meter, err := metric.New(metricConfig)
+	if err != nil {
+		return nil, err
+	}
+	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	service := dispatcher.New(conf, logger, subscriber, meter, dispatcherDispatcher)
+	return service, nil
+}
+
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger) (dispatcher2.Dispatcher, error) {
 	timerTimer := timer.New()
 	publisherConfig := ResolveDispatcherPublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
@@ -52,10 +69,12 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 		return nil, err
 	}
 	metricConfig := ResolveDispatcherMetricConfig(conf)
-	meter := metric.New(metricConfig)
-	dispatcherDispatcher := usecases.NewDispatcher(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, meter)
-	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher, meter)
-	return service, nil
+	meter, err := metric.New(metricConfig)
+	if err != nil {
+		return nil, err
+	}
+	dispatcherDispatcher := dispatcher2.New(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, meter)
+	return dispatcherDispatcher, nil
 }
 
 // Injectors from wire_portal.go:
@@ -73,10 +92,13 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal
 		return nil, err
 	}
 	metricConfig := ResolvePortalMetricConfig(conf)
-	meter := metric.New(metricConfig)
+	meter, err := metric.New(metricConfig)
+	if err != nil {
+		return nil, err
+	}
 	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger, timerTimer)
-	portalPortal := usecases.NewPortal(conf, logger, cryptographyCryptography, timerTimer, cacheCache, meter, repositories)
+	repositories := repos.New(databaseConfig, logger)
+	portalPortal := portal.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, meter, repositories)
 	return portalPortal, nil
 }
 
@@ -88,6 +110,20 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
+	metricConfig := ResolveSchedulerMetricConfig(conf)
+	meter, err := metric.New(metricConfig)
+	if err != nil {
+		return nil, err
+	}
+	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	service := scheduler.New(conf, logger, subscriber, meter, schedulerScheduler)
+	return service, nil
+}
+
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (scheduler2.Scheduler, error) {
 	timerTimer := timer.New()
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
@@ -100,12 +136,39 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 		return nil, err
 	}
 	metricConfig := ResolveSchedulerMetricConfig(conf)
-	meter := metric.New(metricConfig)
+	meter, err := metric.New(metricConfig)
+	if err != nil {
+		return nil, err
+	}
 	databaseConfig := &conf.Database
-	repositories := repos2.New(databaseConfig, logger, timerTimer)
-	schedulerScheduler := usecases.NewScheduler(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
-	service := scheduler.New(conf, logger, subscriber, schedulerScheduler, meter)
-	return service, nil
+	repositories := repos2.New(databaseConfig, logger)
+	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
+	return schedulerScheduler, nil
+}
+
+// Injectors from wire_sdk.go:
+
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdk.Sdk, error) {
+	cryptographyConfig := &conf.Cryptography
+	cryptographyCryptography, err := cryptography.New(cryptographyConfig)
+	if err != nil {
+		return nil, err
+	}
+	timerTimer := timer.New()
+	cacheConfig := ResolveSdkCacheConfig(conf)
+	cacheCache, err := cache.New(cacheConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	metricConfig := ResolveSdkMetricConfig(conf)
+	meter, err := metric.New(metricConfig)
+	if err != nil {
+		return nil, err
+	}
+	databaseConfig := &conf.Database
+	repositories := repos3.New(databaseConfig, logger)
+	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, meter, repositories)
+	return sdkSdk, nil
 }
 
 // wire_dispatcher.go:
@@ -160,4 +223,14 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveSchedulerMetricConfig(conf *config.Config) *metric.Config {
 	return &conf.Scheduler.Metrics
+}
+
+// wire_sdk.go:
+
+func ResolveSdkCacheConfig(conf *config.Config) *cache.Config {
+	return &conf.Sdk.Cache
+}
+
+func ResolveSdkMetricConfig(conf *config.Config) *metric.Config {
+	return &conf.Sdk.Metrics
 }

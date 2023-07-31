@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-type SDK interface {
+type Sdk interface {
 	patterns.Connectable
 	Application() Application
 }
@@ -26,7 +26,7 @@ func New(
 	cache cache.Cache,
 	meter metric.Meter,
 	repos repos.Repositories,
-) SDK {
+) Sdk {
 	return &sdk{
 		conf:         conf,
 		logger:       logger,

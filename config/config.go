@@ -27,6 +27,7 @@ type Config struct {
 
 	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
 	Portal     Portal     `json:"portal" yaml:"portal" mapstructure:"portal"`
+	Sdk        Sdk        `json:"sdk" yaml:"sdk" mapstructure:"portal"`
 	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
 	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
 }
@@ -57,6 +58,9 @@ func (conf *Config) Validate(service string) error {
 	}
 	if service == services.ALL || service == services.PORTAL {
 		return conf.Portal.Validate()
+	}
+	if service == services.ALL || service == services.SDK {
+		return conf.Sdk.Validate()
 	}
 	if service == services.ALL || service == services.SCHEDULER {
 		return conf.Scheduler.Validate()
