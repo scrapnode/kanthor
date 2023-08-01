@@ -10,28 +10,22 @@ import (
 	"net/http"
 )
 
-func UseAuthz(authz authorizator.Authorizator, ignores map[string]bool) gin.HandlerFunc {
+func UseAuthz(authz authorizator.Authorizator) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		// ignores should be a slice of matching routes
-		// - /app/:app_id
-		// - /app/:app_id/endpoint/:endpoint_id
-		obj := ginctx.FullPath()
-		ignore := ignores[obj]
 
 		ctx := ginctx.MustGet("ctx").(context.Context)
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 		ws := ctx.Value(sdkuc.CtxWs).(*entities.Workspace)
-		if !ignore {
-			act := ginctx.Request.Method
-			ok, err := authz.Enforce(acc.Sub, ws.Id, obj, act)
-			if err != nil {
-				ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			if !ok {
-				ginctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "you have no permission to perform the action"})
-				return
-			}
+		obj := ginctx.FullPath() // form of /application/:app_id
+		act := ginctx.Request.Method
+		ok, err := authz.Enforce(acc.Sub, ws.Id, obj, act)
+		if err != nil {
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if !ok {
+			ginctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "you have no permission to perform the action"})
+			return
 		}
 
 		ginctx.Next()

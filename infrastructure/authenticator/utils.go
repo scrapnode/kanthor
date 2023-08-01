@@ -6,10 +6,18 @@ import (
 )
 
 func ParseBasicCredentials(credentials string) (string, string, error) {
-	if credentials == "" {
+	segments := strings.Split(credentials, " ")
+	if len(segments) != 2 {
+		return "", "", ErrMalformedCredentials
+	}
+	if !strings.EqualFold(segments[0], "basic") {
+		return "", "", ErrMalformedScheme
+	}
+
+	if segments[1] == "" {
 		return "", "", ErrMalformedToken
 	}
-	bytes, err := base64.StdEncoding.DecodeString(credentials)
+	bytes, err := base64.StdEncoding.DecodeString(segments[1])
 	if err != nil {
 		return "", "", err
 	}

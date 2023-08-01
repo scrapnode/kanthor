@@ -1,4 +1,7 @@
-gen: gen-wire
+gen: gen-wire migrate
+
+migrate:
+	go run main.go migrate
 
 gen-wire:
 	go generate infrastructure/ioc/generate.go

@@ -35,7 +35,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 		return err
 	}
 	databaseName := strings.ReplaceAll(policyUrl.Path, "/", "")
-	tableName := fmt.Sprintf("kanthor_%s_rule", authorizator.conf.Casbin.PolicyNamespace)
+	tableName := fmt.Sprintf("kanthor_%s_authz", authorizator.conf.Casbin.PolicyNamespace)
 
 	adapter, err := gormadapter.NewAdapter(policyUrl.Scheme, authorizator.conf.Casbin.PolicyUri, databaseName, tableName, true)
 	if err != nil {

@@ -14,6 +14,5 @@ func New(conf *Config, logger logging.Logger) (Authenticator, error) {
 }
 
 type Authenticator interface {
-	Scheme() string
-	Verify(token string) (*Account, error)
+	Verify(credentials string) (*Account, error)
 }

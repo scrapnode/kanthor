@@ -7,15 +7,14 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-func UseWsId(wsId string) func(db *gorm.DB) *gorm.DB {
+func UseWsId(target schema.Tabler, wsId string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		ws := &entities.Workspace{}
-		app := &entities.Application{}
 		join := fmt.Sprintf(
 			`RIGHT JOIN "%s" ON "%s"."id" = "%s"."workspace_id"`,
 			ws.TableName(),
 			ws.TableName(),
-			app.TableName(),
+			target.TableName(),
 		)
 		where := fmt.Sprintf(`"%s"."id" = ?`, ws.TableName())
 		return db.Joins(join).Where(where, wsId)

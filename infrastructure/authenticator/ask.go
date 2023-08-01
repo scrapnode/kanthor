@@ -15,12 +15,8 @@ type ask struct {
 	logger logging.Logger
 }
 
-func (authenticator *ask) Scheme() string {
-	return "basic"
-}
-
-func (authenticator *ask) Verify(token string) (*Account, error) {
-	ak, sk, err := ParseBasicCredentials(token)
+func (authenticator *ask) Verify(credentials string) (*Account, error) {
+	ak, sk, err := ParseBasicCredentials(credentials)
 	if err != nil {
 		authenticator.logger.Error(err)
 		return nil, ErrMalformedToken

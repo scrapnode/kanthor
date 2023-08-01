@@ -12,15 +12,15 @@ type SqlWorkspaceTier struct {
 }
 
 func (sql *SqlWorkspaceTier) Get(ctx context.Context, wsId string) (*entities.WorkspaceTier, error) {
-	wst := &entities.WorkspaceTier{}
+	doc := &entities.WorkspaceTier{}
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(wst).
-		Scopes(UseWsId(wsId)).
-		First(wst)
+	tx := transaction.WithContext(ctx).Model(doc).
+		Scopes(UseWsId(doc, wsId)).
+		First(doc)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	return wst, nil
+	return doc, nil
 }

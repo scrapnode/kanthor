@@ -22,12 +22,10 @@ func (sql *SqlEndpointRule) Create(ctx context.Context, doc *entities.EndpointRu
 }
 
 func (sql *SqlEndpointRule) Update(ctx context.Context, wsId string, doc *entities.EndpointRule) (*entities.EndpointRule, error) {
-	ep := &entities.Endpoint{}
-
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
-		Scopes(UseWsId(wsId)).
-		Scopes(JoinApp(ep)).
+		Scopes(UseWsId(&entities.Application{}, wsId)).
+		Scopes(JoinApp(&entities.Endpoint{})).
 		Scopes(JoinEp(doc)).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Updates(doc)
@@ -38,17 +36,16 @@ func (sql *SqlEndpointRule) Update(ctx context.Context, wsId string, doc *entiti
 }
 
 func (sql *SqlEndpointRule) Delete(ctx context.Context, wsId, id string) error {
-	ep := &entities.Endpoint{}
-	epr := &entities.EndpointRule{}
-	epr.Id = id
+	doc := &entities.EndpointRule{}
+	doc.Id = id
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(epr).
-		Scopes(UseWsId(wsId)).
-		Scopes(JoinApp(ep)).
-		Scopes(JoinEp(epr)).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, epr.TableName()), id).
-		Delete(epr)
+	tx := transaction.WithContext(ctx).Model(doc).
+		Scopes(UseWsId(&entities.Application{}, wsId)).
+		Scopes(JoinApp(&entities.Endpoint{})).
+		Scopes(JoinEp(doc)).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
+		Delete(doc)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -57,15 +54,14 @@ func (sql *SqlEndpointRule) Delete(ctx context.Context, wsId, id string) error {
 }
 
 func (sql *SqlEndpointRule) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error) {
-	ep := &entities.Endpoint{}
-	epr := &entities.EndpointRule{}
-	tx := sql.client.WithContext(ctx).Model(epr).
-		Scopes(UseWsId(wsId)).
-		Scopes(JoinApp(ep)).
-		Scopes(JoinEp(epr))
+	doc := &entities.EndpointRule{}
+	tx := sql.client.WithContext(ctx).Model(doc).
+		Scopes(UseWsId(&entities.Application{}, wsId)).
+		Scopes(JoinApp(&entities.Endpoint{})).
+		Scopes(JoinEp(doc))
 
 	req := structure.ListReqBuild(opts)
-	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, epr.TableName()))
+	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
 
 	res := &structure.ListRes[entities.EndpointRule]{Data: []entities.EndpointRule{}}
 	if tx = tx.Find(&res.Data); tx.Error != nil {
@@ -76,20 +72,19 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId string, opts ...struc
 }
 
 func (sql *SqlEndpointRule) Get(ctx context.Context, wsId, id string) (*entities.EndpointRule, error) {
-	ep := &entities.Endpoint{}
-	epr := &entities.EndpointRule{}
-	epr.Id = id
+	doc := &entities.EndpointRule{}
+	doc.Id = id
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(epr).
-		Scopes(UseWsId(wsId)).
-		Scopes(JoinApp(ep)).
-		Scopes(JoinEp(epr)).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, epr.TableName()), id).
-		First(epr)
+	tx := transaction.WithContext(ctx).Model(doc).
+		Scopes(UseWsId(&entities.Application{}, wsId)).
+		Scopes(JoinApp(&entities.Endpoint{})).
+		Scopes(JoinEp(doc)).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
+		First(doc)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	return epr, nil
+	return doc, nil
 }

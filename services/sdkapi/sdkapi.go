@@ -37,6 +37,10 @@ type sdkapi struct {
 }
 
 func (service *sdkapi) Start(ctx context.Context) error {
+	if err := service.authz.Connect(ctx); err != nil {
+		return err
+	}
+
 	if err := service.uc.Connect(ctx); err != nil {
 		return err
 	}
@@ -50,8 +54,10 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	router.GET("/liveness", func(ginctx *gin.Context) {
 		ginctx.String(http.StatusOK, "live")
 	})
-	router.Use(middlewares.UseAuth(service.uc, publicable))
-	router.Use(middlewares.UseAuthz(service.authz, protectable))
+	router.Use(middlewares.UseStartup())
+	router.Use(middlewares.UseAuth(service.uc))
+	router.Use(middlewares.UseAuthz(service.authz))
+	UseApplication(router.Group("/application"), service.logger, service.uc)
 
 	service.server = &http.Server{
 		Addr:    service.conf.SdkApi.Gateway.Httpx.Addr,
@@ -66,6 +72,10 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 	service.logger.Info("stopped")
 
 	if err := service.uc.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
+	if err := service.authz.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 	}
 

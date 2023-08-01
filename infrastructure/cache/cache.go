@@ -15,6 +15,10 @@ func New(conf *Config, logger logging.Logger) (Cache, error) {
 		logger.Warnw("unable to parse conf.Uri, use memory cache", "uri", conf.Uri, "component", "cache")
 	}
 
+	if strings.HasPrefix(uri.Scheme, "noop") {
+		return NewNoop(conf, logger), nil
+	}
+
 	if strings.HasPrefix(uri.Scheme, "redis") {
 		return NewRedis(conf, logger), nil
 	}

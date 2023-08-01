@@ -17,27 +17,28 @@ func (uc *workspace) Authenticate(ctx context.Context, req *WorkspaceAuthenticat
 
 		credentials, err := uc.repos.WorkspaceCredentials().Get(ctx, req.User)
 		if err != nil {
-			res.Error = err
+			res.Error = err.Error()
 			return res, nil
 		}
+		res.WorkspaceCredentials = credentials
 
 		expired := credentials.ExpiredAt > 0 && credentials.ExpiredAt < uc.timer.Now().UnixMilli()
 		if expired {
 			expiredAt := time.UnixMilli(credentials.ExpiredAt).Format(time.RFC3339)
-			res.Error = fmt.Errorf("workspace credentials was expired (%s)", expiredAt)
+			res.Error = fmt.Errorf("workspace credentials was expired (%s)", expiredAt).Error()
 			return res, nil
 		}
 
 		ws, err := uc.repos.Workspace().Get(ctx, credentials.WorkspaceId)
 		if err != nil {
-			res.Error = err
+			res.Error = err.Error()
 			return res, nil
 		}
 		res.Workspace = ws
 
 		tier, err := uc.repos.WorkspaceTier().Get(ctx, credentials.WorkspaceId)
 		if err != nil {
-			res.Error = err
+			res.Error = err.Error()
 			return res, nil
 		}
 		res.WorkspaceTier = tier

@@ -9,8 +9,10 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/data/interchange"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/ioc"
+	"github.com/scrapnode/kanthor/services/sdkapi"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/spf13/cobra"
 	"net/http"
@@ -54,8 +56,21 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err := uc.Connect(ctx); err != nil {
 				return err
 			}
+
+			authz, err := authorizator.New(&conf.SdkApi.Authorizator, logger)
+			if err != nil {
+				return err
+			}
+			if err := authz.Connect(ctx); err != nil {
+				return err
+			}
+
 			defer func() {
 				if err := uc.Disconnect(ctx); err != nil {
+					logger.Error(err)
+				}
+
+				if err := authz.Disconnect(ctx); err != nil {
 					logger.Error(err)
 				}
 			}()
@@ -78,7 +93,7 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			metadata := importAutoGenerate(logger, uc, res, ctx, needs)
+			metadata := importAutoGenerate(uc, authz, res, ctx, needs)
 
 			importReport(in, req, res, metadata, verbose)
 			return nil
@@ -111,19 +126,32 @@ func importPrepareRequest(in *interchange.Interchange) *usecase.WorkspaceImportR
 	return req
 }
 
-func importAutoGenerate(logger logging.Logger, uc usecase.Portal, res *usecase.WorkspaceImportRes, ctx context.Context, needs []string) http.Header {
+func importAutoGenerate(
+	uc usecase.Portal,
+	authz authorizator.Authorizator,
+	res *usecase.WorkspaceImportRes,
+	ctx context.Context,
+	needs []string,
+) http.Header {
 	meta := http.Header{}
 
 	for _, need := range needs {
 		if need == "workspace_credentials" {
-			importAutoGenerateWorkspaceCredentials(logger, uc, res, ctx, meta)
+			importAutoGenerateWorkspaceCredentials(uc, authz, res, ctx, meta)
 		}
 	}
 
 	return meta
 }
 
-func importAutoGenerateWorkspaceCredentials(logger logging.Logger, uc usecase.Portal, res *usecase.WorkspaceImportRes, ctx context.Context, meta http.Header) {
+func importAutoGenerateWorkspaceCredentials(
+	uc usecase.Portal,
+	authz authorizator.Authorizator,
+	res *usecase.WorkspaceImportRes,
+	ctx context.Context,
+	meta http.Header,
+) {
+
 	for _, wsId := range res.WorkspaceIds {
 		cred, err := uc.WorkspaceCredentials().Generate(
 			ctx,
@@ -131,11 +159,20 @@ func importAutoGenerateWorkspaceCredentials(logger logging.Logger, uc usecase.Po
 		)
 
 		if err != nil {
-			logger.Error(err)
+			meta.Set(wsId, fmt.Sprintf("error: %s", err.Error()))
 			continue
 		}
 
-		payload := []byte(fmt.Sprintf("%s:%s", wsId, cred.Passwords[cred.Credentials[0].Id]))
+		if err := authz.GrantPermissionsToRole(wsId, sdkapi.RoleOwner, sdkapi.PermissionOwner); err != nil {
+			meta.Set(wsId, fmt.Sprintf("error: %s", err.Error()))
+			continue
+		}
+		if err := authz.GrantRoleToSub(wsId, sdkapi.RoleOwner, cred.Credentials[0].Id); err != nil {
+			meta.Set(wsId, fmt.Sprintf("error: %s", err.Error()))
+			continue
+		}
+
+		payload := []byte(fmt.Sprintf("%s:%s", cred.Credentials[0].Id, cred.Passwords[cred.Credentials[0].Id]))
 		token := base64.StdEncoding.EncodeToString(payload)
 		meta.Set(wsId, fmt.Sprintf("access_token: %s", token))
 	}

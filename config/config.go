@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/database"
@@ -23,7 +22,6 @@ type Config struct {
 
 	Logger   logging.Config  `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
 	Database database.Config `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
-	Cache    cache.Config    `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 
 	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
 	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
@@ -48,9 +46,6 @@ func (conf *Config) Validate(service string) error {
 	}
 	if err := conf.Database.Validate(); err != nil {
 		return fmt.Errorf("config.Database: %v", err)
-	}
-	if err := conf.Cache.Validate(); err != nil {
-		return fmt.Errorf("config.Cache: %v", err)
 	}
 
 	if service == services.ALL || service == services.MIGRATION {
