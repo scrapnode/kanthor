@@ -8,4 +8,6 @@ import (
 
 func UseApplication(router *gin.RouterGroup, logger logging.Logger, uc usecase.Sdk) {
 	router.POST("", UseApplicationCreate(logger, uc))
+	router.PATCH("/:app_id", UseApplicationUpdate(logger, uc))
+	router.DELETE("/:app_id", UseApplicationDelete(logger, uc))
 }

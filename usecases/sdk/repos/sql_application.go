@@ -21,27 +21,22 @@ func (sql *SqlApplication) Create(ctx context.Context, doc *entities.Application
 	return doc, nil
 }
 
-func (sql *SqlApplication) Update(ctx context.Context, wsId string, doc *entities.Application) (*entities.Application, error) {
+func (sql *SqlApplication) Update(ctx context.Context, doc *entities.Application) (*entities.Application, error) {
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
-		Scopes(UseWsId(doc, wsId)).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Updates(doc)
 
 	if tx.Error != nil {
-		return nil, fmt.Errorf("doclication.create: %w", tx.Error)
+		return nil, tx.Error
 	}
 	return doc, nil
 }
 
-func (sql *SqlApplication) Delete(ctx context.Context, wsId, id string) error {
-	doc := &entities.Application{}
-	doc.Id = id
-
+func (sql *SqlApplication) Delete(ctx context.Context, doc *entities.Application) error {
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
-		Scopes(UseWsId(doc, wsId)).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Delete(doc)
 
 	if tx.Error != nil {

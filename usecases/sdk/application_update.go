@@ -15,7 +15,7 @@ func (uc *application) Update(ctx context.Context, req *ApplicationUpdateReq) (*
 
 		app.Name = req.Name
 		app.SetAT(uc.timer.Now())
-		return uc.repos.Application().Update(txctx, ws.Id, app)
+		return uc.repos.Application().Update(txctx, app)
 	})
 	if err != nil {
 		return nil, err

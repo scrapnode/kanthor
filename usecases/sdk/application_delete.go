@@ -13,7 +13,7 @@ func (uc *application) Delete(ctx context.Context, req *ApplicationDeleteReq) (*
 			return nil, err
 		}
 
-		if err := uc.repos.Application().Delete(txctx, ws.Id, app.Id); err != nil {
+		if err := uc.repos.Application().Delete(txctx, app); err != nil {
 			return nil, err
 		}
 		return app, nil
