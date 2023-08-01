@@ -6,6 +6,9 @@ import (
 )
 
 func ParseBasicCredentials(credentials string) (string, string, error) {
+	if credentials == "" {
+		return "", "", ErrMalformedToken
+	}
 	bytes, err := base64.StdEncoding.DecodeString(credentials)
 	if err != nil {
 		return "", "", err

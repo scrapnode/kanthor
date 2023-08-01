@@ -18,7 +18,7 @@ type Authorizator interface {
 	patterns.Connectable
 	Enforce(sub, tenant, obj, act string) (bool, error)
 	GrantPermissionsToRole(tenant, role string, permissions []Permission) error
-	GrantRoleToSub(tenant, sub, role string) error
+	GrantRoleToSub(tenant, role, sub string) error
 	Tenants(sub string) ([]string, error)
 	UsersOfTenant(tenant string) ([]string, error)
 	UserPermissionsInTenant(tenant, sub string) ([]Permission, error)

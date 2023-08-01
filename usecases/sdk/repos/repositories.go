@@ -16,6 +16,7 @@ type Repositories interface {
 	Transaction(ctx context.Context, handler func(txctx context.Context) (interface{}, error)) (res interface{}, err error)
 	Workspace() Workspace
 	WorkspaceTier() WorkspaceTier
+	WorkspaceCredentials() WorkspaceCredentials
 	Application() Application
 	Endpoint() Endpoint
 	EndpointRule() EndpointRule

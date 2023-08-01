@@ -15,22 +15,22 @@ func Demo(acc *authenticator.Account, bytes []byte) (*Interchange, error) {
 	now := time.Now().UTC()
 	for i, workspace := range in.Workspaces {
 		workspace.GenId()
-		workspace.SetAT(acc.Modifier(), now)
+		workspace.SetAT(now)
 		workspace.OwnerId = acc.Sub
 
 		for j, application := range workspace.Applications {
 			application.GenId()
-			application.SetAT(acc.Modifier(), now)
+			application.SetAT(now)
 
 			for k, endpoint := range application.Endpoints {
 				endpoint.GenId()
-				endpoint.SetAT(acc.Modifier(), now)
+				endpoint.SetAT(now)
 				endpoint.GenSecretKey()
 				endpoint.AppId = application.Id
 
 				for h, rule := range endpoint.Rules {
 					rule.GenId()
-					rule.SetAT(acc.Modifier(), now)
+					rule.SetAT(now)
 					rule.EndpointId = endpoint.Id
 
 					endpoint.Rules[h] = rule

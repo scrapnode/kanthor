@@ -6,7 +6,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
@@ -16,6 +15,7 @@ import (
 type Sdk interface {
 	patterns.Connectable
 	Application() Application
+	Workspace() Workspace
 }
 
 func New(
@@ -24,7 +24,6 @@ func New(
 	cryptography cryptography.Cryptography,
 	timer timer.Timer,
 	cache cache.Cache,
-	meter metric.Meter,
 	repos repos.Repositories,
 ) Sdk {
 	return &sdk{
@@ -33,7 +32,6 @@ func New(
 		cryptography: cryptography,
 		timer:        timer,
 		cache:        cache,
-		meter:        meter,
 		repos:        repos,
 	}
 }
@@ -44,11 +42,11 @@ type sdk struct {
 	cryptography cryptography.Cryptography
 	timer        timer.Timer
 	cache        cache.Cache
-	meter        metric.Meter
 	repos        repos.Repositories
 
 	mu          sync.RWMutex
 	application *application
+	workspace   *workspace
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {
@@ -83,7 +81,31 @@ func (uc *sdk) Application() Application {
 	defer uc.mu.Unlock()
 
 	if uc.application == nil {
-		uc.application = &application{}
+		uc.application = &application{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			repos:        uc.repos,
+		}
 	}
 	return uc.application
+}
+
+func (uc *sdk) Workspace() Workspace {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.workspace == nil {
+		uc.workspace = &workspace{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			repos:        uc.repos,
+		}
+	}
+	return uc.workspace
 }

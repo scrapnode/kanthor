@@ -4,12 +4,9 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 )
 
 func (uc *workspace) Import(ctx context.Context, req *WorkspaceImportReq) (*WorkspaceImportRes, error) {
-	acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
-
 	// by default all imported workspace must be start with default tier
 	// the reason why we have to do that is because of security risk
 	// let image a customer export data with their workspace tier
@@ -19,7 +16,7 @@ func (uc *workspace) Import(ctx context.Context, req *WorkspaceImportReq) (*Work
 	for _, ws := range req.Workspaces {
 		tier := entities.WorkspaceTier{WorkspaceId: ws.Id, Name: constants.DefaultWorkspaceTier}
 		tier.GenId()
-		tier.SetAT(acc.Modifier(), now)
+		tier.SetAT(now)
 		tiers = append(tiers, tier)
 	}
 

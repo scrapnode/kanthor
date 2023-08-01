@@ -5,11 +5,11 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const EngineGrpc = "grpc"
+const EngineHttpx = "httpx"
 
 type Config struct {
-	Engine string      `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=grpc"`
-	Grpc   *GrpcConfig `json:"grpc" yaml:"grpc" mapstructure:"grpc" validate:"-"`
+	Engine string       `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=httpx"`
+	Httpx  *HttpxConfig `json:"httpx" yaml:"httpx" mapstructure:"httpx" validate:"-"`
 }
 
 func (conf *Config) Validate() error {
@@ -17,11 +17,11 @@ func (conf *Config) Validate() error {
 		return err
 	}
 
-	if conf.Engine == EngineGrpc {
-		if conf.Grpc == nil {
-			return errors.New("gateway.config.grpc: null value")
+	if conf.Engine == EngineHttpx {
+		if conf.Httpx == nil {
+			return errors.New("gateway.config.httpx: null value")
 		}
-		if err := conf.Grpc.Validate(); err != nil {
+		if err := conf.Httpx.Validate(); err != nil {
 			return err
 		}
 	}
@@ -29,11 +29,11 @@ func (conf *Config) Validate() error {
 	return nil
 }
 
-type GrpcConfig struct {
+type HttpxConfig struct {
 	Addr string `json:"addr" yaml:"addr" validate:"required"`
 }
 
-func (conf *GrpcConfig) Validate() error {
+func (conf *HttpxConfig) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return err
 	}

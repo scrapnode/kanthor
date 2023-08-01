@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace_credentials
     updated_at   BIGINT       NOT NULL DEFAULT 0,
 
     workspace_id VARCHAR(64)  NOT NULL,
+    name         VARCHAR(256) NOT NULL,
     hash         VARCHAR(256) NOT NULL,
     expired_at   BIGINT       NOT NULL DEFAULT 0,
 

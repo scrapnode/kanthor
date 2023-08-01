@@ -8,17 +8,18 @@ package ioc
 
 import (
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
+	"github.com/scrapnode/kanthor/services/sdkapi"
 	dispatcher2 "github.com/scrapnode/kanthor/usecases/dispatcher"
 	"github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
@@ -36,16 +37,11 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	if err != nil {
 		return nil, err
 	}
-	metricConfig := ResolveDispatcherMetricConfig(conf)
-	meter, err := metric.New(metricConfig)
-	if err != nil {
-		return nil, err
-	}
 	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := dispatcher.New(conf, logger, subscriber, meter, dispatcherDispatcher)
+	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher)
 	return service, nil
 }
 
@@ -68,16 +64,11 @@ func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger) (di
 	if err != nil {
 		return nil, err
 	}
-	metricConfig := ResolveDispatcherMetricConfig(conf)
-	meter, err := metric.New(metricConfig)
-	if err != nil {
-		return nil, err
-	}
-	dispatcherDispatcher := dispatcher2.New(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, meter)
+	dispatcherDispatcher := dispatcher2.New(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker)
 	return dispatcherDispatcher, nil
 }
 
-// Injectors from wire_portal.go:
+// Injectors from wire_portal_api.go:
 
 func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal.Portal, error) {
 	cryptographyConfig := &conf.Cryptography
@@ -91,14 +82,9 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal
 	if err != nil {
 		return nil, err
 	}
-	metricConfig := ResolvePortalMetricConfig(conf)
-	meter, err := metric.New(metricConfig)
-	if err != nil {
-		return nil, err
-	}
 	databaseConfig := &conf.Database
 	repositories := repos.New(databaseConfig, logger)
-	portalPortal := portal.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, meter, repositories)
+	portalPortal := portal.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, repositories)
 	return portalPortal, nil
 }
 
@@ -110,16 +96,11 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	metricConfig := ResolveSchedulerMetricConfig(conf)
-	meter, err := metric.New(metricConfig)
-	if err != nil {
-		return nil, err
-	}
 	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := scheduler.New(conf, logger, subscriber, meter, schedulerScheduler)
+	service := scheduler.New(conf, logger, subscriber, schedulerScheduler)
 	return service, nil
 }
 
@@ -135,18 +116,27 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (sch
 	if err != nil {
 		return nil, err
 	}
-	metricConfig := ResolveSchedulerMetricConfig(conf)
-	meter, err := metric.New(metricConfig)
-	if err != nil {
-		return nil, err
-	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger)
-	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, publisher, cacheCache, meter, repositories)
+	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, publisher, cacheCache, repositories)
 	return schedulerScheduler, nil
 }
 
-// Injectors from wire_sdk.go:
+// Injectors from wire_sdk_api.go:
+
+func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	authorizatorConfig := ResolveSdkAuthorizatorConfig(conf)
+	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	sdk, err := InitializeSdkUsecase(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	service := sdkapi.New(conf, logger, authorizatorAuthorizator, sdk)
+	return service, nil
+}
 
 func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdk.Sdk, error) {
 	cryptographyConfig := &conf.Cryptography
@@ -160,14 +150,9 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdk.Sdk, 
 	if err != nil {
 		return nil, err
 	}
-	metricConfig := ResolveSdkMetricConfig(conf)
-	meter, err := metric.New(metricConfig)
-	if err != nil {
-		return nil, err
-	}
 	databaseConfig := &conf.Database
 	repositories := repos3.New(databaseConfig, logger)
-	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, meter, repositories)
+	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, repositories)
 	return sdkSdk, nil
 }
 
@@ -189,22 +174,14 @@ func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.
 	return &conf.Dispatcher.CircuitBreaker
 }
 
-func ResolveDispatcherMetricConfig(conf *config.Config) *metric.Config {
-	return &conf.Dispatcher.Metrics
-}
-
 func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *sender.Config {
 	return &conf.Dispatcher.Sender
 }
 
-// wire_portal.go:
+// wire_portal_api.go:
 
 func ResolvePortalCacheConfig(conf *config.Config) *cache.Config {
-	return &conf.Portal.Cache
-}
-
-func ResolvePortalMetricConfig(conf *config.Config) *metric.Config {
-	return &conf.Portal.Metrics
+	return &conf.PortalApi.Cache
 }
 
 // wire_scheduler.go:
@@ -221,16 +198,12 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.Scheduler.Cache
 }
 
-func ResolveSchedulerMetricConfig(conf *config.Config) *metric.Config {
-	return &conf.Scheduler.Metrics
-}
-
-// wire_sdk.go:
+// wire_sdk_api.go:
 
 func ResolveSdkCacheConfig(conf *config.Config) *cache.Config {
-	return &conf.Sdk.Cache
+	return &conf.SdkApi.Cache
 }
 
-func ResolveSdkMetricConfig(conf *config.Config) *metric.Config {
-	return &conf.Sdk.Metrics
+func ResolveSdkAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.SdkApi.Authorizator
 }

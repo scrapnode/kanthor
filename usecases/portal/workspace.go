@@ -7,7 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
 )
@@ -47,6 +46,5 @@ type workspace struct {
 	cryptography cryptography.Cryptography
 	timer        timer.Timer
 	cache        cache.Cache
-	meter        metric.Meter
 	repos        repos.Repositories
 }

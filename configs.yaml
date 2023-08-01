@@ -48,8 +48,27 @@ migration:
       uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
       source: file://./migration/datastore/sql
 
-portal:
+sdkapi:
   cache: *cache
+  gateway:
+    engine: httpx
+    httpx:
+      addr: :8080
+  authorizator:
+    engine: casbin
+    casbin:
+      model_uri: file://./data/authorizator/casbin_rbac_model.conf
+      policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.sdk
+      policy_namespace: sdk
+      watcher:
+        uri: nats://127.0.0.1:4222
+
+portalapi:
+  cache: *cache
+  gateway:
+    engine: httpx
+    httpx:
+      addr: :8180
   authenticator:
     engine: ask
     ask:
@@ -59,8 +78,8 @@ portal:
     engine: casbin
     casbin:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.authorizator
-      policy_namespace: controlplane
+      policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.portal
+      policy_namespace: portal
       watcher:
         uri: nats://127.0.0.1:4222
 

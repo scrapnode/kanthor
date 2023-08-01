@@ -2,22 +2,24 @@ package portal
 
 import (
 	"context"
+	"fmt"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"time"
 )
 
 func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error) {
-	acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
-
 	now := uc.timer.Now()
 	passwords := map[string]string{}
 	var docs []entities.WorkspaceCredentials
 	for i := 0; i < req.Count; i++ {
-		credentials := entities.WorkspaceCredentials{WorkspaceId: req.WorkspaceId}
+		credentials := entities.WorkspaceCredentials{
+			WorkspaceId: req.WorkspaceId,
+			Name:        fmt.Sprintf("#%d at %s", i+1, now.Format(time.RFC3339)),
+		}
 		credentials.GenId()
-		credentials.SetAT(acc.Modifier(), now)
+		credentials.SetAT(now)
 
 		password := utils.RandomString(constants.GlobalPasswordLength)
 		passwords[credentials.Id] = password

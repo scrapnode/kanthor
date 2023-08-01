@@ -6,7 +6,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
@@ -19,7 +18,6 @@ import (
 func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*RequestArrangeRes, error) {
 	cacheKey := cache.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
 	app, err := cache.Warp(uc.cache, cacheKey, time.Hour, func() (*repos.ApplicationWithEndpointsAndRules, error) {
-		uc.meter.Count("cache_miss_total", 1, metric.Label("source", "scheduler_request_arrange"))
 		return uc.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
 	})
 	if err != nil {

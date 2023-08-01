@@ -26,8 +26,8 @@ type Config struct {
 	Cache    cache.Config    `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 
 	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
-	Portal     Portal     `json:"portal" yaml:"portal" mapstructure:"portal"`
-	Sdk        Sdk        `json:"sdk" yaml:"sdk" mapstructure:"portal"`
+	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
+	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi" mapstructure:"sdkapi"`
 	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
 	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
 }
@@ -56,11 +56,11 @@ func (conf *Config) Validate(service string) error {
 	if service == services.ALL || service == services.MIGRATION {
 		return conf.Migration.Validate()
 	}
-	if service == services.ALL || service == services.PORTAL {
-		return conf.Portal.Validate()
+	if service == services.ALL || service == services.PORTAL_API {
+		return conf.PortalApi.Validate()
 	}
-	if service == services.ALL || service == services.SDK {
-		return conf.Sdk.Validate()
+	if service == services.ALL || service == services.SDK_API {
+		return conf.SdkApi.Validate()
 	}
 	if service == services.ALL || service == services.SCHEDULER {
 		return conf.Scheduler.Validate()

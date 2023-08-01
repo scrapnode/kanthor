@@ -19,13 +19,14 @@ type sql struct {
 	logger logging.Logger
 	db     database.Database
 
-	mu            sync.RWMutex
-	client        *gorm.DB
-	workspace     *SqlWorkspace
-	workspaceTier *SqlWorkspaceTier
-	application   *SqlApplication
-	endpoint      *SqlEndpoint
-	endpointRule  *SqlEndpointRule
+	mu                   sync.RWMutex
+	client               *gorm.DB
+	workspace            *SqlWorkspace
+	workspaceTier        *SqlWorkspaceTier
+	workspaceCredentials *SqlWorkspaceCredentials
+	application          *SqlApplication
+	endpoint             *SqlEndpoint
+	endpointRule         *SqlEndpointRule
 }
 
 func (repo *sql) Connect(ctx context.Context) error {
@@ -78,6 +79,17 @@ func (repo *sql) WorkspaceTier() WorkspaceTier {
 	}
 
 	return repo.workspaceTier
+}
+
+func (repo *sql) WorkspaceCredentials() WorkspaceCredentials {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
+	if repo.workspaceCredentials == nil {
+		repo.workspaceCredentials = &SqlWorkspaceCredentials{client: repo.client}
+	}
+
+	return repo.workspaceCredentials
 }
 
 func (repo *sql) Application() Application {

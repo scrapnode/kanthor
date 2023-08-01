@@ -5,7 +5,6 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -24,7 +23,6 @@ func New(
 	timer timer.Timer,
 	publisher streaming.Publisher,
 	cache cache.Cache,
-	meter metric.Meter,
 	repos repos.Repositories,
 ) Scheduler {
 	return &scheduler{
@@ -33,7 +31,6 @@ func New(
 		timer:     timer,
 		publisher: publisher,
 		cache:     cache,
-		meter:     meter,
 		repos:     repos,
 	}
 }
@@ -44,7 +41,6 @@ type scheduler struct {
 	timer     timer.Timer
 	publisher streaming.Publisher
 	cache     cache.Cache
-	meter     metric.Meter
 	repos     repos.Repositories
 
 	mu      sync.RWMutex
@@ -98,7 +94,6 @@ func (uc *scheduler) Request() Request {
 			publisher: uc.publisher,
 			repos:     uc.repos,
 			cache:     uc.cache,
-			meter:     uc.meter,
 		}
 	}
 	return uc.request

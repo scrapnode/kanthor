@@ -45,6 +45,7 @@ type WorkspaceCredentials struct {
 	AuditTime
 
 	WorkspaceId string `json:"workspace_id" validate:"required,startswith=ws_"`
+	Name        string `json:"name" validate:"required"`
 	Hash        string `json:"hash" validate:"required"`
 	ExpiredAt   int64  `json:"expired_at" validate:"required,gt=0"`
 }

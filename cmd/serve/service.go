@@ -9,9 +9,10 @@ import (
 )
 
 func Service(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
-	if name == services.PORTAL {
+	if name == services.PORTAL_API {
 	}
-	if name == services.SDK {
+	if name == services.SDK_API {
+		return ioc.InitializeSdkApi(conf, logger)
 	}
 	if name == services.SCHEDULER {
 		return ioc.InitializeScheduler(conf, logger)

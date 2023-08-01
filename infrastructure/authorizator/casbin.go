@@ -97,7 +97,7 @@ func (authorizator *casbin) Enforce(tenant, sub, obj, act string) (bool, error) 
 func (authorizator *casbin) GrantPermissionsToRole(tenant, role string, permissions []Permission) error {
 	policies := [][]string{}
 	for _, permission := range permissions {
-		policies = append(policies, append([]string{tenant, role}, permission.Object, permission.Action))
+		policies = append(policies, append([]string{role, tenant}, permission.Object, permission.Action))
 	}
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
@@ -109,10 +109,10 @@ func (authorizator *casbin) GrantPermissionsToRole(tenant, role string, permissi
 	return nil
 }
 
-func (authorizator *casbin) GrantRoleToSub(tenant, sub, role string) error {
+func (authorizator *casbin) GrantRoleToSub(tenant, role, sub string) error {
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
-	_, err := authorizator.client.AddRoleForUserInDomain(tenant, sub, role)
+	_, err := authorizator.client.AddRoleForUserInDomain(sub, role, tenant)
 	if err != nil {
 		return err
 	}
