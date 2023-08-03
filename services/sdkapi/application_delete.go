@@ -5,30 +5,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 	"net/http"
 )
 
-type ApplicationDeleteReq struct {
-	Name string `json:"name" binding:"required"`
-}
-
-type ApplicationDeleteRes struct {
+type applicationDeleteRes struct {
 	*entities.Application
 }
 
-func UseApplicationDelete(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseApplicationDelete(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req ApplicationDeleteReq
-		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
-			return
-		}
-
 		ctx := ginctx.MustGet("ctx").(context.Context)
 		id := ginctx.Param("app_id")
 		ucreq := &usecase.ApplicationDeleteReq{Id: id}
+		if err := validator.Struct(ucreq); err != nil {
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		}
+
 		ucres, err := uc.Application().Delete(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
@@ -36,7 +30,7 @@ func UseApplicationDelete(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc
 			return
 		}
 
-		res := &ApplicationDeleteRes{ucres.Doc}
+		res := &applicationDeleteRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
@@ -15,23 +16,26 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
+	validator validator.Validator,
 	authz authorizator.Authorizator,
 	uc usecase.Sdk,
 ) services.Service {
 	logger = logger.With("service", "sdkapi")
 	return &sdkapi{
-		conf:   conf,
-		logger: logger,
-		authz:  authz,
-		uc:     uc,
+		conf:      conf,
+		logger:    logger,
+		validator: validator,
+		authz:     authz,
+		uc:        uc,
 	}
 }
 
 type sdkapi struct {
-	conf   *config.Config
-	logger logging.Logger
-	authz  authorizator.Authorizator
-	uc     usecase.Sdk
+	conf      *config.Config
+	logger    logging.Logger
+	validator validator.Validator
+	authz     authorizator.Authorizator
+	uc        usecase.Sdk
 
 	server *http.Server
 }
@@ -58,7 +62,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	router.Use(middlewares.UseAuth(service.uc))
 	router.Use(middlewares.UseAuthz(service.authz))
 	router.Use(middlewares.UsePaging(service.logger, 5, 30))
-	UseApplication(router.Group("/application"), service.logger, service.uc)
+	UseApplication(router.Group("/application"), service.logger, service.validator, service.uc)
 
 	service.server = &http.Server{
 		Addr:    service.conf.SdkApi.Gateway.Httpx.Addr,

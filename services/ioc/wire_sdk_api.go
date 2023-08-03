@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi"
@@ -20,6 +21,7 @@ import (
 func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		sdkapi.New,
+		validator.New,
 		ResolveSdkAuthorizatorConfig,
 		authorizator.New,
 		InitializeSdkUsecase,

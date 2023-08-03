@@ -14,6 +14,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -125,6 +126,7 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (sch
 // Injectors from wire_sdk_api.go:
 
 func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	validatorValidator := validator.New()
 	authorizatorConfig := ResolveSdkAuthorizatorConfig(conf)
 	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
 	if err != nil {
@@ -134,7 +136,7 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, authorizatorAuthorizator, sdk)
+	service := sdkapi.New(conf, logger, validatorValidator, authorizatorAuthorizator, sdk)
 	return service, nil
 }
 
