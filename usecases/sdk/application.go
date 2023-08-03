@@ -18,6 +18,7 @@ type Application interface {
 	Delete(ctx context.Context, req *ApplicationDeleteReq) (*ApplicationDeleteRes, error)
 
 	List(ctx context.Context, req *ApplicationListReq) (*ApplicationListRes, error)
+	Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error)
 }
 
 type ApplicationCreateReq struct {
@@ -53,6 +54,13 @@ type ApplicationListRes struct {
 	*structure.ListRes[entities.Application]
 }
 
+type ApplicationGetReq struct {
+	Id string `validate:"required"`
+}
+
+type ApplicationGetRes struct {
+	Doc *entities.Application
+}
 type application struct {
 	conf         *config.Config
 	logger       logging.Logger

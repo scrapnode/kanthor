@@ -27,7 +27,8 @@ func UseApplicationUpdate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc
 		}
 
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		ucreq := &usecase.ApplicationUpdateReq{Id: ginctx.Param("app_id"), Name: req.Name}
+		id := ginctx.Param("app_id")
+		ucreq := &usecase.ApplicationUpdateReq{Id: id, Name: req.Name}
 		ucres, err := uc.Application().Update(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)

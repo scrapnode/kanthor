@@ -9,34 +9,23 @@ import (
 	"net/http"
 )
 
-type ApplicationDeleteReq struct {
-	Name string `json:"name" binding:"required"`
-}
-
-type ApplicationDeleteRes struct {
+type ApplicationGetRes struct {
 	*entities.Application
 }
 
-func UseApplicationDelete(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseApplicationGet(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req ApplicationDeleteReq
-		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
-			return
-		}
-
 		ctx := ginctx.MustGet("ctx").(context.Context)
 		id := ginctx.Param("app_id")
-		ucreq := &usecase.ApplicationDeleteReq{Id: id}
-		ucres, err := uc.Application().Delete(ctx, ucreq)
+		ucreq := &usecase.ApplicationGetReq{Id: id}
+		ucres, err := uc.Application().Get(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "oops, something went wrong"})
 			return
 		}
 
-		res := &ApplicationDeleteRes{ucres.Doc}
+		res := &ApplicationGetRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

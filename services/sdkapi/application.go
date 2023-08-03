@@ -12,4 +12,5 @@ func UseApplication(router *gin.RouterGroup, logger logging.Logger, uc usecase.S
 	router.DELETE("/:app_id", UseApplicationDelete(logger, uc))
 
 	router.GET("", UseApplicationList(logger, uc))
+	router.GET("/:app_id", UseApplicationGet(logger, uc))
 }
