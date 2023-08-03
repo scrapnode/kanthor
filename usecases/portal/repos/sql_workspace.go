@@ -43,10 +43,10 @@ func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*
 
 func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error) {
 	req := structure.ListReqBuild(opts)
-	ws := &entities.Workspace{}
+	doc := &entities.Workspace{}
 
-	tx := sql.client.WithContext(ctx).Model(ws)
-	tx = database.SqlToListQuery(tx, req, `"id"`)
+	tx := sql.client.WithContext(ctx).Model(doc)
+	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
 
 	res := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}
 	if tx = tx.Find(&res.Data); tx.Error != nil {
@@ -57,26 +57,26 @@ func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*
 }
 
 func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
-	ws := &entities.Workspace{}
+	doc := &entities.Workspace{}
 
-	tx := sql.client.WithContext(ctx).Model(&ws).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), id).
-		First(ws)
+	tx := sql.client.WithContext(ctx).Model(&doc).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
+		First(doc)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	return ws, nil
+	return doc, nil
 }
 
 func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
-	ws := &entities.Workspace{}
-	tx := sql.client.WithContext(ctx).Model(&ws).
+	doc := &entities.Workspace{}
+	tx := sql.client.WithContext(ctx).Model(&doc).
 		Where("owner_id = ?", owner).
-		First(ws)
+		First(doc)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	return ws, nil
+	return doc, nil
 }

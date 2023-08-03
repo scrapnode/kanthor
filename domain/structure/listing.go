@@ -3,11 +3,11 @@ package structure
 import "reflect"
 
 type ListReq struct {
-	Cursor string
-	Search string
-	Limit  int
+	Cursor string `json:"cursor"`
+	Search string `json:"search"`
+	Limit  int    `json:"limit"`
 
-	Ids []string
+	Ids []string `json:"ids"`
 }
 
 type ListOps func(req *ListReq)
@@ -68,6 +68,6 @@ func ListResBuild[T any](res *ListRes[T], req *ListReq) *ListRes[T] {
 }
 
 type ListRes[T any] struct {
-	Cursor string
-	Data   []T
+	Cursor string `json:"cursor"`
+	Data   []T    `json:"data"`
 }

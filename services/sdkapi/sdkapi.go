@@ -57,6 +57,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	router.Use(middlewares.UseStartup())
 	router.Use(middlewares.UseAuth(service.uc))
 	router.Use(middlewares.UseAuthz(service.authz))
+	router.Use(middlewares.UsePaging(service.logger, 5, 30))
 	UseApplication(router.Group("/application"), service.logger, service.uc)
 
 	service.server = &http.Server{

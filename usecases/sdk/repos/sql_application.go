@@ -51,7 +51,7 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...struct
 		Scopes(UseWsId(doc, wsId))
 
 	req := structure.ListReqBuild(opts)
-	tx = database.SqlToListQuery(tx, req, `"id"`)
+	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
 
 	res := &structure.ListRes[entities.Application]{Data: []entities.Application{}}
 	if tx = tx.Find(&res.Data); tx.Error != nil {
