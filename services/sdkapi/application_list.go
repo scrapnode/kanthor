@@ -20,7 +20,9 @@ func UseApplicationList(logger logging.Logger, validator validator.Validator, uc
 		ctx := ginctx.MustGet("ctx").(context.Context)
 		ucreq := &usecase.ApplicationListReq{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
 		if err := validator.Struct(ucreq); err != nil {
+			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			return
 		}
 
 		ucres, err := uc.Application().List(ctx, ucreq)

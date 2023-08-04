@@ -16,7 +16,7 @@ func (sql *SqlWorkspaceTier) Get(ctx context.Context, wsId string) (*entities.Wo
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
-		Scopes(UseWsId(doc, wsId)).
+		Scopes(UseWsId(wsId, doc)).
 		First(doc)
 	if tx.Error != nil {
 		return nil, tx.Error

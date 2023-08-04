@@ -10,17 +10,21 @@ import (
 	"net/http"
 )
 
-type applicationCreateReq struct {
+type endpointCreateReq struct {
 	Name string `json:"name" binding:"required"`
+
+	SecretKey string `json:"secret_key" binding:"omitempty,min=16,max=32"`
+	Method    string `json:"method" binding:"required,oneof=POST PUT"`
+	Uri       string `json:"uri" binding:"required,uri"`
 }
 
-type applicationCreateRes struct {
-	*entities.Application
+type endpointCreateRes struct {
+	*entities.Endpoint
 }
 
-func UseApplicationCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req applicationCreateReq
+		var req endpointCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
@@ -28,21 +32,29 @@ func UseApplicationCreate(logger logging.Logger, validator validator.Validator, 
 		}
 
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		ucreq := &usecase.ApplicationCreateReq{Name: req.Name}
+		app := ginctx.MustGet("app").(*entities.Application)
+
+		ucreq := &usecase.EndpointCreateReq{
+			AppId:     app.Id,
+			Name:      req.Name,
+			SecretKey: req.SecretKey,
+			Method:    req.Method,
+			Uri:       req.Uri,
+		}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 			return
 		}
 
-		ucres, err := uc.Application().Create(ctx, ucreq)
+		ucres, err := uc.Endpoint().Create(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "oops, something went wrong"})
 			return
 		}
 
-		res := &applicationCreateRes{ucres.Doc}
+		res := &endpointCreateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

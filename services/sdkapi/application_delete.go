@@ -20,7 +20,9 @@ func UseApplicationDelete(logger logging.Logger, validator validator.Validator, 
 		id := ginctx.Param("app_id")
 		ucreq := &usecase.ApplicationDeleteReq{Id: id}
 		if err := validator.Struct(ucreq); err != nil {
+			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			return
 		}
 
 		ucres, err := uc.Application().Delete(ctx, ucreq)

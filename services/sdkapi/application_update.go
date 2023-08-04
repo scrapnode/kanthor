@@ -31,7 +31,9 @@ func UseApplicationUpdate(logger logging.Logger, validator validator.Validator, 
 		id := ginctx.Param("app_id")
 		ucreq := &usecase.ApplicationUpdateReq{Id: id, Name: req.Name}
 		if err := validator.Struct(ucreq); err != nil {
+			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			return
 		}
 
 		ucres, err := uc.Application().Update(ctx, ucreq)

@@ -6,8 +6,8 @@ type Application struct {
 	Entity
 	AuditTime
 
-	WorkspaceId string `json:"workspace_id" validate:"required,startswith=ws_"`
-	Name        string `json:"name" validate:"required"`
+	WorkspaceId string `json:"workspace_id"`
+	Name        string `json:"name"`
 }
 
 func (entity *Application) TableName() string {

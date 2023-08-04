@@ -8,8 +8,8 @@ type Workspace struct {
 	Entity
 	AuditTime
 
-	OwnerId string `json:"owner_id" validate:"required"`
-	Name    string `json:"name" validate:"required"`
+	OwnerId string `json:"owner_id"`
+	Name    string `json:"name"`
 }
 
 func (entity *Workspace) TableName() string {

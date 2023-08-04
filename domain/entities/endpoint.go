@@ -9,16 +9,16 @@ type Endpoint struct {
 	Entity
 	AuditTime
 
-	AppId     string `json:"app_id" validate:"required"`
-	SecretKey string `json:"secret_key" validate:"required,startswith=epsk_"`
-	Name      string `json:"name" validate:"required"`
+	AppId string `json:"app_id"`
+	Name  string `json:"name"`
 
+	SecretKey string `json:"secret_key"`
 	// HTTP: POST/PUT/PATCH
-	Method string `json:"method" validate:"required,oneof=POST PUT PATCH"`
+	Method string `json:"method"`
 	// format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
 	// HTTP: https:://httpbin.org/post?app=kanthor.webhook
 	// gRPC: grpc:://app.kanthorlabs.com
-	Uri string `json:"uri" validate:"required,uri"`
+	Uri string `json:"uri"`
 }
 
 func (entity *Endpoint) TableName() string {

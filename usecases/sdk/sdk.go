@@ -14,8 +14,9 @@ import (
 
 type Sdk interface {
 	patterns.Connectable
-	Application() Application
 	Workspace() Workspace
+	Application() Application
+	Endpoint() Endpoint
 }
 
 func New(
@@ -45,8 +46,9 @@ type sdk struct {
 	repos        repos.Repositories
 
 	mu          sync.RWMutex
-	application *application
 	workspace   *workspace
+	application *application
+	endpoint    *endpoint
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {
@@ -76,6 +78,23 @@ func (uc *sdk) Disconnect(ctx context.Context) error {
 	return nil
 }
 
+func (uc *sdk) Workspace() Workspace {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.workspace == nil {
+		uc.workspace = &workspace{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			repos:        uc.repos,
+		}
+	}
+	return uc.workspace
+}
+
 func (uc *sdk) Application() Application {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
@@ -93,12 +112,12 @@ func (uc *sdk) Application() Application {
 	return uc.application
 }
 
-func (uc *sdk) Workspace() Workspace {
+func (uc *sdk) Endpoint() Endpoint {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if uc.workspace == nil {
-		uc.workspace = &workspace{
+	if uc.endpoint == nil {
+		uc.endpoint = &endpoint{
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
@@ -107,5 +126,5 @@ func (uc *sdk) Workspace() Workspace {
 			repos:        uc.repos,
 		}
 	}
-	return uc.workspace
+	return uc.endpoint
 }

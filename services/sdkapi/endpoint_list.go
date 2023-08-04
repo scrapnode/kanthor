@@ -4,45 +4,40 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 	"net/http"
 )
 
-type applicationCreateReq struct {
-	Name string `json:"name" binding:"required"`
+type endpointListRes struct {
+	*structure.ListRes[entities.Endpoint]
 }
 
-type applicationCreateRes struct {
-	*entities.Application
-}
-
-func UseApplicationCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointList(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req applicationCreateReq
-		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
-			return
-		}
-
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		ucreq := &usecase.ApplicationCreateReq{Name: req.Name}
+		app := ginctx.MustGet("app").(*entities.Application)
+
+		ucreq := &usecase.EndpointListReq{
+			AppId:   app.Id,
+			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
+		}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 			return
 		}
 
-		ucres, err := uc.Application().Create(ctx, ucreq)
+		ucres, err := uc.Endpoint().List(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "oops, something went wrong"})
 			return
 		}
 
-		res := &applicationCreateRes{ucres.Doc}
+		res := &endpointListRes{ListRes: ucres.ListRes}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

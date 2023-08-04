@@ -62,7 +62,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	router.Use(middlewares.UseAuth(service.uc))
 	router.Use(middlewares.UseAuthz(service.authz))
 	router.Use(middlewares.UsePaging(service.logger, 5, 30))
-	UseApplication(router.Group("/application"), service.logger, service.validator, service.uc)
+	UseApplicationRoutes(router.Group("/application"), service.logger, service.validator, service.uc)
 
 	service.server = &http.Server{
 		Addr:    service.conf.SdkApi.Gateway.Httpx.Addr,

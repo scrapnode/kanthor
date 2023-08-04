@@ -21,11 +21,9 @@ func (sql *SqlEndpoint) Create(ctx context.Context, doc *entities.Endpoint) (*en
 	return doc, nil
 }
 
-func (sql *SqlEndpoint) Update(ctx context.Context, wsId string, doc *entities.Endpoint) (*entities.Endpoint, error) {
+func (sql *SqlEndpoint) Update(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error) {
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
-		Scopes(UseWsId(&entities.Application{}, wsId)).
-		Scopes(JoinApp(doc)).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Updates(doc)
 	if tx.Error != nil {
@@ -34,15 +32,10 @@ func (sql *SqlEndpoint) Update(ctx context.Context, wsId string, doc *entities.E
 	return doc, nil
 }
 
-func (sql *SqlEndpoint) Delete(ctx context.Context, wsId, id string) error {
-	doc := &entities.Endpoint{}
-	doc.Id = id
-
+func (sql *SqlEndpoint) Delete(ctx context.Context, doc *entities.Endpoint) error {
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
-		Scopes(UseWsId(&entities.Application{}, wsId)).
-		Scopes(JoinApp(doc)).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Delete(doc)
 	if tx.Error != nil {
 		return tx.Error
@@ -51,11 +44,12 @@ func (sql *SqlEndpoint) Delete(ctx context.Context, wsId, id string) error {
 	return nil
 }
 
-func (sql *SqlEndpoint) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.Endpoint], error) {
+func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, opts ...structure.ListOps) (*structure.ListRes[entities.Endpoint], error) {
+	app := &entities.Application{}
 	doc := &entities.Endpoint{}
 	tx := sql.client.WithContext(ctx).Model(doc).
-		Scopes(UseWsId(&entities.Application{}, wsId)).
-		Scopes(JoinApp(doc))
+		Scopes(UseAppId(appId, doc)).
+		Scopes(UseWsId(wsId, app))
 
 	req := structure.ListReqBuild(opts)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
@@ -68,14 +62,16 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId string, opts ...structure
 	return structure.ListResBuild(res, req), nil
 }
 
-func (sql *SqlEndpoint) Get(ctx context.Context, wsId, id string) (*entities.Endpoint, error) {
+func (sql *SqlEndpoint) Get(ctx context.Context, wsId, appId, id string) (*entities.Endpoint, error) {
+	app := &entities.Application{}
 	doc := &entities.Endpoint{}
+	doc.Id = id
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
-		Scopes(UseWsId(&entities.Application{}, wsId)).
-		Scopes(JoinApp(doc)).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
+		Scopes(UseAppId(appId, doc)).
+		Scopes(UseWsId(wsId, app)).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {
 		return nil, tx.Error
