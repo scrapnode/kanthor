@@ -8,8 +8,11 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/services/sdkapi/docs"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
+	swaggerfiles "github.com/swaggo/files"
+	ginswagger "github.com/swaggo/gin-swagger"
 	"net/http"
 )
 
@@ -51,6 +54,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
+	// system routes
 	router.GET("/readiness", func(ginctx *gin.Context) {
 		// @TODO: add starting up checking here
 		ginctx.String(http.StatusOK, "ready")
@@ -58,11 +62,21 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	router.GET("/liveness", func(ginctx *gin.Context) {
 		ginctx.String(http.StatusOK, "live")
 	})
-	router.Use(middlewares.UseStartup())
-	router.Use(middlewares.UseAuth(service.uc))
-	router.Use(middlewares.UseAuthz(service.authz))
-	router.Use(middlewares.UsePaging(service.logger, 5, 30))
-	UseApplicationRoutes(router.Group("/application"), service.logger, service.validator, service.uc)
+	// swagger routes
+	docs.SwaggerInfo.BasePath = "/api"
+	swagger := router.Group("/swagger")
+	{
+		swagger.GET("/*any", ginswagger.WrapHandler(swaggerfiles.Handler))
+	}
+	// api routes
+	api := router.Group("/api")
+	{
+		api.Use(middlewares.UseStartup())
+		api.Use(middlewares.UseAuth(service.uc))
+		api.Use(middlewares.UseAuthz(service.authz))
+		api.Use(middlewares.UsePaging(service.logger, 5, 30))
+		UseApplicationRoutes(api.Group("/application"), service.logger, service.validator, service.uc)
+	}
 
 	service.server = &http.Server{
 		Addr:    service.conf.SdkApi.Gateway.Httpx.Addr,

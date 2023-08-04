@@ -1,8 +1,11 @@
-gen: gen-wire migrate
+gen: wire migration docs
 
-migrate:
+migration:
 	go run main.go migrate
 
-gen-wire:
+wire:
 	go generate infrastructure/ioc/generate.go
 	go generate services/ioc/generate.go
+
+docs:
+	 swag init -d services/sdkapi -o services/sdkapi/docs -g swagger.go
