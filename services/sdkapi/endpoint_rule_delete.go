@@ -10,29 +10,31 @@ import (
 	"net/http"
 )
 
-type applicationGetRes struct {
-	*entities.Application
+type endpointRuleDeleteRes struct {
+	*entities.EndpointRule
 }
 
-func UseApplicationGet(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleDelete(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		id := ginctx.Param("app_id")
-		ucreq := &usecase.ApplicationGetReq{Id: id}
+		appId := ginctx.Param("app_id")
+		epId := ginctx.Param("ep_id")
+		id := ginctx.Param("epr_id")
+		ucreq := &usecase.EndpointRuleDeleteReq{AppId: appId, EpId: epId, Id: id}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 			return
 		}
 
-		ucres, err := uc.Application().Get(ctx, ucreq)
+		ucres, err := uc.EndpointRule().Delete(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "oops, something went wrong"})
 			return
 		}
 
-		res := &applicationGetRes{ucres.Doc}
+		res := &endpointRuleDeleteRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

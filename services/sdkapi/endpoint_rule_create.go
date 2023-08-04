@@ -10,21 +10,22 @@ import (
 	"net/http"
 )
 
-type endpointCreateReq struct {
+type endpointRuleCreateReq struct {
 	Name string `json:"name" binding:"required"`
 
-	SecretKey string `json:"secret_key" binding:"omitempty,min=16,max=32"`
-	Method    string `json:"method" binding:"required,oneof=POST PUT"`
-	Uri       string `json:"uri" binding:"required,uri"`
+	Priority            int32  `json:"priority"`
+	Exclusionary        bool   `json:"exclusionary"`
+	ConditionSource     string `json:"condition_source" binding:"required"`
+	ConditionExpression string `json:"condition_expression" binding:"required"`
 }
 
-type endpointCreateRes struct {
-	*entities.Endpoint
+type endpointRuleCreateRes struct {
+	*entities.EndpointRule
 }
 
-func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req endpointCreateReq
+		var req endpointRuleCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
@@ -32,13 +33,15 @@ func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc 
 		}
 
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		appId := ginctx.Param("app_id")
-		ucreq := &usecase.EndpointCreateReq{
-			AppId:     appId,
-			Name:      req.Name,
-			SecretKey: req.SecretKey,
-			Method:    req.Method,
-			Uri:       req.Uri,
+		epId := ginctx.Param("ep_id")
+
+		ucreq := &usecase.EndpointRuleCreateReq{
+			EpId:                epId,
+			Name:                req.Name,
+			Priority:            req.Priority,
+			Exclusionary:        req.Exclusionary,
+			ConditionSource:     req.ConditionSource,
+			ConditionExpression: req.ConditionExpression,
 		}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
@@ -46,14 +49,14 @@ func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc 
 			return
 		}
 
-		ucres, err := uc.Endpoint().Create(ctx, ucreq)
+		ucres, err := uc.EndpointRule().Create(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "oops, something went wrong"})
 			return
 		}
 
-		res := &endpointCreateRes{ucres.Doc}
+		res := &endpointRuleCreateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

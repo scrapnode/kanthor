@@ -10,21 +10,17 @@ import (
 	"net/http"
 )
 
-type endpointCreateReq struct {
+type endpointRuleUpdateReq struct {
 	Name string `json:"name" binding:"required"`
-
-	SecretKey string `json:"secret_key" binding:"omitempty,min=16,max=32"`
-	Method    string `json:"method" binding:"required,oneof=POST PUT"`
-	Uri       string `json:"uri" binding:"required,uri"`
 }
 
-type endpointCreateRes struct {
-	*entities.Endpoint
+type endpointRuleUpdateRes struct {
+	*entities.EndpointRule
 }
 
-func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleUpdate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req endpointCreateReq
+		var req endpointRuleUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
@@ -33,27 +29,23 @@ func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc 
 
 		ctx := ginctx.MustGet("ctx").(context.Context)
 		appId := ginctx.Param("app_id")
-		ucreq := &usecase.EndpointCreateReq{
-			AppId:     appId,
-			Name:      req.Name,
-			SecretKey: req.SecretKey,
-			Method:    req.Method,
-			Uri:       req.Uri,
-		}
+		epId := ginctx.Param("ep_id")
+		id := ginctx.Param("epr_id")
+		ucreq := &usecase.EndpointRuleUpdateReq{AppId: appId, EpId: epId, Id: id, Name: req.Name}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 			return
 		}
 
-		ucres, err := uc.Endpoint().Create(ctx, ucreq)
+		ucres, err := uc.EndpointRule().Update(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "oops, something went wrong"})
 			return
 		}
 
-		res := &endpointCreateRes{ucres.Doc}
+		res := &endpointRuleUpdateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

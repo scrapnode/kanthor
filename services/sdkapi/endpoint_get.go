@@ -17,10 +17,9 @@ type endpointGetRes struct {
 func UseEndpointGet(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		app := ginctx.MustGet("app").(*entities.Application)
-
+		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
-		ucreq := &usecase.EndpointGetReq{AppId: app.Id, Id: id}
+		ucreq := &usecase.EndpointGetReq{AppId: appId, Id: id}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})

@@ -75,7 +75,7 @@ func (sql *SqlEndpointRule) Get(ctx context.Context, wsId, appId, epId, id strin
 		Scopes(UseEpId(epId, doc)).
 		Scopes(UseAppId(appId, ep)).
 		Scopes(UseWsId(wsId, app)).
-		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {
 		return nil, tx.Error

@@ -18,10 +18,10 @@ type endpointListRes struct {
 func UseEndpointList(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		app := ginctx.MustGet("app").(*entities.Application)
+		appId := ginctx.Param("app_id")
 
 		ucreq := &usecase.EndpointListReq{
-			AppId:   app.Id,
+			AppId:   appId,
 			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
 		}
 		if err := validator.Struct(ucreq); err != nil {

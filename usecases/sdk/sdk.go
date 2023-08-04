@@ -17,6 +17,7 @@ type Sdk interface {
 	Workspace() Workspace
 	Application() Application
 	Endpoint() Endpoint
+	EndpointRule() EndpointRule
 }
 
 func New(
@@ -45,10 +46,11 @@ type sdk struct {
 	cache        cache.Cache
 	repos        repos.Repositories
 
-	mu          sync.RWMutex
-	workspace   *workspace
-	application *application
-	endpoint    *endpoint
+	mu           sync.RWMutex
+	workspace    *workspace
+	application  *application
+	endpoint     *endpoint
+	endpointRule *endpointRule
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {
@@ -127,4 +129,21 @@ func (uc *sdk) Endpoint() Endpoint {
 		}
 	}
 	return uc.endpoint
+}
+
+func (uc *sdk) EndpointRule() EndpointRule {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.endpointRule == nil {
+		uc.endpointRule = &endpointRule{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			repos:        uc.repos,
+		}
+	}
+	return uc.endpointRule
 }
