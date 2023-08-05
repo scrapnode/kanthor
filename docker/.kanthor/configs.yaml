@@ -1,0 +1,123 @@
+# shares
+streaming: &streaming
+  uri: nats://streaming:4222
+  stream:
+    name: default
+    subjects:
+      - kanthor.default.>
+    replicas: 0
+    limits:
+      msgs: 50000
+      msg_bytes: 65536
+      # 64kb * 50000 ~ 3Gb
+      bytes: 3276800000
+      # 60*60*24*3 = 3d
+      age: 259200
+
+cache: &cache
+  uri: redis://cache:6379/1
+  time_to_live: 300000
+
+cryptography:
+  kdf: {}
+  symmetric:
+    key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
+
+bucket:
+  layout: "20060102"
+
+logger:
+  pretty: true
+  level: debug
+  with:
+    environment: localhost
+
+database:
+  uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.database
+
+datastore:
+  uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.datastore
+
+# services
+migration:
+  tasks:
+    - name: database
+      uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.database
+      source: file://./migration/database/sql
+    - name: datastore
+      uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.datastore
+      source: file://./migration/datastore/sql
+
+sdkapi:
+  cache: *cache
+  gateway:
+    engine: httpx
+    httpx:
+      addr: :8080
+  authorizator:
+    engine: casbin
+    casbin:
+      model_uri: file://./data/authorizator/casbin_rbac_model.conf
+      policy_uri: postgres://postgres:changemenow@postgres/postgres?connect_timeout=30&application_name=kanthor.services.sdk
+      policy_namespace: sdk
+      watcher:
+        uri: nats://127.0.0.1:4222
+
+portalapi:
+  cache: *cache
+  gateway:
+    engine: httpx
+    httpx:
+      addr: :8180
+  authenticator:
+    engine: ask
+    ask:
+      access_key: kanthor_root_key
+      secret_key: kanthor_root_password
+  authorizator:
+    engine: casbin
+    casbin:
+      model_uri: file://./data/authorizator/casbin_rbac_model.conf
+      policy_uri: postgres://postgres:changemenow@postgres/postgres?connect_timeout=30&application_name=kanthor.services.portal
+      policy_namespace: portal
+      watcher:
+        uri: nats://127.0.0.1:4222
+
+scheduler:
+  cache: *cache
+  publisher:
+    connection: *streaming
+  subscriber:
+    connection: *streaming
+    topic: schedule
+    group: default
+    filter_subject: kanthor.default.msg.>
+    temporary: true
+    max_deliver: 1
+  request:
+    arrange:
+      concurrency: 100
+
+dispatcher:
+  cache: *cache
+  publisher:
+    connection: *streaming
+  subscriber:
+    connection: *streaming
+    topic: dispatch
+    group: default
+    filter_subject: kanthor.default.req.>
+    temporary: true
+    max_deliver: 1
+  sender:
+    timeout: 1500
+    retry:
+      count: 1
+      wait_time: 100
+      wait_time_max: 2000
+  circuit_breaker:
+    half_open_max_pass_through_requests: 5
+    half_open_trigger_minimum_requests: 10
+    half_open_trigger_error_threshold_ratio: 0.1
+    close_state_clear_interval: 600000
+    open_state_duration: 300000

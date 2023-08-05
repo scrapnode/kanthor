@@ -28,3 +28,4 @@ go.work
 .vscode
 .kanthor
 !.kanthor/.gitignore
+!docker/.kanthor/configs.yaml

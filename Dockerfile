@@ -25,18 +25,17 @@ COPY --from=build /app/data ./data
 COPY --from=build /app/migration ./migration
 COPY --from=build /app/configs.yaml ./configs.yaml
 
+COPY --from=build /app/.kanthor/kanthor ./kanthor
 COPY --from=build /app/docker/entrypoint.sh ./entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-COPY --from=build /app/.kanthor/kanthor ./kanthor
-
-# controlplane
-EXPOSE 8080,8081,9090
-# dataplane
-EXPOSE 8180,8181,9190
+# portalapi
+EXPOSE 8080,9090
+# sdkapi
+EXPOSE 8180,9190
 # scheduler
-EXPOSE 8280,8281,9290
+EXPOSE 8280,9290
 # dispatcher
-EXPOSE 8380,8381,9390
+EXPOSE 8380,9390
 
 ENTRYPOINT ["/app/entrypoint.sh"]
