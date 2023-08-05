@@ -9,9 +9,9 @@ import (
 )
 
 type paging struct {
-	Cursor string `form:"_cursor"`
-	Search string `form:"_q"`
-	Limit  int    `form:"_limit"`
+	Cursor string `form:"_cursor" binding:"omitempty,min=29,max=32"`
+	Search string `form:"_q" binding:"omitempty,min=2,max=32"`
+	Limit  int    `form:"_limit" binding:"min=5,max=30"`
 
 	Ids []string `form:"_id"`
 }

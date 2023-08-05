@@ -2,6 +2,30 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  entities.Application:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      workspace_id:
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  gateway.Error:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+    type: object
   sdkapi.ApplicationCreateReq:
     properties:
       name:
@@ -26,10 +50,48 @@ definitions:
     - id
     - updated_at
     type: object
-  sdkapi.HttpError:
+  sdkapi.ApplicationDeleteRes:
     properties:
-      error:
+      created_at:
+        type: integer
+      id:
         type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      workspace_id:
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  sdkapi.ApplicationGetRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      workspace_id:
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  sdkapi.ApplicationListRes:
+    properties:
+      cursor:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/entities.Application'
+        type: array
     type: object
 externalDocs:
   description: OpenAPI
@@ -48,8 +110,43 @@ info:
   version: "1.0"
 paths:
   /application:
+    get:
+      parameters:
+      - description: current query cursor
+        in: query
+        name: _cursor
+        type: string
+      - description: search keyword
+        in: query
+        name: _q
+        type: string
+      - description: limit returning records
+        in: query
+        maximum: 30
+        minimum: 5
+        name: _limit
+        type: integer
+      - collectionFormat: csv
+        description: only return records with selected ids
+        in: query
+        items:
+          type: string
+        name: _id
+        type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.ApplicationListRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - application
     post:
-      description: Create new application in a workspace
       parameters:
       - description: application properties
         in: body
@@ -65,10 +162,50 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/sdkapi.HttpError'
+            $ref: '#/definitions/gateway.Error'
       security:
       - BasicAuth: []
-      summary: Create new application in a workspace
+      tags:
+      - application
+  /application/{id}:
+    delete:
+      parameters:
+      - description: application id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.ApplicationDeleteRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - application
+    get:
+      parameters:
+      - description: application id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.ApplicationGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
       tags:
       - application
 produces:
