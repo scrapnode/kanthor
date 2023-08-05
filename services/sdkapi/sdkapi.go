@@ -55,6 +55,9 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	// system routes
+	router.GET("/", func(ginctx *gin.Context) {
+		ginctx.JSON(http.StatusOK, gin.H{"version": service.conf.Version})
+	})
 	router.GET("/readiness", func(ginctx *gin.Context) {
 		// @TODO: add starting up checking here
 		ginctx.String(http.StatusOK, "ready")
@@ -64,7 +67,6 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	})
 	// swagger routes
 	docs.SwaggerInfo.BasePath = "/api"
-	// @TODO: set the dynamic domain name
 	swagger := router.Group("/swagger")
 	{
 		swagger.GET("/*any", ginswagger.WrapHandler(

@@ -6,9 +6,8 @@ RUN apk add build-base
 RUN go install github.com/google/wire/cmd/wire@latest
 
 COPY . .
-RUN --mount=type=cache,mode=0755,target=/go/pkg/mod go mod download
 
-RUN make gen-go
+RUN make
 RUN go build -mod vendor -o ./.kanthor/kanthor -buildvcs=false
 
 FROM alpine:3
@@ -22,13 +21,9 @@ COPY --from=build /app/.kanthor/kanthor ./kanthor
 COPY --from=build /app/docker/entrypoint.sh ./entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-# portalapi
-EXPOSE 8080,9090
 # sdkapi
-EXPOSE 8180,9190
-# scheduler
-EXPOSE 8280,9290
-# dispatcher
-EXPOSE 8380,9390
+EXPOSE 8080
+# portalapi
+EXPOSE 8180
 
 ENTRYPOINT ["/app/entrypoint.sh"]

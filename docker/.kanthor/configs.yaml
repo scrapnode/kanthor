@@ -58,10 +58,10 @@ sdkapi:
     engine: casbin
     casbin:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@postgres/postgres?connect_timeout=30&application_name=kanthor.services.sdk
+      policy_uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.services.sdk
       policy_namespace: sdk
       watcher:
-        uri: nats://127.0.0.1:4222
+        uri: nats://streaming:4222
 
 portalapi:
   cache: *cache
@@ -78,10 +78,10 @@ portalapi:
     engine: casbin
     casbin:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@postgres/postgres?connect_timeout=30&application_name=kanthor.services.portal
+      policy_uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
       watcher:
-        uri: nats://127.0.0.1:4222
+        uri: nats://streaming:4222
 
 scheduler:
   cache: *cache

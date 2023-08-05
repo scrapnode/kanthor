@@ -1,5 +1,3 @@
-gen: wire migration docs
-
 migration:
 	go run main.go migrate
 

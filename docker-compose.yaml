@@ -3,9 +3,10 @@ version: "3.8"
 services:
   streaming:
     container_name: kanthor-streaming
+    image: nats:2.9
+    restart: unless-stopped
     networks:
       - kanthor
-    image: nats:2.9
     ports:
       - "8222:8222"
       - "4222:4222"
@@ -64,6 +65,28 @@ services:
       timeout: 4s
       retries: 16
 
+  sdkapi:
+    depends_on:
+      streaming:
+        condition: service_started
+      storage:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      migration:
+        condition: service_healthy
+    container_name: kanthor-services-sdkapi
+    build: .
+    restart: unless-stopped
+    networks:
+      - kanthor
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/.kanthor:/root/.kanthor
+    command:
+      - serve sdkapi
+
   scheduler:
     depends_on:
       streaming:
@@ -79,8 +102,6 @@ services:
     restart: unless-stopped
     networks:
       - kanthor
-    ports:
-      - "9290:9290"
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
@@ -101,8 +122,6 @@ services:
     restart: unless-stopped
     networks:
       - kanthor
-    ports:
-      - "9390:9390"
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
