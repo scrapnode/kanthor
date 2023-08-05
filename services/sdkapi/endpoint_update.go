@@ -24,7 +24,7 @@ type EndpointUpdateRes struct {
 // @Router		/application/{app_id}/endpoint/{ep_id}	[put]
 // @Param		app_id									path		string					true	"application id"
 // @Param		ep_id									path		string					true	"endpoint id"
-// @Param		payload									body		EndpointUpdateReq		true	"endpoint properties"
+// @Param		props									body		EndpointUpdateReq		true	"endpoint properties"
 // @Success		200										{object}	EndpointUpdateRes
 // @Failure		default									{object}	gateway.Error
 // @Security	BasicAuth

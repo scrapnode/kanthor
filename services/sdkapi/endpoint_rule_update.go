@@ -19,6 +19,18 @@ type EndpointRuleUpdateRes struct {
 	*entities.EndpointRule
 }
 
+// UseEndpointRuleUpdate
+// @Tags		endpoint rule
+// @Router		/application/{app_id}/endpoint/{ep_id}/rule/{epr_id}	[put]
+// @Param		app_id													path		string					true	"application id"
+// @Param		ep_id													path		string					true	"endpoint id"
+// @Param		epr_id													path		string					true	"rule id"
+// @Param		props													body		EndpointRuleUpdateReq	true	"rule properties"
+// @Success		200														{object}	EndpointRuleUpdateRes
+// @Failure		default													{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseEndpointRuleUpdate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointRuleUpdateReq

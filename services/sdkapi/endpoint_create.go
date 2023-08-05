@@ -27,7 +27,7 @@ type EndpointCreateRes struct {
 // @Tags		endpoint
 // @Router		/application/{app_id}/endpoint		[post]
 // @Param		app_id								path		string				true	"application id"
-// @Param		payload								body		EndpointCreateReq	true	"endpoint properties"
+// @Param		props								body		EndpointCreateReq	true	"endpoint properties"
 // @Success		200									{object}	EndpointCreateRes
 // @Failure		default								{object}	gateway.Error
 // @Security	BasicAuth

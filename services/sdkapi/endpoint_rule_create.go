@@ -24,6 +24,17 @@ type EndpointRuleCreateRes struct {
 	*entities.EndpointRule
 }
 
+// UseEndpointRuleCreate
+// @Tags		endpoint rule
+// @Router		/application/{app_id}/endpoint/{ep_id}/rule	[post]
+// @Param		app_id										path		string					true	"application id"
+// @Param		ep_id										path		string					true	"endpoint id"
+// @Param		props										body		EndpointRuleCreateReq	true	"rule properties"
+// @Success		200											{object}	EndpointRuleCreateRes
+// @Failure		default										{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointRuleCreateReq

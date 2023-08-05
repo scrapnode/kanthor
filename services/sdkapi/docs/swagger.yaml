@@ -47,6 +47,45 @@ definitions:
     - id
     - updated_at
     type: object
+  entities.EndpointRule:
+    properties:
+      condition_expression:
+        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
+        type: string
+      condition_source:
+        description: |-
+          examples
+           - app_id
+           - type
+           - body
+           - metadata
+        type: string
+      created_at:
+        type: integer
+      endpoint_id:
+        type: string
+      exclusionary:
+        description: |-
+          the logic of not-false is true should be used here
+          to guarantee default all rule will be on include mode
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - endpoint_id
+    - id
+    - name
+    - updated_at
+    type: object
   gateway.Error:
     properties:
       code:
@@ -259,6 +298,195 @@ definitions:
           $ref: '#/definitions/entities.Endpoint'
         type: array
     type: object
+  sdkapi.EndpointRuleCreateReq:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      exclusionary:
+        type: boolean
+      name:
+        type: string
+      priority:
+        type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - name
+    type: object
+  sdkapi.EndpointRuleCreateRes:
+    properties:
+      condition_expression:
+        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
+        type: string
+      condition_source:
+        description: |-
+          examples
+           - app_id
+           - type
+           - body
+           - metadata
+        type: string
+      created_at:
+        type: integer
+      endpoint_id:
+        type: string
+      exclusionary:
+        description: |-
+          the logic of not-false is true should be used here
+          to guarantee default all rule will be on include mode
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - endpoint_id
+    - id
+    - name
+    - updated_at
+    type: object
+  sdkapi.EndpointRuleDeleteRes:
+    properties:
+      condition_expression:
+        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
+        type: string
+      condition_source:
+        description: |-
+          examples
+           - app_id
+           - type
+           - body
+           - metadata
+        type: string
+      created_at:
+        type: integer
+      endpoint_id:
+        type: string
+      exclusionary:
+        description: |-
+          the logic of not-false is true should be used here
+          to guarantee default all rule will be on include mode
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - endpoint_id
+    - id
+    - name
+    - updated_at
+    type: object
+  sdkapi.EndpointRuleGetRes:
+    properties:
+      condition_expression:
+        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
+        type: string
+      condition_source:
+        description: |-
+          examples
+           - app_id
+           - type
+           - body
+           - metadata
+        type: string
+      created_at:
+        type: integer
+      endpoint_id:
+        type: string
+      exclusionary:
+        description: |-
+          the logic of not-false is true should be used here
+          to guarantee default all rule will be on include mode
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - endpoint_id
+    - id
+    - name
+    - updated_at
+    type: object
+  sdkapi.EndpointRuleListRes:
+    properties:
+      cursor:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/entities.EndpointRule'
+        type: array
+    type: object
+  sdkapi.EndpointRuleUpdateReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  sdkapi.EndpointRuleUpdateRes:
+    properties:
+      condition_expression:
+        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
+        type: string
+      condition_source:
+        description: |-
+          examples
+           - app_id
+           - type
+           - body
+           - metadata
+        type: string
+      created_at:
+        type: integer
+      endpoint_id:
+        type: string
+      exclusionary:
+        description: |-
+          the logic of not-false is true should be used here
+          to guarantee default all rule will be on include mode
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - endpoint_id
+    - id
+    - name
+    - updated_at
+    type: object
   sdkapi.EndpointUpdateReq:
     properties:
       name:
@@ -355,7 +583,7 @@ paths:
       parameters:
       - description: application properties
         in: body
-        name: payload
+        name: props
         required: true
         schema:
           $ref: '#/definitions/sdkapi.ApplicationCreateReq'
@@ -422,7 +650,7 @@ paths:
         type: string
       - description: application properties
         in: body
-        name: payload
+        name: props
         required: true
         schema:
           $ref: '#/definitions/sdkapi.ApplicationUpdateReq'
@@ -494,7 +722,7 @@ paths:
         type: string
       - description: endpoint properties
         in: body
-        name: payload
+        name: props
         required: true
         schema:
           $ref: '#/definitions/sdkapi.EndpointCreateReq'
@@ -576,7 +804,7 @@ paths:
         type: string
       - description: endpoint properties
         in: body
-        name: payload
+        name: props
         required: true
         schema:
           $ref: '#/definitions/sdkapi.EndpointUpdateReq'
@@ -593,6 +821,185 @@ paths:
       - BasicAuth: []
       tags:
       - endpoint
+  /application/{app_id}/endpoint/{ep_id}/rule:
+    get:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      - description: current query cursor
+        in: query
+        maxLength: 32
+        minLength: 29
+        name: _cursor
+        type: string
+      - description: search keyword
+        in: query
+        maxLength: 32
+        minLength: 2
+        name: _q
+        type: string
+      - description: limit returning records
+        in: query
+        maximum: 30
+        minimum: 5
+        name: _limit
+        type: integer
+      - collectionFormat: csv
+        description: only return records with selected ids
+        in: query
+        items:
+          type: string
+        name: _id
+        type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointRuleListRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint rule
+    post:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      - description: rule properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.EndpointRuleCreateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointRuleCreateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint rule
+  /application/{app_id}/endpoint/{ep_id}/rule/{epr_id}:
+    delete:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      - description: rule id
+        in: path
+        name: epr_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointRuleDeleteRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint rule
+    get:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      - description: rule id
+        in: path
+        name: epr_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointRuleGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint rule
+    put:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      - description: rule id
+        in: path
+        name: epr_id
+        required: true
+        type: string
+      - description: rule properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.EndpointRuleUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointRuleUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint rule
 produces:
 - application/json
 securityDefinitions:

@@ -104,7 +104,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "application properties",
-                        "name": "payload",
+                        "name": "props",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -181,7 +181,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "application properties",
-                        "name": "payload",
+                        "name": "props",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -325,7 +325,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "endpoint properties",
-                        "name": "payload",
+                        "name": "props",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -416,7 +416,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "endpoint properties",
-                        "name": "payload",
+                        "name": "props",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -469,6 +469,283 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/sdkapi.EndpointDeleteRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/application/{app_id}/endpoint/{ep_id}/rule": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "tags": [
+                    "endpoint rule"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 32,
+                        "minLength": 29,
+                        "type": "string",
+                        "description": "current query cursor",
+                        "name": "_cursor",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 32,
+                        "minLength": 2,
+                        "type": "string",
+                        "description": "search keyword",
+                        "name": "_q",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 30,
+                        "minimum": 5,
+                        "type": "integer",
+                        "description": "limit returning records",
+                        "name": "_limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "only return records with selected ids",
+                        "name": "_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.EndpointRuleListRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "tags": [
+                    "endpoint rule"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "rule properties",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.EndpointRuleCreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.EndpointRuleCreateRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/application/{app_id}/endpoint/{ep_id}/rule/{epr_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "tags": [
+                    "endpoint rule"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "rule id",
+                        "name": "epr_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.EndpointRuleGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "tags": [
+                    "endpoint rule"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "rule id",
+                        "name": "epr_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "rule properties",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.EndpointRuleUpdateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.EndpointRuleUpdateRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "tags": [
+                    "endpoint rule"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "rule id",
+                        "name": "epr_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.EndpointRuleDeleteRes"
                         }
                     },
                     "default": {
@@ -540,6 +817,50 @@ const docTemplate = `{
                 "uri": {
                     "description": "format: scheme \":\" [\"//\" authority] path [\"?\" query] [\"#\" fragment]\nHTTP: https:://httpbin.org/post?app=kanthor.webhook\ngRPC: grpc:://app.kanthorlabs.com",
                     "type": "string"
+                }
+            }
+        },
+        "entities.EndpointRule": {
+            "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "endpoint_id",
+                "id",
+                "name",
+                "updated_at"
+            ],
+            "properties": {
+                "condition_expression": {
+                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
+                    "type": "string"
+                },
+                "condition_source": {
+                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
                 }
             }
         },
@@ -838,6 +1159,232 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entities.Endpoint"
                     }
+                }
+            }
+        },
+        "sdkapi.EndpointRuleCreateReq": {
+            "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "name"
+            ],
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                }
+            }
+        },
+        "sdkapi.EndpointRuleCreateRes": {
+            "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "endpoint_id",
+                "id",
+                "name",
+                "updated_at"
+            ],
+            "properties": {
+                "condition_expression": {
+                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
+                    "type": "string"
+                },
+                "condition_source": {
+                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "sdkapi.EndpointRuleDeleteRes": {
+            "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "endpoint_id",
+                "id",
+                "name",
+                "updated_at"
+            ],
+            "properties": {
+                "condition_expression": {
+                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
+                    "type": "string"
+                },
+                "condition_source": {
+                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "sdkapi.EndpointRuleGetRes": {
+            "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "endpoint_id",
+                "id",
+                "name",
+                "updated_at"
+            ],
+            "properties": {
+                "condition_expression": {
+                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
+                    "type": "string"
+                },
+                "condition_source": {
+                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "sdkapi.EndpointRuleListRes": {
+            "type": "object",
+            "properties": {
+                "cursor": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.EndpointRule"
+                    }
+                }
+            }
+        },
+        "sdkapi.EndpointRuleUpdateReq": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "sdkapi.EndpointRuleUpdateRes": {
+            "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "endpoint_id",
+                "id",
+                "name",
+                "updated_at"
+            ],
+            "properties": {
+                "condition_expression": {
+                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
+                    "type": "string"
+                },
+                "condition_source": {
+                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
                 }
             }
         },

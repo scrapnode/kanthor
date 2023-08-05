@@ -23,7 +23,7 @@ type ApplicationUpdateRes struct {
 // @Tags		application
 // @Router		/application/{app_id}	[put]
 // @Param		app_id					path		string					true	"application id"
-// @Param		payload					body		ApplicationUpdateReq	true	"application properties"
+// @Param		props					body		ApplicationUpdateReq	true	"application properties"
 // @Success		200						{object}	ApplicationUpdateRes
 // @Failure		default					{object}	gateway.Error
 // @Security	BasicAuth
