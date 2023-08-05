@@ -1,22 +1,15 @@
 # syntax=docker/dockerfile:1
-FROM namely/protoc-all:1.51_1 as protobuild
-WORKDIR /app
-
-COPY . .
-RUN apt-get -y install make
-RUN make gen-proto
-
 FROM golang:1.20-alpine as build
 WORKDIR /app
 
 RUN apk add build-base
 RUN go install github.com/google/wire/cmd/wire@latest
 
-COPY --from=protobuild /app .
+COPY . .
 RUN --mount=type=cache,mode=0755,target=/go/pkg/mod go mod download
 
 RUN make gen-go
-RUN go build -o ./.kanthor/kanthor -buildvcs=false
+RUN go build -mod vendor -o ./.kanthor/kanthor -buildvcs=false
 
 FROM alpine:3
 WORKDIR /app

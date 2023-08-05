@@ -64,54 +64,6 @@ services:
       timeout: 4s
       retries: 16
 
-  controlplane:
-    depends_on:
-      streaming:
-        condition: service_started
-      storage:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-    container_name: kanthor-services-controlplane
-    build: .
-    restart: unless-stopped
-    networks:
-      - kanthor
-    ports:
-      - "8080:8080"
-      - "9090:9090"
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
-    command:
-      - serve controlplane
-
-  dataplane:
-    depends_on:
-      streaming:
-        condition: service_healthy
-      storage:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-      migration:
-        condition: service_healthy
-      dispatcher:
-        condition: service_healthy
-      scheduler:
-        condition: service_healthy
-    container_name: kanthor-services-dataplane
-    build: .
-    restart: unless-stopped
-    networks:
-      - kanthor
-    ports:
-      - "8181:8181"
-      - "9190:9190"
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
-    command:
-      - serve dataplane
-
   scheduler:
     depends_on:
       streaming:
