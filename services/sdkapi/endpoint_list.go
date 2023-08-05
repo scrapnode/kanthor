@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-type endpointListRes struct {
+type EndpointListRes struct {
 	*structure.ListRes[entities.Endpoint]
 }
 
@@ -37,7 +37,7 @@ func UseEndpointList(logger logging.Logger, validator validator.Validator, uc us
 			return
 		}
 
-		res := &endpointListRes{ListRes: ucres.ListRes}
+		res := &EndpointListRes{ListRes: ucres.ListRes}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

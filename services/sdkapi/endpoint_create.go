@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type endpointCreateReq struct {
+type EndpointCreateReq struct {
 	Name string `json:"name" binding:"required"`
 
 	SecretKey string `json:"secret_key" binding:"omitempty,min=16,max=32"`
@@ -18,13 +18,13 @@ type endpointCreateReq struct {
 	Uri       string `json:"uri" binding:"required,uri"`
 }
 
-type endpointCreateRes struct {
+type EndpointCreateRes struct {
 	*entities.Endpoint
 }
 
 func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req endpointCreateReq
+		var req EndpointCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
@@ -53,7 +53,7 @@ func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc 
 			return
 		}
 
-		res := &endpointCreateRes{ucres.Doc}
+		res := &EndpointCreateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

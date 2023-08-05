@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type endpointDeleteRes struct {
+type EndpointDeleteRes struct {
 	*entities.Endpoint
 }
 
@@ -33,7 +33,7 @@ func UseEndpointDelete(logger logging.Logger, validator validator.Validator, uc 
 			return
 		}
 
-		res := &endpointDeleteRes{ucres.Doc}
+		res := &EndpointDeleteRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

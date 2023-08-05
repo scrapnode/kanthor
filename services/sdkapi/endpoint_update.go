@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type endpointUpdateReq struct {
+type EndpointUpdateReq struct {
 	Name string `json:"name" binding:"required"`
 }
 
@@ -20,7 +20,7 @@ type endpointUpdateRes struct {
 
 func UseEndpointUpdate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req endpointUpdateReq
+		var req EndpointUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})

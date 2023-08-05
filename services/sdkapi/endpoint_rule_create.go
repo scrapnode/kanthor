@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type endpointRuleCreateReq struct {
+type EndpointRuleCreateReq struct {
 	Name string `json:"name" binding:"required"`
 
 	Priority            int32  `json:"priority"`
@@ -19,13 +19,13 @@ type endpointRuleCreateReq struct {
 	ConditionExpression string `json:"condition_expression" binding:"required"`
 }
 
-type endpointRuleCreateRes struct {
+type EndpointRuleCreateRes struct {
 	*entities.EndpointRule
 }
 
 func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req endpointRuleCreateReq
+		var req EndpointRuleCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
@@ -56,7 +56,7 @@ func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator,
 			return
 		}
 
-		res := &endpointRuleCreateRes{ucres.Doc}
+		res := &EndpointRuleCreateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

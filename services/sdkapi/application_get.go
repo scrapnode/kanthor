@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type applicationGetRes struct {
+type ApplicationGetRes struct {
 	*entities.Application
 }
 
@@ -32,7 +32,7 @@ func UseApplicationGet(logger logging.Logger, validator validator.Validator, uc 
 			return
 		}
 
-		res := &applicationGetRes{ucres.Doc}
+		res := &ApplicationGetRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

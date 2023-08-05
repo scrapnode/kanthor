@@ -10,17 +10,29 @@ import (
 	"net/http"
 )
 
-type applicationCreateReq struct {
+type ApplicationCreateReq struct {
 	Name string `json:"name" binding:"required"`
 }
 
-type applicationCreateRes struct {
+type ApplicationCreateRes struct {
 	*entities.Application
 }
 
+// UseApplicationCreate Create new application in a workspace
+//
+//	@Summary		Create new application in a workspace
+//	@Description	Create new application in a workspace
+//	@Tags			application
+//	@Router			/application	[post]
+//	@Param			payload			body		ApplicationCreateReq	true	"application properties"
+//	@Success		200				{object}	ApplicationCreateRes
+//	@Failure		default			{object}	HttpError
+//	@Security		BasicAuth
+//	@in header
+//	@name			Authorization
 func UseApplicationCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req applicationCreateReq
+		var req ApplicationCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
@@ -42,7 +54,7 @@ func UseApplicationCreate(logger logging.Logger, validator validator.Validator, 
 			return
 		}
 
-		res := &applicationCreateRes{ucres.Doc}
+		res := &ApplicationCreateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

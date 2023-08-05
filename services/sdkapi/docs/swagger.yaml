@@ -1,8 +1,39 @@
 basePath: /api
+consumes:
+- application/json
+definitions:
+  sdkapi.ApplicationCreateReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  sdkapi.ApplicationCreateRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      workspace_id:
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  sdkapi.HttpError:
+    properties:
+      error:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: localhost:8080
 info:
   contact:
     email: support@kanthorlabs.com
@@ -12,10 +43,36 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
+  termsOfService: http://kanthorlabs.com/terms/
   title: Kanthor SDK API
   version: "1.0"
-paths: {}
+paths:
+  /application:
+    post:
+      description: Create new application in a workspace
+      parameters:
+      - description: application properties
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.ApplicationCreateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.ApplicationCreateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/sdkapi.HttpError'
+      security:
+      - BasicAuth: []
+      summary: Create new application in a workspace
+      tags:
+      - application
+produces:
+- application/json
 securityDefinitions:
   BasicAuth:
     type: basic

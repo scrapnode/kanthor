@@ -2,7 +2,6 @@ package do
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
@@ -172,8 +171,7 @@ func importAutoGenerateWorkspaceCredentials(
 			continue
 		}
 
-		payload := []byte(fmt.Sprintf("%s:%s", cred.Credentials[0].Id, cred.Passwords[cred.Credentials[0].Id]))
-		token := base64.StdEncoding.EncodeToString(payload)
+		token := fmt.Sprintf("%s:%s", cred.Credentials[0].Id, cred.Passwords[cred.Credentials[0].Id])
 		meta.Set(wsId, fmt.Sprintf("access_token: %s", token))
 	}
 }

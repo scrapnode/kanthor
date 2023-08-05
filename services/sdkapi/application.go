@@ -14,6 +14,4 @@ func UseApplicationRoutes(router *gin.RouterGroup, logger logging.Logger, valida
 
 	router.GET("", UseApplicationList(logger, validator, uc))
 	router.GET("/:app_id", UseApplicationGet(logger, validator, uc))
-
-	UseEndpointRoutes(router.Group("/:app_id/endpoint"), logger, validator, uc)
 }

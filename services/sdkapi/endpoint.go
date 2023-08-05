@@ -14,6 +14,4 @@ func UseEndpointRoutes(router *gin.RouterGroup, logger logging.Logger, validator
 
 	router.GET("", UseEndpointList(logger, validator, uc))
 	router.GET("/:ep_id", UseEndpointGet(logger, validator, uc))
-
-	UseEndpointRuleRoutes(router.Group("/:ep_id/rule"), logger, validator, uc)
 }

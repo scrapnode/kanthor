@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-type endpointRuleListRes struct {
+type EndpointRuleListRes struct {
 	*structure.ListRes[entities.EndpointRule]
 }
 
@@ -39,7 +39,7 @@ func UseEndpointRuleList(logger logging.Logger, validator validator.Validator, u
 			return
 		}
 
-		res := &endpointRuleListRes{ListRes: ucres.ListRes}
+		res := &EndpointRuleListRes{ListRes: ucres.ListRes}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

@@ -64,9 +64,13 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	})
 	// swagger routes
 	docs.SwaggerInfo.BasePath = "/api"
+	// @TODO: set the dynamic domain name
 	swagger := router.Group("/swagger")
 	{
-		swagger.GET("/*any", ginswagger.WrapHandler(swaggerfiles.Handler))
+		swagger.GET("/*any", ginswagger.WrapHandler(
+			swaggerfiles.Handler,
+			ginswagger.PersistAuthorization(true)),
+		)
 	}
 	// api routes
 	api := router.Group("/api")
@@ -75,7 +79,18 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		api.Use(middlewares.UseAuth(service.uc))
 		api.Use(middlewares.UseAuthz(service.authz))
 		api.Use(middlewares.UsePaging(service.logger, 5, 30))
-		UseApplicationRoutes(api.Group("/application"), service.logger, service.validator, service.uc)
+		UseApplicationRoutes(
+			api.Group("/application"),
+			service.logger, service.validator, service.uc,
+		)
+		UseEndpointRoutes(
+			router.Group("/application/:app_id/endpoint"),
+			service.logger, service.validator, service.uc,
+		)
+		UseEndpointRuleRoutes(
+			router.Group("/application/:app_id/endpoint/:ep_id/rule"),
+			service.logger, service.validator, service.uc,
+		)
 	}
 
 	service.server = &http.Server{

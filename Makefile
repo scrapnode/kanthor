@@ -8,4 +8,4 @@ wire:
 	go generate services/ioc/generate.go
 
 docs:
-	 swag init -d services/sdkapi -o services/sdkapi/docs -g swagger.go
+	 swag init -q -d services/sdkapi -o services/sdkapi/docs -g swagger.go --parseDependency --parseInternal

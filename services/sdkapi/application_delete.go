@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type applicationDeleteRes struct {
+type ApplicationDeleteRes struct {
 	*entities.Application
 }
 
@@ -21,18 +21,18 @@ func UseApplicationDelete(logger logging.Logger, validator validator.Validator, 
 		ucreq := &usecase.ApplicationDeleteReq{Id: id}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, NewHttpError("invalid request"))
 			return
 		}
 
 		ucres, err := uc.Application().Delete(ctx, ucreq)
 		if err != nil {
 			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "oops, something went wrong"})
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, NewHttpError("oops, something went wrong"))
 			return
 		}
 
-		res := &applicationDeleteRes{ucres.Doc}
+		res := &ApplicationDeleteRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

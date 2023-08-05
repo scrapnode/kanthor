@@ -10,17 +10,17 @@ import (
 	"net/http"
 )
 
-type endpointRuleUpdateReq struct {
+type EndpointRuleUpdateReq struct {
 	Name string `json:"name" binding:"required"`
 }
 
-type endpointRuleUpdateRes struct {
+type EndpointRuleUpdateRes struct {
 	*entities.EndpointRule
 }
 
 func UseEndpointRuleUpdate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req endpointRuleUpdateReq
+		var req EndpointRuleUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
@@ -45,7 +45,7 @@ func UseEndpointRuleUpdate(logger logging.Logger, validator validator.Validator,
 			return
 		}
 
-		res := &endpointRuleUpdateRes{ucres.Doc}
+		res := &EndpointRuleUpdateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-type applicationListRes struct {
+type ApplicationListRes struct {
 	*structure.ListRes[entities.Application]
 }
 
@@ -32,7 +32,7 @@ func UseApplicationList(logger logging.Logger, validator validator.Validator, uc
 			return
 		}
 
-		res := &applicationListRes{ListRes: ucres.ListRes}
+		res := &ApplicationListRes{ListRes: ucres.ListRes}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

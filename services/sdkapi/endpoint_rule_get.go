@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type endpointRuleGetRes struct {
+type EndpointRuleGetRes struct {
 	*entities.EndpointRule
 }
 
@@ -34,7 +34,7 @@ func UseEndpointRuleGet(logger logging.Logger, validator validator.Validator, uc
 			return
 		}
 
-		res := &endpointRuleGetRes{ucres.Doc}
+		res := &EndpointRuleGetRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }
