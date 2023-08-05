@@ -24,7 +24,7 @@ func UseEndpointRuleUpdate(logger logging.Logger, validator validator.Validator,
 		var req EndpointRuleUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
 

@@ -16,6 +16,19 @@ type EndpointListRes struct {
 	*structure.ListRes[entities.Endpoint]
 }
 
+// UseEndpointList
+// @Tags		endpoint
+// @Router		/application/{app_id}/endpoint	[get]
+// @Param		app_id							path		string					true	"application id"
+// @Param		_cursor							query		string					false	"current query cursor"					minlength(29) maxlength(32)
+// @Param		_q								query		string					false	"search keyword" 						minlength(2)  maxlength(32)
+// @Param		_limit							query		int						false	"limit returning records"				minimum(5)    maximum(30)
+// @Param		_id								query		[]string				false	"only return records with selected ids"
+// @Success		200								{object}	EndpointListRes
+// @Failure		default							{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseEndpointList(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)

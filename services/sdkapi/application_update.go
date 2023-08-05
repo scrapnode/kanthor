@@ -15,16 +15,26 @@ type ApplicationUpdateReq struct {
 	Name string `json:"name" binding:"required"`
 }
 
-type applicationUpdateRes struct {
+type ApplicationUpdateRes struct {
 	*entities.Application
 }
 
+// UseApplicationUpdate
+// @Tags		application
+// @Router		/application/{app_id}	[put]
+// @Param		app_id					path		string					true	"application id"
+// @Param		payload					body		ApplicationUpdateReq	true	"application properties"
+// @Success		200						{object}	ApplicationUpdateRes
+// @Failure		default					{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseApplicationUpdate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req ApplicationUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
 
@@ -44,7 +54,7 @@ func UseApplicationUpdate(logger logging.Logger, validator validator.Validator, 
 			return
 		}
 
-		res := &applicationUpdateRes{ucres.Doc}
+		res := &ApplicationUpdateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

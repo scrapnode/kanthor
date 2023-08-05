@@ -17,10 +17,10 @@ type ApplicationDeleteRes struct {
 
 // UseApplicationDelete
 // @Tags		application
-// @Router		/application/{id}	[delete]
-// @Param		id					path		string					true	"application id"
-// @Success		200					{object}	ApplicationDeleteRes
-// @Failure		default				{object}	gateway.Error
+// @Router		/application/{app_id}	[delete]
+// @Param		app_id					path		string					true	"application id"
+// @Success		200						{object}	ApplicationDeleteRes
+// @Failure		default					{object}	gateway.Error
 // @Security	BasicAuth
 // @in header
 // @name		Authorization

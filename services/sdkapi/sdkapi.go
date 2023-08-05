@@ -84,11 +84,11 @@ func (service *sdkapi) Start(ctx context.Context) error {
 			service.logger, service.validator, service.uc,
 		)
 		UseEndpointRoutes(
-			router.Group("/application/:app_id/endpoint"),
+			api.Group("/application/:app_id/endpoint"),
 			service.logger, service.validator, service.uc,
 		)
 		UseEndpointRuleRoutes(
-			router.Group("/application/:app_id/endpoint/:ep_id/rule"),
+			api.Group("/application/:app_id/endpoint/:ep_id/rule"),
 			service.logger, service.validator, service.uc,
 		)
 	}

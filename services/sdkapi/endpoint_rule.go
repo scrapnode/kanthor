@@ -9,7 +9,7 @@ import (
 
 func UseEndpointRuleRoutes(router *gin.RouterGroup, logger logging.Logger, validator validator.Validator, uc usecase.Sdk) {
 	router.POST("", UseEndpointRuleCreate(logger, validator, uc))
-	router.PATCH("/:epr_id", UseEndpointRuleUpdate(logger, validator, uc))
+	router.PUT("/:epr_id", UseEndpointRuleUpdate(logger, validator, uc))
 	router.DELETE("/:epr_id", UseEndpointRuleDelete(logger, validator, uc))
 
 	router.GET("", UseEndpointRuleList(logger, validator, uc))

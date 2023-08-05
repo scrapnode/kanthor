@@ -16,19 +16,29 @@ type EndpointCreateReq struct {
 
 	SecretKey string `json:"secret_key" binding:"omitempty,min=16,max=32"`
 	Method    string `json:"method" binding:"required,oneof=POST PUT"`
-	Uri       string `json:"uri" binding:"required,uri"`
+	Uri       string `json:"uri" binding:"required,uri" example:"https://example.com"`
 }
 
 type EndpointCreateRes struct {
 	*entities.Endpoint
 }
 
+// UseEndpointCreate
+// @Tags		endpoint
+// @Router		/application/{app_id}/endpoint		[post]
+// @Param		app_id								path		string				true	"application id"
+// @Param		payload								body		EndpointCreateReq	true	"endpoint properties"
+// @Success		200									{object}	EndpointCreateRes
+// @Failure		default								{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "malformed request"})
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
 

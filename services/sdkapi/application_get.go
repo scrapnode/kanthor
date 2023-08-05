@@ -17,10 +17,10 @@ type ApplicationGetRes struct {
 
 // UseApplicationGet
 // @Tags		application
-// @Router		/application/{id}	[get]
-// @Param		id					path		string					true	"application id"
-// @Success		200					{object}	ApplicationGetRes
-// @Failure		default				{object}	gateway.Error
+// @Router		/application/{app_id}	[get]
+// @Param		app_id					path		string					true	"application id"
+// @Success		200						{object}	ApplicationGetRes
+// @Failure		default					{object}	gateway.Error
 // @Security	BasicAuth
 // @in header
 // @name		Authorization

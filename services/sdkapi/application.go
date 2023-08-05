@@ -9,7 +9,7 @@ import (
 
 func UseApplicationRoutes(router *gin.RouterGroup, logger logging.Logger, validator validator.Validator, uc usecase.Sdk) {
 	router.POST("", UseApplicationCreate(logger, validator, uc))
-	router.PATCH("/:app_id", UseApplicationUpdate(logger, validator, uc))
+	router.PUT("/:app_id", UseApplicationUpdate(logger, validator, uc))
 	router.DELETE("/:app_id", UseApplicationDelete(logger, validator, uc))
 
 	router.GET("", UseApplicationList(logger, validator, uc))

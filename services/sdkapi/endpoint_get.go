@@ -15,6 +15,16 @@ type EndpointGetRes struct {
 	*entities.Endpoint
 }
 
+// UseEndpointGet
+// @Tags		endpoint
+// @Router		/application/{app_id}/endpoint/{ep_id}	[get]
+// @Param		app_id									path		string					true	"application id"
+// @Param		ep_id									path		string					true	"endpoint id"
+// @Success		200										{object}	EndpointGetRes
+// @Failure		default									{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseEndpointGet(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)

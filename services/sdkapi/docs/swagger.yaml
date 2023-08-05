@@ -19,6 +19,34 @@ definitions:
     - id
     - updated_at
     type: object
+  entities.Endpoint:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        description: 'HTTP: POST/PUT/PATCH'
+        type: string
+      name:
+        type: string
+      secret_key:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        description: |-
+          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+          HTTP: https:://httpbin.org/post?app=kanthor.webhook
+          gRPC: grpc:://app.kanthorlabs.com
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
   gateway.Error:
     properties:
       code:
@@ -93,6 +121,179 @@ definitions:
           $ref: '#/definitions/entities.Application'
         type: array
     type: object
+  sdkapi.ApplicationUpdateReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  sdkapi.ApplicationUpdateRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      workspace_id:
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  sdkapi.EndpointCreateReq:
+    properties:
+      method:
+        enum:
+        - POST
+        - PUT
+        type: string
+      name:
+        type: string
+      secret_key:
+        maxLength: 32
+        minLength: 16
+        type: string
+      uri:
+        example: https://example.com
+        type: string
+    required:
+    - method
+    - name
+    - uri
+    type: object
+  sdkapi.EndpointCreateRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        description: 'HTTP: POST/PUT/PATCH'
+        type: string
+      name:
+        type: string
+      secret_key:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        description: |-
+          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+          HTTP: https:://httpbin.org/post?app=kanthor.webhook
+          gRPC: grpc:://app.kanthorlabs.com
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  sdkapi.EndpointDeleteRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        description: 'HTTP: POST/PUT/PATCH'
+        type: string
+      name:
+        type: string
+      secret_key:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        description: |-
+          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+          HTTP: https:://httpbin.org/post?app=kanthor.webhook
+          gRPC: grpc:://app.kanthorlabs.com
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  sdkapi.EndpointGetRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        description: 'HTTP: POST/PUT/PATCH'
+        type: string
+      name:
+        type: string
+      secret_key:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        description: |-
+          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+          HTTP: https:://httpbin.org/post?app=kanthor.webhook
+          gRPC: grpc:://app.kanthorlabs.com
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
+  sdkapi.EndpointListRes:
+    properties:
+      cursor:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/entities.Endpoint'
+        type: array
+    type: object
+  sdkapi.EndpointUpdateReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  sdkapi.EndpointUpdateRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        description: 'HTTP: POST/PUT/PATCH'
+        type: string
+      name:
+        type: string
+      secret_key:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        description: |-
+          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+          HTTP: https:://httpbin.org/post?app=kanthor.webhook
+          gRPC: grpc:://app.kanthorlabs.com
+        type: string
+    required:
+    - created_at
+    - id
+    - updated_at
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -114,10 +315,14 @@ paths:
       parameters:
       - description: current query cursor
         in: query
+        maxLength: 32
+        minLength: 29
         name: _cursor
         type: string
       - description: search keyword
         in: query
+        maxLength: 32
+        minLength: 2
         name: _q
         type: string
       - description: limit returning records
@@ -167,12 +372,12 @@ paths:
       - BasicAuth: []
       tags:
       - application
-  /application/{id}:
+  /application/{app_id}:
     delete:
       parameters:
       - description: application id
         in: path
-        name: id
+        name: app_id
         required: true
         type: string
       responses:
@@ -192,7 +397,7 @@ paths:
       parameters:
       - description: application id
         in: path
-        name: id
+        name: app_id
         required: true
         type: string
       responses:
@@ -208,6 +413,186 @@ paths:
       - BasicAuth: []
       tags:
       - application
+    put:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: application properties
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.ApplicationUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.ApplicationUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - application
+  /application/{app_id}/endpoint:
+    get:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: current query cursor
+        in: query
+        maxLength: 32
+        minLength: 29
+        name: _cursor
+        type: string
+      - description: search keyword
+        in: query
+        maxLength: 32
+        minLength: 2
+        name: _q
+        type: string
+      - description: limit returning records
+        in: query
+        maximum: 30
+        minimum: 5
+        name: _limit
+        type: integer
+      - collectionFormat: csv
+        description: only return records with selected ids
+        in: query
+        items:
+          type: string
+        name: _id
+        type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointListRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint
+    post:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint properties
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.EndpointCreateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointCreateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint
+  /application/{app_id}/endpoint/{ep_id}:
+    delete:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointDeleteRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint
+    get:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint
+    put:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      - description: endpoint properties
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.EndpointUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.EndpointUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - endpoint
 produces:
 - application/json
 securityDefinitions:

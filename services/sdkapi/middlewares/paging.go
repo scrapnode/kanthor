@@ -3,6 +3,7 @@ package middlewares
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/structure"
+	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 type paging struct {
 	Cursor string `form:"_cursor" binding:"omitempty,min=29,max=32"`
 	Search string `form:"_q" binding:"omitempty,min=2,max=32"`
-	Limit  int    `form:"_limit" binding:"min=5,max=30"`
+	Limit  int    `form:"_limit" binding:"omitempty,min=5,max=30"`
 
 	Ids []string `form:"_id"`
 }
@@ -26,7 +27,7 @@ func UsePaging(logger logging.Logger, minLimit, maxLimit int) gin.HandlerFunc {
 		var p paging
 		if err := ginctx.BindQuery(&p); err != nil {
 			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "unable to parse your request query"})
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to parse your request query"))
 			return
 		}
 		p.Limit = utils.MinInt(utils.MaxInt(minLimit, p.Limit), maxLimit)

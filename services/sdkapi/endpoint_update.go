@@ -15,10 +15,21 @@ type EndpointUpdateReq struct {
 	Name string `json:"name" binding:"required"`
 }
 
-type endpointUpdateRes struct {
+type EndpointUpdateRes struct {
 	*entities.Endpoint
 }
 
+// UseEndpointUpdate
+// @Tags		endpoint
+// @Router		/application/{app_id}/endpoint/{ep_id}	[put]
+// @Param		app_id									path		string					true	"application id"
+// @Param		ep_id									path		string					true	"endpoint id"
+// @Param		payload									body		EndpointUpdateReq		true	"endpoint properties"
+// @Success		200										{object}	EndpointUpdateRes
+// @Failure		default									{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseEndpointUpdate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointUpdateReq
@@ -29,10 +40,9 @@ func UseEndpointUpdate(logger logging.Logger, validator validator.Validator, uc 
 		}
 
 		ctx := ginctx.MustGet("ctx").(context.Context)
-		app := ginctx.MustGet("app").(*entities.Application)
-
+		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
-		ucreq := &usecase.EndpointUpdateReq{AppId: app.Id, Id: id, Name: req.Name}
+		ucreq := &usecase.EndpointUpdateReq{AppId: appId, Id: id, Name: req.Name}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
@@ -46,7 +56,7 @@ func UseEndpointUpdate(logger logging.Logger, validator validator.Validator, uc 
 			return
 		}
 
-		res := &endpointUpdateRes{ucres.Doc}
+		res := &EndpointUpdateRes{ucres.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

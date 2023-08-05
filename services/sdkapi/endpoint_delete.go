@@ -15,6 +15,16 @@ type EndpointDeleteRes struct {
 	*entities.Endpoint
 }
 
+// UseEndpointDelete
+// @Tags		endpoint
+// @Router		/application/{app_id}/endpoint/{ep_id}	[delete]
+// @Param		app_id									path		string					true	"application id"
+// @Param		ep_id									path		string					true	"endpoint id"
+// @Success		200										{object}	EndpointDeleteRes
+// @Failure		default									{object}	gateway.Error
+// @Security	BasicAuth
+// @in header
+// @name		Authorization
 func UseEndpointDelete(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)
