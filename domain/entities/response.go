@@ -21,7 +21,7 @@ type Response struct {
 
 	Uri     string      `json:"uri"`
 	Headers http.Header `json:"headers"`
-	Body    string      `json:"body"`
+	Body    []byte      `json:"body"`
 
 	Status int    `json:"status"`
 	Error  string `json:"error"`

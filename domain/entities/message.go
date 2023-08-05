@@ -13,13 +13,13 @@ import (
 type Message struct {
 	Entity
 	TimeSeries
-	Tier string `json:"tier"`
 
+	Tier  string `json:"tier"`
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`
 
+	Body     []byte            `json:"body"`
 	Headers  http.Header       `json:"headers"`
-	Body     string            `json:"body"`
 	Metadata map[string]string `json:"metadata"`
 }
 

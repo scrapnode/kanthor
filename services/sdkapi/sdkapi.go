@@ -5,6 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	httpxmw "github.com/scrapnode/kanthor/infrastructure/gateway/httpx/middlewares"
+	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
@@ -20,25 +22,28 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	validator validator.Validator,
+	idempotency idempotency.Idempotency,
 	authz authorizator.Authorizator,
 	uc usecase.Sdk,
 ) services.Service {
 	logger = logger.With("service", "sdkapi")
 	return &sdkapi{
-		conf:      conf,
-		logger:    logger,
-		validator: validator,
-		authz:     authz,
-		uc:        uc,
+		conf:        conf,
+		logger:      logger,
+		validator:   validator,
+		idempotency: idempotency,
+		authz:       authz,
+		uc:          uc,
 	}
 }
 
 type sdkapi struct {
-	conf      *config.Config
-	logger    logging.Logger
-	validator validator.Validator
-	authz     authorizator.Authorizator
-	uc        usecase.Sdk
+	conf        *config.Config
+	logger      logging.Logger
+	validator   validator.Validator
+	idempotency idempotency.Idempotency
+	authz       authorizator.Authorizator
+	uc          usecase.Sdk
 
 	server *http.Server
 }
@@ -49,6 +54,10 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	}
 
 	if err := service.uc.Connect(ctx); err != nil {
+		return err
+	}
+
+	if err := service.idempotency.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -77,10 +86,11 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	// api routes
 	api := router.Group("/api")
 	{
-		api.Use(middlewares.UseStartup())
+		api.Use(httpxmw.UseStartup())
+		api.Use(httpxmw.UseIdempotency(service.logger, service.idempotency))
 		api.Use(middlewares.UseAuth(service.uc))
 		api.Use(middlewares.UseAuthz(service.authz))
-		api.Use(middlewares.UsePaging(service.logger, 5, 30))
+		api.Use(httpxmw.UsePaging(service.logger, 5, 30))
 		UseApplicationRoutes(
 			api.Group("/application"),
 			service.logger, service.validator, service.uc,
@@ -91,6 +101,11 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		)
 		UseEndpointRuleRoutes(
 			api.Group("/application/:app_id/endpoint/:ep_id/rule"),
+			service.logger, service.validator, service.uc,
+		)
+
+		UseMessageRoutes(
+			api.Group("/application/:app_id/message"),
 			service.logger, service.validator, service.uc,
 		)
 	}
@@ -107,16 +122,20 @@ func (service *sdkapi) Start(ctx context.Context) error {
 func (service *sdkapi) Stop(ctx context.Context) error {
 	service.logger.Info("stopped")
 
+	if err := service.server.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	if err := service.idempotency.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
 	if err := service.uc.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 	}
 
 	if err := service.authz.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
-	}
-
-	if err := service.server.Shutdown(ctx); err != nil {
-		return err
 	}
 
 	return nil

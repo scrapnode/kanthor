@@ -6,6 +6,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"sync"
 	"time"
 )
 
@@ -18,11 +19,15 @@ type NatsPublisher struct {
 	conf   *PublisherConfig
 	logger logging.Logger
 
+	mu   sync.Mutex
 	conn *nats.Conn
 	js   jetstream.JetStream
 }
 
 func (publisher *NatsPublisher) Connect(ctx context.Context) error {
+	publisher.mu.Lock()
+	defer publisher.mu.Unlock()
+
 	conn, err := NewNats(publisher.conf.Connection, publisher.logger)
 	if err != nil {
 		return err
@@ -53,6 +58,9 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 }
 
 func (publisher *NatsPublisher) Disconnect(ctx context.Context) error {
+	publisher.mu.Lock()
+	defer publisher.mu.Unlock()
+
 	if !publisher.conn.IsDraining() {
 		if err := publisher.conn.Drain(); err != nil {
 			publisher.logger.Error(err)
@@ -70,6 +78,10 @@ func (publisher *NatsPublisher) Disconnect(ctx context.Context) error {
 }
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, event *Event) error {
+	if err := event.Validate(); err != nil {
+		return err
+	}
+
 	msg := publisher.transform(event.Subject, event)
 	ack, err := publisher.js.PublishMsg(ctx, msg)
 	if err != nil {

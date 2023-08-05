@@ -8,6 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,6 +21,7 @@ type NatsSubscriber struct {
 	conf   *SubscriberConfig
 	logger logging.Logger
 
+	mu           sync.Mutex
 	conn         *nats.Conn
 	js           jetstream.JetStream
 	stream       jetstream.Stream
@@ -27,6 +29,9 @@ type NatsSubscriber struct {
 }
 
 func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
+	subscriber.mu.Lock()
+	defer subscriber.mu.Unlock()
+
 	conn, err := NewNats(subscriber.conf.Connection, subscriber.logger)
 	if err != nil {
 		return err
@@ -57,6 +62,9 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 }
 
 func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
+	subscriber.mu.Lock()
+	defer subscriber.mu.Unlock()
+
 	if subscriber.subscription.IsValid() {
 		if err := subscriber.subscription.Unsubscribe(); err != nil {
 			return err

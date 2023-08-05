@@ -28,7 +28,7 @@ type EndpointCreateRes struct {
 // @Router		/application/{app_id}/endpoint		[post]
 // @Param		app_id								path		string				true	"application id"
 // @Param		props								body		EndpointCreateReq	true	"endpoint properties"
-// @Success		200									{object}	EndpointCreateRes
+// @Success		201									{object}	EndpointCreateRes
 // @Failure		default								{object}	gateway.Error
 // @Security	BasicAuth
 // @in header
@@ -65,6 +65,6 @@ func UseEndpointCreate(logger logging.Logger, validator validator.Validator, uc 
 		}
 
 		res := &EndpointCreateRes{ucres.Doc}
-		ginctx.JSON(http.StatusOK, res)
+		ginctx.JSON(http.StatusCreated, res)
 	}
 }

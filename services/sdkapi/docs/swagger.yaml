@@ -522,6 +522,30 @@ definitions:
     - id
     - updated_at
     type: object
+  sdkapi.MessagePutReq:
+    properties:
+      body:
+        additionalProperties: true
+        type: object
+      headers:
+        additionalProperties:
+          type: string
+        type: object
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        type: string
+    required:
+    - body
+    - type
+    type: object
+  sdkapi.MessagePutRes:
+    properties:
+      id:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -588,8 +612,8 @@ paths:
         schema:
           $ref: '#/definitions/sdkapi.ApplicationCreateReq'
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/sdkapi.ApplicationCreateRes'
         default:
@@ -727,8 +751,8 @@ paths:
         schema:
           $ref: '#/definitions/sdkapi.EndpointCreateReq'
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/sdkapi.EndpointCreateRes'
         default:
@@ -891,8 +915,8 @@ paths:
         schema:
           $ref: '#/definitions/sdkapi.EndpointRuleCreateReq'
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/sdkapi.EndpointRuleCreateRes'
         default:
@@ -1000,6 +1024,33 @@ paths:
       - BasicAuth: []
       tags:
       - endpoint rule
+  /application/{app_id}/message:
+    put:
+      parameters:
+      - description: application id
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: message properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.MessagePutReq'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/sdkapi.MessagePutRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - message
 produces:
 - application/json
 securityDefinitions:

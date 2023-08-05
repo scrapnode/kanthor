@@ -12,7 +12,7 @@ func (uc *workspace) Authenticate(ctx context.Context, req *WorkspaceAuthenticat
 	key := utils.Key("sdk", "workspace", req.User, req.Hash)
 	// No mather the function got error or not, we want to cache the result of authentication for next usage,
 	// so we MUST NOT return error
-	return cache.Warp[WorkspaceAuthenticateRes](uc.cache, key, time.Hour*24, func() (*WorkspaceAuthenticateRes, error) {
+	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*WorkspaceAuthenticateRes, error) {
 		res := &WorkspaceAuthenticateRes{}
 
 		credentials, err := uc.repos.WorkspaceCredentials().Get(ctx, req.User)

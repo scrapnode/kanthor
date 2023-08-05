@@ -22,7 +22,7 @@ type watcher struct {
 }
 
 func (w *watcher) Connect(ctx context.Context) error {
-	conn, err := streaming.NewNats(&streaming.ConnectionConfig{Uri: w.conf.Uri}, w.logger)
+	conn, err := streaming.NewNats(streaming.ConnectionConfig{Uri: w.conf.Uri}, w.logger)
 	if err != nil {
 		return err
 	}

@@ -76,10 +76,10 @@ func transformResponse2Event(res *entities.Response) (*streaming.Event, error) {
 	event := &streaming.Event{
 		AppId:    res.AppId,
 		Type:     res.Type,
+		Id:       res.Id,
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.GenId()
 	event.Subject = streaming.Subject(
 		streaming.Namespace,
 		res.Tier,

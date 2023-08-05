@@ -19,7 +19,7 @@ type Request struct {
 	Method   string            `json:"method"`
 	Uri      string            `json:"uri"`
 	Headers  http.Header       `json:"headers"`
-	Body     string            `json:"body"`
+	Body     []byte            `json:"body"`
 	Metadata map[string]string `json:"metadata"`
 }
 

@@ -113,8 +113,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/sdkapi.ApplicationCreateRes"
                         }
@@ -334,8 +334,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/sdkapi.EndpointCreateRes"
                         }
@@ -590,8 +590,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/sdkapi.EndpointRuleCreateRes"
                         }
@@ -746,6 +746,50 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/sdkapi.EndpointRuleDeleteRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/application/{app_id}/message": {
+            "put": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "tags": [
+                    "message"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "message properties",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.MessagePutReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.MessagePutRes"
                         }
                     },
                     "default": {
@@ -1431,6 +1475,42 @@ const docTemplate = `{
                 },
                 "uri": {
                     "description": "format: scheme \":\" [\"//\" authority] path [\"?\" query] [\"#\" fragment]\nHTTP: https:://httpbin.org/post?app=kanthor.webhook\ngRPC: grpc:://app.kanthorlabs.com",
+                    "type": "string"
+                }
+            }
+        },
+        "sdkapi.MessagePutReq": {
+            "type": "object",
+            "required": [
+                "body",
+                "type"
+            ],
+            "properties": {
+                "body": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "sdkapi.MessagePutRes": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }

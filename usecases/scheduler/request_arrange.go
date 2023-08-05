@@ -16,8 +16,8 @@ import (
 )
 
 func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*RequestArrangeRes, error) {
-	cacheKey := cache.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
-	app, err := cache.Warp(uc.cache, cacheKey, time.Hour, func() (*repos.ApplicationWithEndpointsAndRules, error) {
+	key := utils.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
+	app, err := cache.Warp(uc.cache, ctx, key, time.Hour, func() (*repos.ApplicationWithEndpointsAndRules, error) {
 		return uc.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
 	})
 	if err != nil {
@@ -38,16 +38,16 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 
 	p := pool.New().WithMaxGoroutines(uc.conf.Scheduler.Request.Arrange.Concurrency)
 	for _, r := range requests {
-		request := r
+		ent := r
 		p.Go(func() {
-			key := utils.Key(req.Message.Id, request.EndpointId, request.Metadata[entities.MetaRuleId], request.Id)
+			key := utils.Key(req.Message.Id, ent.EndpointId, ent.Metadata[entities.MetaRuleId], ent.Id)
 
-			event, err := transformRequest2Event(&request)
+			event, err := transformRequest2Event(&ent)
 			if err == nil {
 				err = uc.publisher.Pub(ctx, event)
 			}
 
-			res.Entities = append(res.Entities, structure.BulkRes[entities.Request]{Entity: request, Error: err})
+			res.Entities = append(res.Entities, structure.BulkRes[entities.Request]{Entity: ent, Error: err})
 			if err == nil {
 				res.SuccessKeys = append(res.SuccessKeys, key)
 			} else {
@@ -94,7 +94,7 @@ func (uc *request) generateRequestsFromEndpoints(endpoints []repos.EndpointWithR
 				continue
 			}
 
-			request := entities.Request{
+			ent := entities.Request{
 				Tier:       msg.Tier,
 				AppId:      msg.AppId,
 				Type:       msg.Type,
@@ -108,10 +108,10 @@ func (uc *request) generateRequestsFromEndpoints(endpoints []repos.EndpointWithR
 					entities.MetaRuleId: rule.Id,
 				},
 			}
-			request.GenId()
-			request.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+			ent.GenId()
+			ent.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
 
-			requests = append(requests, request)
+			requests = append(requests, ent)
 		}
 	}
 
@@ -171,10 +171,10 @@ func transformRequest2Event(req *entities.Request) (*streaming.Event, error) {
 	event := &streaming.Event{
 		AppId:    req.AppId,
 		Type:     req.Type,
+		Id:       req.Id,
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.GenId()
 	event.Subject = streaming.Subject(
 		streaming.Namespace,
 		req.Tier,

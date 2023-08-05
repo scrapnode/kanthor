@@ -34,12 +34,12 @@ type Request struct {
 	Method  string      `json:"method"`
 	Headers http.Header `json:"headers"`
 	Uri     string      `json:"uri"`
-	Body    string      `json:"body"`
+	Body    []byte      `json:"body"`
 }
 
 type Response struct {
 	Status  int         `json:"status"`
 	Headers http.Header `json:"headers"`
 	Uri     string      `json:"uri"`
-	Body    string      `json:"body"`
+	Body    []byte      `json:"body"`
 }

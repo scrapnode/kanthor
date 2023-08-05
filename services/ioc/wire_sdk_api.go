@@ -9,7 +9,9 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
+	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -22,6 +24,8 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	wire.Build(
 		sdkapi.New,
 		validator.New,
+		wire.FieldsOf(new(*config.Config), "Idempotency"),
+		idempotency.New,
 		ResolveSdkAuthorizatorConfig,
 		authorizator.New,
 		InitializeSdkUsecase,
@@ -39,14 +43,20 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdkuc.Sdk
 		repos.New,
 		ResolveSdkCacheConfig,
 		cache.New,
+		ResolveSdkPublisherConfig,
+		streaming.NewPublisher,
 	)
 	return nil, nil
+}
+
+func ResolveSdkAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.SdkApi.Authorizator
 }
 
 func ResolveSdkCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.SdkApi.Cache
 }
 
-func ResolveSdkAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.SdkApi.Authorizator
+func ResolveSdkPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	return &conf.SdkApi.Publisher
 }

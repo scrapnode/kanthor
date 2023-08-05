@@ -67,7 +67,7 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			// @TODO: use SetDoNotParseResponse
 			// Do not forget to close the body, otherwise you might get into connection leaks, no connection reuse.
 			// Basically you have taken over the control of response parsing from `Resty`.
-			Body: string(rp.Body()),
+			Body: rp.Body(),
 		}
 		logger.Debugw("sent", "uri", res.Uri, "trace_info", rp.Request.TraceInfo())
 

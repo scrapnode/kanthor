@@ -17,7 +17,7 @@ type Publisher interface {
 }
 
 type PublisherConfig struct {
-	Connection *ConnectionConfig `json:"connection" yaml:"connection" yaml:"connection" mapstructure:"connection" validate:"required"`
+	Connection ConnectionConfig `json:"connection" yaml:"connection" yaml:"connection" mapstructure:"connection" validate:"required"`
 }
 
 func (conf *PublisherConfig) Validate() error {

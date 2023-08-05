@@ -12,6 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
+	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
@@ -127,6 +128,11 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (sch
 
 func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	validatorValidator := validator.New()
+	idempotencyConfig := &conf.Idempotency
+	idempotencyIdempotency, err := idempotency.New(idempotencyConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	authorizatorConfig := ResolveSdkAuthorizatorConfig(conf)
 	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
 	if err != nil {
@@ -136,7 +142,7 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, validatorValidator, authorizatorAuthorizator, sdk)
+	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, authorizatorAuthorizator, sdk)
 	return service, nil
 }
 
@@ -152,9 +158,14 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdk.Sdk, 
 	if err != nil {
 		return nil, err
 	}
+	publisherConfig := ResolveSdkPublisherConfig(conf)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	databaseConfig := &conf.Database
 	repositories := repos3.New(databaseConfig, logger)
-	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, repositories)
+	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, publisher, repositories)
 	return sdkSdk, nil
 }
 
@@ -202,10 +213,14 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 
 // wire_sdk_api.go:
 
+func ResolveSdkAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.SdkApi.Authorizator
+}
+
 func ResolveSdkCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.SdkApi.Cache
 }
 
-func ResolveSdkAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.SdkApi.Authorizator
+func ResolveSdkPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	return &conf.SdkApi.Publisher
 }

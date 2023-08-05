@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"net/url"
 	"strings"
+	"sync"
 )
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
@@ -20,11 +21,15 @@ type casbin struct {
 	conf   *Config
 	logger logging.Logger
 
+	mu      sync.Mutex
 	watcher *watcher
 	client  *gocasbin.Enforcer
 }
 
 func (authorizator *casbin) Connect(ctx context.Context) error {
+	authorizator.mu.Lock()
+	defer authorizator.mu.Unlock()
+
 	modelUrl, err := url.Parse(authorizator.conf.Casbin.ModelUri)
 	if err != nil {
 		return err
@@ -72,6 +77,9 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 }
 
 func (authorizator *casbin) Disconnect(ctx context.Context) error {
+	authorizator.mu.Lock()
+	defer authorizator.mu.Unlock()
+
 	if err := authorizator.watcher.Disconnect(ctx); err != nil {
 		authorizator.logger.Error(err)
 	}

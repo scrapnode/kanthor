@@ -11,7 +11,7 @@ import (
 func (uc *endpoint) Get(ctx context.Context, req *EndpointGetReq) (*EndpointGetRes, error) {
 	ws := ctx.Value(CtxWs).(*entities.Workspace)
 	key := utils.Key(ws.Id, req.AppId, req.Id)
-	return cache.Warp(uc.cache, key, time.Hour*24, func() (*EndpointGetRes, error) {
+	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*EndpointGetRes, error) {
 		app, err := uc.repos.Endpoint().Get(ctx, ws.Id, req.AppId, req.Id)
 		if err != nil {
 			return nil, err

@@ -54,7 +54,7 @@ func (cache *memory) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (cache *memory) Get(key string) ([]byte, error) {
+func (cache *memory) Get(ctx context.Context, key string) ([]byte, error) {
 	entry, found := cache.client.Get(key)
 	if !found {
 		return nil, ErrEntryNotFound
@@ -63,17 +63,17 @@ func (cache *memory) Get(key string) ([]byte, error) {
 	return entry.([]byte), nil
 }
 
-func (cache *memory) Set(key string, entry []byte, ttl time.Duration) error {
+func (cache *memory) Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error {
 	cache.client.Set(key, entry, ttl)
 	return nil
 }
 
-func (cache *memory) Exist(key string) bool {
+func (cache *memory) Exist(ctx context.Context, key string) bool {
 	_, found := cache.client.Get(key)
 	return found
 }
 
-func (cache *memory) Del(key string) error {
+func (cache *memory) Del(ctx context.Context, key string) error {
 	cache.client.Delete(key)
 	return nil
 }

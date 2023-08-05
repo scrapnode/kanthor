@@ -19,10 +19,10 @@ type Subscriber interface {
 type SubHandler func(event *Event) error
 
 type SubscriberConfig struct {
-	Connection *ConnectionConfig `json:"connection" yaml:"connection" mapstructure:"connection" validate:"required"`
-	Name       string            `json:"name" yaml:"name" mapstructure:"name"`
-	Topic      string            `json:"topic" yaml:"topic" mapstructure:"topic" validate:"required"`
-	Group      string            `json:"group" yaml:"group" mapstructure:"group" validate:"required"`
+	Connection ConnectionConfig `json:"connection" yaml:"connection" mapstructure:"connection" validate:"required"`
+	Name       string           `json:"name" yaml:"name" mapstructure:"name"`
+	Topic      string           `json:"topic" yaml:"topic" mapstructure:"topic" validate:"required"`
+	Group      string           `json:"group" yaml:"group" mapstructure:"group" validate:"required"`
 	// only consume matched event with given subject
 	FilterSubject string `json:"filter_subject" yaml:"filter_subject" mapstructure:"filter_subject" validate:"required"`
 

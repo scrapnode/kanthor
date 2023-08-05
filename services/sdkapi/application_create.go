@@ -23,7 +23,7 @@ type ApplicationCreateRes struct {
 // @Tags		application
 // @Router		/application		[post]
 // @Param		props				body		ApplicationCreateReq	true	"application properties"
-// @Success		200					{object}	ApplicationCreateRes
+// @Success		201					{object}	ApplicationCreateRes
 // @Failure		default				{object}	gateway.Error
 // @Security	BasicAuth
 // @in header
@@ -53,6 +53,6 @@ func UseApplicationCreate(logger logging.Logger, validator validator.Validator, 
 		}
 
 		res := &ApplicationCreateRes{ucres.Doc}
-		ginctx.JSON(http.StatusOK, res)
+		ginctx.JSON(http.StatusCreated, res)
 	}
 }

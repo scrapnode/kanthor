@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func NewNats(conf *ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
+func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func NewNats(conf *ConnectionConfig, logger logging.Logger) (*nats.Conn, error) 
 	return nats.Connect(conf.Uri, opts...)
 }
 
-func NewNatsStream(conf *ConnectionConfig, js jetstream.JetStream) (jetstream.Stream, error) {
+func NewNatsStream(conf ConnectionConfig, js jetstream.JetStream) (jetstream.Stream, error) {
 	_, err := js.Stream(context.Background(), conf.Stream.Name)
 	// only accept ErrStreamNotFound
 	if err != nil && !errors.Is(err, jetstream.ErrStreamNotFound) {

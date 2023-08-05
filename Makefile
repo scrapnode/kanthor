@@ -1,3 +1,5 @@
+all: migration wire docs
+
 migration:
 	go run main.go migrate
 

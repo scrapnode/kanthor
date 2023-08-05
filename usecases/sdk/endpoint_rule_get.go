@@ -11,7 +11,7 @@ import (
 func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetReq) (*EndpointRuleGetRes, error) {
 	ws := ctx.Value(CtxWs).(*entities.Workspace)
 	key := utils.Key(ws.Id, req.AppId, req.EpId, req.Id)
-	return cache.Warp(uc.cache, key, time.Hour*24, func() (*EndpointRuleGetRes, error) {
+	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*EndpointRuleGetRes, error) {
 		app, err := uc.repos.EndpointRule().Get(ctx, ws.Id, req.AppId, req.EpId, req.Id)
 		if err != nil {
 			return nil, err

@@ -26,18 +26,18 @@ func (cache *noop) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (cache *noop) Get(key string) ([]byte, error) {
+func (cache *noop) Get(ctx context.Context, key string) ([]byte, error) {
 	return nil, ErrEntryNotFound
 }
 
-func (cache *noop) Set(key string, entry []byte, ttl time.Duration) error {
+func (cache *noop) Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error {
 	return nil
 }
 
-func (cache *noop) Exist(key string) bool {
+func (cache *noop) Exist(ctx context.Context, key string) bool {
 	return false
 }
 
-func (cache *noop) Del(key string) error {
+func (cache *noop) Del(ctx context.Context, key string) error {
 	return nil
 }

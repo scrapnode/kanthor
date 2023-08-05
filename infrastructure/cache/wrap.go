@@ -1,12 +1,13 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"time"
 )
 
-func Warp[T any](cache Cache, key string, ttl time.Duration, handler func() (*T, error)) (*T, error) {
-	entry, err := cache.Get(key)
+func Warp[T any](cache Cache, ctx context.Context, key string, ttl time.Duration, handler func() (*T, error)) (*T, error) {
+	entry, err := cache.Get(ctx, key)
 	if err == nil {
 		return Unmarshal[T](entry)
 	}
@@ -27,5 +28,5 @@ func Warp[T any](cache Cache, key string, ttl time.Duration, handler func() (*T,
 	}
 
 	// return the data with error from cache setting
-	return data, cache.Set(key, entry, ttl)
+	return data, cache.Set(ctx, key, entry, ttl)
 }

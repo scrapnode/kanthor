@@ -24,4 +24,6 @@ var PermissionOwner = []authorizator.Permission{
 	{"/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", "DELETE"},
 	{"/api/application/:app_id/endpoint/:ep_id/rule", "GET"},
 	{"/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", "GET"},
+
+	{"/api/application/:app_id/message", "PUT"},
 }

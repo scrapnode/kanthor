@@ -6,12 +6,14 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
 type SdkApi struct {
-	Gateway      gateway.Config      `json:"gateway" yaml:"gateway" mapstructure:"gateway" validate:"required"`
-	Authorizator authorizator.Config `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator" validate:"required"`
-	Cache        cache.Config        `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
+	Gateway      gateway.Config            `json:"gateway" yaml:"gateway" mapstructure:"gateway" validate:"required"`
+	Authorizator authorizator.Config       `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator" validate:"required"`
+	Publisher    streaming.PublisherConfig `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
+	Cache        cache.Config              `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 }
 
 func (conf *SdkApi) Validate() error {

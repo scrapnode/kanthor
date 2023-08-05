@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
 	"sync"
@@ -18,6 +19,7 @@ type Sdk interface {
 	Application() Application
 	Endpoint() Endpoint
 	EndpointRule() EndpointRule
+	Message() Message
 }
 
 func New(
@@ -26,6 +28,7 @@ func New(
 	cryptography cryptography.Cryptography,
 	timer timer.Timer,
 	cache cache.Cache,
+	publisher streaming.Publisher,
 	repos repos.Repositories,
 ) Sdk {
 	return &sdk{
@@ -34,6 +37,7 @@ func New(
 		cryptography: cryptography,
 		timer:        timer,
 		cache:        cache,
+		publisher:    publisher,
 		repos:        repos,
 	}
 }
@@ -44,6 +48,7 @@ type sdk struct {
 	cryptography cryptography.Cryptography
 	timer        timer.Timer
 	cache        cache.Cache
+	publisher    streaming.Publisher
 	repos        repos.Repositories
 
 	mu           sync.RWMutex
@@ -51,6 +56,7 @@ type sdk struct {
 	application  *application
 	endpoint     *endpoint
 	endpointRule *endpointRule
+	message      *message
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {
@@ -62,12 +68,20 @@ func (uc *sdk) Connect(ctx context.Context) error {
 		return err
 	}
 
+	if err := uc.publisher.Connect(ctx); err != nil {
+		return err
+	}
+
 	uc.logger.Info("connected")
 	return nil
 }
 
 func (uc *sdk) Disconnect(ctx context.Context) error {
 	uc.logger.Info("disconnected")
+
+	if err := uc.publisher.Disconnect(ctx); err != nil {
+		return err
+	}
 
 	if err := uc.repos.Disconnect(ctx); err != nil {
 		return err
@@ -146,4 +160,22 @@ func (uc *sdk) EndpointRule() EndpointRule {
 		}
 	}
 	return uc.endpointRule
+}
+
+func (uc *sdk) Message() Message {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.message == nil {
+		uc.message = &message{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			publisher:    uc.publisher,
+			repos:        uc.repos,
+		}
+	}
+	return uc.message
 }

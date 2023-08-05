@@ -30,7 +30,7 @@ type EndpointRuleCreateRes struct {
 // @Param		app_id										path		string					true	"application id"
 // @Param		ep_id										path		string					true	"endpoint id"
 // @Param		props										body		EndpointRuleCreateReq	true	"rule properties"
-// @Success		200											{object}	EndpointRuleCreateRes
+// @Success		201											{object}	EndpointRuleCreateRes
 // @Failure		default										{object}	gateway.Error
 // @Security	BasicAuth
 // @in header
@@ -69,6 +69,6 @@ func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator,
 		}
 
 		res := &EndpointRuleCreateRes{ucres.Doc}
-		ginctx.JSON(http.StatusOK, res)
+		ginctx.JSON(http.StatusCreated, res)
 	}
 }
