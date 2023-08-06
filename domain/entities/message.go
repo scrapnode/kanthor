@@ -18,9 +18,9 @@ type Message struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type"`
 
-	Body     []byte            `json:"body"`
-	Headers  http.Header       `json:"headers"`
-	Metadata map[string]string `json:"metadata"`
+	Body     []byte      `json:"body"`
+	Headers  http.Header `json:"headers"`
+	Metadata Metadata    `json:"metadata"`
 }
 
 func (entity *Message) TableName() string {

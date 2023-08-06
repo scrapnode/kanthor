@@ -23,7 +23,7 @@ type MessagePutReq struct {
 
 	Body     []byte            `json:"body" validate:"required"`
 	Headers  http.Header       `json:"headers"`
-	Metadata map[string]string `json:"metadata"`
+	Metadata entities.Metadata `json:"metadata"`
 }
 
 type MessagePutRes struct {

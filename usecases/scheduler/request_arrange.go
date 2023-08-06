@@ -30,7 +30,7 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 		SuccessKeys: []string{},
 	}
 
-	requests := uc.generateRequestsFromEndpoints(app.Endpoints, req.Message)
+	requests := uc.generateRequestsFromEndpoints(req.Message, app.Endpoints)
 	if len(requests) == 0 {
 		uc.logger.Warnw("no request was generated", "app_id", req.Message.AppId, "message_id", req.Message.Id)
 		return res, nil
@@ -40,7 +40,13 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 	for _, r := range requests {
 		ent := r
 		p.Go(func() {
-			key := utils.Key(req.Message.Id, ent.EndpointId, ent.Metadata[entities.MetaRuleId], ent.Id)
+			entKey := utils.Key(
+				req.Message.AppId,
+				ent.Metadata.Get(entities.MetaEpId),
+				ent.Metadata.Get(entities.MetaEprId),
+				ent.Metadata.Get(entities.MetaMsgId),
+				ent.Id,
+			)
 
 			event, err := transformRequest2Event(&ent)
 			if err == nil {
@@ -49,10 +55,10 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 
 			res.Entities = append(res.Entities, structure.BulkRes[entities.Request]{Entity: ent, Error: err})
 			if err == nil {
-				res.SuccessKeys = append(res.SuccessKeys, key)
+				res.SuccessKeys = append(res.SuccessKeys, entKey)
 			} else {
-				res.FailKeys = append(res.FailKeys, key)
-				uc.logger.Errorw(err.Error(), "app_id", req.Message.AppId, "key", key)
+				res.FailKeys = append(res.FailKeys, entKey)
+				uc.logger.Errorw(err.Error(), "app_id", req.Message.AppId, "key", entKey)
 			}
 		})
 	}
@@ -61,24 +67,27 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 	return res, nil
 }
 
-func (uc *request) generateRequestsFromEndpoints(endpoints []repos.EndpointWithRules, msg entities.Message) []entities.Request {
+func (uc *request) generateRequestsFromEndpoints(
+	msg entities.Message,
+	endpoints []repos.EndpointWithRules,
+) []entities.Request {
 	requests := []entities.Request{}
 
-	for _, endpoint := range endpoints {
+	for _, ep := range endpoints {
 		// with this for loop, we enforce endpoint must have at least one rule to construct scheduled request
-		for _, rule := range endpoint.Rules {
+		for _, epr := range ep.Rules {
 			subLogger := uc.logger.With(
-				"rule_id", rule.Id,
-				"rule_condition_source", rule.ConditionSource,
-				"rule_condition_expression", rule.ConditionExpression,
+				"epr_id", epr.Id,
+				"epr_condition_source", epr.ConditionSource,
+				"epr_condition_expression", epr.ConditionExpression,
 			)
-			source := resolveConditionSource(rule, msg)
+			source := resolveConditionSource(epr, msg)
 			if source == "" {
 				subLogger.Errorw("arrange: unable to get data source to compare rule")
 				continue
 			}
 
-			express, err := resolveConditionExpression(rule)
+			express, err := resolveConditionExpression(epr)
 			if err != nil {
 				subLogger.Errorw("arrange: unable resolve rule expression", "error", err.Error())
 				continue
@@ -86,7 +95,7 @@ func (uc *request) generateRequestsFromEndpoints(endpoints []repos.EndpointWithR
 
 			matched := express(source)
 			// once we got exclusionary rule, ignore the rest
-			if rule.Exclusionary && matched {
+			if epr.Exclusionary && matched {
 				break
 			}
 			// otherwise continue express another condition
@@ -95,21 +104,21 @@ func (uc *request) generateRequestsFromEndpoints(endpoints []repos.EndpointWithR
 			}
 
 			ent := entities.Request{
-				Tier:       msg.Tier,
-				AppId:      msg.AppId,
-				Type:       msg.Type,
-				EndpointId: endpoint.Id,
-				Uri:        endpoint.Uri,
-				Method:     endpoint.Method,
-				Headers:    msg.Headers,
-				Body:       msg.Body,
-				Metadata: map[string]string{
-					entities.MetaMsgId:  msg.Id,
-					entities.MetaRuleId: rule.Id,
-				},
+				Tier:     msg.Tier,
+				AppId:    msg.AppId,
+				Type:     msg.Type,
+				Uri:      ep.Uri,
+				Method:   ep.Method,
+				Headers:  msg.Headers,
+				Body:     msg.Body,
+				Metadata: entities.Metadata{},
 			}
 			ent.GenId()
 			ent.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+			ent.Metadata.Merge(msg.Metadata)
+			ent.Metadata.Set(entities.MetaEpId, ep.Id)
+			ent.Metadata.Set(entities.MetaEprId, epr.Id)
+			ent.Metadata.Set(entities.MetaReqId, ent.Id)
 
 			requests = append(requests, ent)
 		}

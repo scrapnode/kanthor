@@ -9,18 +9,17 @@ import (
 type Request struct {
 	Entity
 	TimeSeries
-	Tier string `json:"tier"`
 
-	AppId      string `json:"app_id"`
-	Type       string `json:"type"`
-	EndpointId string `json:"endpoint_id"`
+	Tier     string   `json:"tier"`
+	AppId    string   `json:"app_id"`
+	Type     string   `json:"type"`
+	Metadata Metadata `json:"metadata"`
 
 	// HTTP: POST/PUT/PATCH
-	Method   string            `json:"method"`
-	Uri      string            `json:"uri"`
-	Headers  http.Header       `json:"headers"`
-	Body     []byte            `json:"body"`
-	Metadata map[string]string `json:"metadata"`
+	Method  string      `json:"method"`
+	Uri     string      `json:"uri"`
+	Headers http.Header `json:"headers"`
+	Body    []byte      `json:"body"`
 }
 
 func (entity *Request) TableName() string {

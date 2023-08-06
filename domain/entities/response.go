@@ -11,20 +11,17 @@ var ResponseStatusErr = -1
 type Response struct {
 	Entity
 	TimeSeries
-	Tier string `json:"tier"`
 
-	AppId      string `json:"app_id"`
-	Type       string `json:"type"`
-	EndpointId string `json:"endpoint_id"`
-
-	Metadata map[string]string `json:"metadata"`
+	Tier     string   `json:"tier"`
+	AppId    string   `json:"app_id"`
+	Type     string   `json:"type"`
+	Metadata Metadata `json:"metadata"`
 
 	Uri     string      `json:"uri"`
 	Headers http.Header `json:"headers"`
 	Body    []byte      `json:"body"`
-
-	Status int    `json:"status"`
-	Error  string `json:"error"`
+	Status  int         `json:"status"`
+	Error   string      `json:"error"`
 }
 
 func (entity *Response) TableName() string {

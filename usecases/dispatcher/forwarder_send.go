@@ -2,7 +2,6 @@ package dispatcher
 
 import (
 	"context"
-	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -20,7 +19,7 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 
 	response, err := circuitbreaker.Do[sender.Response](
 		uc.cb,
-		req.Request.EndpointId,
+		req.Request.Metadata.Get(entities.MetaEpId),
 		func() (interface{}, error) {
 			return uc.dispatch(request)
 		},
@@ -39,9 +38,8 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 	}
 	res.Response.GenId()
 	res.Response.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
-	res.Response.Metadata[entities.MetaReqId] = req.Request.Id
-	res.Response.Metadata[entities.MetaReqBucket] = req.Request.Bucket
-	res.Response.Metadata[entities.MetaReqTs] = fmt.Sprintf("%d", req.Request.Timestamp)
+	res.Response.Metadata.Merge(req.Request.Metadata)
+	res.Response.Metadata.Set(entities.MetaResId, res.Response.Id)
 
 	// either error was happened or not, we need to publish response event, so we can handle custom logic later
 	// example use cases are retry, notification, i.e
@@ -51,7 +49,7 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 		res.Response.Headers = response.Headers
 		res.Response.Body = response.Body
 	} else {
-		uc.logger.Errorw(err.Error(), "ep_id", req.Request.EndpointId, "req_id", req.Request.Id)
+		uc.logger.Errorw(err.Error(), "ep_id", req.Request.Metadata.Get(entities.MetaEpId), "req_id", req.Request.Id)
 		res.Response.Status = entities.ResponseStatusErr
 		res.Response.Error = err.Error()
 	}
