@@ -67,7 +67,7 @@ func (cb *sonycb) get(cmd string, onError ErrorHandler) *gobreaker.CircuitBreake
 	})
 
 	cb.breakers[cmd] = breaker
-	return breaker
+	return cb.breakers[cmd]
 }
 
 func (cb *sonycb) error(err error) error {

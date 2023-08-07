@@ -2,10 +2,14 @@
 FROM golang:1.20-alpine as build
 WORKDIR /app
 
-RUN apk add build-base
-RUN go install github.com/google/wire/cmd/wire@latest
-
 COPY . .
+
+# for Makefile
+RUN apk add build-base
+# for golang wire
+RUN go install github.com/google/wire/cmd/wire@latest
+# for golang swaggo
+RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN make
 RUN go build -mod vendor -o ./.kanthor/kanthor -buildvcs=false

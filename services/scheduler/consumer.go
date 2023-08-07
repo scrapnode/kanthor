@@ -30,7 +30,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 			service.logger.Errorw("got some errors", "fail_keys", response.FailKeys)
 		}
 
-		service.logger.Debugw("scheduled requested", "success_count", len(response.SuccessKeys))
+		service.logger.Debugw("scheduled requests", "success_count", len(response.SuccessKeys))
 		return nil
 	}
 }

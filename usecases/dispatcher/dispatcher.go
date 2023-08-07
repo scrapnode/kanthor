@@ -88,7 +88,9 @@ func (uc *dispatcher) Forwarder() Forwarder {
 			logger:    uc.logger,
 			timer:     uc.timer,
 			publisher: uc.publisher,
+			dispatch:  uc.dispatch,
 			cache:     uc.cache,
+			cb:        uc.cb,
 		}
 	}
 	return uc.forwarder
