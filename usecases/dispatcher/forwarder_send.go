@@ -15,7 +15,6 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 		Uri:     req.Request.Uri,
 		Body:    req.Request.Body,
 	}
-	request.Headers.Set("Idempotency-Key", req.Request.Id)
 
 	response, err := circuitbreaker.Do[sender.Response](
 		uc.cb,

@@ -115,6 +115,7 @@ func (uc *request) generateRequestsFromEndpoints(
 			}
 			ent.GenId()
 			ent.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+			ent.Headers.Set("Idempotency-Key", ent.Id)
 			ent.Metadata.Merge(msg.Metadata)
 			ent.Metadata.Set(entities.MetaEpId, ep.Id)
 			ent.Metadata.Set(entities.MetaEprId, epr.Id)
