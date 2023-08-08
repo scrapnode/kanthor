@@ -12,8 +12,8 @@ services:
       - "4222:4222"
     command: "-D -js --http_port 8222"
 
-  storage:
-    container_name: kanthor-storage
+  warehouse:
+    container_name: kanthor-warehouse
     image: postgres:13-alpine
     restart: unless-stopped
     networks:
@@ -46,7 +46,7 @@ services:
 
   migration:
     depends_on:
-      storage:
+      warehouse:
         condition: service_healthy
       cache:
         condition: service_healthy
@@ -69,7 +69,7 @@ services:
     depends_on:
       streaming:
         condition: service_started
-      storage:
+      warehouse:
         condition: service_healthy
       cache:
         condition: service_healthy
@@ -91,7 +91,7 @@ services:
     depends_on:
       streaming:
         condition: service_started
-      storage:
+      warehouse:
         condition: service_healthy
       cache:
         condition: service_healthy
@@ -111,7 +111,7 @@ services:
     depends_on:
       streaming:
         condition: service_started
-      storage:
+      warehouse:
         condition: service_healthy
       cache:
         condition: service_healthy
@@ -126,6 +126,24 @@ services:
       - ./docker/.kanthor:/root/.kanthor
     command:
       - serve dispatcher
+
+  storage:
+    depends_on:
+      streaming:
+        condition: service_started
+      warehouse:
+        condition: service_healthy
+      migration:
+        condition: service_healthy
+    container_name: kanthor-services-storage
+    build: .
+    restart: unless-stopped
+    networks:
+      - kanthor
+    volumes:
+      - ./docker/.kanthor:/root/.kanthor
+    command:
+      - serve storage
 
 networks:
   kanthor:

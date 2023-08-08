@@ -4,13 +4,15 @@ streaming: &streaming
   stream:
     name: default
     subjects:
-      - kanthor.default.>
+      - kanthor.default.msg.>
+      - kanthor.default.req.>
+      - kanthor.default.res.>
     replicas: 0
     limits:
       msgs: 50000
       msg_bytes: 65536
       # 64kb * 50000 ~ 3Gb
-      bytes: 3276800000
+      bytes: 3500000000
       # 60*60*24*3 = 3d
       age: 259200
 
@@ -128,3 +130,12 @@ dispatcher:
     half_open_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
     open_state_duration: 300000
+
+storage:
+  subscriber:
+    connection: *streaming
+    topic: storage
+    group: default
+    filter_subject: kanthor.default.>
+    temporary: true
+    max_deliver: 1

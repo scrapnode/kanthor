@@ -22,6 +22,7 @@ import (
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/services/sdkapi"
+	"github.com/scrapnode/kanthor/services/storage"
 	dispatcher2 "github.com/scrapnode/kanthor/usecases/dispatcher"
 	"github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
@@ -29,6 +30,8 @@ import (
 	repos2 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 	"github.com/scrapnode/kanthor/usecases/sdk"
 	repos3 "github.com/scrapnode/kanthor/usecases/sdk/repos"
+	storage2 "github.com/scrapnode/kanthor/usecases/storage"
+	repos4 "github.com/scrapnode/kanthor/usecases/storage/repos"
 )
 
 // Injectors from wire_dispatcher.go:
@@ -169,6 +172,29 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdk.Sdk, 
 	return sdkSdk, nil
 }
 
+// Injectors from wire_storage.go:
+
+func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	subscriberConfig := ResolveStorageSubscriberConfig(conf)
+	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	storageStorage, err := InitializeStorageUsecase(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	service := storage.New(conf, logger, subscriber, storageStorage)
+	return service, nil
+}
+
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger) (storage2.Storage, error) {
+	datastoreConfig := &conf.Datastore
+	repositories := repos4.New(datastoreConfig, logger)
+	storageStorage := storage2.New(conf, logger, repositories)
+	return storageStorage, nil
+}
+
 // wire_dispatcher.go:
 
 func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
@@ -223,4 +249,10 @@ func ResolveSdkCacheConfig(conf *config.Config) *cache.Config {
 
 func ResolveSdkPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 	return &conf.SdkApi.Publisher
+}
+
+// wire_storage.go:
+
+func ResolveStorageSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
+	return &conf.Storage.Subscriber
 }

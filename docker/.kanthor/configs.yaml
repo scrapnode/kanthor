@@ -4,13 +4,15 @@ streaming: &streaming
   stream:
     name: default
     subjects:
-      - kanthor.default.>
+      - kanthor.default.msg.>
+      - kanthor.default.req.>
+      - kanthor.default.res.>
     replicas: 0
     limits:
       msgs: 50000
       msg_bytes: 65536
       # 64kb * 50000 ~ 3Gb
-      bytes: 3276800000
+      bytes: 3500000000
       # 60*60*24*3 = 3d
       age: 259200
 
@@ -38,19 +40,19 @@ logger:
     environment: localhost
 
 database:
-  uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.database
+  uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.database
 
 datastore:
-  uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.datastore
+  uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.datastore
 
 # services
 migration:
   tasks:
     - name: database
-      uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.database
+      uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.database
       source: file://./migration/database/sql
     - name: datastore
-      uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.datastore
+      uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.datastore
       source: file://./migration/datastore/sql
 
 sdkapi:
@@ -63,7 +65,7 @@ sdkapi:
     engine: casbin
     casbin:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.services.sdk
+      policy_uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.services.sdk
       policy_namespace: sdk
       watcher:
         uri: nats://streaming:4222
@@ -85,7 +87,7 @@ portalapi:
     engine: casbin
     casbin:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@storage/postgres?connect_timeout=30&application_name=kanthor.services.portal
+      policy_uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
       watcher:
         uri: nats://streaming:4222
@@ -128,3 +130,12 @@ dispatcher:
     half_open_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
     open_state_duration: 300000
+
+storage:
+  subscriber:
+    connection: *streaming
+    topic: storage
+    group: default
+    filter_subject: kanthor.default.>
+    temporary: true
+    max_deliver: 1

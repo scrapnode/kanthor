@@ -113,20 +113,26 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) e
 			event := subscriber.transform(msg)
 			if err := event.Validate(); err != nil {
 				subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
-			}
-
-			// if we got error from handler, we should retry it by no-ack action
-			if err := handler(event); err != nil {
 				if err := msg.Nak(); err != nil {
 					// it's important to log entire event here because we can trace it in log
-					subscriber.logger.Errorw(ErrSubNakFail.Error(), "event", event.String())
+					subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
+				}
+				return
+			}
+
+			results := handler([]Event{event})
+			// if we got error from handler, we should retry it by no-ack action
+			if err, ok := results[event.Id].(error); ok && err != nil {
+				if err := msg.Nak(); err != nil {
+					// it's important to log entire event here because we can trace it in log
+					subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
 				}
 				return
 			}
 
 			if err := msg.Ack(); err != nil {
 				// it's important to log entire event here because we can trace it in log
-				subscriber.logger.Errorw(ErrSubAckFail.Error(), "event", event.String())
+				subscriber.logger.Errorw(ErrSubAckFail.Error(), "nats_msg", utils.Stringify(msg))
 			}
 		},
 	)
@@ -179,8 +185,8 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context) (jetstream.Consu
 	return nil, err
 }
 
-func (subscriber *NatsSubscriber) transform(msg *nats.Msg) *Event {
-	event := &Event{
+func (subscriber *NatsSubscriber) transform(msg *nats.Msg) Event {
+	event := Event{
 		Subject:  msg.Subject,
 		AppId:    msg.Header.Get(MetaAppId),
 		Type:     msg.Header.Get(MetaType),

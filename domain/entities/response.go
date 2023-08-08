@@ -9,23 +9,22 @@ import (
 var ResponseStatusErr = -1
 
 type Response struct {
-	Entity
-	TimeSeries
+	TSEntity
 
 	Tier     string   `json:"tier"`
 	AppId    string   `json:"app_id"`
 	Type     string   `json:"type"`
 	Metadata Metadata `json:"metadata"`
 
-	Uri     string      `json:"uri"`
 	Headers http.Header `json:"headers"`
 	Body    []byte      `json:"body"`
+	Uri     string      `json:"uri"`
 	Status  int         `json:"status"`
 	Error   string      `json:"error"`
 }
 
 func (entity *Response) TableName() string {
-	return "kanthor_request"
+	return "kanthor_response"
 }
 
 func (entity *Response) GenId() {

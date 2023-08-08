@@ -20,6 +20,9 @@ func Service(name string, conf *config.Config, logger logging.Logger) (services.
 	if name == services.DISPATCHER {
 		return ioc.InitializeDispatcher(conf, logger)
 	}
+	if name == services.STORAGE {
+		return ioc.InitializeStorage(conf, logger)
+	}
 
 	return nil, fmt.Errorf("serve.service: unknow service [%s]", name)
 }

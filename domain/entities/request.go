@@ -7,8 +7,7 @@ import (
 )
 
 type Request struct {
-	Entity
-	TimeSeries
+	TSEntity
 
 	Tier     string   `json:"tier"`
 	AppId    string   `json:"app_id"`
@@ -16,10 +15,10 @@ type Request struct {
 	Metadata Metadata `json:"metadata"`
 
 	// HTTP: POST/PUT/PATCH
-	Method  string      `json:"method"`
-	Uri     string      `json:"uri"`
 	Headers http.Header `json:"headers"`
 	Body    []byte      `json:"body"`
+	Uri     string      `json:"uri"`
+	Method  string      `json:"method"`
 }
 
 func (entity *Request) TableName() string {

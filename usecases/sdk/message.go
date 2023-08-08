@@ -18,12 +18,12 @@ type Message interface {
 }
 
 type MessagePutReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
-	Type  string `json:"type" validate:"required"`
+	AppId string `validate:"required,startswith=app_"`
+	Type  string `validate:"required"`
 
-	Body     []byte            `json:"body" validate:"required"`
-	Headers  http.Header       `json:"headers"`
-	Metadata entities.Metadata `json:"metadata"`
+	Body     []byte `validate:"required"`
+	Headers  http.Header
+	Metadata entities.Metadata
 }
 
 type MessagePutRes struct {

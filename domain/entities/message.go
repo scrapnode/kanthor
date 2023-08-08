@@ -11,16 +11,15 @@ import (
 // for Dynamo-style: partition by AppId+Type+Bucket, sort by ID (ksuid)
 // we don't need workspace_id because most time we only retrieve message of app, not of workspace
 type Message struct {
-	Entity
-	TimeSeries
+	TSEntity
 
-	Tier  string `json:"tier"`
-	AppId string `json:"app_id"`
-	Type  string `json:"type"`
+	Tier     string   `json:"tier"`
+	AppId    string   `json:"app_id"`
+	Type     string   `json:"type"`
+	Metadata Metadata `json:"metadata"`
 
-	Body     []byte      `json:"body"`
-	Headers  http.Header `json:"headers"`
-	Metadata Metadata    `json:"metadata"`
+	Headers http.Header `json:"headers"`
+	Body    []byte      `json:"body"`
 }
 
 func (entity *Message) TableName() string {

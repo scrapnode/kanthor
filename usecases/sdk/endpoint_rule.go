@@ -22,13 +22,13 @@ type EndpointRule interface {
 }
 
 type EndpointRuleCreateReq struct {
-	EpId string `json:"ep_id" validate:"required,startswith=ep_"`
-	Name string `json:"name" validate:"required"`
+	EpId string `validate:"required,startswith=ep_"`
+	Name string `validate:"required"`
 
-	Priority            int32  `json:"priority"`
-	Exclusionary        bool   `json:"exclusionary"`
-	ConditionSource     string `json:"condition_source" validate:"required"`
-	ConditionExpression string `json:"condition_expression" validate:"required"`
+	Priority            int32
+	Exclusionary        bool
+	ConditionSource     string `validate:"required"`
+	ConditionExpression string `validate:"required"`
 }
 
 type EndpointRuleCreateRes struct {
@@ -36,10 +36,10 @@ type EndpointRuleCreateRes struct {
 }
 
 type EndpointRuleUpdateReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
-	EpId  string `json:"ep_id" validate:"required,startswith=ep_"`
+	AppId string `validate:"required,startswith=app_"`
+	EpId  string `validate:"required,startswith=ep_"`
 	Id    string `validate:"required"`
-	Name  string `json:"name" validate:"required"`
+	Name  string `validate:"required"`
 }
 
 type EndpointRuleUpdateRes struct {
@@ -47,8 +47,8 @@ type EndpointRuleUpdateRes struct {
 }
 
 type EndpointRuleDeleteReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
-	EpId  string `json:"ep_id" validate:"required,startswith=ep_"`
+	AppId string `validate:"required,startswith=app_"`
+	EpId  string `validate:"required,startswith=ep_"`
 	Id    string `validate:"required"`
 }
 
@@ -57,8 +57,8 @@ type EndpointRuleDeleteRes struct {
 }
 
 type EndpointRuleListReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
-	EpId  string `json:"ep_id" validate:"required,startswith=ep_"`
+	AppId string `validate:"required,startswith=app_"`
+	EpId  string `validate:"required,startswith=ep_"`
 	*structure.ListReq
 }
 
@@ -67,8 +67,8 @@ type EndpointRuleListRes struct {
 }
 
 type EndpointRuleGetReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
-	EpId  string `json:"ep_id" validate:"required,startswith=ep_"`
+	AppId string `validate:"required,startswith=app_"`
+	EpId  string `validate:"required,startswith=ep_"`
 	Id    string `validate:"required"`
 }
 

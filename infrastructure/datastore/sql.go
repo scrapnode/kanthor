@@ -49,7 +49,13 @@ func (db *sql) Connect(ctx context.Context) error {
 		dialector = postgresdevier.Open(db.conf.Uri)
 	}
 
-	db.client, err = gorm.Open(dialector, &gorm.Config{Logger: NewSqlLogger(db.logger)})
+	db.client, err = gorm.Open(dialector, &gorm.Config{
+		// GORM perform write (create/update/delete) operations run inside a transaction to ensure data consistency,
+		// you can disable it during initialization if it is not required,
+		// you will gain about 30%+ performance improvement after that
+		SkipDefaultTransaction: true,
+		Logger:                 NewSqlLogger(db.logger),
+	})
 
 	db.logger.Info("connected")
 	return err
@@ -87,7 +93,7 @@ func (db *sql) Migrator(source string) (migration.Migrator, error) {
 		return nil, err
 	}
 
-	tableName := "kanthor_database_migration"
+	tableName := "kanthor_datastore_migration"
 	var driver database.Driver
 
 	if db.client.Config.Dialector.Name() == "sqlite" {

@@ -16,9 +16,15 @@ import (
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
-		Use:       "serve",
-		ValidArgs: []string{services.PORTAL_API, services.SDK_API, services.SCHEDULER, services.DISPATCHER},
-		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
+		Use: "serve",
+		ValidArgs: []string{
+			services.PORTAL_API,
+			services.SDK_API,
+			services.SCHEDULER,
+			services.DISPATCHER,
+			services.STORAGE,
+		},
+		Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
 			verbose, _ := cmd.Flags().GetBool("verbose")

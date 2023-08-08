@@ -22,12 +22,12 @@ type Endpoint interface {
 }
 
 type EndpointCreateReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
-	Name  string `json:"name" validate:"required"`
+	AppId string `validate:"required,startswith=app_"`
+	Name  string `validate:"required"`
 
-	SecretKey string `json:"secret_key" validate:"omitempty,min=16,max=32"`
-	Uri       string `json:"uri" validate:"required,uri"`
-	Method    string `json:"method" validate:"required,oneof=POST PUT"`
+	SecretKey string `validate:"omitempty,min=16,max=32"`
+	Uri       string `validate:"required,uri"`
+	Method    string `validate:"required,oneof=POST PUT"`
 }
 
 type EndpointCreateRes struct {
@@ -35,9 +35,9 @@ type EndpointCreateRes struct {
 }
 
 type EndpointUpdateReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
+	AppId string `validate:"required,startswith=app_"`
 	Id    string `validate:"required"`
-	Name  string `json:"name" validate:"required"`
+	Name  string `validate:"required"`
 }
 
 type EndpointUpdateRes struct {
@@ -45,7 +45,7 @@ type EndpointUpdateRes struct {
 }
 
 type EndpointDeleteReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
+	AppId string `validate:"required,startswith=app_"`
 	Id    string `validate:"required"`
 }
 
@@ -54,7 +54,7 @@ type EndpointDeleteRes struct {
 }
 
 type EndpointListReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
+	AppId string `validate:"required,startswith=app_"`
 	*structure.ListReq
 }
 
@@ -63,7 +63,7 @@ type EndpointListRes struct {
 }
 
 type EndpointGetReq struct {
-	AppId string `json:"app_id" validate:"required,startswith=app_"`
+	AppId string `validate:"required,startswith=app_"`
 	Id    string `validate:"required"`
 }
 
