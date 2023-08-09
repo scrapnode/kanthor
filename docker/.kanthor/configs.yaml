@@ -98,10 +98,13 @@ scheduler:
     connection: *streaming
   subscriber:
     connection: *streaming
-    topic: schedule
-    group: default
+    based_model: push
+    push:
+      deliver_subject: schedule
+      deliver_group: default
+      temporary: true
+    name: schedule_default
     filter_subject: kanthor.default.msg.>
-    temporary: true
     max_deliver: 1
   request:
     arrange:
@@ -113,10 +116,13 @@ dispatcher:
     connection: *streaming
   subscriber:
     connection: *streaming
-    topic: dispatch
-    group: default
+    based_model: push
+    push:
+      deliver_subject: dispatch
+      deliver_group: default
+      temporary: true
+    name: dispatch_default
     filter_subject: kanthor.default.req.>
-    temporary: true
     max_deliver: 1
   sender:
     timeout: 1500
@@ -134,8 +140,11 @@ dispatcher:
 storage:
   subscriber:
     connection: *streaming
-    topic: storage
-    group: default
+    based_model: pull
+    pull:
+      max_waiting: 100
+      max_ack_pending: 1000
+      max_request_batch: 10
+    name: storage_default
     filter_subject: kanthor.default.>
-    temporary: true
     max_deliver: 1

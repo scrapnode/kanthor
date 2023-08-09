@@ -59,26 +59,42 @@ func (conf *Config) Validate(service string) error {
 		return fmt.Errorf("config.Datastore: %v", err)
 	}
 
-	if service == services.ALL || service == services.MIGRATION {
-		return conf.Migration.Validate()
-	}
-	if service == services.ALL || service == services.PORTAL_API {
-		return conf.PortalApi.Validate()
-	}
-	if service == services.ALL || service == services.SDK_API {
-		return conf.SdkApi.Validate()
-	}
-	if service == services.ALL || service == services.SCHEDULER {
-		return conf.Scheduler.Validate()
-	}
-	if service == services.ALL || service == services.DISPATCHER {
-		return conf.Dispatcher.Validate()
-	}
-	if service == services.ALL || service == services.STORAGE {
-		return conf.Storage.Validate()
+	if !services.Valid(service) {
+		return fmt.Errorf("config: unknown service [%s]", service)
 	}
 
-	return fmt.Errorf("config: unknow service [%s]", service)
+	if service == services.ALL || service == services.MIGRATION {
+		if err := conf.Migration.Validate(); err != nil {
+			return err
+		}
+	}
+	if service == services.ALL || service == services.PORTAL_API {
+		if err := conf.PortalApi.Validate(); err != nil {
+			return err
+		}
+	}
+	if service == services.ALL || service == services.SDK_API {
+		if err := conf.SdkApi.Validate(); err != nil {
+			return err
+		}
+	}
+	if service == services.ALL || service == services.SCHEDULER {
+		if err := conf.Scheduler.Validate(); err != nil {
+			return err
+		}
+	}
+	if service == services.ALL || service == services.DISPATCHER {
+		if err := conf.Dispatcher.Validate(); err != nil {
+			return err
+		}
+	}
+	if service == services.ALL || service == services.STORAGE {
+		if err := conf.Storage.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type Bucket struct {

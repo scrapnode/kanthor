@@ -24,5 +24,5 @@ func Service(name string, conf *config.Config, logger logging.Logger) (services.
 		return ioc.InitializeStorage(conf, logger)
 	}
 
-	return nil, fmt.Errorf("serve.service: unknow service [%s]", name)
+	return nil, fmt.Errorf("serve.service: unknown service [%s]", name)
 }

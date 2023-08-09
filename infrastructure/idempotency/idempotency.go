@@ -15,12 +15,12 @@ func New(conf *Config, logger logging.Logger) (Idempotency, error) {
 		logger.Warnw("unable to parse conf.Uri", "uri", conf.Uri)
 		return nil, err
 	}
-	
+
 	if strings.HasPrefix(uri.Scheme, "redis") {
 		return NewRedis(conf, logger), nil
 	}
 
-	return nil, fmt.Errorf("idempotency: unknow engine")
+	return nil, fmt.Errorf("idempotency: unknown engine")
 
 }
 

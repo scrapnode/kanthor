@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nats.go/jetstream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"sync"
 	"time"
@@ -21,7 +20,7 @@ type NatsPublisher struct {
 
 	mu   sync.Mutex
 	conn *nats.Conn
-	js   jetstream.JetStream
+	js   nats.JetStreamContext
 }
 
 func (publisher *NatsPublisher) Connect(ctx context.Context) error {
@@ -34,7 +33,7 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 	}
 	publisher.conn = conn
 
-	js, err := jetstream.New(publisher.conn)
+	js, err := conn.JetStream()
 	if err != nil {
 		return err
 	}
@@ -44,15 +43,10 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	// make sure we have saved it successfully
-	info, err := stream.Info(context.Background())
-	if err != nil {
-		return err
-	}
 
 	publisher.logger.Infow(
 		"connected",
-		"stream_name", info.Config.Name, "stream_created_at", info.Created.Format(time.RFC3339),
+		"stream_name", stream.Config.Name, "stream_created_at", stream.Created.Format(time.RFC3339),
 	)
 	return nil
 }
@@ -82,31 +76,12 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, event *Event) error {
 		return err
 	}
 
-	msg := publisher.transform(event.Subject, event)
-	ack, err := publisher.js.PublishMsg(ctx, msg)
+	msg := natsMsgFromEvent(event.Subject, event)
+	ack, err := publisher.js.PublishMsg(msg, nats.Context(ctx), nats.MsgId(event.Id))
 	if err != nil {
 		return fmt.Errorf("streaming.publisher.nats: %w", err)
 	}
 
 	publisher.logger.Debugw("published message", "msg_seq", ack.Sequence)
 	return nil
-}
-
-func (publisher *NatsPublisher) transform(subject string, event *Event) *nats.Msg {
-	msg := &nats.Msg{
-		Subject: subject,
-		Header: nats.Header{
-			// for deduplicate purpose
-			"Nats-Msg-Id": []string{event.Id},
-			MetaAppId:     []string{event.AppId},
-			MetaType:      []string{event.Type},
-			MetaId:        []string{event.Id},
-		},
-		Data: event.Data,
-	}
-	for key, value := range event.Metadata {
-		msg.Header.Set(key, value)
-	}
-
-	return msg
 }

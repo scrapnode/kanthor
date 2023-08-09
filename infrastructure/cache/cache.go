@@ -29,7 +29,7 @@ func New(conf *Config, logger logging.Logger) (Cache, error) {
 		return NewMemory(conf, logger), nil
 	}
 
-	return nil, fmt.Errorf("cache: unknow engine")
+	return nil, fmt.Errorf("cache: unknown engine")
 }
 
 type Cache interface {

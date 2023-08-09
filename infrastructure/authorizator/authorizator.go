@@ -11,7 +11,7 @@ func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 		return NewCasbin(conf, logger), nil
 	}
 
-	return nil, fmt.Errorf("authorizator: unknow engine")
+	return nil, fmt.Errorf("authorizator: unknown engine")
 }
 
 type Authorizator interface {

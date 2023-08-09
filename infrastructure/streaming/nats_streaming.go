@@ -1,11 +1,9 @@
 package streaming
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nats.go/jetstream"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"os"
 	"time"
@@ -35,18 +33,18 @@ func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
 	return nats.Connect(conf.Uri, opts...)
 }
 
-func NewNatsStream(conf ConnectionConfig, js jetstream.JetStream) (jetstream.Stream, error) {
-	_, err := js.Stream(context.Background(), conf.Stream.Name)
+func NewNatsStream(conf ConnectionConfig, js nats.JetStreamContext) (*nats.StreamInfo, error) {
+	_, err := js.StreamInfo(conf.Stream.Name)
 	// only accept ErrStreamNotFound
-	if err != nil && !errors.Is(err, jetstream.ErrStreamNotFound) {
+	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
 		return nil, err
 	}
 
 	// prepare configurations
-	config := jetstream.StreamConfig{
+	sconf := &nats.StreamConfig{
 		// non-editable
 		Name:    conf.Stream.Name,
-		Storage: jetstream.FileStorage,
+		Storage: nats.FileStorage,
 		// editable
 		Replicas:   conf.Stream.Replicas,
 		Subjects:   conf.Stream.Subjects,
@@ -55,15 +53,15 @@ func NewNatsStream(conf ConnectionConfig, js jetstream.JetStream) (jetstream.Str
 		MaxBytes:   conf.Stream.Limits.Bytes,
 		MaxAge:     time.Duration(conf.Stream.Limits.Age) * time.Second,
 		// hardcode
-		Retention: jetstream.LimitsPolicy,
-		Discard:   jetstream.DiscardOld,
+		Retention: nats.LimitsPolicy,
+		Discard:   nats.DiscardOld,
 	}
 
 	// not found, create a new one
 	if err != nil {
-		return js.CreateStream(context.Background(), config)
+		return js.AddStream(sconf)
 	}
 
 	// update new changes
-	return js.UpdateStream(context.Background(), config)
+	return js.UpdateStream(sconf)
 }

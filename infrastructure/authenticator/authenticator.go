@@ -10,7 +10,7 @@ func New(conf *Config, logger logging.Logger) (Authenticator, error) {
 		return NewAsk(conf, logger)
 	}
 
-	return nil, fmt.Errorf("authenticator: unknow engine")
+	return nil, fmt.Errorf("authenticator: unknown engine")
 }
 
 type Authenticator interface {

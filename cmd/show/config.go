@@ -20,7 +20,7 @@ func Config(conf *config.Config, sources []configuration.Source, verbose, valida
 
 	if verbose {
 		t := table.NewWriter()
-		t.AppendHeader(table.Row{"looking", "found", "used"})
+		t.AppendHeader(table.Row{"looking", "path", "used"})
 		for _, source := range sources {
 			var check string
 			if source.Used {
