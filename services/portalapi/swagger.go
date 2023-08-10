@@ -1,10 +1,10 @@
-package sdkapi
+package portalapi
 
 // @BasePath /api
 
-// @title Kanthor SDK API
+// @title Kanthor Portal API
 // @version 1.0
-// @description SDK API
+// @description Portal API
 // @termsOfService http://kanthorlabs.com/terms/
 
 // @externalDocs.description  OpenAPI
@@ -19,6 +19,7 @@ package sdkapi
 
 // @accept json
 // @produce json
-// @securityDefinitions.basic BasicAuth
+// @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
+// @description [Bearer <JWT token>]

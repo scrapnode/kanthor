@@ -4,10 +4,11 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 )
 
 func (uc *application) List(ctx context.Context, req *ApplicationListReq) (*ApplicationListRes, error) {
-	ws := ctx.Value(CtxWs).(*entities.Workspace)
+	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 	listing, err := uc.repos.Application().List(
 		ctx, ws.Id,
 		structure.WithListCursor(req.Cursor),

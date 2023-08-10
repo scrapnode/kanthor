@@ -14,6 +14,8 @@ import (
 type Workspace interface {
 	Import(ctx context.Context, req *WorkspaceImportReq) (*WorkspaceImportRes, error)
 	Export(ctx context.Context, req *WorkspaceExportReq) (*WorkspaceExportRes, error)
+
+	Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error)
 }
 
 type WorkspaceImportReq struct {
@@ -38,6 +40,15 @@ type WorkspaceExportReq struct {
 }
 
 type WorkspaceExportRes struct {
+}
+
+type WorkspaceGetReq struct {
+	Id string `validate:"required,startswit=ws_"`
+}
+
+type WorkspaceGetRes struct {
+	Workspace     *entities.Workspace
+	WorkspaceTier *entities.WorkspaceTier
 }
 
 type workspace struct {

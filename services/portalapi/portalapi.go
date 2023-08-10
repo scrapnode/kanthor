@@ -1,18 +1,19 @@
-package sdkapi
+package portalapi
 
 import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	httpxmw "github.com/scrapnode/kanthor/infrastructure/gateway/httpx/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/sdkapi/docs"
-	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
-	usecase "github.com/scrapnode/kanthor/usecases/sdk"
+	"github.com/scrapnode/kanthor/services/portalapi/docs"
+	"github.com/scrapnode/kanthor/services/portalapi/middlewares"
+	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
 	"net/http"
@@ -23,32 +24,35 @@ func New(
 	logger logging.Logger,
 	validator validator.Validator,
 	idempotency idempotency.Idempotency,
+	auth authenticator.Authenticator,
 	authz authorizator.Authorizator,
-	uc usecase.Sdk,
+	uc usecase.Portal,
 ) services.Service {
-	logger = logger.With("service", "sdkapi")
-	return &sdkapi{
+	logger = logger.With("service", "portalapi")
+	return &portalapi{
 		conf:        conf,
 		logger:      logger,
 		validator:   validator,
 		idempotency: idempotency,
+		auth:        auth,
 		authz:       authz,
 		uc:          uc,
 	}
 }
 
-type sdkapi struct {
+type portalapi struct {
 	conf        *config.Config
 	logger      logging.Logger
 	validator   validator.Validator
 	idempotency idempotency.Idempotency
+	auth        authenticator.Authenticator
 	authz       authorizator.Authorizator
-	uc          usecase.Sdk
+	uc          usecase.Portal
 
 	server *http.Server
 }
 
-func (service *sdkapi) Start(ctx context.Context) error {
+func (service *portalapi) Start(ctx context.Context) error {
 	if err := service.authz.Connect(ctx); err != nil {
 		return err
 	}
@@ -79,7 +83,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		swagger.GET("/*any", ginswagger.WrapHandler(
 			swaggerfiles.Handler,
 			ginswagger.PersistAuthorization(true),
-			ginswagger.InstanceName(docs.SwaggerInfosdkapi.InfoInstanceName),
+			ginswagger.InstanceName(docs.SwaggerInfoportalapi.InfoInstanceName),
 		))
 	}
 	// api routes
@@ -87,30 +91,13 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	{
 		api.Use(httpxmw.UseStartup())
 		api.Use(httpxmw.UseIdempotency(service.logger, service.idempotency))
-		api.Use(middlewares.UseAuth(service.uc))
-		api.Use(middlewares.UseAuthz(service.authz))
+		api.Use(middlewares.UseAuth(service.auth))
+		api.Use(middlewares.UseAuthz(service.authz, service.uc))
 		api.Use(httpxmw.UsePaging(service.logger, 5, 30))
-		UseApplicationRoutes(
-			api.Group("/application"),
-			service.logger, service.validator, service.uc,
-		)
-		UseEndpointRoutes(
-			api.Group("/application/:app_id/endpoint"),
-			service.logger, service.validator, service.uc,
-		)
-		UseEndpointRuleRoutes(
-			api.Group("/application/:app_id/endpoint/:ep_id/rule"),
-			service.logger, service.validator, service.uc,
-		)
-
-		UseMessageRoutes(
-			api.Group("/application/:app_id/message"),
-			service.logger, service.validator, service.uc,
-		)
 	}
 
 	service.server = &http.Server{
-		Addr:    service.conf.SdkApi.Gateway.Httpx.Addr,
+		Addr:    service.conf.PortalApi.Gateway.Httpx.Addr,
 		Handler: router,
 	}
 
@@ -118,7 +105,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	return nil
 }
 
-func (service *sdkapi) Stop(ctx context.Context) error {
+func (service *portalapi) Stop(ctx context.Context) error {
 	service.logger.Info("stopped")
 
 	if err := service.server.Shutdown(ctx); err != nil {
@@ -140,8 +127,8 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (service *sdkapi) Run(ctx context.Context) error {
-	service.logger.Infow("running", "addr", service.conf.SdkApi.Gateway.Httpx.Addr)
+func (service *portalapi) Run(ctx context.Context) error {
+	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Httpx.Addr)
 
 	err := service.server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {

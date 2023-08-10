@@ -26,8 +26,6 @@ type ApplicationListRes struct {
 // @Success		200					{object}	ApplicationListRes
 // @Failure		default				{object}	gateway.Error
 // @Security	BasicAuth
-// @in header
-// @name		Authorization
 func UseApplicationList(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)

@@ -16,6 +16,7 @@ type WorkspaceTier interface {
 	BulkCreate(ctx context.Context, docs []entities.WorkspaceTier) ([]string, error)
 
 	Create(ctx context.Context, doc *entities.WorkspaceTier) (*entities.WorkspaceTier, error)
+	Get(ctx context.Context, wsId string) (*entities.WorkspaceTier, error)
 }
 
 type WorkspaceCredentials interface {

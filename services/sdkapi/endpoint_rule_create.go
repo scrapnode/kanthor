@@ -33,8 +33,6 @@ type EndpointRuleCreateRes struct {
 // @Success		201											{object}	EndpointRuleCreateRes
 // @Failure		default										{object}	gateway.Error
 // @Security	BasicAuth
-// @in header
-// @name		Authorization
 func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointRuleCreateReq

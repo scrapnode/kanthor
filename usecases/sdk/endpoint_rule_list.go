@@ -4,10 +4,11 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 )
 
 func (uc *endpointRule) List(ctx context.Context, req *EndpointRuleListReq) (*EndpointRuleListRes, error) {
-	ws := ctx.Value(CtxWs).(*entities.Workspace)
+	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 	listing, err := uc.repos.EndpointRule().List(
 		ctx, ws.Id, req.AppId, req.EpId,
 		structure.WithListCursor(req.Cursor),

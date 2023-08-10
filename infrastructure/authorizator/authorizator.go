@@ -6,6 +6,10 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
+var (
+	HeaderWorkspace = "x-kanthor-workspace-id"
+)
+
 func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 	if conf.Engine == EngineCasbin {
 		return NewCasbin(conf, logger), nil

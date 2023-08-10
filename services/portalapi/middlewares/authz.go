@@ -3,20 +3,27 @@ package middlewares
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 	"net/http"
 )
 
-func UseAuthz(authz authorizator.Authorizator) gin.HandlerFunc {
+func UseAuthz(authz authorizator.Authorizator, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)
+		wsId := ginctx.Request.Header.Get(authorizator.HeaderWorkspace)
+		res, err := uc.Workspace().Get(ctx, &portaluc.WorkspaceGetReq{Id: wsId})
+		if err != nil {
+			ginctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
-		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+
 		obj := ginctx.FullPath() // form of /application/:app_id
 		act := ginctx.Request.Method
-		ok, err := authz.Enforce(acc.Sub, ws.Id, obj, act)
+		ok, err := authz.Enforce(acc.Sub, res.Workspace.Id, obj, act)
 		if err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -26,6 +33,8 @@ func UseAuthz(authz authorizator.Authorizator) gin.HandlerFunc {
 			return
 		}
 
+		ctx = context.WithValue(ctx, authorizator.CtxWs, res.Workspace)
+		ctx = context.WithValue(ctx, authorizator.CtxWst, res.WorkspaceTier)
 		ginctx.Next()
 	}
 }

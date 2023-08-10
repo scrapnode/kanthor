@@ -7,7 +7,7 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "SKD API",
+        "description": "SDK API",
         "title": "Kanthor SDK API",
         "termsOfService": "http://kanthorlabs.com/terms/",
         "contact": {

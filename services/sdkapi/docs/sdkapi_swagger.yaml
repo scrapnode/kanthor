@@ -554,7 +554,7 @@ info:
     email: support@kanthorlabs.com
     name: Kanthor Support
     url: http://kanthorlabs.com/support
-  description: SKD API
+  description: SDK API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html

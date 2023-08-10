@@ -8,6 +8,7 @@ package ioc
 
 import (
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -20,6 +21,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dispatcher"
+	"github.com/scrapnode/kanthor/services/portalapi"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/services/sdkapi"
 	"github.com/scrapnode/kanthor/services/storage"
@@ -74,6 +76,31 @@ func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger) (di
 }
 
 // Injectors from wire_portal_api.go:
+
+func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	validatorValidator := validator.New()
+	idempotencyConfig := &conf.Idempotency
+	idempotencyIdempotency, err := idempotency.New(idempotencyConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	authenticatorConfig := ResolvePortalAuthenticatorConfig(conf)
+	authenticatorAuthenticator, err := authenticator.New(authenticatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	authorizatorConfig := ResolvePortalAuthorizatorConfig(conf)
+	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	portal, err := InitializePortalUsecase(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, authenticatorAuthenticator, authorizatorAuthorizator, portal)
+	return service, nil
+}
 
 func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal.Portal, error) {
 	cryptographyConfig := &conf.Cryptography
@@ -218,6 +245,14 @@ func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *
 }
 
 // wire_portal_api.go:
+
+func ResolvePortalAuthenticatorConfig(conf *config.Config) *authenticator.Config {
+	return &conf.PortalApi.Authenticator
+}
+
+func ResolvePortalAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.PortalApi.Authorizator
+}
 
 func ResolvePortalCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.PortalApi.Cache

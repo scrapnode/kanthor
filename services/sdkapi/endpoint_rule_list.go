@@ -28,8 +28,6 @@ type EndpointRuleListRes struct {
 // @Success		200											{object}	EndpointRuleListRes
 // @Failure		default										{object}	gateway.Error
 // @Security	BasicAuth
-// @in header
-// @name		Authorization
 func UseEndpointRuleList(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)

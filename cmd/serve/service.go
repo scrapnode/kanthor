@@ -10,6 +10,7 @@ import (
 
 func Service(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
 	if name == services.PORTAL_API {
+		return ioc.InitializePortalApi(conf, logger)
 	}
 	if name == services.SDK_API {
 		return ioc.InitializeSdkApi(conf, logger)

@@ -24,8 +24,6 @@ type EndpointRuleDeleteRes struct {
 // @Success		200														{object}	EndpointRuleDeleteRes
 // @Failure		default													{object}	gateway.Error
 // @Security	BasicAuth
-// @in header
-// @name		Authorization
 func UseEndpointRuleDelete(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet("ctx").(context.Context)

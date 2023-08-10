@@ -1,0 +1,38 @@
+{
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Portal API",
+        "title": "Kanthor Portal API",
+        "termsOfService": "http://kanthorlabs.com/terms/",
+        "contact": {
+            "name": "Kanthor Support",
+            "url": "http://kanthorlabs.com/support",
+            "email": "support@kanthorlabs.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/api",
+    "paths": {},
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "[Bearer \u003cJWT token\u003e]",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
+    }
+}

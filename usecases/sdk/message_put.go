@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
@@ -10,7 +11,7 @@ import (
 )
 
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
-	ws := ctx.Value(CtxWs).(*entities.Workspace)
+	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 	key := utils.Key(ws.Id, req.AppId)
 	app, err := cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
 		return uc.repos.Application().Get(ctx, ws.Id, req.AppId)
@@ -19,7 +20,7 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 		return nil, err
 	}
 
-	wst := ctx.Value(CtxWst).(*entities.WorkspaceTier)
+	wst := ctx.Value(authorizator.CtxWst).(*entities.WorkspaceTier)
 	msg := &entities.Message{
 		Tier:     wst.Name,
 		AppId:    app.Id,

@@ -3,10 +3,11 @@ package sdk
 import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 )
 
 func (uc *endpointRule) Delete(ctx context.Context, req *EndpointRuleDeleteReq) (*EndpointRuleDeleteRes, error) {
-	ws := ctx.Value(CtxWs).(*entities.Workspace)
+	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 	app, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
 		app, err := uc.repos.EndpointRule().Get(txctx, ws.Id, req.AppId, req.EpId, req.Id)
 		if err != nil {

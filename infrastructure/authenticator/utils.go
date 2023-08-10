@@ -10,7 +10,7 @@ func ParseBasicCredentials(credentials string) (string, string, error) {
 	if len(segments) != 2 {
 		return "", "", ErrMalformedCredentials
 	}
-	if !strings.EqualFold(segments[0], "basic") {
+	if !strings.EqualFold(segments[0], SchemeBasic) {
 		return "", "", ErrMalformedScheme
 	}
 
