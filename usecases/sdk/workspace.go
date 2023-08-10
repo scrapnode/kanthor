@@ -16,7 +16,7 @@ type Workspace interface {
 }
 
 type WorkspaceAuthenticateReq struct {
-	User string `validate:"required,startswit=wsc_"`
+	User string `validate:"required,startswith=wsc_"`
 	Hash string `validate:"required"`
 }
 

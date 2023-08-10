@@ -37,7 +37,7 @@ func UseEndpointUpdate(logger logging.Logger, validator validator.Validator, uc 
 			return
 		}
 
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
 		ucreq := &usecase.EndpointUpdateReq{AppId: appId, Id: id, Name: req.Name}

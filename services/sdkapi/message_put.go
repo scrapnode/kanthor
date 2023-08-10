@@ -47,7 +47,7 @@ func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usec
 			return
 		}
 
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		appId := ginctx.Param("app_id")
 		headers := http.Header{}
 		if len(req.Headers) > 0 {

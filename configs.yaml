@@ -83,6 +83,7 @@ portalapi:
     ask:
       access_key: kanthor_root_key
       secret_key: kanthor_root_password
+      # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
   authorizator:
     engine: casbin
     casbin:

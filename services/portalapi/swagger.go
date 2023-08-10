@@ -19,7 +19,11 @@ package portalapi
 
 // @accept json
 // @produce json
-// @securityDefinitions.apikey Bearer
+// @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-// @description [Bearer <JWT token>]
+// @description [Bearer <JWT token>] or [Basic base64(key:secret)]
+// @securityDefinitions.apikey WsId
+// @in header
+// @name x-kanthor-workspace-id
+// @description The selected workspace id you are working with

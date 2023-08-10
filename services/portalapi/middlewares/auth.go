@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"net/http"
 )
 
@@ -16,9 +17,9 @@ func UseAuth(engine authenticator.Authenticator) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		ctx = context.WithValue(ctx, authenticator.CtxAcc, acc)
-		ginctx.Set("ctx", ctx)
+		ginctx.Set(gateway.KeyCtx, ctx)
 		ginctx.Next()
 	}
 }

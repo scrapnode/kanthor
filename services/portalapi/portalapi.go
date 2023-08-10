@@ -83,7 +83,7 @@ func (service *portalapi) Start(ctx context.Context) error {
 		swagger.GET("/*any", ginswagger.WrapHandler(
 			swaggerfiles.Handler,
 			ginswagger.PersistAuthorization(true),
-			ginswagger.InstanceName(docs.SwaggerInfoportalapi.InfoInstanceName),
+			ginswagger.InstanceName(docs.SwaggerInfoPortal.InfoInstanceName),
 		))
 	}
 	// api routes
@@ -92,8 +92,13 @@ func (service *portalapi) Start(ctx context.Context) error {
 		api.Use(httpxmw.UseStartup())
 		api.Use(httpxmw.UseIdempotency(service.logger, service.idempotency))
 		api.Use(middlewares.UseAuth(service.auth))
-		api.Use(middlewares.UseAuthz(service.authz, service.uc))
+		api.Use(middlewares.UseAuthz(service.validator, service.authz, service.uc))
 		api.Use(httpxmw.UsePaging(service.logger, 5, 30))
+
+		UseWorkspaceRoutes(
+			api.Group("/workspace"),
+			service.logger, service.validator, service.uc,
+		)
 	}
 
 	service.server = &http.Server{

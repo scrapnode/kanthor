@@ -24,7 +24,7 @@ type ApplicationGetRes struct {
 // @Security	BasicAuth
 func UseApplicationGet(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		id := ginctx.Param("app_id")
 		ucreq := &usecase.ApplicationGetReq{Id: id}
 		if err := validator.Struct(ucreq); err != nil {

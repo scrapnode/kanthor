@@ -35,7 +35,7 @@ func UseApplicationCreate(logger logging.Logger, validator validator.Validator, 
 			return
 		}
 
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		ucreq := &usecase.ApplicationCreateReq{Name: req.Name}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)

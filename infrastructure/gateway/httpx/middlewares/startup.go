@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"time"
 )
 
@@ -13,7 +14,7 @@ func UseStartup() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 		defer cancel()
 
-		ginctx.Set("ctx", ctx)
+		ginctx.Set(gateway.KeyCtx, ctx)
 		ginctx.Next()
 	}
 }

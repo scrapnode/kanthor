@@ -43,7 +43,7 @@ type WorkspaceExportRes struct {
 }
 
 type WorkspaceGetReq struct {
-	Id string `validate:"required,startswit=ws_"`
+	Id string `validate:"required,startswith=ws_"`
 }
 
 type WorkspaceGetRes struct {

@@ -25,7 +25,7 @@ type EndpointDeleteRes struct {
 // @Security	BasicAuth
 func UseEndpointDelete(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
 		ucreq := &usecase.EndpointDeleteReq{AppId: appId, Id: id}

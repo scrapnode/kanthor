@@ -4,7 +4,7 @@ package docs
 
 import "github.com/swaggo/swag"
 
-const docTemplatesdkapi = `{
+const docTemplateSdk = `{
     "schemes": {{ marshal .Schemes }},
     "consumes": [
         "application/json"
@@ -1527,20 +1527,20 @@ const docTemplatesdkapi = `{
     }
 }`
 
-// SwaggerInfosdkapi holds exported Swagger Info so clients can modify it
-var SwaggerInfosdkapi = &swag.Spec{
+// SwaggerInfoSdk holds exported Swagger Info so clients can modify it
+var SwaggerInfoSdk = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Kanthor SDK API",
 	Description:      "SDK API",
-	InfoInstanceName: "sdkapi",
-	SwaggerTemplate:  docTemplatesdkapi,
+	InfoInstanceName: "Sdk",
+	SwaggerTemplate:  docTemplateSdk,
 	LeftDelim:        "{{",
 	RightDelim:       "}}",
 }
 
 func init() {
-	swag.Register(SwaggerInfosdkapi.InstanceName(), SwaggerInfosdkapi)
+	swag.Register(SwaggerInfoSdk.InstanceName(), SwaggerInfoSdk)
 }

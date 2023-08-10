@@ -1,0 +1,68 @@
+basePath: /api
+consumes:
+- application/json
+definitions:
+  gateway.Error:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+    type: object
+  portalapi.WorkspaceGetRes:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      tier_name:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+info:
+  contact:
+    email: support@kanthorlabs.com
+    name: Kanthor Support
+    url: http://kanthorlabs.com/support
+  description: Portal API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://kanthorlabs.com/terms/
+  title: Kanthor Portal API
+  version: "1.0"
+paths:
+  /workspace/me:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portalapi.WorkspaceGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+produces:
+- application/json
+securityDefinitions:
+  BearerAuth:
+    description: '[Bearer <JWT token>] or [Basic base64(key:secret)]'
+    in: header
+    name: Authorization
+    type: apiKey
+  WsId:
+    description: The selected workspace id you are working with
+    in: header
+    name: x-kanthor-workspace-id
+    type: apiKey
+swagger: "2.0"

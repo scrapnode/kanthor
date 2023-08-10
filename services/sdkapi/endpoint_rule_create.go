@@ -42,7 +42,7 @@ func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator,
 			return
 		}
 
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		epId := ginctx.Param("ep_id")
 
 		ucreq := &usecase.EndpointRuleCreateReq{

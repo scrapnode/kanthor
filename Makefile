@@ -8,5 +8,5 @@ wire:
 	go generate services/ioc/generate.go
 
 docs:
-	 swag init -q --instanceName sdkapi -d services/sdkapi -o services/sdkapi/docs -g swagger.go --parseDependency --parseInternal
-	 swag init -q --instanceName portalapi -d services/portalapi -o services/portalapi/docs -g swagger.go --parseDependency --parseInternal
+	 swag init -q --instanceName Sdk -d services/sdkapi -o services/sdkapi/docs -g swagger.go --parseDependency --parseInternal
+	 swag init -q --instanceName Portal -d services/portalapi -o services/portalapi/docs -g swagger.go --parseDependency --parseInternal

@@ -26,7 +26,7 @@ type EndpointRuleDeleteRes struct {
 // @Security	BasicAuth
 func UseEndpointRuleDelete(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet("ctx").(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		appId := ginctx.Param("app_id")
 		epId := ginctx.Param("ep_id")
 		id := ginctx.Param("epr_id")

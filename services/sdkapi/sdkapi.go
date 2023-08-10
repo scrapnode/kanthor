@@ -79,7 +79,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		swagger.GET("/*any", ginswagger.WrapHandler(
 			swaggerfiles.Handler,
 			ginswagger.PersistAuthorization(true),
-			ginswagger.InstanceName(docs.SwaggerInfosdkapi.InfoInstanceName),
+			ginswagger.InstanceName(docs.SwaggerInfoSdk.InfoInstanceName),
 		))
 	}
 	// api routes
@@ -87,7 +87,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	{
 		api.Use(httpxmw.UseStartup())
 		api.Use(httpxmw.UseIdempotency(service.logger, service.idempotency))
-		api.Use(middlewares.UseAuth(service.uc))
+		api.Use(middlewares.UseAuth(service.validator, service.uc))
 		api.Use(middlewares.UseAuthz(service.authz))
 		api.Use(httpxmw.UsePaging(service.logger, 5, 30))
 		UseApplicationRoutes(
