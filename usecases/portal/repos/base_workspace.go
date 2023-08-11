@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/structure"
 )
 
 type Workspace interface {
@@ -23,4 +24,7 @@ type WorkspaceCredentials interface {
 	BulkCreate(ctx context.Context, docs []entities.WorkspaceCredentials) ([]string, error)
 
 	Create(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error)
+	Update(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error)
+	Get(ctx context.Context, wsId, id string) (*entities.WorkspaceCredentials, error)
+	List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.WorkspaceCredentials], error)
 }

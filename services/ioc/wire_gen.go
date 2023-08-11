@@ -115,7 +115,7 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal
 		return nil, err
 	}
 	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger)
+	repositories := repos.New(databaseConfig, logger, timerTimer)
 	portalPortal := portal.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, repositories)
 	return portalPortal, nil
 }
@@ -149,7 +149,7 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (sch
 		return nil, err
 	}
 	databaseConfig := &conf.Database
-	repositories := repos2.New(databaseConfig, logger)
+	repositories := repos2.New(databaseConfig, logger, timerTimer)
 	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, publisher, cacheCache, repositories)
 	return schedulerScheduler, nil
 }
@@ -194,7 +194,7 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdk.Sdk, 
 		return nil, err
 	}
 	databaseConfig := &conf.Database
-	repositories := repos3.New(databaseConfig, logger)
+	repositories := repos3.New(databaseConfig, logger, timerTimer)
 	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, publisher, repositories)
 	return sdkSdk, nil
 }
@@ -217,7 +217,8 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 
 func InitializeStorageUsecase(conf *config.Config, logger logging.Logger) (storage2.Storage, error) {
 	datastoreConfig := &conf.Datastore
-	repositories := repos4.New(datastoreConfig, logger)
+	timerTimer := timer.New()
+	repositories := repos4.New(datastoreConfig, logger, timerTimer)
 	storageStorage := storage2.New(conf, logger, repositories)
 	return storageStorage, nil
 }

@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	HeaderWorkspace = "x-kanthor-workspace-id"
+	HeaderWorkspace = "kanthor-ws-id"
 )
 
 func New(conf *Config, logger logging.Logger) (Authorizator, error) {

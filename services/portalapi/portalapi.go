@@ -99,6 +99,11 @@ func (service *portalapi) Start(ctx context.Context) error {
 			api.Group("/workspace"),
 			service.logger, service.validator, service.uc,
 		)
+
+		UseWorkspaceCredentialsRoutes(
+			api.Group("/workspace/me/credentials"),
+			service.logger, service.validator, service.uc,
+		)
 	}
 
 	service.server = &http.Server{

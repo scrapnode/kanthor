@@ -7,6 +7,11 @@ import (
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
 
-func UseWorkspaceRoutes(router *gin.RouterGroup, logger logging.Logger, validator validator.Validator, uc usecase.Portal) {
+func UseWorkspaceRoutes(
+	router *gin.RouterGroup,
+	logger logging.Logger,
+	validator validator.Validator,
+	uc usecase.Portal,
+) {
 	router.GET("/me", UseWorkspaceGet())
 }

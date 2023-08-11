@@ -8,22 +8,25 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	postgresdevier "gorm.io/driver/postgres"
 	sqlitedriver "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 )
 
-func NewSQL(conf *Config, logger logging.Logger) Datastore {
+func NewSQL(conf *Config, logger logging.Logger, timer timer.Timer) Datastore {
 	logger = logger.With("datastore", "sql")
-	return &sql{conf: conf, logger: logger}
+	return &sql{conf: conf, logger: logger, timer: timer}
 }
 
 type sql struct {
 	conf   *Config
 	logger logging.Logger
+	timer  timer.Timer
 
 	mu     sync.Mutex
 	client *gorm.DB
@@ -55,6 +58,9 @@ func (db *sql) Connect(ctx context.Context) error {
 		// you will gain about 30%+ performance improvement after that
 		SkipDefaultTransaction: true,
 		Logger:                 NewSqlLogger(db.logger),
+		NowFunc: func() time.Time {
+			return db.timer.Now()
+		},
 	})
 
 	db.logger.Info("connected")

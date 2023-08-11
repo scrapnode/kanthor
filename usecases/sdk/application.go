@@ -61,6 +61,7 @@ type ApplicationGetReq struct {
 type ApplicationGetRes struct {
 	Doc *entities.Application
 }
+
 type application struct {
 	conf         *config.Config
 	logger       logging.Logger

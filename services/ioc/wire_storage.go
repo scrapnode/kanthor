@@ -8,6 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/storage"
 	storageuc "github.com/scrapnode/kanthor/usecases/storage"
@@ -28,6 +29,7 @@ func InitializeStorageUsecase(conf *config.Config, logger logging.Logger) (stora
 	wire.Build(
 		storageuc.New,
 		wire.FieldsOf(new(*config.Config), "Datastore"),
+		timer.New,
 		repos.New,
 	)
 	return nil, nil

@@ -8,25 +8,28 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	postgresdevier "gorm.io/driver/postgres"
 	sqlitedriver "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 )
 
-func NewSQL(conf *Config, logger logging.Logger) Database {
+func NewSQL(conf *Config, logger logging.Logger, timer timer.Timer) Database {
 	logger = logger.With("database", "sql")
-	return &sql{conf: conf, logger: logger}
+	return &sql{conf: conf, logger: logger, timer: timer}
 }
 
 type sql struct {
 	conf   *Config
 	logger logging.Logger
+	timer  timer.Timer
 
 	mu     sync.Mutex
 	client *gorm.DB
@@ -52,7 +55,12 @@ func (db *sql) Connect(ctx context.Context) error {
 		dialector = postgresdevier.Open(db.conf.Uri)
 	}
 
-	db.client, err = gorm.Open(dialector, &gorm.Config{Logger: NewSqlLogger(db.logger)})
+	db.client, err = gorm.Open(dialector, &gorm.Config{
+		Logger: NewSqlLogger(db.logger),
+		NowFunc: func() time.Time {
+			return db.timer.Now()
+		},
+	})
 	if err != nil {
 		return err
 	}

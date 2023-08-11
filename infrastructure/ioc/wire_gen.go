@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
 // Injectors from wire.go:
@@ -31,16 +32,16 @@ func InitializeStreamingPublisher(conf *streaming.PublisherConfig, logger loggin
 	return publisher, nil
 }
 
-func InitializeDatabase(conf *database.Config, logger logging.Logger) (database.Database, error) {
-	databaseDatabase, err := database.New(conf, logger)
+func InitializeDatabase(conf *database.Config, logger logging.Logger, timer2 timer.Timer) (database.Database, error) {
+	databaseDatabase, err := database.New(conf, logger, timer2)
 	if err != nil {
 		return nil, err
 	}
 	return databaseDatabase, nil
 }
 
-func InitializeDatastore(conf *datastore.Config, logger logging.Logger) (datastore.Datastore, error) {
-	datastoreDatastore, err := datastore.New(conf, logger)
+func InitializeDatastore(conf *datastore.Config, logger logging.Logger, timer2 timer.Timer) (datastore.Datastore, error) {
+	datastoreDatastore, err := datastore.New(conf, logger, timer2)
 	if err != nil {
 		return nil, err
 	}

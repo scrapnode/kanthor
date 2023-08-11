@@ -4,12 +4,13 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 	"sync"
 )
 
-func NewSql(conf *datastore.Config, logger logging.Logger) Repositories {
-	db := datastore.NewSQL(conf, logger)
+func NewSql(conf *datastore.Config, logger logging.Logger, timer timer.Timer) Repositories {
+	db := datastore.NewSQL(conf, logger, timer)
 
 	logger = logger.With("repositories", "sql")
 	return &sql{logger: logger, db: db}

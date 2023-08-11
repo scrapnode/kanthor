@@ -805,13 +805,9 @@ const docTemplateSdk = `{
     "definitions": {
         "entities.Application": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -830,16 +826,12 @@ const docTemplateSdk = `{
         },
         "entities.Endpoint": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "app_id": {
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -869,11 +861,8 @@ const docTemplateSdk = `{
             "required": [
                 "condition_expression",
                 "condition_source",
-                "created_at",
                 "endpoint_id",
-                "id",
-                "name",
-                "updated_at"
+                "name"
             ],
             "properties": {
                 "condition_expression": {
@@ -885,6 +874,7 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "endpoint_id": {
@@ -932,13 +922,9 @@ const docTemplateSdk = `{
         },
         "sdkapi.ApplicationCreateRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -957,13 +943,9 @@ const docTemplateSdk = `{
         },
         "sdkapi.ApplicationDeleteRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -982,13 +964,9 @@ const docTemplateSdk = `{
         },
         "sdkapi.ApplicationGetRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -1032,13 +1010,9 @@ const docTemplateSdk = `{
         },
         "sdkapi.ApplicationUpdateRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -1086,16 +1060,12 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointCreateRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "app_id": {
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -1122,16 +1092,12 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointDeleteRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "app_id": {
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -1158,16 +1124,12 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointGetRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "app_id": {
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -1236,11 +1198,8 @@ const docTemplateSdk = `{
             "required": [
                 "condition_expression",
                 "condition_source",
-                "created_at",
                 "endpoint_id",
-                "id",
-                "name",
-                "updated_at"
+                "name"
             ],
             "properties": {
                 "condition_expression": {
@@ -1252,6 +1211,7 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "endpoint_id": {
@@ -1280,11 +1240,8 @@ const docTemplateSdk = `{
             "required": [
                 "condition_expression",
                 "condition_source",
-                "created_at",
                 "endpoint_id",
-                "id",
-                "name",
-                "updated_at"
+                "name"
             ],
             "properties": {
                 "condition_expression": {
@@ -1296,6 +1253,7 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "endpoint_id": {
@@ -1324,11 +1282,8 @@ const docTemplateSdk = `{
             "required": [
                 "condition_expression",
                 "condition_source",
-                "created_at",
                 "endpoint_id",
-                "id",
-                "name",
-                "updated_at"
+                "name"
             ],
             "properties": {
                 "condition_expression": {
@@ -1340,6 +1295,7 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "endpoint_id": {
@@ -1393,11 +1349,8 @@ const docTemplateSdk = `{
             "required": [
                 "condition_expression",
                 "condition_source",
-                "created_at",
                 "endpoint_id",
-                "id",
-                "name",
-                "updated_at"
+                "name"
             ],
             "properties": {
                 "condition_expression": {
@@ -1409,6 +1362,7 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "endpoint_id": {
@@ -1445,16 +1399,12 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointUpdateRes": {
             "type": "object",
-            "required": [
-                "created_at",
-                "id",
-                "updated_at"
-            ],
             "properties": {
                 "app_id": {
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {

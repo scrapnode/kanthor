@@ -14,9 +14,13 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCred
 	passwords := map[string]string{}
 	var docs []entities.WorkspaceCredentials
 	for i := 0; i < req.Count; i++ {
+		name := req.Name
+		if name == "" {
+			name = fmt.Sprintf("auto#%d at %s", i+1, now.Format(time.RFC3339))
+		}
 		credentials := entities.WorkspaceCredentials{
 			WorkspaceId: req.WorkspaceId,
-			Name:        fmt.Sprintf("#%d at %s", i+1, now.Format(time.RFC3339)),
+			Name:        name,
 		}
 		credentials.GenId()
 		credentials.SetAT(now)

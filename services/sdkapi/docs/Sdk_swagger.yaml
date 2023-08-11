@@ -5,6 +5,10 @@ definitions:
   entities.Application:
     properties:
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -14,16 +18,16 @@ definitions:
         type: integer
       workspace_id:
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   entities.Endpoint:
     properties:
       app_id:
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -42,10 +46,6 @@ definitions:
           HTTP: https:://httpbin.org/post?app=kanthor.webhook
           gRPC: grpc:://app.kanthorlabs.com
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   entities.EndpointRule:
     properties:
@@ -61,6 +61,10 @@ definitions:
            - metadata
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       endpoint_id:
         type: string
@@ -80,11 +84,8 @@ definitions:
     required:
     - condition_expression
     - condition_source
-    - created_at
     - endpoint_id
-    - id
     - name
-    - updated_at
     type: object
   gateway.Error:
     properties:
@@ -103,6 +104,10 @@ definitions:
   sdkapi.ApplicationCreateRes:
     properties:
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -112,14 +117,14 @@ definitions:
         type: integer
       workspace_id:
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.ApplicationDeleteRes:
     properties:
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -129,14 +134,14 @@ definitions:
         type: integer
       workspace_id:
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.ApplicationGetRes:
     properties:
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -146,10 +151,6 @@ definitions:
         type: integer
       workspace_id:
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.ApplicationListRes:
     properties:
@@ -170,6 +171,10 @@ definitions:
   sdkapi.ApplicationUpdateRes:
     properties:
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -179,10 +184,6 @@ definitions:
         type: integer
       workspace_id:
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.EndpointCreateReq:
     properties:
@@ -210,6 +211,10 @@ definitions:
       app_id:
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -228,16 +233,16 @@ definitions:
           HTTP: https:://httpbin.org/post?app=kanthor.webhook
           gRPC: grpc:://app.kanthorlabs.com
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.EndpointDeleteRes:
     properties:
       app_id:
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -256,16 +261,16 @@ definitions:
           HTTP: https:://httpbin.org/post?app=kanthor.webhook
           gRPC: grpc:://app.kanthorlabs.com
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.EndpointGetRes:
     properties:
       app_id:
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -284,10 +289,6 @@ definitions:
           HTTP: https:://httpbin.org/post?app=kanthor.webhook
           gRPC: grpc:://app.kanthorlabs.com
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.EndpointListRes:
     properties:
@@ -329,6 +330,10 @@ definitions:
            - metadata
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       endpoint_id:
         type: string
@@ -348,11 +353,8 @@ definitions:
     required:
     - condition_expression
     - condition_source
-    - created_at
     - endpoint_id
-    - id
     - name
-    - updated_at
     type: object
   sdkapi.EndpointRuleDeleteRes:
     properties:
@@ -368,6 +370,10 @@ definitions:
            - metadata
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       endpoint_id:
         type: string
@@ -387,11 +393,8 @@ definitions:
     required:
     - condition_expression
     - condition_source
-    - created_at
     - endpoint_id
-    - id
     - name
-    - updated_at
     type: object
   sdkapi.EndpointRuleGetRes:
     properties:
@@ -407,6 +410,10 @@ definitions:
            - metadata
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       endpoint_id:
         type: string
@@ -426,11 +433,8 @@ definitions:
     required:
     - condition_expression
     - condition_source
-    - created_at
     - endpoint_id
-    - id
     - name
-    - updated_at
     type: object
   sdkapi.EndpointRuleListRes:
     properties:
@@ -462,6 +466,10 @@ definitions:
            - metadata
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       endpoint_id:
         type: string
@@ -481,11 +489,8 @@ definitions:
     required:
     - condition_expression
     - condition_source
-    - created_at
     - endpoint_id
-    - id
     - name
-    - updated_at
     type: object
   sdkapi.EndpointUpdateReq:
     properties:
@@ -499,6 +504,10 @@ definitions:
       app_id:
         type: string
       created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -517,10 +526,6 @@ definitions:
           HTTP: https:://httpbin.org/post?app=kanthor.webhook
           gRPC: grpc:://app.kanthorlabs.com
         type: string
-    required:
-    - created_at
-    - id
-    - updated_at
     type: object
   sdkapi.MessagePutReq:
     properties:
