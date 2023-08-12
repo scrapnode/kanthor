@@ -35,9 +35,6 @@ func (ts *TimeSeries) SetTS(now time.Time, layout string) {
 	ts.Bucket = now.Format(layout)
 }
 
-type Header struct {
-}
-
 type TSEntity struct {
 	Entity
 	TimeSeries

@@ -6,6 +6,7 @@ const (
 	MetaEprId = "kanthor.epr.id"
 	MetaReqId = "kanthor.req.id"
 	MetaResId = "kanthor.res.id"
+	MetaAttId = "kanthor.att.id"
 )
 
 type Metadata map[string]string

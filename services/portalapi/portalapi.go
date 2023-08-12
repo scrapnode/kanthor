@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
-	httpxmw "github.com/scrapnode/kanthor/infrastructure/gateway/httpx/middlewares"
+	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
@@ -89,11 +89,11 @@ func (service *portalapi) Start(ctx context.Context) error {
 	// api routes
 	api := router.Group("/api")
 	{
-		api.Use(httpxmw.UseStartup())
-		api.Use(httpxmw.UseIdempotency(service.logger, service.idempotency))
+		api.Use(ginmw.UseStartup())
+		api.Use(ginmw.UseIdempotency(service.logger, service.idempotency))
 		api.Use(middlewares.UseAuth(service.auth))
 		api.Use(middlewares.UseAuthz(service.validator, service.authz, service.uc))
-		api.Use(httpxmw.UsePaging(service.logger, 5, 30))
+		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
 		UseWorkspaceRoutes(
 			api.Group("/workspace"),

@@ -6,8 +6,6 @@ import (
 	"net/http"
 )
 
-var ResponseStatusErr = -1
-
 type Response struct {
 	TSEntity
 

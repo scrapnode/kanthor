@@ -6,9 +6,9 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
+	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc/pool"
 	"regexp"
 	"strings"
@@ -48,7 +48,7 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 				ent.Id,
 			)
 
-			event, err := transformRequest2Event(&ent)
+			event, err := transformation.EventFromRequest(&ent)
 			if err == nil {
 				err = uc.publisher.Pub(ctx, event)
 			}
@@ -170,28 +170,4 @@ func resolveConditionExpression(rule entities.EndpointRule) (func(source string)
 	}
 
 	return nil, errors.New("unknown rule expression")
-}
-
-func transformRequest2Event(req *entities.Request) (*streaming.Event, error) {
-	data, err := req.Marshal()
-	if err != nil {
-		return nil, err
-	}
-
-	event := &streaming.Event{
-		AppId:    req.AppId,
-		Type:     req.Type,
-		Id:       req.Id,
-		Data:     data,
-		Metadata: map[string]string{},
-	}
-	event.Subject = streaming.Subject(
-		streaming.Namespace,
-		req.Tier,
-		streaming.TopicReq,
-		event.AppId,
-		event.Type,
-	)
-
-	return event, nil
 }

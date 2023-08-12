@@ -5,8 +5,8 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/usecases/transformation"
 	"time"
 )
 
@@ -31,26 +31,14 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 	}
 	msg.GenId()
 	msg.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+	msg.Metadata[entities.MetaMsgId] = msg.Id
+	msg.Metadata[entities.MetaAttId] = utils.ID("att")
 
-	data, err := msg.Marshal()
+	event, err := transformation.EventFromMessage(msg)
 	if err != nil {
 		return nil, err
 	}
 
-	event := &streaming.Event{
-		AppId:    msg.AppId,
-		Type:     msg.Type,
-		Id:       msg.Id,
-		Data:     data,
-		Metadata: map[string]string{},
-	}
-	event.Subject = streaming.Subject(
-		streaming.Namespace,
-		msg.Tier,
-		streaming.TopicMsg,
-		event.AppId,
-		event.Type,
-	)
 	if err := uc.publisher.Pub(ctx, event); err != nil {
 		return nil, err
 	}
