@@ -41,8 +41,8 @@ type EndpointRule struct {
 	Entity
 	AuditTime
 
-	EndpointId string `json:"endpoint_id" validate:"required,startswith=ep_"`
-	Name       string `json:"name" validate:"required"`
+	EndpointId string `json:"endpoint_id"`
+	Name       string `json:"name"`
 
 	Priority int32 `json:"priority"`
 	// the logic of not-false is true should be used here
@@ -54,11 +54,11 @@ type EndpointRule struct {
 	//  - type
 	//  - body
 	//  - metadata
-	ConditionSource string `json:"condition_source" validate:"required"`
+	ConditionSource string `json:"condition_source"`
 	// examples:
 	// 	- equal::orders.paid
 	// 	- regex::.*
-	ConditionExpression string `json:"condition_expression" validate:"required"`
+	ConditionExpression string `json:"condition_expression"`
 }
 
 func (entity *EndpointRule) TableName() string {

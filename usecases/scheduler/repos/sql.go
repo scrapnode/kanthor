@@ -20,9 +20,11 @@ type sql struct {
 	logger logging.Logger
 	db     database.Database
 
-	mu          sync.RWMutex
-	client      *gorm.DB
-	application *SqlApplication
+	mu           sync.RWMutex
+	client       *gorm.DB
+	application  *SqlApplication
+	endpoint     *SqlEndpoint
+	endpointRule *SqlEndpointRule
 }
 
 func (repo *sql) Connect(ctx context.Context) error {
@@ -56,4 +58,26 @@ func (repo *sql) Application() Application {
 	}
 
 	return repo.application
+}
+
+func (repo *sql) Endpoint() Endpoint {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
+	if repo.endpoint == nil {
+		repo.endpoint = &SqlEndpoint{client: repo.client}
+	}
+
+	return repo.endpoint
+}
+
+func (repo *sql) EndpointRule() EndpointRule {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
+	if repo.endpointRule == nil {
+		repo.endpointRule = &SqlEndpointRule{client: repo.client}
+	}
+
+	return repo.endpointRule
 }

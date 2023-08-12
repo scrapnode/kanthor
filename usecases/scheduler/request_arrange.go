@@ -3,11 +3,11 @@ package scheduler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc/pool"
 	"regexp"
@@ -15,10 +15,34 @@ import (
 	"time"
 )
 
+type applicable struct {
+	Endpoints map[string]entities.Endpoint
+	Rules     []entities.EndpointRule
+}
+
 func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*RequestArrangeRes, error) {
 	key := utils.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
-	app, err := cache.Warp(uc.cache, ctx, key, time.Hour, func() (*repos.ApplicationWithEndpointsAndRules, error) {
-		return uc.repos.Application().ListEndpointsWithRules(ctx, req.Message.AppId)
+	// @TODO: find a way to notify attempt that message is not able to schedule
+	app, err := cache.Warp(uc.cache, ctx, key, time.Hour, func() (*applicable, error) {
+		endpoints, err := uc.repos.Endpoint().List(ctx, req.Message.AppId)
+		if err != nil {
+			return nil, err
+		}
+
+		returning := &applicable{Endpoints: map[string]entities.Endpoint{}}
+		ids := []string{}
+		for _, endpoint := range endpoints {
+			ids = append(ids, endpoint.Id)
+			returning.Endpoints[endpoint.Id] = endpoint
+		}
+
+		rules, err := uc.repos.EndpointRule().List(ctx, ids)
+		if err != nil {
+			return nil, err
+		}
+		returning.Rules = rules
+
+		return returning, nil
 	})
 	if err != nil {
 		return nil, err
@@ -30,7 +54,8 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 		SuccessKeys: []string{},
 	}
 
-	requests := uc.generateRequestsFromEndpoints(req.Message, app.Endpoints)
+	// @TODO: find a way to notify attempt that message is not able to schedule
+	requests := uc.generateRequestsFromEndpoints(req.Message, app)
 	if len(requests) == 0 {
 		uc.logger.Warnw("no request was generated", "app_id", req.Message.AppId, "message_id", req.Message.Id)
 		return res, nil
@@ -69,60 +94,78 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 
 func (uc *request) generateRequestsFromEndpoints(
 	msg entities.Message,
-	endpoints []repos.EndpointWithRules,
+	app *applicable,
 ) []entities.Request {
 	requests := []entities.Request{}
+	seen := map[string]bool{}
 
-	for _, ep := range endpoints {
-		// with this for loop, we enforce endpoint must have at least one rule to construct scheduled request
-		for _, epr := range ep.Rules {
-			subLogger := uc.logger.With(
-				"epr_id", epr.Id,
-				"epr_condition_source", epr.ConditionSource,
-				"epr_condition_expression", epr.ConditionExpression,
-			)
-			source := resolveConditionSource(epr, msg)
-			if source == "" {
-				subLogger.Errorw("arrange: unable to get data source to compare rule")
-				continue
-			}
-
-			express, err := resolveConditionExpression(epr)
-			if err != nil {
-				subLogger.Errorw("arrange: unable resolve rule expression", "error", err.Error())
-				continue
-			}
-
-			matched := express(source)
-			// once we got exclusionary rule, ignore the rest
-			if epr.Exclusionary && matched {
-				break
-			}
-			// otherwise continue express another condition
-			if !matched {
-				continue
-			}
-
-			ent := entities.Request{
-				Tier:     msg.Tier,
-				AppId:    msg.AppId,
-				Type:     msg.Type,
-				Uri:      ep.Uri,
-				Method:   ep.Method,
-				Headers:  msg.Headers,
-				Body:     msg.Body,
-				Metadata: entities.Metadata{},
-			}
-			ent.GenId()
-			ent.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
-			ent.Headers.Set("Idempotency-Key", ent.Id)
-			ent.Metadata.Merge(msg.Metadata)
-			ent.Metadata.Set(entities.MetaEpId, ep.Id)
-			ent.Metadata.Set(entities.MetaEprId, epr.Id)
-			ent.Metadata.Set(entities.MetaReqId, ent.Id)
-
-			requests = append(requests, ent)
+	for _, epr := range app.Rules {
+		// already evaluated rules of this endpoint, ignore
+		if ignore, ok := seen[epr.EndpointId]; ok && ignore {
+			continue
 		}
+
+		slogger := uc.logger.With(
+			"epr_id", epr.Id,
+			"epr_condition_source", epr.ConditionSource,
+			"epr_condition_expression", epr.ConditionExpression,
+		)
+
+		source := resolveConditionSource(epr, msg)
+		if source == "" {
+			slogger.Errorw("arrange: unable to get data source to compare rule")
+			continue
+		}
+
+		express, err := resolveConditionExpression(epr)
+		if err != nil {
+			slogger.Errorw("arrange: unable resolve rule expression", "error", err.Error())
+			continue
+		}
+
+		matched := express(source)
+		// once we got exclusionary rule, ignore all other rules of current endpoint
+		if epr.Exclusionary && matched {
+			seen[epr.EndpointId] = true
+			slogger.Warn("arrange: matched exclusionary rule")
+			continue
+		}
+
+		if !matched {
+			seen[epr.EndpointId] = false
+			slogger.Debugw("arrange: rule is not matched")
+			continue
+		}
+
+		// construct request
+		ep := app.Endpoints[epr.EndpointId]
+		req := entities.Request{
+			Tier:     msg.Tier,
+			AppId:    msg.AppId,
+			Type:     msg.Type,
+			Uri:      ep.Uri,
+			Method:   ep.Method,
+			Headers:  msg.Headers,
+			Body:     msg.Body,
+			Metadata: entities.Metadata{},
+		}
+		req.GenId()
+		req.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+
+		req.Headers.Set("idempotency-key", req.Id)
+		req.Headers.Set("kanthor-msg-id", msg.Id)
+		req.Headers.Set("kanthor-req-ts", fmt.Sprintf("%d", req.Timestamp))
+
+		sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, string(msg.Body))
+		signed := uc.signature.Sign(sign, ep.SecretKey)
+		req.Headers.Set("kanthor-req-signature", signed)
+
+		req.Metadata.Merge(msg.Metadata)
+		req.Metadata.Set(entities.MetaEpId, ep.Id)
+		req.Metadata.Set(entities.MetaEprId, epr.Id)
+		req.Metadata.Set(entities.MetaReqId, req.Id)
+
+		requests = append(requests, req)
 	}
 
 	return requests

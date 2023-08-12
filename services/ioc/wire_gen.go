@@ -15,6 +15,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/sender"
@@ -138,6 +139,7 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 
 func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (scheduler2.Scheduler, error) {
 	timerTimer := timer.New()
+	signatureSignature := signature.New()
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
 	if err != nil {
@@ -150,7 +152,7 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (sch
 	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger, timerTimer)
-	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, publisher, cacheCache, repositories)
+	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, signatureSignature, publisher, cacheCache, repositories)
 	return schedulerScheduler, nil
 }
 
