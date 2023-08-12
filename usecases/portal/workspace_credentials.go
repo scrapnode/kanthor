@@ -21,7 +21,7 @@ type WorkspaceCredentials interface {
 }
 
 type WorkspaceCredentialsGenerateReq struct {
-	WorkspaceId string `validate:"required"`
+	WorkspaceId string `validate:"required,startswith=ws_"`
 	Name        string
 	Count       int `validate:"required,gt=0,lt=10"`
 }
@@ -32,8 +32,8 @@ type WorkspaceCredentialsGenerateRes struct {
 }
 
 type WorkspaceCredentialsUpdateReq struct {
-	WorkspaceId string `validate:"required"`
-	Id          string `validate:"required"`
+	WorkspaceId string `validate:"required,startswith=ws_"`
+	Id          string `validate:"required,startswith=wsc_"`
 	Name        string `validate:"required"`
 }
 
@@ -42,8 +42,8 @@ type WorkspaceCredentialsUpdateRes struct {
 }
 
 type WorkspaceCredentialsExpireReq struct {
-	WorkspaceId string `validate:"required"`
-	Id          string `validate:"required"`
+	WorkspaceId string `validate:"required,startswith=ws_"`
+	Id          string `validate:"required,startswith=wsc_"`
 	Duration    int64  `validate:"gte=0"`
 }
 
@@ -61,8 +61,8 @@ type WorkspaceCredentialsListRes struct {
 }
 
 type WorkspaceCredentialsGetReq struct {
-	WorkspaceId string `validate:"required"`
-	Id          string `validate:"required"`
+	WorkspaceId string `validate:"required,startswith=ws_"`
+	Id          string `validate:"required,startswith=wsc_"`
 }
 
 type WorkspaceCredentialsGetRes struct {

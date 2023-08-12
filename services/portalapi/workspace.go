@@ -14,4 +14,5 @@ func UseWorkspaceRoutes(
 	uc usecase.Portal,
 ) {
 	router.GET("/me", UseWorkspaceGet())
+	router.PUT("/me", UseWorkspaceUpdate(logger, validator, uc))
 }

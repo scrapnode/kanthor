@@ -30,7 +30,7 @@ type ApplicationCreateRes struct {
 }
 
 type ApplicationUpdateReq struct {
-	Id   string `validate:"required"`
+	Id   string `validate:"required,startswith=app_"`
 	Name string `validate:"required"`
 }
 
@@ -39,7 +39,7 @@ type ApplicationUpdateRes struct {
 }
 
 type ApplicationDeleteReq struct {
-	Id string `validate:"required"`
+	Id string `validate:"required,startswith=app_"`
 }
 
 type ApplicationDeleteRes struct {
@@ -55,7 +55,7 @@ type ApplicationListRes struct {
 }
 
 type ApplicationGetReq struct {
-	Id string `validate:"required"`
+	Id string `validate:"required,startswith=app_"`
 }
 
 type ApplicationGetRes struct {

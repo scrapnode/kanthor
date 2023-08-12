@@ -58,6 +58,44 @@ const docTemplatePortal = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "WsId": []
+                    }
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "parameters": [
+                    {
+                        "description": "credentials properties",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/portalapi.WorkspaceUpdateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/portalapi.WorkspaceUpdateRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
             }
         },
         "/workspace/me/credentials": {
@@ -322,6 +360,27 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "entities.WorkspaceTier": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "workspace_id": {
+                    "type": "string"
+                }
+            }
+        },
         "gateway.Error": {
             "type": "object",
             "properties": {
@@ -459,6 +518,10 @@ const docTemplatePortal = `{
         "portalapi.WorkspaceGetRes": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -468,8 +531,43 @@ const docTemplatePortal = `{
                 "owner_id": {
                     "type": "string"
                 },
-                "tier_name": {
+                "tier": {
+                    "$ref": "#/definitions/entities.WorkspaceTier"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "portalapi.WorkspaceUpdateReq": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
                     "type": "string"
+                }
+            }
+        },
+        "portalapi.WorkspaceUpdateRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
                 }
             }
         }

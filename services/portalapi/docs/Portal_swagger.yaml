@@ -23,6 +23,23 @@ definitions:
       workspace_id:
         type: string
     type: object
+  entities.WorkspaceTier:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      workspace_id:
+        type: string
+    type: object
   gateway.Error:
     properties:
       code:
@@ -118,14 +135,46 @@ definitions:
     type: object
   portalapi.WorkspaceGetRes:
     properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
       id:
         type: string
       name:
         type: string
       owner_id:
         type: string
-      tier_name:
+      tier:
+        $ref: '#/definitions/entities.WorkspaceTier'
+      updated_at:
+        type: integer
+    type: object
+  portalapi.WorkspaceUpdateReq:
+    properties:
+      name:
         type: string
+    required:
+    - name
+    type: object
+  portalapi.WorkspaceUpdateRes:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      updated_at:
+        type: integer
     type: object
 externalDocs:
   description: OpenAPI
@@ -150,6 +199,28 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/portalapi.WorkspaceGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+    put:
+      parameters:
+      - description: credentials properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/portalapi.WorkspaceUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portalapi.WorkspaceUpdateRes'
         default:
           description: ""
           schema:

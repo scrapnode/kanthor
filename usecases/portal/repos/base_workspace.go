@@ -9,6 +9,8 @@ import (
 type Workspace interface {
 	BulkCreate(ctx context.Context, docs []entities.Workspace) ([]string, error)
 
+	Update(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error)
+	List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error)
 	Get(ctx context.Context, id string) (*entities.Workspace, error)
 	GetOwned(ctx context.Context, owner string) (*entities.Workspace, error)
 }

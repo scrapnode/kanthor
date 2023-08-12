@@ -41,6 +41,17 @@ func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*
 	return doc, nil
 }
 
+func (sql *SqlWorkspace) Update(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error) {
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	tx := transaction.
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		Updates(doc)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return doc, nil
+}
+
 func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error) {
 	req := structure.ListReqBuild(opts)
 	doc := &entities.Workspace{}

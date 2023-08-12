@@ -10,10 +10,8 @@ import (
 )
 
 type WorkspaceGetRes struct {
-	Id       string `json:"id"`
-	OwnerId  string `json:"owner_id"`
-	Name     string `json:"name"`
-	TierName string `json:"tier_name"`
+	*entities.Workspace
+	Tier *entities.WorkspaceTier `json:"tier"`
 }
 
 // UseWorkspaceGet
@@ -29,12 +27,7 @@ func UseWorkspaceGet() gin.HandlerFunc {
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 		wst := ctx.Value(authorizator.CtxWst).(*entities.WorkspaceTier)
 
-		res := &WorkspaceGetRes{
-			Id:       ws.Id,
-			OwnerId:  ws.OwnerId,
-			Name:     ws.Name,
-			TierName: wst.Name,
-		}
+		res := &WorkspaceGetRes{Workspace: ws, Tier: wst}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

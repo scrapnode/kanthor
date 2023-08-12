@@ -2,6 +2,7 @@ package portal
 
 import (
 	"context"
+	"errors"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"time"
@@ -13,6 +14,11 @@ func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCreden
 		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, ws.Id, req.Id)
 		if err != nil {
 			return nil, err
+		}
+
+		expired := wsc.ExpiredAt > 0 && wsc.ExpiredAt < uc.timer.Now().UnixMilli()
+		if expired {
+			return nil, errors.New("credentials was already expired")
 		}
 
 		wsc.ExpiredAt = uc.timer.Now().Add(time.Millisecond * time.Duration(req.Duration)).UnixMilli()

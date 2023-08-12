@@ -15,6 +15,7 @@ type Workspace interface {
 	Import(ctx context.Context, req *WorkspaceImportReq) (*WorkspaceImportRes, error)
 	Export(ctx context.Context, req *WorkspaceExportReq) (*WorkspaceExportRes, error)
 
+	Update(ctx context.Context, req *WorkspaceUpdateReq) (*WorkspaceUpdateRes, error)
 	Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error)
 }
 
@@ -34,12 +35,21 @@ type WorkspaceImportRes struct {
 }
 
 type WorkspaceExportReq struct {
-	WorkspaceIds   []string `validate:"required,gt=0"`
-	ApplicationIds []string `validate:"required"`
-	EndpointIds    []string `validate:"required"`
+	WorkspaceIds   []string `validate:"required,gt=0,dive,startswith=ws_"`
+	ApplicationIds []string `validate:"required,dive,startswith=app_"`
+	EndpointIds    []string `validate:"required,dive,startswith=ep_"`
 }
 
 type WorkspaceExportRes struct {
+}
+
+type WorkspaceUpdateReq struct {
+	Id   string `validate:"required,startswith=ws_"`
+	Name string `validate:"required"`
+}
+
+type WorkspaceUpdateRes struct {
+	Doc *entities.Workspace
 }
 
 type WorkspaceGetReq struct {

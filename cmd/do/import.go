@@ -172,7 +172,7 @@ func importAutoGenerateWorkspaceCredentials(
 		}
 
 		token := fmt.Sprintf("%s:%s", cred.Credentials[0].Id, cred.Passwords[cred.Credentials[0].Id])
-		meta.Set(wsId, fmt.Sprintf("access_token: %s", token))
+		meta.Set(wsId, fmt.Sprintf("user:pass [%s]", token))
 	}
 }
 

@@ -36,7 +36,7 @@ type EndpointCreateRes struct {
 
 type EndpointUpdateReq struct {
 	AppId string `validate:"required,startswith=app_"`
-	Id    string `validate:"required"`
+	Id    string `validate:"required,startswith=ep_"`
 	Name  string `validate:"required"`
 }
 
@@ -46,7 +46,7 @@ type EndpointUpdateRes struct {
 
 type EndpointDeleteReq struct {
 	AppId string `validate:"required,startswith=app_"`
-	Id    string `validate:"required"`
+	Id    string `validate:"required,startswith=ep_"`
 }
 
 type EndpointDeleteRes struct {
@@ -64,7 +64,7 @@ type EndpointListRes struct {
 
 type EndpointGetReq struct {
 	AppId string `validate:"required,startswith=app_"`
-	Id    string `validate:"required"`
+	Id    string `validate:"required,startswith=ep_"`
 }
 
 type EndpointGetRes struct {

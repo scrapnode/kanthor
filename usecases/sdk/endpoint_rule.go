@@ -38,7 +38,7 @@ type EndpointRuleCreateRes struct {
 type EndpointRuleUpdateReq struct {
 	AppId string `validate:"required,startswith=app_"`
 	EpId  string `validate:"required,startswith=ep_"`
-	Id    string `validate:"required"`
+	Id    string `validate:"required,startswith=epr_"`
 	Name  string `validate:"required"`
 }
 
@@ -49,7 +49,7 @@ type EndpointRuleUpdateRes struct {
 type EndpointRuleDeleteReq struct {
 	AppId string `validate:"required,startswith=app_"`
 	EpId  string `validate:"required,startswith=ep_"`
-	Id    string `validate:"required"`
+	Id    string `validate:"required,startswith=epr_"`
 }
 
 type EndpointRuleDeleteRes struct {
@@ -69,7 +69,7 @@ type EndpointRuleListRes struct {
 type EndpointRuleGetReq struct {
 	AppId string `validate:"required,startswith=app_"`
 	EpId  string `validate:"required,startswith=ep_"`
-	Id    string `validate:"required"`
+	Id    string `validate:"required,startswith=epr_"`
 }
 
 type EndpointRuleGetRes struct {
