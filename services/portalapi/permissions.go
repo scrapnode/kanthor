@@ -3,7 +3,7 @@ package portalapi
 import "github.com/scrapnode/kanthor/infrastructure/authorizator"
 
 var (
-	RoleOwner = "owner"
+	RoleOwner = "portal.owner"
 )
 
 var PermissionOwner = []authorizator.Permission{

@@ -3,7 +3,7 @@ package sdkapi
 import "github.com/scrapnode/kanthor/infrastructure/authorizator"
 
 var (
-	RoleOwner = "owner"
+	RoleOwner = "sdk.owner"
 )
 
 var PermissionOwner = []authorizator.Permission{
