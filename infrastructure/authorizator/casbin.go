@@ -30,6 +30,8 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
 
+	ns := authorizator.conf.Casbin.PolicyNamespace
+
 	modelUrl, err := url.Parse(authorizator.conf.Casbin.ModelUri)
 	if err != nil {
 		return err
@@ -40,7 +42,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 		return err
 	}
 	databaseName := strings.ReplaceAll(policyUrl.Path, "/", "")
-	tableName := fmt.Sprintf("kanthor_%s_authz", authorizator.conf.Casbin.PolicyNamespace)
+	tableName := fmt.Sprintf("kanthor_authz_%s", ns)
 
 	adapter, err := gormadapter.NewAdapter(policyUrl.Scheme, authorizator.conf.Casbin.PolicyUri, databaseName, tableName, true)
 	if err != nil {
@@ -59,11 +61,12 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	}
 	authorizator.client = client
 
+	watcherName := fmt.Sprintf("casbin.watcher.%s", ns)
 	authorizator.watcher = &watcher{
-		nodeid:  utils.ID("casbin"),
+		nodeid:  utils.ID(watcherName),
 		conf:    &authorizator.conf.Casbin.Watcher,
-		logger:  authorizator.logger.With("casbin.watcher", "built-in"),
-		subject: "kanthor.authorizator.casbin.watcher",
+		logger:  authorizator.logger.With("casbin.watcher", ns),
+		subject: fmt.Sprintf("kanthor.authorizator.%s", watcherName),
 	}
 	if err := authorizator.watcher.Connect(ctx); err != nil {
 		return err
