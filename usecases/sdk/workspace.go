@@ -21,7 +21,6 @@ type WorkspaceAuthenticateReq struct {
 }
 
 type WorkspaceAuthenticateRes struct {
-	Error                string
 	Workspace            *entities.Workspace
 	WorkspaceCredentials *entities.WorkspaceCredentials
 	WorkspaceTier        *entities.WorkspaceTier

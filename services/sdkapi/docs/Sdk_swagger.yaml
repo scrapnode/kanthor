@@ -81,11 +81,6 @@ definitions:
         type: integer
       updated_at:
         type: integer
-    required:
-    - condition_expression
-    - condition_source
-    - endpoint_id
-    - name
     type: object
   gateway.Error:
     properties:
@@ -350,11 +345,6 @@ definitions:
         type: integer
       updated_at:
         type: integer
-    required:
-    - condition_expression
-    - condition_source
-    - endpoint_id
-    - name
     type: object
   sdkapi.EndpointRuleDeleteRes:
     properties:
@@ -390,11 +380,6 @@ definitions:
         type: integer
       updated_at:
         type: integer
-    required:
-    - condition_expression
-    - condition_source
-    - endpoint_id
-    - name
     type: object
   sdkapi.EndpointRuleGetRes:
     properties:
@@ -430,11 +415,6 @@ definitions:
         type: integer
       updated_at:
         type: integer
-    required:
-    - condition_expression
-    - condition_source
-    - endpoint_id
-    - name
     type: object
   sdkapi.EndpointRuleListRes:
     properties:
@@ -486,11 +466,6 @@ definitions:
         type: integer
       updated_at:
         type: integer
-    required:
-    - condition_expression
-    - condition_source
-    - endpoint_id
-    - name
     type: object
   sdkapi.EndpointUpdateReq:
     properties:

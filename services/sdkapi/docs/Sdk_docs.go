@@ -858,12 +858,6 @@ const docTemplateSdk = `{
         },
         "entities.EndpointRule": {
             "type": "object",
-            "required": [
-                "condition_expression",
-                "condition_source",
-                "endpoint_id",
-                "name"
-            ],
             "properties": {
                 "condition_expression": {
                     "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
@@ -1195,12 +1189,6 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointRuleCreateRes": {
             "type": "object",
-            "required": [
-                "condition_expression",
-                "condition_source",
-                "endpoint_id",
-                "name"
-            ],
             "properties": {
                 "condition_expression": {
                     "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
@@ -1237,12 +1225,6 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointRuleDeleteRes": {
             "type": "object",
-            "required": [
-                "condition_expression",
-                "condition_source",
-                "endpoint_id",
-                "name"
-            ],
             "properties": {
                 "condition_expression": {
                     "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
@@ -1279,12 +1261,6 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointRuleGetRes": {
             "type": "object",
-            "required": [
-                "condition_expression",
-                "condition_source",
-                "endpoint_id",
-                "name"
-            ],
             "properties": {
                 "condition_expression": {
                     "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
@@ -1346,12 +1322,6 @@ const docTemplateSdk = `{
         },
         "sdkapi.EndpointRuleUpdateRes": {
             "type": "object",
-            "required": [
-                "condition_expression",
-                "condition_source",
-                "endpoint_id",
-                "name"
-            ],
             "properties": {
                 "condition_expression": {
                     "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
