@@ -105,6 +105,10 @@ func (authorizator *casbin) Enforce(tenant, sub, obj, act string) (bool, error) 
 	return ok, nil
 }
 
+func (authorizator *casbin) Refresh(ctx context.Context) error {
+	return authorizator.watcher.Update()
+}
+
 func (authorizator *casbin) GrantPermissionsToRole(tenant, role string, permissions []Permission) error {
 	policies := [][]string{}
 	for _, permission := range permissions {

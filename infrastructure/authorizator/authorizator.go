@@ -1,6 +1,7 @@
 package authorizator
 
 import (
+	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -20,6 +21,8 @@ func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 
 type Authorizator interface {
 	patterns.Connectable
+	Refresh(ctx context.Context) error
+
 	Enforce(sub, tenant, obj, act string) (bool, error)
 	GrantPermissionsToRole(tenant, role string, permissions []Permission) error
 	GrantRoleToSub(tenant, role, sub string) error
