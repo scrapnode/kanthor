@@ -106,7 +106,13 @@ func (authorizator *casbin) Enforce(tenant, sub, obj, act string) (bool, error) 
 }
 
 func (authorizator *casbin) Refresh(ctx context.Context) error {
-	return authorizator.watcher.Update()
+	if err := authorizator.client.LoadModel(); err != nil {
+		return err
+	}
+	if err := authorizator.client.LoadPolicy(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (authorizator *casbin) GrantPermissionsToRole(tenant, role string, permissions []Permission) error {
