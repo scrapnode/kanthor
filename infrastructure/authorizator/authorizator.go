@@ -24,8 +24,7 @@ type Authorizator interface {
 	Refresh(ctx context.Context) error
 
 	Enforce(sub, tenant, obj, act string) (bool, error)
-	GrantPermissionsToRole(tenant, role string, permissions []Permission) error
-	GrantRoleToSub(tenant, role, sub string) error
+	Grant(tenant, sub, role string, permissions []Permission) error
 	Tenants(sub string) ([]string, error)
 	UsersOfTenant(tenant string) ([]string, error)
 	UserPermissionsInTenant(tenant, sub string) ([]Permission, error)

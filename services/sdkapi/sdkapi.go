@@ -202,12 +202,7 @@ func (service *sdkapi) coordinate() error {
 				return nil
 			}
 
-			err := service.authz.GrantPermissionsToRole(request["workspace_id"], RoleOwner, PermissionOwner)
-			if err != nil {
-				service.logger.Error(err.Error())
-				return err
-			}
-			err = service.authz.GrantRoleToSub(request["workspace_id"], RoleOwner, request["id"])
+			err := service.authz.Grant(request["workspace_id"], request["id"], RoleOwner, PermissionOwner)
 			if err != nil {
 				service.logger.Error(err.Error())
 				return err

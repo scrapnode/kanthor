@@ -72,6 +72,16 @@ func (authorizator *casbin) Disconnect(ctx context.Context) error {
 	return nil
 }
 
+func (authorizator *casbin) Refresh(ctx context.Context) error {
+	if err := authorizator.client.LoadModel(); err != nil {
+		return err
+	}
+	if err := authorizator.client.LoadPolicy(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (authorizator *casbin) Enforce(tenant, sub, obj, act string) (bool, error) {
 	ok, explains, err := authorizator.client.EnforceEx(tenant, sub, obj, act)
 	if err != nil {
@@ -84,36 +94,20 @@ func (authorizator *casbin) Enforce(tenant, sub, obj, act string) (bool, error) 
 	return ok, nil
 }
 
-func (authorizator *casbin) Refresh(ctx context.Context) error {
-	if err := authorizator.client.LoadModel(); err != nil {
-		return err
-	}
-	if err := authorizator.client.LoadPolicy(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (authorizator *casbin) GrantPermissionsToRole(tenant, role string, permissions []Permission) error {
+func (authorizator *casbin) Grant(tenant, sub, role string, permissions []Permission) error {
 	policies := [][]string{}
 	for _, permission := range permissions {
 		policies = append(policies, append([]string{role, tenant}, permission.Object, permission.Action))
 	}
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
-	_, err := authorizator.client.AddPolicies(policies)
-	if err != nil {
+	if _, err := authorizator.client.AddPolicies(policies); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (authorizator *casbin) GrantRoleToSub(tenant, role, sub string) error {
 	// the returning boolean value indicates that whether we can add the entity or not
 	// most time we could not add the new entity because it was exists already
-	_, err := authorizator.client.AddRoleForUserInDomain(sub, role, tenant)
-	if err != nil {
+	if _, err := authorizator.client.AddRoleForUserInDomain(sub, role, tenant); err != nil {
 		return err
 	}
 
