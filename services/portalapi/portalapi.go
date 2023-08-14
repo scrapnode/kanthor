@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -24,6 +25,7 @@ func New(
 	logger logging.Logger,
 	validator validator.Validator,
 	idempotency idempotency.Idempotency,
+	coordinator coordinator.Coordinator,
 	auth authenticator.Authenticator,
 	authz authorizator.Authorizator,
 	uc usecase.Portal,
@@ -34,6 +36,7 @@ func New(
 		logger:      logger,
 		validator:   validator,
 		idempotency: idempotency,
+		coordinator: coordinator,
 		auth:        auth,
 		authz:       authz,
 		uc:          uc,
@@ -45,6 +48,7 @@ type portalapi struct {
 	logger      logging.Logger
 	validator   validator.Validator
 	idempotency idempotency.Idempotency
+	coordinator coordinator.Coordinator
 	auth        authenticator.Authenticator
 	authz       authorizator.Authorizator
 	uc          usecase.Portal
@@ -65,6 +69,17 @@ func (service *portalapi) Start(ctx context.Context) error {
 		return err
 	}
 
+	if err := service.coordinator.Connect(ctx); err != nil {
+		return err
+	}
+
+	service.build()
+
+	service.logger.Info("started")
+	return nil
+}
+
+func (service *portalapi) build() {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	// system routes
@@ -102,7 +117,7 @@ func (service *portalapi) Start(ctx context.Context) error {
 
 		UseWorkspaceCredentialsRoutes(
 			api.Group("/workspace/me/credentials"),
-			service.logger, service.validator, service.uc,
+			service.logger, service.validator, service.uc, service.coordinator,
 		)
 	}
 
@@ -110,9 +125,6 @@ func (service *portalapi) Start(ctx context.Context) error {
 		Addr:    service.conf.PortalApi.Gateway.Httpx.Addr,
 		Handler: router,
 	}
-
-	service.logger.Info("started")
-	return nil
 }
 
 func (service *portalapi) Stop(ctx context.Context) error {
@@ -120,6 +132,10 @@ func (service *portalapi) Stop(ctx context.Context) error {
 
 	if err := service.server.Shutdown(ctx); err != nil {
 		return err
+	}
+
+	if err := service.coordinator.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
 	}
 
 	if err := service.idempotency.Disconnect(ctx); err != nil {
@@ -138,6 +154,10 @@ func (service *portalapi) Stop(ctx context.Context) error {
 }
 
 func (service *portalapi) Run(ctx context.Context) error {
+	if err := service.coordinate(); err != nil {
+		return err
+	}
+
 	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Httpx.Addr)
 
 	err := service.server.ListenAndServe()
@@ -146,4 +166,21 @@ func (service *portalapi) Run(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (service *portalapi) coordinate() error {
+	return service.coordinator.Receive(func(cmd *coordinator.Command) error {
+		service.logger.Info(cmd.Name)
+
+		if cmd.Name == coordinator.CmdAuthzRefresh {
+			if err := service.authz.Refresh(context.Background()); err != nil {
+				service.logger.Errorw(err.Error())
+				return err
+			}
+		}
+
+		// @TODO: refresh cache
+
+		return nil
+	})
 }

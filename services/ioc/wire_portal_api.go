@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -26,6 +27,8 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 		validator.New,
 		wire.FieldsOf(new(*config.Config), "Idempotency"),
 		idempotency.New,
+		wire.FieldsOf(new(*config.Config), "Coordinator"),
+		coordinator.New,
 		ResolvePortalAuthenticatorConfig,
 		authenticator.New,
 		ResolvePortalAuthorizatorConfig,

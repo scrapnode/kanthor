@@ -32,29 +32,12 @@ func (conf *Config) Validate() error {
 }
 
 type CasbinConfig struct {
-	ModelUri        string              `json:"model_uri" yaml:"model_uri" mapstructure:"model_uri" validate:"required,uri"`
-	PolicyUri       string              `json:"policy_uri" yaml:"policy_uri" mapstructure:"policy_uri" validate:"required,uri"`
-	PolicyNamespace string              `json:"policy_namespace" yaml:"policy_namespace" mapstructure:"policy_namespace" validate:"required"`
-	Watcher         CasbinWatcherConfig `json:"watcher" yaml:"watcher" mapstructure:"watcher" validate:"-"`
+	ModelUri        string `json:"model_uri" yaml:"model_uri" mapstructure:"model_uri" validate:"required,uri"`
+	PolicyUri       string `json:"policy_uri" yaml:"policy_uri" mapstructure:"policy_uri" validate:"required,uri"`
+	PolicyNamespace string `json:"policy_namespace" yaml:"policy_namespace" mapstructure:"policy_namespace" validate:"required"`
 }
 
 func (conf *CasbinConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-
-	if err := conf.Watcher.Validate(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type CasbinWatcherConfig struct {
-	Uri string `json:"uri" yaml:"uri" mapstructure:"uri" validate:"required,uri"`
-}
-
-func (conf *CasbinWatcherConfig) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
 		return err
 	}

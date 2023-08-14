@@ -2,6 +2,7 @@ package portalapi
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
@@ -12,9 +13,10 @@ func UseWorkspaceCredentialsRoutes(
 	logger logging.Logger,
 	validator validator.Validator,
 	uc usecase.Portal,
+	coordinator coordinator.Coordinator,
 ) {
 	router.GET("", UseWorkspaceCredentialsList(logger, validator, uc))
-	router.POST("", UseWorkspaceCredentialsCreate(logger, validator, uc))
+	router.POST("", UseWorkspaceCredentialsCreate(logger, validator, uc, coordinator))
 	router.GET("/:wsc_id", UseWorkspaceCredentialsGet(logger, validator, uc))
 	router.PUT("/:wsc_id", UseWorkspaceCredentialsUpdate(logger, validator, uc))
 	router.PUT("/:wsc_id/expiration", UseWorkspaceCredentialsExpire(logger, validator, uc))

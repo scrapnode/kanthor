@@ -2,9 +2,11 @@ package sdkapi
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -23,6 +25,7 @@ func New(
 	logger logging.Logger,
 	validator validator.Validator,
 	idempotency idempotency.Idempotency,
+	coordinator coordinator.Coordinator,
 	authz authorizator.Authorizator,
 	uc usecase.Sdk,
 ) services.Service {
@@ -31,6 +34,7 @@ func New(
 		conf:        conf,
 		logger:      logger,
 		validator:   validator,
+		coordinator: coordinator,
 		idempotency: idempotency,
 		authz:       authz,
 		uc:          uc,
@@ -42,6 +46,7 @@ type sdkapi struct {
 	logger      logging.Logger
 	validator   validator.Validator
 	idempotency idempotency.Idempotency
+	coordinator coordinator.Coordinator
 	authz       authorizator.Authorizator
 	uc          usecase.Sdk
 
@@ -61,6 +66,17 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		return err
 	}
 
+	if err := service.coordinator.Connect(ctx); err != nil {
+		return err
+	}
+
+	service.build()
+
+	service.logger.Info("started")
+	return nil
+}
+
+func (service *sdkapi) build() {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	// system routes
@@ -113,9 +129,6 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		Addr:    service.conf.SdkApi.Gateway.Httpx.Addr,
 		Handler: router,
 	}
-
-	service.logger.Info("started")
-	return nil
 }
 
 func (service *sdkapi) Stop(ctx context.Context) error {
@@ -123,6 +136,10 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 
 	if err := service.server.Shutdown(ctx); err != nil {
 		return err
+	}
+
+	if err := service.coordinator.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
 	}
 
 	if err := service.idempotency.Disconnect(ctx); err != nil {
@@ -141,6 +158,10 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 }
 
 func (service *sdkapi) Run(ctx context.Context) error {
+	if err := service.coordinate(); err != nil {
+		return err
+	}
+
 	service.logger.Infow("running", "addr", service.conf.SdkApi.Gateway.Httpx.Addr)
 
 	err := service.server.ListenAndServe()
@@ -149,4 +170,54 @@ func (service *sdkapi) Run(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (service *sdkapi) coordinate() error {
+	// return error will deliver message again
+	return service.coordinator.Receive(func(cmd *coordinator.Command) error {
+		service.logger.Infow("received coordinator command", "cmd.name", cmd.Name)
+
+		if cmd.Name == coordinator.CmdAuthzRefresh {
+			if err := service.authz.Refresh(context.Background()); err != nil {
+				service.logger.Error(err.Error())
+				return err
+			}
+		}
+
+		if cmd.Name == "workspace.credentials.create" {
+			var request map[string]string
+			if err := json.Unmarshal([]byte(cmd.Request), &request); err != nil {
+				service.logger.Error(err.Error())
+				// we don't want to process this message again because of malformed data
+				return nil
+			}
+			if request["id"] == "" {
+				service.logger.Errorw("no credentials id", "cmd", cmd.String())
+				// we don't want to process this message again because of missing id
+				return nil
+			}
+			if request["workspace_id"] == "" {
+				service.logger.Errorw("no workspace id", "cmd", cmd.String())
+				// we don't want to process this message again because of missing id
+				return nil
+			}
+
+			err := service.authz.GrantPermissionsToRole(request["workspace_id"], RoleOwner, PermissionOwner)
+			if err != nil {
+				service.logger.Error(err.Error())
+				return err
+			}
+			err = service.authz.GrantRoleToSub(request["workspace_id"], RoleOwner, request["id"])
+			if err != nil {
+				service.logger.Error(err.Error())
+				return err
+			}
+
+			return nil
+		}
+
+		// @TODO: refresh cache
+
+		return nil
+	})
 }

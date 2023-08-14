@@ -6,7 +6,6 @@ import (
 	gocasbin "github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"net/url"
 	"strings"
 	"sync"
@@ -21,9 +20,8 @@ type casbin struct {
 	conf   *Config
 	logger logging.Logger
 
-	mu      sync.Mutex
-	watcher *watcher
-	client  *gocasbin.Enforcer
+	mu     sync.Mutex
+	client *gocasbin.Enforcer
 }
 
 func (authorizator *casbin) Connect(ctx context.Context) error {
@@ -61,20 +59,6 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	}
 	authorizator.client = client
 
-	watcherName := fmt.Sprintf("casbin.watcher.%s", ns)
-	authorizator.watcher = &watcher{
-		nodeid:  utils.ID(watcherName),
-		conf:    &authorizator.conf.Casbin.Watcher,
-		logger:  authorizator.logger.With("casbin.watcher", ns),
-		subject: fmt.Sprintf("kanthor.authorizator.%s", watcherName),
-	}
-	if err := authorizator.watcher.Connect(ctx); err != nil {
-		return err
-	}
-	if err := authorizator.client.SetWatcher(authorizator.watcher); err != nil {
-		return err
-	}
-
 	authorizator.logger.Info("connected")
 	return nil
 }
@@ -82,11 +66,6 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 func (authorizator *casbin) Disconnect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
-
-	if err := authorizator.watcher.Disconnect(ctx); err != nil {
-		authorizator.logger.Error(err)
-	}
-	authorizator.watcher = nil
 
 	authorizator.client = nil
 	authorizator.logger.Info("disconnected")

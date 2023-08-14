@@ -2,19 +2,19 @@ package do
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/data/interchange"
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/ioc"
-	"github.com/scrapnode/kanthor/services/sdkapi"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/spf13/cobra"
-	"net/http"
 	"os"
 	"time"
 )
@@ -56,11 +56,11 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			authz, err := authorizator.New(&conf.SdkApi.Authorizator, logger)
+			coord, err := coordinator.New(&conf.Coordinator, logger)
 			if err != nil {
 				return err
 			}
-			if err := authz.Connect(ctx); err != nil {
+			if err := coord.Connect(ctx); err != nil {
 				return err
 			}
 
@@ -69,9 +69,10 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 					logger.Error(err)
 				}
 
-				if err := authz.Disconnect(ctx); err != nil {
+				if err := coord.Disconnect(ctx); err != nil {
 					logger.Error(err)
 				}
+
 			}()
 
 			// prepare the data
@@ -92,7 +93,7 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			metadata := importAutoGenerate(uc, authz, res, ctx, needs)
+			metadata := importAutoGenerate(uc, coord, res, ctx, needs)
 
 			importReport(in, req, res, metadata, verbose)
 			return nil
@@ -127,16 +128,16 @@ func importPrepareRequest(in *interchange.Interchange) *usecase.WorkspaceImportR
 
 func importAutoGenerate(
 	uc usecase.Portal,
-	authz authorizator.Authorizator,
+	coord coordinator.Coordinator,
 	res *usecase.WorkspaceImportRes,
 	ctx context.Context,
 	needs []string,
-) http.Header {
-	meta := http.Header{}
+) entities.Metadata {
+	meta := entities.Metadata{}
 
 	for _, need := range needs {
 		if need == "workspace_credentials" {
-			importAutoGenerateWorkspaceCredentials(uc, authz, res, ctx, meta)
+			importAutoGenerateWorkspaceCredentials(uc, coord, res, ctx, meta)
 		}
 	}
 
@@ -145,12 +146,11 @@ func importAutoGenerate(
 
 func importAutoGenerateWorkspaceCredentials(
 	uc usecase.Portal,
-	authz authorizator.Authorizator,
+	coord coordinator.Coordinator,
 	res *usecase.WorkspaceImportRes,
 	ctx context.Context,
-	meta http.Header,
+	meta entities.Metadata,
 ) {
-
 	for _, wsId := range res.WorkspaceIds {
 		cred, err := uc.WorkspaceCredentials().Generate(
 			ctx,
@@ -162,11 +162,12 @@ func importAutoGenerateWorkspaceCredentials(
 			continue
 		}
 
-		if err := authz.GrantPermissionsToRole(wsId, sdkapi.RoleOwner, sdkapi.PermissionOwner); err != nil {
-			meta.Set(wsId, fmt.Sprintf("error: %s", err.Error()))
-			continue
-		}
-		if err := authz.GrantRoleToSub(wsId, sdkapi.RoleOwner, cred.Credentials[0].Id); err != nil {
+		bytes, _ := json.Marshal(map[string]string{
+			"id":           cred.Credentials[0].Id,
+			"workspace_id": wsId,
+		})
+		err = coord.Send(&coordinator.Command{Name: "workspace.credentials.create", Request: string(bytes)})
+		if err != nil {
 			meta.Set(wsId, fmt.Sprintf("error: %s", err.Error()))
 			continue
 		}
@@ -180,7 +181,7 @@ func importReport(
 	in *interchange.Interchange,
 	req *usecase.WorkspaceImportReq,
 	res *usecase.WorkspaceImportRes,
-	metadata http.Header,
+	metadata entities.Metadata,
 	verbose bool,
 ) {
 	t := table.NewWriter()

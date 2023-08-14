@@ -12,6 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -85,6 +86,11 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
+	coordinatorConfig := &conf.Coordinator
+	coordinatorCoordinator, err := coordinator.New(coordinatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	authenticatorConfig := ResolvePortalAuthenticatorConfig(conf)
 	authenticatorAuthenticator, err := authenticator.New(authenticatorConfig, logger)
 	if err != nil {
@@ -99,7 +105,7 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, authenticatorAuthenticator, authorizatorAuthorizator, portal)
+	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, authenticatorAuthenticator, authorizatorAuthorizator, portal)
 	return service, nil
 }
 
@@ -165,6 +171,11 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
+	coordinatorConfig := &conf.Coordinator
+	coordinatorCoordinator, err := coordinator.New(coordinatorConfig, logger)
+	if err != nil {
+		return nil, err
+	}
 	authorizatorConfig := ResolveSdkAuthorizatorConfig(conf)
 	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
 	if err != nil {
@@ -174,7 +185,7 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, authorizatorAuthorizator, sdk)
+	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, authorizatorAuthorizator, sdk)
 	return service, nil
 }
 

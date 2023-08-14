@@ -33,6 +33,12 @@ idempotency:
   uri: redis://127.0.0.1:6379/0
   time_to_live: 86400000 # 1 day
 
+coordinator:
+  engine: nats
+  nats:
+    uri: nats://127.0.0.1:4222
+    subject: kanthor.coordinator
+
 logger:
   pretty: true
   level: debug
@@ -67,8 +73,6 @@ sdkapi:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
       policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.sdk
       policy_namespace: sdk
-      watcher:
-        uri: nats://127.0.0.1:4222
   publisher:
     connection: *streaming
 
@@ -90,8 +94,6 @@ portalapi:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
       policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
-      watcher:
-        uri: nats://127.0.0.1:4222
 
 scheduler:
   cache: *cache
