@@ -2,7 +2,6 @@ package coordinator
 
 import (
 	"context"
-	"encoding/json"
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -62,8 +61,8 @@ func (coordinator *nats) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (coordinator *nats) Send(cmd *Command) error {
-	data, err := json.Marshal(cmd)
+func (coordinator *nats) Send(cmd string, req Request) error {
+	data, err := req.Marshal()
 	if err != nil {
 		return err
 	}
@@ -75,32 +74,32 @@ func (coordinator *nats) Send(cmd *Command) error {
 	}
 	msg.Header.Set(natscore.MsgIdHdr, utils.ID("coord"))
 	msg.Header.Set(HeaderNodeId, coordinator.id)
+	msg.Header.Set(HeaderCmd, cmd)
 
 	coordinator.logger.Debugw("sending", "msg", utils.Stringify(msg))
 
 	return coordinator.conn.PublishMsg(msg)
 }
 
-func (coordinator *nats) Receive(handle func(cmd *Command) error) error {
+func (coordinator *nats) Receive(handle func(cmd string, req []byte) error) error {
 	subscription, err := coordinator.conn.Subscribe(coordinator.conf.Nats.Subject, func(msg *natscore.Msg) {
 		nodeId := msg.Header.Get(HeaderNodeId)
 		if nodeId == "" {
 			coordinator.logger.Errorw("ignore empty node id message", "msg", utils.Stringify(msg))
 			return
 		}
-
 		if nodeId == coordinator.id {
 			coordinator.logger.Debugw("ignore published node", "msg", utils.Stringify(msg))
 			return
 		}
 
-		var cmd Command
-		if err := json.Unmarshal(msg.Data, &cmd); err != nil {
-			coordinator.logger.Errorw("unable to unmarshal message", "msg", utils.Stringify(msg))
+		cmd := msg.Header.Get(HeaderCmd)
+		if cmd == "" {
+			coordinator.logger.Errorw("ignore empty cmd name message", "msg", utils.Stringify(msg))
 			return
 		}
 
-		if err := handle(&cmd); err != nil {
+		if err := handle(cmd, msg.Data); err != nil {
 			coordinator.logger.Errorw(err.Error(), "msg", utils.Stringify(msg))
 			return
 		}

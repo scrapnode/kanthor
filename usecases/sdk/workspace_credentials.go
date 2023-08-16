@@ -11,22 +11,32 @@ import (
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
 )
 
-type Workspace interface {
-	Authenticate(ctx context.Context, req *WorkspaceAuthenticateReq) (*WorkspaceAuthenticateRes, error)
+type WorkspaceCredentials interface {
+	Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error)
+	Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error)
 }
 
-type WorkspaceAuthenticateReq struct {
+type WorkspaceCredentialsAuthenticateReq struct {
 	User string `validate:"required,startswith=wsc_"`
 	Hash string `validate:"required"`
 }
 
-type WorkspaceAuthenticateRes struct {
+type WorkspaceCredentialsAuthenticateRes struct {
 	Workspace            *entities.Workspace
 	WorkspaceCredentials *entities.WorkspaceCredentials
 	WorkspaceTier        *entities.WorkspaceTier
 }
 
-type workspace struct {
+type WorkspaceCredentialsExpireReq struct {
+	User      string `validate:"required,startswith=wsc_"`
+	ExpiredAt int64  `validate:"required,gt=0"`
+}
+
+type WorkspaceCredentialsExpireRes struct {
+	Ok bool
+}
+
+type workspaceCredentials struct {
 	conf         *config.Config
 	logger       logging.Logger
 	cryptography cryptography.Cryptography

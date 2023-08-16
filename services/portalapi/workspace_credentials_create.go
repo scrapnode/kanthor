@@ -2,7 +2,6 @@ package portalapi
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
@@ -10,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/services/command"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 	"net/http"
 )
@@ -64,14 +64,12 @@ func UseWorkspaceCredentialsCreate(
 			return
 		}
 
-		bytes, _ := json.Marshal(map[string]string{
-			"id":           ucres.Credentials[0].Id,
-			"workspace_id": ws.Id,
-		})
-		err = coord.Send(&coordinator.Command{Name: "workspace.credentials.create", Request: string(bytes)})
+		err = coord.Send(
+			command.WorkspaceCredentialsCreated,
+			&command.WorkspaceCredentialsCreatedReq{Docs: ucres.Credentials},
+		)
 		if err != nil {
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
-			return
+			logger.Error(err)
 		}
 
 		res := &WorkspaceCredentialsCreateRes{

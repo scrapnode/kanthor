@@ -38,12 +38,12 @@ func basic(
 		return ctx, err
 	}
 
-	req := &sdkuc.WorkspaceAuthenticateReq{User: user, Hash: hash}
+	req := &sdkuc.WorkspaceCredentialsAuthenticateReq{User: user, Hash: hash}
 	if err := validator.Struct(req); err != nil {
 		return ctx, err
 	}
 
-	res, err := uc.Workspace().Authenticate(ctx, req)
+	res, err := uc.WorkspaceCredentials().Authenticate(ctx, req)
 	if err != nil {
 		return ctx, err
 	}

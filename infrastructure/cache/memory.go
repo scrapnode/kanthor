@@ -77,3 +77,7 @@ func (cache *memory) Del(ctx context.Context, key string) error {
 	cache.client.Delete(key)
 	return nil
 }
+func (cache *memory) ExpireAt(ctx context.Context, key string, at time.Time) (bool, error) {
+	// no effect
+	return false, nil
+}

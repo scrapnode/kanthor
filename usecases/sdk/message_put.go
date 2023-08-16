@@ -12,7 +12,7 @@ import (
 
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
-	key := utils.Key(ws.Id, req.AppId)
+	key := CacheKeyApp(ws.Id, req.AppId)
 	app, err := cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
 		return uc.repos.Application().Get(ctx, ws.Id, req.AppId)
 	})

@@ -169,18 +169,8 @@ func (service *portalapi) Run(ctx context.Context) error {
 }
 
 func (service *portalapi) coordinate() error {
-	return service.coordinator.Receive(func(cmd *coordinator.Command) error {
-		service.logger.Info(cmd.Name)
-
-		if cmd.Name == coordinator.CmdAuthzRefresh {
-			if err := service.authz.Refresh(context.Background()); err != nil {
-				service.logger.Errorw(err.Error())
-				return err
-			}
-		}
-
-		// @TODO: refresh cache
-
+	return service.coordinator.Receive(func(cmd string, data []byte) error {
+		service.logger.Info(cmd)
 		return nil
 	})
 }

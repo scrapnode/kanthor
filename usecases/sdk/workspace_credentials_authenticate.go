@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"time"
 )
 
-func (uc *workspace) Authenticate(ctx context.Context, req *WorkspaceAuthenticateReq) (*WorkspaceAuthenticateRes, error) {
-	key := utils.Key("sdk", req.User, req.Hash)
-	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*WorkspaceAuthenticateRes, error) {
-		res := &WorkspaceAuthenticateRes{}
+func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error) {
+	key := CacheKeyWsAuthenticate(req.User)
+	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*WorkspaceCredentialsAuthenticateRes, error) {
+		res := &WorkspaceCredentialsAuthenticateRes{}
 
 		credentials, err := uc.repos.WorkspaceCredentials().Get(ctx, req.User)
 		if err != nil {

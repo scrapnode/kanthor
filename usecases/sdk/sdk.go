@@ -15,7 +15,7 @@ import (
 
 type Sdk interface {
 	patterns.Connectable
-	Workspace() Workspace
+	WorkspaceCredentials() WorkspaceCredentials
 	Application() Application
 	Endpoint() Endpoint
 	EndpointRule() EndpointRule
@@ -51,12 +51,12 @@ type sdk struct {
 	publisher    streaming.Publisher
 	repos        repos.Repositories
 
-	mu           sync.RWMutex
-	workspace    *workspace
-	application  *application
-	endpoint     *endpoint
-	endpointRule *endpointRule
-	message      *message
+	mu                   sync.RWMutex
+	workspaceCredentials *workspaceCredentials
+	application          *application
+	endpoint             *endpoint
+	endpointRule         *endpointRule
+	message              *message
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {
@@ -94,12 +94,12 @@ func (uc *sdk) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (uc *sdk) Workspace() Workspace {
+func (uc *sdk) WorkspaceCredentials() WorkspaceCredentials {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if uc.workspace == nil {
-		uc.workspace = &workspace{
+	if uc.workspaceCredentials == nil {
+		uc.workspaceCredentials = &workspaceCredentials{
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
@@ -108,7 +108,7 @@ func (uc *sdk) Workspace() Workspace {
 			repos:        uc.repos,
 		}
 	}
-	return uc.workspace
+	return uc.workspaceCredentials
 }
 
 func (uc *sdk) Application() Application {

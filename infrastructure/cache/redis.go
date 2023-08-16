@@ -67,7 +67,7 @@ func (cache *redis) Disconnect(ctx context.Context) error {
 }
 
 func (cache *redis) Get(ctx context.Context, key string) ([]byte, error) {
-	entry, err := cache.client.Get(context.Background(), key).Bytes()
+	entry, err := cache.client.Get(ctx, key).Bytes()
 	// convert error type to detect later
 	if errors.Is(err, goredis.Nil) {
 		return nil, ErrEntryNotFound
@@ -77,14 +77,18 @@ func (cache *redis) Get(ctx context.Context, key string) ([]byte, error) {
 }
 
 func (cache *redis) Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error {
-	return cache.client.Set(context.Background(), key, entry, ttl).Err()
+	return cache.client.Set(ctx, key, entry, ttl).Err()
 }
 
 func (cache *redis) Exist(ctx context.Context, key string) bool {
-	entry, err := cache.client.Exists(context.Background(), key).Result()
+	entry, err := cache.client.Exists(ctx, key).Result()
 	return err == nil && entry > 0
 }
 
 func (cache *redis) Del(ctx context.Context, key string) error {
-	return cache.client.Del(context.Background(), key).Err()
+	return cache.client.Del(ctx, key).Err()
+}
+
+func (cache *redis) ExpireAt(ctx context.Context, key string, at time.Time) (bool, error) {
+	return cache.client.ExpireAt(ctx, key, at).Result()
 }

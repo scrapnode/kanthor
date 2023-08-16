@@ -5,9 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/services/command"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 	"net/http"
 )
@@ -30,7 +32,12 @@ type WorkspaceCredentialsExpireRes struct {
 // @Failure		default											{object}	gateway.Error
 // @Security	BearerAuth
 // @Security	WsId
-func UseWorkspaceCredentialsExpire(logger logging.Logger, validator validator.Validator, uc portaluc.Portal) gin.HandlerFunc {
+func UseWorkspaceCredentialsExpire(
+	logger logging.Logger,
+	validator validator.Validator,
+	uc portaluc.Portal,
+	coord coordinator.Coordinator,
+) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsExpireReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
@@ -59,6 +66,14 @@ func UseWorkspaceCredentialsExpire(logger logging.Logger, validator validator.Va
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
+		}
+
+		err = coord.Send(
+			command.WorkspaceCredentialsExpired,
+			&command.WorkspaceCredentialsExpiredReq{Id: ucres.Id, ExpiredAt: ucres.ExpiredAt},
+		)
+		if err != nil {
+			logger.Error(err)
 		}
 
 		res := &WorkspaceCredentialsExpireRes{

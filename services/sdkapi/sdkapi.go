@@ -2,7 +2,6 @@ package sdkapi
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
@@ -12,12 +11,14 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/services/command"
 	"github.com/scrapnode/kanthor/services/sdkapi/docs"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
 	"net/http"
+	"time"
 )
 
 func New(
@@ -173,45 +174,30 @@ func (service *sdkapi) Run(ctx context.Context) error {
 }
 
 func (service *sdkapi) coordinate() error {
-	// return error will deliver message again
-	return service.coordinator.Receive(func(cmd *coordinator.Command) error {
-		service.logger.Infow("received coordinator command", "cmd.name", cmd.Name)
+	return service.coordinator.Receive(func(cmd string, data []byte) error {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
 
-		if cmd.Name == coordinator.CmdAuthzRefresh {
-			if err := service.authz.Refresh(context.Background()); err != nil {
-				service.logger.Error(err.Error())
+		if cmd == command.WorkspaceCredentialsCreated {
+			if err := service.authz.Refresh(ctx); err != nil {
 				return err
 			}
 		}
 
-		if cmd.Name == "workspace.credentials.create" {
-			var request map[string]string
-			if err := json.Unmarshal([]byte(cmd.Request), &request); err != nil {
-				service.logger.Error(err.Error())
-				// we don't want to process this message again because of malformed data
-				return nil
-			}
-			if request["id"] == "" {
-				service.logger.Errorw("no credentials id", "cmd", cmd.String())
-				// we don't want to process this message again because of missing id
-				return nil
-			}
-			if request["workspace_id"] == "" {
-				service.logger.Errorw("no workspace id", "cmd", cmd.String())
-				// we don't want to process this message again because of missing id
-				return nil
+		if cmd == command.WorkspaceCredentialsExpired {
+			req := &command.WorkspaceCredentialsExpiredReq{}
+			if err := req.Unmarshal(data); err != nil {
+				return err
 			}
 
-			err := service.authz.Grant(request["workspace_id"], request["id"], RoleOwner, PermissionOwner)
+			_, err := service.uc.WorkspaceCredentials().Expire(ctx,
+				&usecase.WorkspaceCredentialsExpireReq{User: req.Id, ExpiredAt: req.ExpiredAt},
+			)
 			if err != nil {
 				service.logger.Error(err.Error())
 				return err
 			}
-
-			return nil
 		}
-
-		// @TODO: refresh cache
 
 		return nil
 	})

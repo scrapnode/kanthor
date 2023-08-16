@@ -38,4 +38,5 @@ type Cache interface {
 	Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error
 	Exist(ctx context.Context, key string) bool
 	Del(ctx context.Context, key string) error
+	ExpireAt(ctx context.Context, key string, at time.Time) (bool, error)
 }

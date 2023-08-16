@@ -41,3 +41,7 @@ func (cache *noop) Exist(ctx context.Context, key string) bool {
 func (cache *noop) Del(ctx context.Context, key string) error {
 	return nil
 }
+
+func (cache *noop) ExpireAt(ctx context.Context, key string, at time.Time) (bool, error) {
+	return true, nil
+}

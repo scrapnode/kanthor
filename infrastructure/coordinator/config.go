@@ -8,6 +8,7 @@ import (
 var (
 	EngineNats   = "nats"
 	HeaderNodeId = "kanthor-coordinator-node-id"
+	HeaderCmd    = "kanthor-coordinator-cmd"
 )
 
 type Config struct {
