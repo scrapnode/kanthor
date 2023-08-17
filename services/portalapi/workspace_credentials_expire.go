@@ -69,6 +69,7 @@ func UseWorkspaceCredentialsExpire(
 		}
 
 		err = coord.Send(
+			ctx,
 			command.WorkspaceCredentialsExpired,
 			&command.WorkspaceCredentialsExpiredReq{Id: ucres.Id, ExpiredAt: ucres.ExpiredAt},
 		)

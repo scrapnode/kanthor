@@ -1,6 +1,7 @@
 package coordinator
 
 import (
+	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -18,7 +19,7 @@ func New(conf *Config, logger logging.Logger) (Coordinator, error) {
 type Coordinator interface {
 	patterns.Connectable
 
-	Send(cmd string, req Request) error
+	Send(ctx context.Context, cmd string, req Request) error
 	Receive(handler func(cmd string, req []byte) error) error
 }
 

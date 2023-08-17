@@ -167,10 +167,3 @@ func (service *portalapi) Run(ctx context.Context) error {
 
 	return nil
 }
-
-func (service *portalapi) coordinate() error {
-	return service.coordinator.Receive(func(cmd string, data []byte) error {
-		service.logger.Info(cmd)
-		return nil
-	})
-}

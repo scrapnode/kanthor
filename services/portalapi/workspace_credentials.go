@@ -19,5 +19,5 @@ func UseWorkspaceCredentialsRoutes(
 	router.POST("", UseWorkspaceCredentialsCreate(logger, validator, uc, coordinator))
 	router.GET("/:wsc_id", UseWorkspaceCredentialsGet(logger, validator, uc))
 	router.PUT("/:wsc_id", UseWorkspaceCredentialsUpdate(logger, validator, uc))
-	router.PUT("/:wsc_id/expiration", UseWorkspaceCredentialsExpire(logger, validator, uc))
+	router.PUT("/:wsc_id/expiration", UseWorkspaceCredentialsExpire(logger, validator, uc, coordinator))
 }

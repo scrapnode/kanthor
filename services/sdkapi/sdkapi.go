@@ -11,14 +11,12 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/command"
 	"github.com/scrapnode/kanthor/services/sdkapi/docs"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
 	"net/http"
-	"time"
 )
 
 func New(
@@ -171,34 +169,4 @@ func (service *sdkapi) Run(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (service *sdkapi) coordinate() error {
-	return service.coordinator.Receive(func(cmd string, data []byte) error {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-
-		if cmd == command.WorkspaceCredentialsCreated {
-			if err := service.authz.Refresh(ctx); err != nil {
-				return err
-			}
-		}
-
-		if cmd == command.WorkspaceCredentialsExpired {
-			req := &command.WorkspaceCredentialsExpiredReq{}
-			if err := req.Unmarshal(data); err != nil {
-				return err
-			}
-
-			_, err := service.uc.WorkspaceCredentials().Expire(ctx,
-				&usecase.WorkspaceCredentialsExpireReq{User: req.Id, ExpiredAt: req.ExpiredAt},
-			)
-			if err != nil {
-				service.logger.Error(err.Error())
-				return err
-			}
-		}
-
-		return nil
-	})
 }

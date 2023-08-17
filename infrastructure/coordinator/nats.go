@@ -61,7 +61,7 @@ func (coordinator *nats) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (coordinator *nats) Send(cmd string, req Request) error {
+func (coordinator *nats) Send(ctx context.Context, cmd string, req Request) error {
 	data, err := req.Marshal()
 	if err != nil {
 		return err
@@ -78,7 +78,8 @@ func (coordinator *nats) Send(cmd string, req Request) error {
 
 	coordinator.logger.Debugw("sending", "msg", utils.Stringify(msg))
 
-	return coordinator.conn.PublishMsg(msg)
+	_, err = coordinator.conn.RequestMsgWithContext(ctx, msg)
+	return err
 }
 
 func (coordinator *nats) Receive(handle func(cmd string, req []byte) error) error {
@@ -101,11 +102,15 @@ func (coordinator *nats) Receive(handle func(cmd string, req []byte) error) erro
 
 		if err := handle(cmd, msg.Data); err != nil {
 			coordinator.logger.Errorw(err.Error(), "msg", utils.Stringify(msg))
+			if err := msg.Nak(); err != nil {
+				coordinator.logger.Errorw(err.Error(), "msg", utils.Stringify(msg))
+			}
 			return
 		}
 
-		// one-way communication so we don't need to .Ack or .Nack here
-		return
+		if err := msg.Ack(); err != nil {
+			coordinator.logger.Errorw(err.Error(), "msg", utils.Stringify(msg))
+		}
 	})
 	if err != nil {
 		return err

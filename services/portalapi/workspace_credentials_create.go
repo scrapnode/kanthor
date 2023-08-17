@@ -65,6 +65,7 @@ func UseWorkspaceCredentialsCreate(
 		}
 
 		err = coord.Send(
+			ctx,
 			command.WorkspaceCredentialsCreated,
 			&command.WorkspaceCredentialsCreatedReq{Docs: ucres.Credentials},
 		)

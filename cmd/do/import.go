@@ -2,7 +2,6 @@ package do
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
@@ -12,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/services/command"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/spf13/cobra"
@@ -162,11 +162,11 @@ func importAutoGenerateWorkspaceCredentials(
 			continue
 		}
 
-		bytes, _ := json.Marshal(map[string]string{
-			"id":           cred.Credentials[0].Id,
-			"workspace_id": wsId,
-		})
-		err = coord.Send(&coordinator.Command{Name: "workspace.credentials.create", Request: string(bytes)})
+		err = coord.Send(
+			ctx,
+			command.WorkspaceCredentialsCreated,
+			&command.WorkspaceCredentialsCreatedReq{Docs: cred.Credentials},
+		)
 		if err != nil {
 			meta.Set(wsId, fmt.Sprintf("error: %s", err.Error()))
 			continue
