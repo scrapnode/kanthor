@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
@@ -22,6 +23,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	cryptography cryptography.Cryptography,
+	metrics metrics.Metrics,
 	timer timer.Timer,
 	cache cache.Cache,
 	repos repos.Repositories,
@@ -30,6 +32,7 @@ func New(
 		conf:         conf,
 		logger:       logger,
 		cryptography: cryptography,
+		metrics:      metrics,
 		timer:        timer,
 		cache:        cache,
 		repos:        repos,
@@ -40,6 +43,7 @@ type portal struct {
 	conf         *config.Config
 	logger       logging.Logger
 	cryptography cryptography.Cryptography
+	metrics      metrics.Metrics
 	timer        timer.Timer
 	cache        cache.Cache
 	repos        repos.Repositories
@@ -85,6 +89,7 @@ func (uc *portal) Workspace() Workspace {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
 			timer:        uc.timer,
 			cache:        uc.cache,
 			repos:        uc.repos,
@@ -102,6 +107,7 @@ func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
 			timer:        uc.timer,
 			cache:        uc.cache,
 			repos:        uc.repos,

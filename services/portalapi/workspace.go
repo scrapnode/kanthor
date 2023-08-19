@@ -2,17 +2,9 @@ package portalapi
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
-	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
 
-func UseWorkspaceRoutes(
-	router *gin.RouterGroup,
-	logger logging.Logger,
-	validator validator.Validator,
-	uc usecase.Portal,
-) {
+func UseWorkspaceRoutes(router *gin.RouterGroup, service *portalapi) {
 	router.GET("/me", UseWorkspaceGet())
-	router.PUT("/me", UseWorkspaceUpdate(logger, validator, uc))
+	router.PUT("/me", UseWorkspaceUpdate(service.logger, service.validator, service.uc))
 }

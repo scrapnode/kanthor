@@ -13,6 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -29,21 +30,23 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 		idempotency.New,
 		wire.FieldsOf(new(*config.Config), "Coordinator"),
 		coordinator.New,
-		ResolvePortalAuthenticatorConfig,
+		ResolvePortalApiMetricsConfig,
+		metrics.New,
+		ResolvePortalApiAuthenticatorConfig,
 		authenticator.New,
-		ResolvePortalAuthorizatorConfig,
+		ResolvePortalApiAuthorizatorConfig,
 		authorizator.New,
 		InitializePortalUsecase,
 	)
 	return nil, nil
 }
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portaluc.Portal, error) {
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics metrics.Metrics) (portaluc.Portal, error) {
 	wire.Build(
 		portaluc.New,
 		wire.FieldsOf(new(*config.Config), "Cryptography"),
 		cryptography.New,
 		timer.New,
-		ResolvePortalCacheConfig,
+		ResolvePortalApiCacheConfig,
 		cache.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
@@ -51,14 +54,18 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal
 	return nil, nil
 }
 
-func ResolvePortalAuthenticatorConfig(conf *config.Config) *authenticator.Config {
+func ResolvePortalApiAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.PortalApi.Authenticator
 }
 
-func ResolvePortalAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+func ResolvePortalApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
 	return &conf.PortalApi.Authorizator
 }
 
-func ResolvePortalCacheConfig(conf *config.Config) *cache.Config {
+func ResolvePortalApiCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.PortalApi.Cache
+}
+
+func ResolvePortalApiMetricsConfig(conf *config.Config) *metrics.Config {
+	return &conf.PortalApi.Metrics
 }

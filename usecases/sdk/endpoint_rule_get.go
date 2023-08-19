@@ -12,6 +12,8 @@ func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetReq) (*Endp
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 	key := CacheKeyEpr(ws.Id, req.AppId, req.EpId, req.Id)
 	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*EndpointRuleGetRes, error) {
+		uc.metrics.Count("cache_miss_total", 1)
+
 		app, err := uc.repos.EndpointRule().Get(ctx, ws.Id, req.AppId, req.EpId, req.Id)
 		if err != nil {
 			return nil, err

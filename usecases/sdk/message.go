@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
@@ -34,6 +35,7 @@ type message struct {
 	conf         *config.Config
 	logger       logging.Logger
 	cryptography cryptography.Cryptography
+	metrics      metrics.Metrics
 	timer        timer.Timer
 	cache        cache.Cache
 	publisher    streaming.Publisher

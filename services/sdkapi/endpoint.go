@@ -2,16 +2,13 @@ package sdkapi
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
-	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
 
-func UseEndpointRoutes(router *gin.RouterGroup, logger logging.Logger, validator validator.Validator, uc usecase.Sdk) {
-	router.POST("", UseEndpointCreate(logger, validator, uc))
-	router.PUT("/:ep_id", UseEndpointUpdate(logger, validator, uc))
-	router.DELETE("/:ep_id", UseEndpointDelete(logger, validator, uc))
+func UseEndpointRoutes(router *gin.RouterGroup, service *sdkapi) {
+	router.POST("", UseEndpointCreate(service.logger, service.validator, service.uc))
+	router.PUT("/:ep_id", UseEndpointUpdate(service.logger, service.validator, service.uc))
+	router.DELETE("/:ep_id", UseEndpointDelete(service.logger, service.validator, service.uc))
 
-	router.GET("", UseEndpointList(logger, validator, uc))
-	router.GET("/:ep_id", UseEndpointGet(logger, validator, uc))
+	router.GET("", UseEndpointList(service.logger, service.validator, service.uc))
+	router.GET("/:ep_id", UseEndpointGet(service.logger, service.validator, service.uc))
 }

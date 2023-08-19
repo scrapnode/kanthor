@@ -14,6 +14,8 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 	key := CacheKeyApp(ws.Id, req.AppId)
 	app, err := cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
+		uc.metrics.Count("cache_miss_total", 1)
+
 		return uc.repos.Application().Get(ctx, ws.Id, req.AppId)
 	})
 	if err != nil {

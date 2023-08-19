@@ -15,8 +15,15 @@ func (service *sdkapi) coordinate() error {
 		defer cancel()
 
 		if cmd == command.WorkspaceCredentialsCreated {
-			if err := service.authz.Refresh(ctx); err != nil {
+			req := &command.WorkspaceCredentialsCreatedReq{}
+			if err := req.Unmarshal(data); err != nil {
 				return err
+			}
+
+			for _, doc := range req.Docs {
+				if err := service.authz.Grant(doc.WorkspaceId, doc.Id, RoleOwner, PermissionOwner); err != nil {
+					return err
+				}
 			}
 		}
 

@@ -9,6 +9,7 @@ import (
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi/docs"
@@ -25,6 +26,7 @@ func New(
 	validator validator.Validator,
 	idempotency idempotency.Idempotency,
 	coordinator coordinator.Coordinator,
+	metrics metrics.Metrics,
 	authz authorizator.Authorizator,
 	uc usecase.Sdk,
 ) services.Service {
@@ -33,8 +35,9 @@ func New(
 		conf:        conf,
 		logger:      logger,
 		validator:   validator,
-		coordinator: coordinator,
 		idempotency: idempotency,
+		coordinator: coordinator,
+		metrics:     metrics,
 		authz:       authz,
 		uc:          uc,
 	}
@@ -46,6 +49,7 @@ type sdkapi struct {
 	validator   validator.Validator
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
+	metrics     metrics.Metrics
 	authz       authorizator.Authorizator
 	uc          usecase.Sdk
 
@@ -89,6 +93,8 @@ func (service *sdkapi) build() {
 	router.GET("/liveness", func(ginctx *gin.Context) {
 		ginctx.String(http.StatusOK, "live")
 	})
+	router.GET("/metrics", gin.WrapH(service.metrics.Handler()))
+
 	swagger := router.Group("/swagger")
 	{
 		swagger.GET("/*any", ginswagger.WrapHandler(
@@ -101,27 +107,16 @@ func (service *sdkapi) build() {
 	api := router.Group("/api")
 	{
 		api.Use(ginmw.UseStartup())
+		api.Use(ginmw.UseMetrics(service.metrics))
 		api.Use(ginmw.UseIdempotency(service.logger, service.idempotency))
 		api.Use(middlewares.UseAuth(service.validator, service.uc))
 		api.Use(middlewares.UseAuthz(service.authz))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
-		UseApplicationRoutes(
-			api.Group("/application"),
-			service.logger, service.validator, service.uc,
-		)
-		UseEndpointRoutes(
-			api.Group("/application/:app_id/endpoint"),
-			service.logger, service.validator, service.uc,
-		)
-		UseEndpointRuleRoutes(
-			api.Group("/application/:app_id/endpoint/:ep_id/rule"),
-			service.logger, service.validator, service.uc,
-		)
 
-		UseMessageRoutes(
-			api.Group("/application/:app_id/message"),
-			service.logger, service.validator, service.uc,
-		)
+		UseApplicationRoutes(api.Group("/application"), service)
+		UseEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
+		UseEndpointRuleRoutes(api.Group("/application/:app_id/endpoint/:ep_id/rule"), service)
+		UseMessageRoutes(api.Group("/application/:app_id/message"), service)
 	}
 
 	service.server = &http.Server{

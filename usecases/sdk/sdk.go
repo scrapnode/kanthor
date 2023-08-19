@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -26,6 +27,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	cryptography cryptography.Cryptography,
+	metrics metrics.Metrics,
 	timer timer.Timer,
 	cache cache.Cache,
 	publisher streaming.Publisher,
@@ -35,6 +37,7 @@ func New(
 		conf:         conf,
 		logger:       logger,
 		cryptography: cryptography,
+		metrics:      metrics,
 		timer:        timer,
 		cache:        cache,
 		publisher:    publisher,
@@ -46,6 +49,7 @@ type sdk struct {
 	conf         *config.Config
 	logger       logging.Logger
 	cryptography cryptography.Cryptography
+	metrics      metrics.Metrics
 	timer        timer.Timer
 	cache        cache.Cache
 	publisher    streaming.Publisher
@@ -103,6 +107,7 @@ func (uc *sdk) WorkspaceCredentials() WorkspaceCredentials {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
 			timer:        uc.timer,
 			cache:        uc.cache,
 			repos:        uc.repos,
@@ -120,6 +125,7 @@ func (uc *sdk) Application() Application {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
 			timer:        uc.timer,
 			cache:        uc.cache,
 			repos:        uc.repos,
@@ -137,6 +143,7 @@ func (uc *sdk) Endpoint() Endpoint {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
 			timer:        uc.timer,
 			cache:        uc.cache,
 			repos:        uc.repos,
@@ -154,6 +161,7 @@ func (uc *sdk) EndpointRule() EndpointRule {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
 			timer:        uc.timer,
 			cache:        uc.cache,
 			repos:        uc.repos,
@@ -171,6 +179,7 @@ func (uc *sdk) Message() Message {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
 			timer:        uc.timer,
 			cache:        uc.cache,
 			publisher:    uc.publisher,

@@ -16,6 +16,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
@@ -91,39 +92,44 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	authenticatorConfig := ResolvePortalAuthenticatorConfig(conf)
+	metricsConfig := ResolvePortalApiMetricsConfig(conf)
+	metricsMetrics, err := metrics.New(metricsConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	authenticatorConfig := ResolvePortalApiAuthenticatorConfig(conf)
 	authenticatorAuthenticator, err := authenticator.New(authenticatorConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	authorizatorConfig := ResolvePortalAuthorizatorConfig(conf)
+	authorizatorConfig := ResolvePortalApiAuthorizatorConfig(conf)
 	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	portal, err := InitializePortalUsecase(conf, logger)
+	portal, err := InitializePortalUsecase(conf, logger, metricsMetrics)
 	if err != nil {
 		return nil, err
 	}
-	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, authenticatorAuthenticator, authorizatorAuthorizator, portal)
+	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metricsMetrics, authenticatorAuthenticator, authorizatorAuthorizator, portal)
 	return service, nil
 }
 
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger) (portal.Portal, error) {
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (portal.Portal, error) {
 	cryptographyConfig := &conf.Cryptography
 	cryptographyCryptography, err := cryptography.New(cryptographyConfig)
 	if err != nil {
 		return nil, err
 	}
 	timerTimer := timer.New()
-	cacheConfig := ResolvePortalCacheConfig(conf)
+	cacheConfig := ResolvePortalApiCacheConfig(conf)
 	cacheCache, err := cache.New(cacheConfig, logger)
 	if err != nil {
 		return nil, err
 	}
 	databaseConfig := &conf.Database
 	repositories := repos.New(databaseConfig, logger, timerTimer)
-	portalPortal := portal.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, repositories)
+	portalPortal := portal.New(conf, logger, cryptographyCryptography, metrics2, timerTimer, cacheCache, repositories)
 	return portalPortal, nil
 }
 
@@ -176,39 +182,44 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	authorizatorConfig := ResolveSdkAuthorizatorConfig(conf)
+	metricsConfig := ResolveSdkApiMetricsConfig(conf)
+	metricsMetrics, err := metrics.New(metricsConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	authorizatorConfig := ResolveSdkApiAuthorizatorConfig(conf)
 	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	sdk, err := InitializeSdkUsecase(conf, logger)
+	sdk, err := InitializeSdkUsecase(conf, logger, metricsMetrics)
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, authorizatorAuthorizator, sdk)
+	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metricsMetrics, authorizatorAuthorizator, sdk)
 	return service, nil
 }
 
-func InitializeSdkUsecase(conf *config.Config, logger logging.Logger) (sdk.Sdk, error) {
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (sdk.Sdk, error) {
 	cryptographyConfig := &conf.Cryptography
 	cryptographyCryptography, err := cryptography.New(cryptographyConfig)
 	if err != nil {
 		return nil, err
 	}
 	timerTimer := timer.New()
-	cacheConfig := ResolveSdkCacheConfig(conf)
+	cacheConfig := ResolveSdkApiCacheConfig(conf)
 	cacheCache, err := cache.New(cacheConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	publisherConfig := ResolveSdkPublisherConfig(conf)
+	publisherConfig := ResolveSdkApiPublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
 	if err != nil {
 		return nil, err
 	}
 	databaseConfig := &conf.Database
 	repositories := repos3.New(databaseConfig, logger, timerTimer)
-	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, timerTimer, cacheCache, publisher, repositories)
+	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, metrics2, timerTimer, cacheCache, publisher, repositories)
 	return sdkSdk, nil
 }
 
@@ -260,16 +271,20 @@ func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *
 
 // wire_portal_api.go:
 
-func ResolvePortalAuthenticatorConfig(conf *config.Config) *authenticator.Config {
+func ResolvePortalApiAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.PortalApi.Authenticator
 }
 
-func ResolvePortalAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+func ResolvePortalApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
 	return &conf.PortalApi.Authorizator
 }
 
-func ResolvePortalCacheConfig(conf *config.Config) *cache.Config {
+func ResolvePortalApiCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.PortalApi.Cache
+}
+
+func ResolvePortalApiMetricsConfig(conf *config.Config) *metrics.Config {
+	return &conf.PortalApi.Metrics
 }
 
 // wire_scheduler.go:
@@ -288,16 +303,20 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 
 // wire_sdk_api.go:
 
-func ResolveSdkAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.SdkApi.Authorizator
-}
-
-func ResolveSdkCacheConfig(conf *config.Config) *cache.Config {
+func ResolveSdkApiCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.SdkApi.Cache
 }
 
-func ResolveSdkPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+func ResolveSdkApiPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 	return &conf.SdkApi.Publisher
+}
+
+func ResolveSdkApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
+	return &conf.SdkApi.Authorizator
+}
+
+func ResolveSdkApiMetricsConfig(conf *config.Config) *metrics.Config {
+	return &conf.SdkApi.Metrics
 }
 
 // wire_storage.go:

@@ -10,6 +10,7 @@ import (
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi/docs"
@@ -26,6 +27,7 @@ func New(
 	validator validator.Validator,
 	idempotency idempotency.Idempotency,
 	coordinator coordinator.Coordinator,
+	metrics metrics.Metrics,
 	auth authenticator.Authenticator,
 	authz authorizator.Authorizator,
 	uc usecase.Portal,
@@ -37,6 +39,7 @@ func New(
 		validator:   validator,
 		idempotency: idempotency,
 		coordinator: coordinator,
+		metrics:     metrics,
 		auth:        auth,
 		authz:       authz,
 		uc:          uc,
@@ -49,6 +52,7 @@ type portalapi struct {
 	validator   validator.Validator
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
+	metrics     metrics.Metrics
 	auth        authenticator.Authenticator
 	authz       authorizator.Authorizator
 	uc          usecase.Portal
@@ -93,6 +97,8 @@ func (service *portalapi) build() {
 	router.GET("/liveness", func(ginctx *gin.Context) {
 		ginctx.String(http.StatusOK, "live")
 	})
+	router.GET("/metrics", gin.WrapH(service.metrics.Handler()))
+
 	swagger := router.Group("/swagger")
 	{
 		swagger.GET("/*any", ginswagger.WrapHandler(
@@ -105,20 +111,14 @@ func (service *portalapi) build() {
 	api := router.Group("/api")
 	{
 		api.Use(ginmw.UseStartup())
+		api.Use(ginmw.UseMetrics(service.metrics))
 		api.Use(ginmw.UseIdempotency(service.logger, service.idempotency))
 		api.Use(middlewares.UseAuth(service.auth))
 		api.Use(middlewares.UseAuthz(service.validator, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
-		UseWorkspaceRoutes(
-			api.Group("/workspace"),
-			service.logger, service.validator, service.uc,
-		)
-
-		UseWorkspaceCredentialsRoutes(
-			api.Group("/workspace/me/credentials"),
-			service.logger, service.validator, service.uc, service.coordinator,
-		)
+		UseWorkspaceRoutes(api.Group("/workspace"), service)
+		UseWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials"), service)
 	}
 
 	service.server = &http.Server{

@@ -20,6 +20,12 @@ cache: &cache
   uri: redis://127.0.0.1:6379/0
   time_to_live: 3600000 # 1 hour
 
+logger:
+  pretty: true
+  level: debug
+  with:
+    environment: localhost
+
 bucket:
   layout: "20060102"
 
@@ -38,12 +44,6 @@ coordinator:
   nats:
     uri: nats://127.0.0.1:4222
     subject: kanthor.coordinator
-
-logger:
-  pretty: true
-  level: debug
-  with:
-    environment: localhost
 
 database:
   uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
@@ -75,6 +75,11 @@ sdkapi:
       policy_namespace: sdk
   publisher:
     connection: *streaming
+  metrics:
+    engine: prometheus
+    prometheus:
+      labels:
+        service: sdkapi
 
 portalapi:
   cache: *cache
@@ -94,6 +99,11 @@ portalapi:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
       policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
+  metrics:
+    engine: prometheus
+    prometheus:
+      labels:
+        service: portalapi
 
 scheduler:
   cache: *cache

@@ -30,8 +30,8 @@ type Config struct {
 	Coordinator coordinator.Config `json:"coordinator" yaml:"coordinator" mapstructure:"coordinator" validate:"required"`
 
 	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
-	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
 	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi" mapstructure:"sdkapi"`
+	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
 	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
 	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
 	Storage    Storage    `json:"storage" yaml:"storage" mapstructure:"storage"`
@@ -73,13 +73,13 @@ func (conf *Config) Validate(service string) error {
 			return err
 		}
 	}
-	if service == services.ALL || service == services.PORTAL_API {
-		if err := conf.PortalApi.Validate(); err != nil {
+	if service == services.ALL || service == services.SDK_API {
+		if err := conf.SdkApi.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.ALL || service == services.SDK_API {
-		if err := conf.SdkApi.Validate(); err != nil {
+	if service == services.ALL || service == services.PORTAL_API {
+		if err := conf.PortalApi.Validate(); err != nil {
 			return err
 		}
 	}

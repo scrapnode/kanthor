@@ -29,5 +29,9 @@ RUN chmod +x /app/entrypoint.sh
 EXPOSE 8080
 # portalapi
 EXPOSE 8180
+# scheduler
+EXPOSE 8280
+# dispatcher
+EXPOSE 8380
 
 ENTRYPOINT ["/app/entrypoint.sh"]
