@@ -19,9 +19,19 @@ func (conf *Config) Validate() error {
 type Retry struct {
 	Count       int `json:"count" yaml:"count" mapstructure:"count" validate:"required,number,gte=0"`
 	WaitTime    int `json:"wait_time" yaml:"wait_time" mapstructure:"wait_time" validate:"required,number,gte=0"`
-	WaitTimeMax int `json:"wait_time_max" yaml:"wait_time_max" mapstructure:"wait_time_max" validate:"required,number,gte=0"`
+	WaitTimeMax int `json:"wait_time_max" yaml:"wait_time_max" mapstructure:"wait_time_max" validate:"required,number,gte=0,gtfield=Count"`
 }
 
 func (conf *Retry) Validate() error {
 	return validator.New().Struct(conf)
+}
+
+var DefaultConfig = &Config{
+	EnableTrace: false,
+	Timeout:     3000,
+	Retry: Retry{
+		Count:       1,
+		WaitTime:    200,
+		WaitTimeMax: 5000,
+	},
 }

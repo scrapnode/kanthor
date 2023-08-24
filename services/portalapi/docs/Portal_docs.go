@@ -31,6 +31,35 @@ const docTemplatePortal = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/account/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "WsId": []
+                    }
+                ],
+                "tags": [
+                    "account"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/portalapi.AccountGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/workspace/me": {
             "get": {
                 "security": [
@@ -333,6 +362,56 @@ const docTemplatePortal = `{
         }
     },
     "definitions": {
+        "authenticator.Account": {
+            "type": "object",
+            "required": [
+                "sub"
+            ],
+            "properties": {
+                "aud": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "iss": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "sub": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.Workspace": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
         "entities.WorkspaceCredentials": {
             "type": "object",
             "properties": {
@@ -389,6 +468,20 @@ const docTemplatePortal = `{
                 },
                 "error": {
                     "type": "string"
+                }
+            }
+        },
+        "portalapi.AccountGetRes": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/authenticator.Account"
+                },
+                "workspace": {
+                    "$ref": "#/definitions/entities.Workspace"
+                },
+                "workspace_tier": {
+                    "$ref": "#/definitions/entities.WorkspaceTier"
                 }
             }
         },

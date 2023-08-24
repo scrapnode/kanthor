@@ -117,6 +117,7 @@ func (service *portalapi) build() {
 		api.Use(middlewares.UseAuthz(service.validator, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
+		UseAccountRoutes(api.Group("/account"))
 		UseWorkspaceRoutes(api.Group("/workspace"), service)
 		UseWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials"), service)
 	}

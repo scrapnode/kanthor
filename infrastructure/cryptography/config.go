@@ -1,9 +1,11 @@
 package cryptography
 
-import "github.com/go-playground/validator/v10"
+import (
+	"github.com/go-playground/validator/v10"
+)
 
 type Config struct {
-	KDF       KDFConfig       `json:"kdf" yaml:"kdf" mapstructure:"kdf" validate:"required"`
+	KDF       KDFConfig       `json:"kdf" yaml:"kdf" mapstructure:"kdf"`
 	Symmetric SymmetricConfig `json:"symmetric" yaml:"symmetric" mapstructure:"symmetric" validate:"required"`
 }
 

@@ -16,6 +16,8 @@ type SdkApi struct {
 	Publisher    streaming.PublisherConfig `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
 	Cache        cache.Config              `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 	Metrics      metrics.Config            `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
+
+	PortalConnection *SdkApiPortalConnection `json:"portal_connection" yaml:"portal_connection" mapstructure:"portal_connection" validate:"-"`
 }
 
 func (conf *SdkApi) Validate() error {
@@ -34,6 +36,24 @@ func (conf *SdkApi) Validate() error {
 	}
 	if err := conf.Metrics.Validate(); err != nil {
 		return fmt.Errorf("config.SdkApi.Metrics: %v", err)
+	}
+
+	if conf.PortalConnection != nil {
+		if err := conf.PortalConnection.Validate(); err != nil {
+			return fmt.Errorf("config.SdkApi.PortalConnection: %v", err)
+		}
+	}
+
+	return nil
+}
+
+type SdkApiPortalConnection struct {
+	Account string `json:"account" yaml:"account" mapstructure:"account" validate:"required,uri"`
+}
+
+func (conf *SdkApiPortalConnection) Validate() error {
+	if err := validator.New().Struct(conf); err != nil {
+		return fmt.Errorf("config.SdkApi: %v", err)
 	}
 
 	return nil

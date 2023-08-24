@@ -109,8 +109,7 @@ func (service *sdkapi) build() {
 		api.Use(ginmw.UseStartup())
 		api.Use(ginmw.UseMetrics(service.metrics))
 		api.Use(ginmw.UseIdempotency(service.logger, service.idempotency))
-		api.Use(middlewares.UseAuth(service.validator, service.uc))
-		api.Use(middlewares.UseAuthz(service.authz))
+		api.Use(middlewares.UseAuthx(service.conf.SdkApi, service.logger, service.validator, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
 		UseApplicationRoutes(api.Group("/application"), service)

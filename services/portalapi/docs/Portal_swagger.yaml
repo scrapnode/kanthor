@@ -2,6 +2,42 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  authenticator.Account:
+    properties:
+      aud:
+        type: string
+      email:
+        type: string
+      iss:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      picture:
+        type: string
+      sub:
+        type: string
+    required:
+    - sub
+    type: object
+  entities.Workspace:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      updated_at:
+        type: integer
+    type: object
   entities.WorkspaceCredentials:
     properties:
       created_at:
@@ -46,6 +82,15 @@ definitions:
         type: string
       error:
         type: string
+    type: object
+  portalapi.AccountGetRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
+      workspace:
+        $ref: '#/definitions/entities.Workspace'
+      workspace_tier:
+        $ref: '#/definitions/entities.WorkspaceTier'
     type: object
   portalapi.WorkspaceCredentialsCreateReq:
     properties:
@@ -192,6 +237,22 @@ info:
   title: Kanthor Portal API
   version: "1.0"
 paths:
+  /account/me:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portalapi.AccountGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - account
   /workspace/me:
     get:
       responses:

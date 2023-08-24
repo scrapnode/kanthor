@@ -63,6 +63,8 @@ migration:
 
 sdkapi:
   cache: *cache
+  portal_connection:
+    account: http://localhost:8180/api/account/me
   gateway:
     engine: httpx
     httpx:
@@ -138,11 +140,11 @@ dispatcher:
     filter_subject: kanthor.default.req.>
     max_deliver: 1
   sender:
-    timeout: 1500
+    timeout: 3000
     retry:
       count: 1
       wait_time: 100
-      wait_time_max: 2000
+      wait_time_max: 5000
   circuit_breaker:
     half_open_max_pass_through_requests: 5
     half_open_trigger_minimum_requests: 10

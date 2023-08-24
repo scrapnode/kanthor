@@ -36,21 +36,22 @@ func Rest(conf *Config, logger logging.Logger) Send {
 
 	return func(req *Request) (*Response, error) {
 		r := client.R().
-			SetHeaderMultiValues(req.Headers).
-			SetBody(req.Body)
-
+			SetHeaderMultiValues(req.Headers)
 		logger.Debugw("sending", "uri", req.Uri)
 		err := fmt.Errorf("sender.rest: unsupported method [%s]", req.Method)
 		var rp *resty.Response
 
+		if req.Method == http.MethodGet {
+			rp, err = r.Get(req.Uri)
+		}
 		if req.Method == http.MethodPost {
-			rp, err = r.Post(req.Uri)
+			rp, err = r.SetBody(req.Body).Post(req.Uri)
 		}
 		if req.Method == http.MethodPut {
-			rp, err = r.Put(req.Uri)
+			rp, err = r.SetBody(req.Body).Put(req.Uri)
 		}
 		if req.Method == http.MethodPatch {
-			rp, err = r.Patch(req.Uri)
+			rp, err = r.SetBody(req.Body).Patch(req.Uri)
 		}
 
 		if err != nil {
@@ -63,10 +64,7 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			Headers: rp.Header(),
 			// follow redirect url and got final url
 			// most time the response url is same as request url
-			Uri: rp.RawResponse.Request.URL.String(),
-			// @TODO: use SetDoNotParseResponse
-			// Do not forget to close the body, otherwise you might get into connection leaks, no connection reuse.
-			// Basically you have taken over the control of response parsing from `Resty`.
+			Uri:  rp.RawResponse.Request.URL.String(),
 			Body: rp.Body(),
 		}
 		logger.Debugw("sent", "uri", res.Uri, "trace_info", rp.Request.TraceInfo())
