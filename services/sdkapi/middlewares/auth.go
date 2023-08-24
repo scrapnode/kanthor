@@ -33,12 +33,12 @@ func basic(
 	ctx context.Context,
 	credentials string,
 ) (context.Context, error) {
-	user, hash, err := authenticator.ParseBasicCredentials(credentials)
+	user, pass, err := authenticator.ParseBasicCredentials(credentials)
 	if err != nil {
 		return ctx, err
 	}
 
-	req := &sdkuc.WorkspaceCredentialsAuthenticateReq{User: user, Hash: hash}
+	req := &sdkuc.WorkspaceCredentialsAuthenticateReq{User: user, Pass: pass}
 	if err := validator.Struct(req); err != nil {
 		return ctx, err
 	}

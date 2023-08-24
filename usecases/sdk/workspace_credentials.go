@@ -19,7 +19,7 @@ type WorkspaceCredentials interface {
 
 type WorkspaceCredentialsAuthenticateReq struct {
 	User string `validate:"required,startswith=wsc_"`
-	Hash string `validate:"required"`
+	Pass string `validate:"required"`
 }
 
 type WorkspaceCredentialsAuthenticateRes struct {

@@ -18,6 +18,10 @@ func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *Workspace
 		}
 		res.WorkspaceCredentials = credentials
 
+		if err := uc.cryptography.KDF().StringCompare(credentials.Hash, req.Pass); err != nil {
+			return nil, err
+		}
+
 		expired := credentials.ExpiredAt > 0 && credentials.ExpiredAt < uc.timer.Now().UnixMilli()
 		if expired {
 			expiredAt := time.UnixMilli(credentials.ExpiredAt).Format(time.RFC3339)
