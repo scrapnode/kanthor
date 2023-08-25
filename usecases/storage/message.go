@@ -5,6 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/storage/repos"
 )
@@ -22,8 +23,9 @@ type MessagePutRes struct {
 }
 
 type message struct {
-	conf   *config.Config
-	logger logging.Logger
-	timer  timer.Timer
-	repos  repos.Repositories
+	conf    *config.Config
+	logger  logging.Logger
+	timer   timer.Timer
+	metrics metrics.Metrics
+	repos   repos.Repositories
 }

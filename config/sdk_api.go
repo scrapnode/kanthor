@@ -26,7 +26,7 @@ func (conf *SdkApi) Validate() error {
 	}
 
 	if err := conf.Gateway.Validate(); err != nil {
-		return fmt.Errorf("config.SdkApi.GRPC: %v", err)
+		return fmt.Errorf("config.SdkApi.Gateway: %v", err)
 	}
 	if err := conf.Authorizator.Validate(); err != nil {
 		return fmt.Errorf("config.SdkApi.Enforcer: %v", err)

@@ -5,6 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -25,6 +26,7 @@ func New(
 	signature signature.Signature,
 	publisher streaming.Publisher,
 	cache cache.Cache,
+	metrics metrics.Metrics,
 	repos repos.Repositories,
 ) Scheduler {
 	return &scheduler{
@@ -34,6 +36,7 @@ func New(
 		signature: signature,
 		publisher: publisher,
 		cache:     cache,
+		metrics:   metrics,
 		repos:     repos,
 	}
 }
@@ -45,6 +48,7 @@ type scheduler struct {
 	signature signature.Signature
 	publisher streaming.Publisher
 	cache     cache.Cache
+	metrics   metrics.Metrics
 	repos     repos.Repositories
 
 	mu      sync.RWMutex
@@ -97,8 +101,9 @@ func (uc *scheduler) Request() Request {
 			timer:     uc.timer,
 			signature: uc.signature,
 			publisher: uc.publisher,
-			repos:     uc.repos,
 			cache:     uc.cache,
+			metrics:   uc.metrics,
+			repos:     uc.repos,
 		}
 	}
 	return uc.request

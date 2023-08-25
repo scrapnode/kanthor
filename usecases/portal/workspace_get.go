@@ -10,6 +10,8 @@ import (
 func (uc *workspace) Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error) {
 	key := utils.Key("portal", req.Id)
 	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*WorkspaceGetRes, error) {
+		uc.metrics.Count("cache_miss_total", 1)
+
 		ws, err := uc.repos.Workspace().Get(ctx, req.Id)
 		if err != nil {
 			return nil, err

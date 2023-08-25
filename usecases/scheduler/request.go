@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -33,6 +34,7 @@ type request struct {
 	timer     timer.Timer
 	signature signature.Signature
 	publisher streaming.Publisher
-	repos     repos.Repositories
 	cache     cache.Cache
+	metrics   metrics.Metrics
+	repos     repos.Repositories
 }

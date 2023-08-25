@@ -47,15 +47,20 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	if err != nil {
 		return nil, err
 	}
-	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger)
+	metricsConfig := ResolveDispatcherMetricsConfig(conf)
+	metricsMetrics, err := metrics.New(metricsConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := dispatcher.New(conf, logger, subscriber, dispatcherDispatcher)
+	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger, metricsMetrics)
+	if err != nil {
+		return nil, err
+	}
+	service := dispatcher.New(conf, logger, subscriber, metricsMetrics, dispatcherDispatcher)
 	return service, nil
 }
 
-func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger) (dispatcher2.Dispatcher, error) {
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (dispatcher2.Dispatcher, error) {
 	timerTimer := timer.New()
 	publisherConfig := ResolveDispatcherPublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
@@ -74,7 +79,7 @@ func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger) (di
 	if err != nil {
 		return nil, err
 	}
-	dispatcherDispatcher := dispatcher2.New(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker)
+	dispatcherDispatcher := dispatcher2.New(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, metrics2)
 	return dispatcherDispatcher, nil
 }
 
@@ -141,15 +146,20 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger)
+	metricsConfig := ResolveSchedulerMetricsConfig(conf)
+	metricsMetrics, err := metrics.New(metricsConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := scheduler.New(conf, logger, subscriber, schedulerScheduler)
+	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger, metricsMetrics)
+	if err != nil {
+		return nil, err
+	}
+	service := scheduler.New(conf, logger, subscriber, metricsMetrics, schedulerScheduler)
 	return service, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (scheduler2.Scheduler, error) {
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (scheduler2.Scheduler, error) {
 	timerTimer := timer.New()
 	signatureSignature := signature.New()
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
@@ -164,7 +174,7 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger) (sch
 	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger, timerTimer)
-	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, signatureSignature, publisher, cacheCache, repositories)
+	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, signatureSignature, publisher, cacheCache, metrics2, repositories)
 	return schedulerScheduler, nil
 }
 
@@ -231,19 +241,24 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	if err != nil {
 		return nil, err
 	}
-	storageStorage, err := InitializeStorageUsecase(conf, logger)
+	metricsConfig := ResolveStorageMetricsConfig(conf)
+	metricsMetrics, err := metrics.New(metricsConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := storage.New(conf, logger, subscriber, storageStorage)
+	storageStorage, err := InitializeStorageUsecase(conf, logger, metricsMetrics)
+	if err != nil {
+		return nil, err
+	}
+	service := storage.New(conf, logger, subscriber, metricsMetrics, storageStorage)
 	return service, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger) (storage2.Storage, error) {
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (storage2.Storage, error) {
 	datastoreConfig := &conf.Datastore
 	timerTimer := timer.New()
 	repositories := repos4.New(datastoreConfig, logger, timerTimer)
-	storageStorage := storage2.New(conf, logger, repositories)
+	storageStorage := storage2.New(conf, logger, metrics2, repositories)
 	return storageStorage, nil
 }
 
@@ -267,6 +282,10 @@ func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.
 
 func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *sender.Config {
 	return &conf.Dispatcher.Sender
+}
+
+func ResolveDispatcherMetricsConfig(conf *config.Config) *metrics.Config {
+	return &conf.Dispatcher.Metrics
 }
 
 // wire_portal_api.go:
@@ -301,6 +320,10 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.Scheduler.Cache
 }
 
+func ResolveSchedulerMetricsConfig(conf *config.Config) *metrics.Config {
+	return &conf.Scheduler.Metrics
+}
+
 // wire_sdk_api.go:
 
 func ResolveSdkApiCacheConfig(conf *config.Config) *cache.Config {
@@ -323,4 +346,8 @@ func ResolveSdkApiMetricsConfig(conf *config.Config) *metrics.Config {
 
 func ResolveStorageSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
 	return &conf.Storage.Subscriber
+}
+
+func ResolveStorageMetricsConfig(conf *config.Config) *metrics.Config {
+	return &conf.Storage.Metrics
 }

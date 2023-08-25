@@ -4,7 +4,7 @@ import (
 	prometheuscore "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"net/http"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics/exporter"
 	"sync"
 )
 
@@ -77,6 +77,11 @@ func (metrics *prometheus) Observe(name string, value float64) {
 	metrics.histograms[name] = histogram
 }
 
-func (metrics *prometheus) Handler() http.Handler {
-	return promhttp.HandlerFor(metrics.registry, promhttp.HandlerOpts{Registry: metrics.registry})
+func (metrics *prometheus) Exporter() exporter.Exporter {
+	return exporter.NewHttp(
+		&metrics.conf.Exporter,
+		metrics.logger.With("metrics.exporter", "http"),
+		promhttp.HandlerFor(metrics.registry, promhttp.HandlerOpts{Registry: metrics.registry}),
+	)
+
 }

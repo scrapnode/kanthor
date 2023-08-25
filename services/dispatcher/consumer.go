@@ -25,6 +25,7 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 				service.logger.Debugw("received event", "event_id", event.Id)
 				req, err := transformation.EventToRequest(event)
 				if err != nil {
+					service.metrics.Count("dispatcher_transform_error", 1)
 					service.logger.Error(err)
 					// next retry will be failed because of same error of transformation
 					return
@@ -33,12 +34,14 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 				request := &usecase.ForwarderSendReq{Request: *req}
 				response, err := service.uc.Forwarder().Send(ctx, request)
 				if err != nil {
+					service.metrics.Count("dispatcher_send_error", 1)
 					service.logger.Errorw(err.Error(), "event", event.String())
 					results[event.Id] = err
 					return
 				}
 				// custom handler for error
 				if response.Response.Error != "" {
+					service.metrics.Count("dispatcher_receive_error", 1)
 					service.logger.Errorw(response.Response.Error, "event", event.String())
 					results[event.Id] = err
 					return

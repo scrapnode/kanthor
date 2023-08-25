@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
@@ -26,6 +27,7 @@ func New(
 	dispatch sender.Send,
 	cache cache.Cache,
 	cb circuitbreaker.CircuitBreaker,
+	metrics metrics.Metrics,
 ) Dispatcher {
 	return &dispatcher{
 		conf:      conf,
@@ -35,6 +37,7 @@ func New(
 		dispatch:  dispatch,
 		cache:     cache,
 		cb:        cb,
+		metrics:   metrics,
 	}
 }
 
@@ -46,6 +49,7 @@ type dispatcher struct {
 	dispatch  sender.Send
 	cache     cache.Cache
 	cb        circuitbreaker.CircuitBreaker
+	metrics   metrics.Metrics
 
 	mu        sync.RWMutex
 	forwarder *forwarder
@@ -91,6 +95,7 @@ func (uc *dispatcher) Forwarder() Forwarder {
 			dispatch:  uc.dispatch,
 			cache:     uc.cache,
 			cb:        uc.cb,
+			metrics:   uc.metrics,
 		}
 	}
 	return uc.forwarder

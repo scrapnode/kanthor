@@ -21,9 +21,11 @@ type applicable struct {
 }
 
 func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*RequestArrangeRes, error) {
-	key := utils.Key("APP_WITH_ENDPOINTS", req.Message.AppId)
+	key := utils.Key("scheduler", req.Message.AppId)
 	// @TODO: find a way to notify attempt that message is not able to schedule
 	app, err := cache.Warp(uc.cache, ctx, key, time.Hour, func() (*applicable, error) {
+		uc.metrics.Count("cache_miss_total", 1)
+
 		endpoints, err := uc.repos.Endpoint().List(ctx, req.Message.AppId)
 		if err != nil {
 			return nil, err
@@ -54,7 +56,6 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 		SuccessKeys: []string{},
 	}
 
-	// @TODO: find a way to notify attempt that message is not able to schedule
 	requests := uc.generateRequestsFromEndpoints(req.Message, app)
 	if len(requests) == 0 {
 		uc.logger.Warnw("no request was generated", "app_id", req.Message.AppId, "message_id", req.Message.Id)

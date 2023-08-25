@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -22,12 +23,14 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 		dispatcher.New,
 		ResolveDispatcherSubscriberConfig,
 		streaming.NewSubscriber,
+		ResolveDispatcherMetricsConfig,
+		metrics.New,
 		InitializeDispatcherUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger) (dispatcheruc.Dispatcher, error) {
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, metrics metrics.Metrics) (dispatcheruc.Dispatcher, error) {
 	wire.Build(
 		dispatcheruc.New,
 		timer.New,
@@ -61,4 +64,8 @@ func ResolveDispatcherCircuitBreakerConfig(conf *config.Config) *circuitbreaker.
 
 func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *sender.Config {
 	return &conf.Dispatcher.Sender
+}
+
+func ResolveDispatcherMetricsConfig(conf *config.Config) *metrics.Config {
+	return &conf.Dispatcher.Metrics
 }

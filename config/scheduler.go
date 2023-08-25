@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
@@ -12,11 +13,12 @@ type Scheduler struct {
 	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
 	Cache      cache.Config               `json:"cache" yaml:"cache" validate:"required"`
 	Request    Request                    `json:"request" yaml:"request" mapstructure:"request" validate:"required"`
+	Metrics    metrics.Config             `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
 }
 
 func (conf *Scheduler) Validate() error {
 	if err := validator.New().Struct(conf); err != nil {
-		return fmt.Errorf("config.Dispatcher: %v", err)
+		return fmt.Errorf("config.Scheduler: %v", err)
 	}
 
 	if err := conf.Publisher.Validate(); err != nil {
@@ -29,7 +31,10 @@ func (conf *Scheduler) Validate() error {
 		return fmt.Errorf("config.Scheduler.Subscriber: %v", err)
 	}
 	if err := conf.Cache.Validate(); err != nil {
-		return fmt.Errorf("config.Dataplane.Cache: %v", err)
+		return fmt.Errorf("config.Scheduler.Cache: %v", err)
+	}
+	if err := conf.Metrics.Validate(); err != nil {
+		return fmt.Errorf("config.Scheduler.Metrics: %v", err)
 	}
 
 	return nil

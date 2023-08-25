@@ -19,7 +19,7 @@ func (conf *Config) Validate() error {
 
 	if conf.Engine == EngineHttpx {
 		if conf.Httpx == nil {
-			return errors.New("gateway.config.httpx: null value")
+			return errors.New("gateway.httpx: null value")
 		}
 		if err := conf.Httpx.Validate(); err != nil {
 			return err

@@ -3,7 +3,7 @@ package metrics
 import (
 	"fmt"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"net/http"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics/exporter"
 )
 
 func New(conf *Config, logger logging.Logger) (Metrics, error) {
@@ -20,5 +20,5 @@ func New(conf *Config, logger logging.Logger) (Metrics, error) {
 type Metrics interface {
 	Count(name string, value int64)
 	Observe(name string, value float64)
-	Handler() http.Handler
+	Exporter() exporter.Exporter
 }

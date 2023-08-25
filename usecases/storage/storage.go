@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/usecases/storage/repos"
 	"sync"
@@ -19,19 +20,22 @@ type Storage interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
+	metrics metrics.Metrics,
 	repos repos.Repositories,
 ) Storage {
 	return &storage{
-		conf:   conf,
-		logger: logger,
-		repos:  repos,
+		conf:    conf,
+		logger:  logger,
+		metrics: metrics,
+		repos:   repos,
 	}
 }
 
 type storage struct {
-	conf   *config.Config
-	logger logging.Logger
-	repos  repos.Repositories
+	conf    *config.Config
+	logger  logging.Logger
+	metrics metrics.Metrics
+	repos   repos.Repositories
 
 	mu       sync.RWMutex
 	message  *message
@@ -64,9 +68,10 @@ func (uc *storage) Message() Message {
 
 	if uc.message == nil {
 		uc.message = &message{
-			conf:   uc.conf,
-			logger: uc.logger,
-			repos:  uc.repos,
+			conf:    uc.conf,
+			logger:  uc.logger,
+			metrics: uc.metrics,
+			repos:   uc.repos,
 		}
 	}
 	return uc.message
@@ -78,9 +83,10 @@ func (uc *storage) Request() Request {
 
 	if uc.request == nil {
 		uc.request = &request{
-			conf:   uc.conf,
-			logger: uc.logger,
-			repos:  uc.repos,
+			conf:    uc.conf,
+			logger:  uc.logger,
+			metrics: uc.metrics,
+			repos:   uc.repos,
 		}
 	}
 	return uc.request
@@ -92,9 +98,10 @@ func (uc *storage) Response() Response {
 
 	if uc.response == nil {
 		uc.response = &response{
-			conf:   uc.conf,
-			logger: uc.logger,
-			repos:  uc.repos,
+			conf:    uc.conf,
+			logger:  uc.logger,
+			metrics: uc.metrics,
+			repos:   uc.repos,
 		}
 	}
 	return uc.response

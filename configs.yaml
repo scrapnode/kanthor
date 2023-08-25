@@ -78,6 +78,8 @@ sdkapi:
   publisher:
     connection: *streaming
   metrics:
+    exporter:
+      addr: :9080
     engine: prometheus
     prometheus:
       labels:
@@ -102,6 +104,8 @@ portalapi:
       policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
   metrics:
+    exporter:
+      addr: :9180
     engine: prometheus
     prometheus:
       labels:
@@ -124,6 +128,13 @@ scheduler:
   request:
     arrange:
       concurrency: 100
+  metrics:
+    exporter:
+      addr: :9280
+    engine: prometheus
+    prometheus:
+      labels:
+        service: scheduler
 
 dispatcher:
   cache: *cache
@@ -151,6 +162,13 @@ dispatcher:
     half_open_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
     open_state_duration: 300000
+  metrics:
+    exporter:
+      addr: :9380
+    engine: prometheus
+    prometheus:
+      labels:
+        service: dispatcher
 
 storage:
   subscriber:
@@ -163,3 +181,10 @@ storage:
     name: storage_default
     filter_subject: kanthor.default.>
     max_deliver: 1
+  metrics:
+    exporter:
+      addr: :9480
+    engine: prometheus
+    prometheus:
+      labels:
+        service: storage

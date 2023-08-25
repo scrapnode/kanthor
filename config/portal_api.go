@@ -24,7 +24,7 @@ func (conf *PortalApi) Validate() error {
 	}
 
 	if err := conf.Gateway.Validate(); err != nil {
-		return fmt.Errorf("config.PortalApi.GRPC: %v", err)
+		return fmt.Errorf("config.PortalApi.Gateway: %v", err)
 	}
 	if err := conf.Authenticator.Validate(); err != nil {
 		return fmt.Errorf("config.PortalApi.Authenticator: %v", err)

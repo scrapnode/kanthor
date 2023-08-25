@@ -4,15 +4,19 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics/exporter"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 	usecase "github.com/scrapnode/kanthor/usecases/storage"
+	"net/http"
 )
 
 func New(
 	conf *config.Config,
 	logger logging.Logger,
 	subscriber streaming.Subscriber,
+	metrics metrics.Metrics,
 	uc usecase.Storage,
 ) services.Service {
 	logger = logger.With("service", "storage")
@@ -20,6 +24,8 @@ func New(
 		conf:       conf,
 		logger:     logger,
 		subscriber: subscriber,
+		metrics:    metrics,
+		exporter:   metrics.Exporter(),
 		uc:         uc,
 	}
 }
@@ -28,10 +34,16 @@ type storage struct {
 	conf       *config.Config
 	logger     logging.Logger
 	subscriber streaming.Subscriber
+	metrics    metrics.Metrics
+	exporter   exporter.Exporter
 	uc         usecase.Storage
 }
 
 func (service *storage) Start(ctx context.Context) error {
+	if err := service.exporter.Start(ctx); err != nil {
+		return err
+	}
+
 	if err := service.uc.Connect(ctx); err != nil {
 		return err
 	}
@@ -55,11 +67,20 @@ func (service *storage) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
+	if err := service.exporter.Stop(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (service *storage) Run(ctx context.Context) error {
-	service.logger.Info("running")
+	go func() {
+		if err := service.exporter.Run(ctx); err != nil && err != http.ErrServerClosed {
+			service.logger.Error(err)
+		}
+	}()
 
+	service.logger.Info("running")
 	return service.subscriber.Sub(ctx, Consumer(service))
 }

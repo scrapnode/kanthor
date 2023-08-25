@@ -2,6 +2,7 @@ package portalapi
 
 import (
 	"context"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
@@ -11,6 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics/exporter"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi/docs"
@@ -40,6 +42,7 @@ func New(
 		idempotency: idempotency,
 		coordinator: coordinator,
 		metrics:     metrics,
+		exporter:    metrics.Exporter(),
 		auth:        auth,
 		authz:       authz,
 		uc:          uc,
@@ -53,6 +56,7 @@ type portalapi struct {
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
 	metrics     metrics.Metrics
+	exporter    exporter.Exporter
 	auth        authenticator.Authenticator
 	authz       authorizator.Authorizator
 	uc          usecase.Portal
@@ -61,6 +65,10 @@ type portalapi struct {
 }
 
 func (service *portalapi) Start(ctx context.Context) error {
+	if err := service.exporter.Start(ctx); err != nil {
+		return err
+	}
+
 	if err := service.authz.Connect(ctx); err != nil {
 		return err
 	}
@@ -77,15 +85,19 @@ func (service *portalapi) Start(ctx context.Context) error {
 		return err
 	}
 
-	service.build()
+	service.server = &http.Server{
+		Addr:    service.conf.PortalApi.Gateway.Httpx.Addr,
+		Handler: service.router(),
+	}
 
 	service.logger.Info("started")
 	return nil
 }
 
-func (service *portalapi) build() {
+func (service *portalapi) router() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
+	router.Use(cors.Default())
 	// system routes
 	router.GET("/", func(ginctx *gin.Context) {
 		ginctx.JSON(http.StatusOK, gin.H{"version": service.conf.Version})
@@ -97,8 +109,6 @@ func (service *portalapi) build() {
 	router.GET("/liveness", func(ginctx *gin.Context) {
 		ginctx.String(http.StatusOK, "live")
 	})
-	router.GET("/metrics", gin.WrapH(service.metrics.Handler()))
-
 	swagger := router.Group("/swagger")
 	{
 		swagger.GET("/*any", ginswagger.WrapHandler(
@@ -122,10 +132,7 @@ func (service *portalapi) build() {
 		UseWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials"), service)
 	}
 
-	service.server = &http.Server{
-		Addr:    service.conf.PortalApi.Gateway.Httpx.Addr,
-		Handler: router,
-	}
+	return router
 }
 
 func (service *portalapi) Stop(ctx context.Context) error {
@@ -151,6 +158,10 @@ func (service *portalapi) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
+	if err := service.exporter.Stop(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -159,10 +170,14 @@ func (service *portalapi) Run(ctx context.Context) error {
 		return err
 	}
 
-	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Httpx.Addr)
+	go func() {
+		if err := service.exporter.Run(ctx); err != nil && err != http.ErrServerClosed {
+			service.logger.Error(err)
+		}
+	}()
 
-	err := service.server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
+	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Httpx.Addr)
+	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}
 
