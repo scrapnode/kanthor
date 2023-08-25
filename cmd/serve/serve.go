@@ -51,6 +51,8 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 					stop()
 					return
 				}
+
+				stop()
 			}()
 
 			// listen for the interrupt signal.
@@ -65,6 +67,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				if err := service.Stop(ctx); err != nil {
 					logger.Error(err)
 				}
+				cancel()
 			}()
 			<-ctx.Done()
 
