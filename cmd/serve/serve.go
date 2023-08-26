@@ -57,8 +57,6 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 			// listen for the interrupt signal.
 			<-ctx.Done()
-			// restore default behavior on the interrupt signal and notify user of shutdown.
-			stop()
 
 			// wait a little to stop our service
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

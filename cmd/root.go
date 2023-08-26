@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/scrapnode/kanthor/cmd/check"
 	"github.com/scrapnode/kanthor/cmd/do"
 	"github.com/scrapnode/kanthor/cmd/migrate"
 	"github.com/scrapnode/kanthor/cmd/serve"
@@ -19,6 +20,7 @@ func New(provider configuration.Provider, conf *config.Config, logger logging.Lo
 	command.AddCommand(show.New(provider, conf))
 	command.AddCommand(migrate.New(conf, logger))
 	command.AddCommand(serve.New(conf, logger))
+	command.AddCommand(check.New())
 
 	command.PersistentFlags().BoolP("verbose", "", false, "--verbose: show more information")
 	return command

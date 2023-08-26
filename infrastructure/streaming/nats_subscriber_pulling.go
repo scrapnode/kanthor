@@ -110,7 +110,7 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 
 	for {
 		if !subscriber.subscription.IsValid() {
-			subscriber.logger.Warnw("subscription is not more valid")
+			subscriber.logger.Warnw("subscription is no more valid")
 			return nil
 		}
 

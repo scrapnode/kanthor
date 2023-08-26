@@ -7,6 +7,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics/exporter"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/healthcheck"
+	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/services"
 	usecase "github.com/scrapnode/kanthor/usecases/scheduler"
 	"net/http"
@@ -27,6 +29,8 @@ func New(
 		metrics:    metrics,
 		exporter:   metrics.Exporter(),
 		uc:         uc,
+
+		healthcheck: background.NewServer(healthcheck.DefaultConfig("kanthor.scheduler")),
 	}
 }
 
@@ -37,6 +41,8 @@ type scheduler struct {
 	metrics    metrics.Metrics
 	exporter   exporter.Exporter
 	uc         usecase.Scheduler
+
+	healthcheck healthcheck.Server
 }
 
 func (service *scheduler) Start(ctx context.Context) error {
@@ -75,6 +81,19 @@ func (service *scheduler) Stop(ctx context.Context) error {
 }
 
 func (service *scheduler) Run(ctx context.Context) error {
+	if err := service.readiness(); err != nil {
+		return err
+	}
+
+	go func() {
+		err := service.healthcheck.Liveness(func() error {
+			return nil
+		})
+		if err != nil {
+			service.logger.Error(err)
+		}
+	}()
+
 	go func() {
 		if err := service.exporter.Run(ctx); err != nil && err != http.ErrServerClosed {
 			service.logger.Error(err)
@@ -83,4 +102,11 @@ func (service *scheduler) Run(ctx context.Context) error {
 
 	service.logger.Info("running")
 	return service.subscriber.Sub(ctx, Consumer(service))
+}
+
+func (service *scheduler) readiness() error {
+	return service.healthcheck.Readiness(func() error {
+		// @TODO: add starting up checking here
+		return nil
+	})
 }

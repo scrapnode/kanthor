@@ -132,7 +132,13 @@ func (subscriber *NatsSubscriberPushing) Sub(ctx context.Context, handler SubHan
 		"subscription_push_delivery_subject", subscriber.conf.Push.DeliverSubject,
 		"subscription_push_delivery_group", subscriber.conf.Push.DeliverGroup,
 	)
-	return nil
+
+	for {
+		if !subscriber.subscription.IsValid() {
+			subscriber.logger.Warnw("subscription is no more valid")
+			return err
+		}
+	}
 }
 
 func (subscriber *NatsSubscriberPushing) consumer(ctx context.Context) (*nats.ConsumerInfo, error) {
