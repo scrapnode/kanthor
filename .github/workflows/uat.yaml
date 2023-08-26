@@ -12,17 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: setup
-        uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: ">=1.21"
 
-      - name: linter
+      - name: Linter
         run: |
           # only vet on our packages
           go list ./... | grep kanthor | go vet -v
 
-      - name: test
+      - name: Test
         run: |
           bash scripts/ci_test.sh
 
@@ -60,14 +59,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: login to Docker Hub
-        uses: docker/login-action@v2
+      - uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: push to Docker Hub
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      - uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
           push: true
@@ -80,17 +77,15 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+      - uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: login to AWS ECR
-        uses: aws-actions/amazon-ecr-login@v1
+      - uses: aws-actions/amazon-ecr-login@v1
 
-      - name: push to AWS ECR
+      - name: Push to AWS ECR
         run: |
           docker build . --tag ${{ secrets.ECR_USERNAME }}/kanthor:${{ needs.prepare.outputs.BUILD_ID }}
           docker push ${{ secrets.ECR_USERNAME }}/kanthor:${{ needs.prepare.outputs.BUILD_ID }}
