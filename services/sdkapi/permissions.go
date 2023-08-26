@@ -7,23 +7,23 @@ var (
 )
 
 var PermissionOwner = []authorizator.Permission{
-	{"/api/application", "POST"},
-	{"/api/application/:app_id", "PUT"},
-	{"/api/application/:app_id", "DELETE"},
-	{"/api/application", "GET"},
-	{"/api/application/:app_id", "GET"},
+	{Object: "/api/application", Action: "POST"},
+	{Object: "/api/application/:app_id", Action: "PUT"},
+	{Object: "/api/application/:app_id", Action: "DELETE"},
+	{Object: "/api/application", Action: "GET"},
+	{Object: "/api/application/:app_id", Action: "GET"},
 
-	{"/api/application/:app_id/endpoint", "POST"},
-	{"/api/application/:app_id/endpoint/:ep_id", "PUT"},
-	{"/api/application/:app_id/endpoint/:ep_id", "DELETE"},
-	{"/api/application/:app_id/endpoint", "GET"},
-	{"/api/application/:app_id/endpoint/:ep_id", "GET"},
+	{Object: "/api/application/:app_id/endpoint", Action: "POST"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id", Action: "PUT"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id", Action: "DELETE"},
+	{Object: "/api/application/:app_id/endpoint", Action: "GET"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id", Action: "GET"},
 
-	{"/api/application/:app_id/endpoint/:ep_id/rule", "POST"},
-	{"/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", "PUT"},
-	{"/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", "DELETE"},
-	{"/api/application/:app_id/endpoint/:ep_id/rule", "GET"},
-	{"/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", "GET"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id/rule", Action: "POST"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", Action: "PUT"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", Action: "DELETE"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id/rule", Action: "GET"},
+	{Object: "/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", Action: "GET"},
 
-	{"/api/application/:app_id/message", "PUT"},
+	{Object: "/api/application/:app_id/message", Action: "PUT"},
 }

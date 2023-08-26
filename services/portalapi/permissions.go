@@ -7,12 +7,12 @@ var (
 )
 
 var PermissionOwner = []authorizator.Permission{
-	{"/api/workspace/me", "GET"},
-	{"/api/workspace/me", "PUT"},
+	{Object: "/api/workspace/me", Action: "GET"},
+	{Object: "/api/workspace/me", Action: "PUT"},
 
-	{"/api/workspace/me/credentials", "POST"},
-	{"/api/workspace/me/credentials", "GET"},
-	{"/api/workspace/me/credentials/:wsc_id", "PUT"},
-	{"/api/workspace/me/credentials/:wsc_id", "GET"},
-	{"/api/workspace/me/credentials/:wsc_id/expiration", "PUT"},
+	{Object: "/api/workspace/me/credentials", Action: "POST"},
+	{Object: "/api/workspace/me/credentials", Action: "GET"},
+	{Object: "/api/workspace/me/credentials/:wsc_id", Action: "PUT"},
+	{Object: "/api/workspace/me/credentials/:wsc_id", Action: "GET"},
+	{Object: "/api/workspace/me/credentials/:wsc_id/expiration", Action: "PUT"},
 }

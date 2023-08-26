@@ -19,7 +19,8 @@ jobs:
 
       - name: linter
         run: |
-          go vet .
+          # only vet on our packages
+          go list ./... | grep kanthor | go vet -v
 
       - name: test
         run: |

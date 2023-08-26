@@ -26,9 +26,9 @@ COPY --from=build /app/docker/entrypoint.sh ./entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # sdkapi
-EXPOSE 9080, 8080
+EXPOSE 9080 8080
 # portalapi
-EXPOSE 9180, 8180
+EXPOSE 9180 8180
 # scheduler
 EXPOSE 9280
 # dispatcher
