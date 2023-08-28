@@ -68,7 +68,7 @@ sdkapi:
   gateway:
     engine: httpx
     httpx:
-      addr: :8080
+      addr: :8180
   authorizator:
     engine: casbin
     casbin:
@@ -79,7 +79,7 @@ sdkapi:
     connection: *streaming
   metrics:
     exporter:
-      addr: :9080
+      addr: :9180
     engine: prometheus
     prometheus:
       labels:
@@ -90,7 +90,7 @@ portalapi:
   gateway:
     engine: httpx
     httpx:
-      addr: :8180
+      addr: :9280
   authenticator:
     engine: ask
     ask:
@@ -105,7 +105,7 @@ portalapi:
       policy_namespace: portal
   metrics:
     exporter:
-      addr: :9180
+      addr: :9280
     engine: prometheus
     prometheus:
       labels:
@@ -130,7 +130,7 @@ scheduler:
       concurrency: 100
   metrics:
     exporter:
-      addr: :9280
+      addr: :9380
     engine: prometheus
     prometheus:
       labels:
@@ -164,7 +164,7 @@ dispatcher:
     open_state_duration: 300000
   metrics:
     exporter:
-      addr: :9380
+      addr: :9480
     engine: prometheus
     prometheus:
       labels:
@@ -183,7 +183,7 @@ storage:
     max_deliver: 1
   metrics:
     exporter:
-      addr: :9480
+      addr: :9580
     engine: prometheus
     prometheus:
       labels:

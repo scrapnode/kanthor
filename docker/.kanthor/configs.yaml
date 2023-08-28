@@ -20,6 +20,12 @@ cache: &cache
   uri: redis://cache:6379/0
   time_to_live: 3600000 # 1 hour
 
+logger:
+  pretty: true
+  level: debug
+  with:
+    environment: localhost
+
 bucket:
   layout: "20060102"
 
@@ -33,11 +39,11 @@ idempotency:
   uri: redis://cache:6379/0
   time_to_live: 86400000 # 1 day
 
-logger:
-  pretty: true
-  level: debug
-  with:
-    environment: localhost
+coordinator:
+  engine: nats
+  nats:
+    uri: nats://streaming:4222
+    subject: kanthor.coordinator
 
 database:
   uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.database
@@ -57,27 +63,34 @@ migration:
 
 sdkapi:
   cache: *cache
+  portal_connection:
+    account: http://localhost:8180/api/account/me
   gateway:
     engine: httpx
     httpx:
-      addr: :8080
+      addr: :8180
   authorizator:
     engine: casbin
     casbin:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
       policy_uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.services.sdk
       policy_namespace: sdk
-      watcher:
-        uri: nats://streaming:4222
   publisher:
     connection: *streaming
+  metrics:
+    exporter:
+      addr: :9180
+    engine: prometheus
+    prometheus:
+      labels:
+        service: sdkapi
 
 portalapi:
   cache: *cache
   gateway:
     engine: httpx
     httpx:
-      addr: :8180
+      addr: :9280
   authenticator:
     engine: ask
     ask:
@@ -90,8 +103,13 @@ portalapi:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
       policy_uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
-      watcher:
-        uri: nats://streaming:4222
+  metrics:
+    exporter:
+      addr: :9280
+    engine: prometheus
+    prometheus:
+      labels:
+        service: portalapi
 
 scheduler:
   cache: *cache
@@ -110,6 +128,13 @@ scheduler:
   request:
     arrange:
       concurrency: 100
+  metrics:
+    exporter:
+      addr: :9380
+    engine: prometheus
+    prometheus:
+      labels:
+        service: scheduler
 
 dispatcher:
   cache: *cache
@@ -126,17 +151,24 @@ dispatcher:
     filter_subject: kanthor.default.req.>
     max_deliver: 1
   sender:
-    timeout: 1500
+    timeout: 3000
     retry:
       count: 1
       wait_time: 100
-      wait_time_max: 2000
+      wait_time_max: 5000
   circuit_breaker:
     half_open_max_pass_through_requests: 5
     half_open_trigger_minimum_requests: 10
     half_open_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
     open_state_duration: 300000
+  metrics:
+    exporter:
+      addr: :9480
+    engine: prometheus
+    prometheus:
+      labels:
+        service: dispatcher
 
 storage:
   subscriber:
@@ -149,3 +181,10 @@ storage:
     name: storage_default
     filter_subject: kanthor.default.>
     max_deliver: 1
+  metrics:
+    exporter:
+      addr: :9580
+    engine: prometheus
+    prometheus:
+      labels:
+        service: storage
