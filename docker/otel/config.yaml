@@ -8,12 +8,6 @@ processors:
   batch:
     send_batch_size: 300
     timeout: 15s
-  memory_limiter:
-    # 80% of maximum memory up to 2G
-    limit_mib: 1024
-    # 25% of limit up to 2G
-    spike_limit_mib: 512
-    check_interval: 5s
 
 exporters:
   # Data sources: traces, metrics, logs
