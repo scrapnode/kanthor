@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
@@ -15,7 +15,7 @@ type SdkApi struct {
 	Authorizator authorizator.Config       `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator" validate:"required"`
 	Publisher    streaming.PublisherConfig `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
 	Cache        cache.Config              `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
-	Metrics      metrics.Config            `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
+	Metrics      metric.Config             `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
 
 	PortalConnection *SdkApiPortalConnection `json:"portal_connection" yaml:"portal_connection" mapstructure:"portal_connection" validate:"-"`
 }

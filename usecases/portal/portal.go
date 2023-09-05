@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
@@ -23,7 +23,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	cryptography cryptography.Cryptography,
-	metrics metrics.Metrics,
+	metrics metric.Metrics,
 	timer timer.Timer,
 	cache cache.Cache,
 	repos repos.Repositories,
@@ -43,7 +43,7 @@ type portal struct {
 	conf         *config.Config
 	logger       logging.Logger
 	cryptography cryptography.Cryptography
-	metrics      metrics.Metrics
+	metrics      metric.Metrics
 	timer        timer.Timer
 	cache        cache.Cache
 	repos        repos.Repositories
@@ -54,6 +54,9 @@ type portal struct {
 }
 
 func (uc *portal) Connect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	if err := uc.cache.Connect(ctx); err != nil {
 		return err
 	}
@@ -67,6 +70,9 @@ func (uc *portal) Connect(ctx context.Context) error {
 }
 
 func (uc *portal) Disconnect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	uc.logger.Info("disconnected")
 
 	if err := uc.repos.Disconnect(ctx); err != nil {

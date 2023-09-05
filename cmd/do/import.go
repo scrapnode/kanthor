@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services/command"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
@@ -49,7 +49,7 @@ func NewImport(conf *config.Config, logger logging.Logger) *cobra.Command {
 			ctx, cancel := context.WithTimeout(context.TODO(), time.Minute*2)
 			defer cancel()
 
-			meter, err := metrics.NewNoop(nil, logger)
+			meter, err := metric.NewNoop(nil, logger)
 			if err != nil {
 				return err
 			}

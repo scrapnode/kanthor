@@ -5,7 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 )
@@ -16,7 +16,7 @@ type Dispatcher struct {
 	Sender         sender.Config              `json:"sender" yaml:"sender" mapstructure:"sender" validate:"required"`
 	Cache          cache.Config               `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
 	CircuitBreaker circuitbreaker.Config      `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker" validate:"required"`
-	Metrics        metrics.Config             `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
+	Metrics        metric.Config              `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
 }
 
 func (conf *Dispatcher) Validate() error {

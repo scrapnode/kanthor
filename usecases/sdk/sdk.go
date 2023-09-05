@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -27,7 +27,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	cryptography cryptography.Cryptography,
-	metrics metrics.Metrics,
+	metrics metric.Metrics,
 	timer timer.Timer,
 	cache cache.Cache,
 	publisher streaming.Publisher,
@@ -49,7 +49,7 @@ type sdk struct {
 	conf         *config.Config
 	logger       logging.Logger
 	cryptography cryptography.Cryptography
-	metrics      metrics.Metrics
+	metrics      metric.Metrics
 	timer        timer.Timer
 	cache        cache.Cache
 	publisher    streaming.Publisher
@@ -64,6 +64,9 @@ type sdk struct {
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	if err := uc.cache.Connect(ctx); err != nil {
 		return err
 	}
@@ -81,6 +84,9 @@ func (uc *sdk) Connect(ctx context.Context) error {
 }
 
 func (uc *sdk) Disconnect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	uc.logger.Info("disconnected")
 
 	if err := uc.publisher.Disconnect(ctx); err != nil {

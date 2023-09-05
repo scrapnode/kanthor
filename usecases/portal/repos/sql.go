@@ -31,6 +31,9 @@ type sql struct {
 }
 
 func (repo *sql) Connect(ctx context.Context) error {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	if err := repo.db.Connect(ctx); err != nil {
 		return err
 	}
@@ -41,6 +44,9 @@ func (repo *sql) Connect(ctx context.Context) error {
 }
 
 func (repo *sql) Disconnect(ctx context.Context) error {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	repo.logger.Info("disconnected")
 
 	if err := repo.db.Disconnect(ctx); err != nil {

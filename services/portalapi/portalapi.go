@@ -11,8 +11,7 @@ import (
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics/exporter"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi/docs"
@@ -29,7 +28,7 @@ func New(
 	validator validator.Validator,
 	idempotency idempotency.Idempotency,
 	coordinator coordinator.Coordinator,
-	metrics metrics.Metrics,
+	metrics metric.Metrics,
 	auth authenticator.Authenticator,
 	authz authorizator.Authorizator,
 	uc usecase.Portal,
@@ -42,7 +41,6 @@ func New(
 		idempotency: idempotency,
 		coordinator: coordinator,
 		metrics:     metrics,
-		exporter:    metrics.Exporter(),
 		auth:        auth,
 		authz:       authz,
 		uc:          uc,
@@ -55,8 +53,7 @@ type portalapi struct {
 	validator   validator.Validator
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
-	metrics     metrics.Metrics
-	exporter    exporter.Exporter
+	metrics     metric.Metrics
 	auth        authenticator.Authenticator
 	authz       authorizator.Authorizator
 	uc          usecase.Portal
@@ -65,15 +62,15 @@ type portalapi struct {
 }
 
 func (service *portalapi) Start(ctx context.Context) error {
-	if err := service.exporter.Start(ctx); err != nil {
-		return err
-	}
-
-	if err := service.authz.Connect(ctx); err != nil {
+	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
 
 	if err := service.uc.Connect(ctx); err != nil {
+		return err
+	}
+
+	if err := service.authz.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -150,16 +147,16 @@ func (service *portalapi) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
-	if err := service.uc.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
-	}
-
 	if err := service.authz.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 	}
 
-	if err := service.exporter.Stop(ctx); err != nil {
-		return err
+	if err := service.uc.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
+	if err := service.metrics.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
 	}
 
 	return nil
@@ -169,12 +166,6 @@ func (service *portalapi) Run(ctx context.Context) error {
 	if err := service.coordinate(); err != nil {
 		return err
 	}
-
-	go func() {
-		if err := service.exporter.Run(ctx); err != nil && err != http.ErrServerClosed {
-			service.logger.Error(err)
-		}
-	}()
 
 	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Httpx.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

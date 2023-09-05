@@ -516,6 +516,7 @@ definitions:
           type: string
         type: object
       type:
+        example: testing.debug
         type: string
     required:
     - body

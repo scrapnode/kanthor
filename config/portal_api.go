@@ -7,7 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 )
 
 type PortalApi struct {
@@ -15,7 +15,7 @@ type PortalApi struct {
 	Authenticator authenticator.Config `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator" validate:"required"`
 	Authorizator  authorizator.Config  `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator" validate:"required"`
 	Cache         cache.Config         `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
-	Metrics       metrics.Config       `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
+	Metrics       metric.Config        `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
 }
 
 func (conf *PortalApi) Validate() error {

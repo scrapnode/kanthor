@@ -1415,7 +1415,8 @@
                     }
                 },
                 "type": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "testing.debug"
                 }
             }
         },

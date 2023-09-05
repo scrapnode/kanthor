@@ -5,7 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -26,7 +26,7 @@ func New(
 	signature signature.Signature,
 	publisher streaming.Publisher,
 	cache cache.Cache,
-	metrics metrics.Metrics,
+	metrics metric.Metrics,
 	repos repos.Repositories,
 ) Scheduler {
 	return &scheduler{
@@ -48,7 +48,7 @@ type scheduler struct {
 	signature signature.Signature
 	publisher streaming.Publisher
 	cache     cache.Cache
-	metrics   metrics.Metrics
+	metrics   metric.Metrics
 	repos     repos.Repositories
 
 	mu      sync.RWMutex
@@ -56,6 +56,9 @@ type scheduler struct {
 }
 
 func (uc *scheduler) Connect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	if err := uc.cache.Connect(ctx); err != nil {
 		return err
 	}
@@ -73,6 +76,9 @@ func (uc *scheduler) Connect(ctx context.Context) error {
 }
 
 func (uc *scheduler) Disconnect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	uc.logger.Info("disconnected")
 
 	if err := uc.publisher.Disconnect(ctx); err != nil {

@@ -7,7 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -22,13 +22,13 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 		ResolveStorageSubscriberConfig,
 		streaming.NewSubscriber,
 		ResolveStorageMetricsConfig,
-		metrics.New,
+		metric.New,
 		InitializeStorageUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metrics metrics.Metrics) (storageuc.Storage, error) {
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (storageuc.Storage, error) {
 	wire.Build(
 		storageuc.New,
 		wire.FieldsOf(new(*config.Config), "Datastore"),
@@ -42,6 +42,6 @@ func ResolveStorageSubscriberConfig(conf *config.Config) *streaming.SubscriberCo
 	return &conf.Storage.Subscriber
 }
 
-func ResolveStorageMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolveStorageMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.Storage.Metrics
 }

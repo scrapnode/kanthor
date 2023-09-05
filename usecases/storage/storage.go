@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/usecases/storage/repos"
 	"sync"
@@ -20,7 +20,7 @@ type Storage interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	metrics metrics.Metrics,
+	metrics metric.Metrics,
 	repos repos.Repositories,
 ) Storage {
 	return &storage{
@@ -34,7 +34,7 @@ func New(
 type storage struct {
 	conf    *config.Config
 	logger  logging.Logger
-	metrics metrics.Metrics
+	metrics metric.Metrics
 	repos   repos.Repositories
 
 	mu       sync.RWMutex
@@ -44,6 +44,9 @@ type storage struct {
 }
 
 func (uc *storage) Connect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	if err := uc.repos.Connect(ctx); err != nil {
 		return err
 	}
@@ -53,6 +56,9 @@ func (uc *storage) Connect(ctx context.Context) error {
 }
 
 func (uc *storage) Disconnect(ctx context.Context) error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
 	uc.logger.Info("disconnected")
 
 	if err := uc.repos.Disconnect(ctx); err != nil {

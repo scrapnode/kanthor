@@ -12,7 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -31,7 +31,7 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 		wire.FieldsOf(new(*config.Config), "Coordinator"),
 		coordinator.New,
 		ResolveSdkApiMetricsConfig,
-		metrics.New,
+		metric.New,
 		ResolveSdkApiAuthorizatorConfig,
 		authorizator.New,
 		InitializeSdkUsecase,
@@ -39,7 +39,7 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	return nil, nil
 }
 
-func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics metrics.Metrics) (sdkuc.Sdk, error) {
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (sdkuc.Sdk, error) {
 	wire.Build(
 		sdkuc.New,
 		wire.FieldsOf(new(*config.Config), "Cryptography"),
@@ -67,6 +67,6 @@ func ResolveSdkApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
 	return &conf.SdkApi.Authorizator
 }
 
-func ResolveSdkApiMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolveSdkApiMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.SdkApi.Metrics
 }

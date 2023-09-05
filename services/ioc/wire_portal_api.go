@@ -13,7 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -31,7 +31,7 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 		wire.FieldsOf(new(*config.Config), "Coordinator"),
 		coordinator.New,
 		ResolvePortalApiMetricsConfig,
-		metrics.New,
+		metric.New,
 		ResolvePortalApiAuthenticatorConfig,
 		authenticator.New,
 		ResolvePortalApiAuthorizatorConfig,
@@ -40,7 +40,7 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	)
 	return nil, nil
 }
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics metrics.Metrics) (portaluc.Portal, error) {
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (portaluc.Portal, error) {
 	wire.Build(
 		portaluc.New,
 		wire.FieldsOf(new(*config.Config), "Cryptography"),
@@ -66,6 +66,6 @@ func ResolvePortalApiCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.PortalApi.Cache
 }
 
-func ResolvePortalApiMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolvePortalApiMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.PortalApi.Metrics
 }

@@ -17,7 +17,10 @@ func Consumer(service *storage) streaming.SubHandler {
 	return func(events []streaming.Event) map[string]error {
 		results := map[string]error{}
 
-		service.metrics.Count("storage_put_total", int64(len(events)))
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+
+		service.metrics.Count(ctx, "storage_put_total", int64(len(events)))
 
 		maps := map[string]string{}
 		messages := []entities.Message{}
@@ -63,9 +66,6 @@ func Consumer(service *storage) streaming.SubHandler {
 
 			service.logger.Warnw("unrecognized event", "event", utils.Stringify(event))
 		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
 
 		var wg conc.WaitGroup
 
@@ -116,14 +116,14 @@ func Consumer(service *storage) streaming.SubHandler {
 
 		select {
 		case <-c:
-			service.metrics.Count("storage_put_error", int64(len(results)))
+			service.metrics.Count(ctx, "storage_put_error", int64(len(results)))
 			return results
 		case <-ctx.Done():
 			for _, event := range events {
 				results[event.Id] = ctx.Err()
 			}
-			service.metrics.Count("storage_put_timeout_error", 1)
-			service.metrics.Count("storage_put_error", int64(len(results)))
+			service.metrics.Count(ctx, "storage_put_timeout_error", 1)
+			service.metrics.Count(ctx, "storage_put_error", int64(len(results)))
 			return results
 		}
 	}

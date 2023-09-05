@@ -1,6 +1,6 @@
 # shares
 streaming: &streaming
-  uri: nats://streaming:4222
+  uri: nats://nats:4222
   stream:
     name: default
     subjects:
@@ -17,7 +17,7 @@ streaming: &streaming
       age: 259200
 
 cache: &cache
-  uri: redis://cache:6379/0
+  uri: redis://redis:6379/0
   time_to_live: 3600000 # 1 hour
 
 logger:
@@ -36,13 +36,13 @@ cryptography:
 
 idempotency:
   namespace: idempotency
-  uri: redis://cache:6379/0
+  uri: redis://redis:6379/0
   time_to_live: 86400000 # 1 day
 
 coordinator:
   engine: nats
   nats:
-    uri: nats://streaming:4222
+    uri: nats://nats:4222
     subject: kanthor.coordinator
 
 database:
@@ -78,19 +78,20 @@ sdkapi:
   publisher:
     connection: *streaming
   metrics:
-    exporter:
-      addr: :9180
-    engine: prometheus
-    prometheus:
+    engine: otel
+    otel:
+      endpoint: localhost:4317
+      service: sdkapi
+      interval: 15000
       labels:
-        service: sdkapi
+        env: local
 
 portalapi:
   cache: *cache
   gateway:
     engine: httpx
     httpx:
-      addr: :9280
+      addr: :8280
   authenticator:
     engine: ask
     ask:
@@ -104,12 +105,13 @@ portalapi:
       policy_uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
   metrics:
-    exporter:
-      addr: :9280
-    engine: prometheus
-    prometheus:
+    engine: otel
+    otel:
+      endpoint: localhost:4317
+      service: portalapi
+      interval: 15000
       labels:
-        service: portalapi
+        env: local
 
 scheduler:
   cache: *cache
@@ -129,12 +131,13 @@ scheduler:
     arrange:
       concurrency: 100
   metrics:
-    exporter:
-      addr: :9380
-    engine: prometheus
-    prometheus:
+    engine: otel
+    otel:
+      endpoint: localhost:4317
+      service: scheduler
+      interval: 15000
       labels:
-        service: scheduler
+        env: local
 
 dispatcher:
   cache: *cache
@@ -163,12 +166,13 @@ dispatcher:
     close_state_clear_interval: 600000
     open_state_duration: 300000
   metrics:
-    exporter:
-      addr: :9480
-    engine: prometheus
-    prometheus:
+    engine: otel
+    otel:
+      endpoint: localhost:4317
+      service: dispatcher
+      interval: 15000
       labels:
-        service: dispatcher
+        env: local
 
 storage:
   subscriber:
@@ -182,9 +186,10 @@ storage:
     filter_subject: kanthor.default.>
     max_deliver: 1
   metrics:
-    exporter:
-      addr: :9580
-    engine: prometheus
-    prometheus:
+    engine: otel
+    otel:
+      endpoint: localhost:4317
+      service: storage
+      interval: 15000
       labels:
-        service: storage
+        env: local

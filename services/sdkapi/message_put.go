@@ -12,7 +12,7 @@ import (
 )
 
 type MessagePutReq struct {
-	Type string `json:"type" binding:"required"`
+	Type string `json:"type" binding:"required" example:"testing.debug"`
 
 	Body     map[string]interface{} `json:"body" binding:"required"`
 	Headers  map[string]string      `json:"headers"`

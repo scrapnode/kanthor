@@ -40,6 +40,9 @@ func (coordinator *nats) Connect(ctx context.Context) error {
 }
 
 func (coordinator *nats) Disconnect(ctx context.Context) error {
+	coordinator.mu.Lock()
+	defer coordinator.mu.Unlock()
+
 	if coordinator.subscription.IsValid() {
 		if err := coordinator.subscription.Unsubscribe(); err != nil {
 			return err

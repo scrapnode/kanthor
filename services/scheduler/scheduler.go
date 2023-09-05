@@ -4,21 +4,19 @@ import (
 	"context"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics/exporter"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/services"
 	usecase "github.com/scrapnode/kanthor/usecases/scheduler"
-	"net/http"
 )
 
 func New(
 	conf *config.Config,
 	logger logging.Logger,
 	subscriber streaming.Subscriber,
-	metrics metrics.Metrics,
+	metrics metric.Metrics,
 	uc usecase.Scheduler,
 ) services.Service {
 	logger = logger.With("service", "scheduler")
@@ -27,7 +25,6 @@ func New(
 		logger:     logger,
 		subscriber: subscriber,
 		metrics:    metrics,
-		exporter:   metrics.Exporter(),
 		uc:         uc,
 
 		healthcheck: background.NewServer(healthcheck.DefaultConfig("kanthor.scheduler")),
@@ -38,15 +35,14 @@ type scheduler struct {
 	conf       *config.Config
 	logger     logging.Logger
 	subscriber streaming.Subscriber
-	metrics    metrics.Metrics
-	exporter   exporter.Exporter
+	metrics    metric.Metrics
 	uc         usecase.Scheduler
 
 	healthcheck healthcheck.Server
 }
 
 func (service *scheduler) Start(ctx context.Context) error {
-	if err := service.exporter.Start(ctx); err != nil {
+	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -73,8 +69,8 @@ func (service *scheduler) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
-	if err := service.exporter.Stop(ctx); err != nil {
-		return err
+	if err := service.metrics.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
 	}
 
 	return nil
@@ -90,12 +86,6 @@ func (service *scheduler) Run(ctx context.Context) error {
 			return nil
 		})
 		if err != nil {
-			service.logger.Error(err)
-		}
-	}()
-
-	go func() {
-		if err := service.exporter.Run(ctx); err != nil && err != http.ErrServerClosed {
 			service.logger.Error(err)
 		}
 	}()

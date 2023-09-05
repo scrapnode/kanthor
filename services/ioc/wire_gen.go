@@ -16,7 +16,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
@@ -47,20 +47,20 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	if err != nil {
 		return nil, err
 	}
-	metricsConfig := ResolveDispatcherMetricsConfig(conf)
-	metricsMetrics, err := metrics.New(metricsConfig, logger)
+	metricConfig := ResolveDispatcherMetricsConfig(conf)
+	metrics, err := metric.New(metricConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger, metricsMetrics)
+	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := dispatcher.New(conf, logger, subscriber, metricsMetrics, dispatcherDispatcher)
+	service := dispatcher.New(conf, logger, subscriber, metrics, dispatcherDispatcher)
 	return service, nil
 }
 
-func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (dispatcher2.Dispatcher, error) {
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (dispatcher2.Dispatcher, error) {
 	timerTimer := timer.New()
 	publisherConfig := ResolveDispatcherPublisherConfig(conf)
 	publisher, err := streaming.NewPublisher(publisherConfig, logger)
@@ -79,7 +79,7 @@ func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, met
 	if err != nil {
 		return nil, err
 	}
-	dispatcherDispatcher := dispatcher2.New(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, metrics2)
+	dispatcherDispatcher := dispatcher2.New(conf, logger, timerTimer, publisher, send, cacheCache, circuitBreaker, metrics)
 	return dispatcherDispatcher, nil
 }
 
@@ -97,8 +97,8 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	metricsConfig := ResolvePortalApiMetricsConfig(conf)
-	metricsMetrics, err := metrics.New(metricsConfig, logger)
+	metricConfig := ResolvePortalApiMetricsConfig(conf)
+	metrics, err := metric.New(metricConfig, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -112,15 +112,15 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	portal, err := InitializePortalUsecase(conf, logger, metricsMetrics)
+	portal, err := InitializePortalUsecase(conf, logger, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metricsMetrics, authenticatorAuthenticator, authorizatorAuthorizator, portal)
+	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metrics, authenticatorAuthenticator, authorizatorAuthorizator, portal)
 	return service, nil
 }
 
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (portal.Portal, error) {
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (portal.Portal, error) {
 	cryptographyConfig := &conf.Cryptography
 	cryptographyCryptography, err := cryptography.New(cryptographyConfig)
 	if err != nil {
@@ -134,7 +134,7 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics
 	}
 	databaseConfig := &conf.Database
 	repositories := repos.New(databaseConfig, logger, timerTimer)
-	portalPortal := portal.New(conf, logger, cryptographyCryptography, metrics2, timerTimer, cacheCache, repositories)
+	portalPortal := portal.New(conf, logger, cryptographyCryptography, metrics, timerTimer, cacheCache, repositories)
 	return portalPortal, nil
 }
 
@@ -146,20 +146,20 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	metricsConfig := ResolveSchedulerMetricsConfig(conf)
-	metricsMetrics, err := metrics.New(metricsConfig, logger)
+	metricConfig := ResolveSchedulerMetricsConfig(conf)
+	metrics, err := metric.New(metricConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger, metricsMetrics)
+	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := scheduler.New(conf, logger, subscriber, metricsMetrics, schedulerScheduler)
+	service := scheduler.New(conf, logger, subscriber, metrics, schedulerScheduler)
 	return service, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (scheduler2.Scheduler, error) {
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (scheduler2.Scheduler, error) {
 	timerTimer := timer.New()
 	signatureSignature := signature.New()
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
@@ -174,7 +174,7 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metr
 	}
 	databaseConfig := &conf.Database
 	repositories := repos2.New(databaseConfig, logger, timerTimer)
-	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, signatureSignature, publisher, cacheCache, metrics2, repositories)
+	schedulerScheduler := scheduler2.New(conf, logger, timerTimer, signatureSignature, publisher, cacheCache, metrics, repositories)
 	return schedulerScheduler, nil
 }
 
@@ -192,8 +192,8 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	metricsConfig := ResolveSdkApiMetricsConfig(conf)
-	metricsMetrics, err := metrics.New(metricsConfig, logger)
+	metricConfig := ResolveSdkApiMetricsConfig(conf)
+	metrics, err := metric.New(metricConfig, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -202,15 +202,15 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	sdk, err := InitializeSdkUsecase(conf, logger, metricsMetrics)
+	sdk, err := InitializeSdkUsecase(conf, logger, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metricsMetrics, authorizatorAuthorizator, sdk)
+	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metrics, authorizatorAuthorizator, sdk)
 	return service, nil
 }
 
-func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (sdk.Sdk, error) {
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (sdk.Sdk, error) {
 	cryptographyConfig := &conf.Cryptography
 	cryptographyCryptography, err := cryptography.New(cryptographyConfig)
 	if err != nil {
@@ -229,7 +229,7 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics2 m
 	}
 	databaseConfig := &conf.Database
 	repositories := repos3.New(databaseConfig, logger, timerTimer)
-	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, metrics2, timerTimer, cacheCache, publisher, repositories)
+	sdkSdk := sdk.New(conf, logger, cryptographyCryptography, metrics, timerTimer, cacheCache, publisher, repositories)
 	return sdkSdk, nil
 }
 
@@ -241,24 +241,24 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	if err != nil {
 		return nil, err
 	}
-	metricsConfig := ResolveStorageMetricsConfig(conf)
-	metricsMetrics, err := metrics.New(metricsConfig, logger)
+	metricConfig := ResolveStorageMetricsConfig(conf)
+	metrics, err := metric.New(metricConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	storageStorage, err := InitializeStorageUsecase(conf, logger, metricsMetrics)
+	storageStorage, err := InitializeStorageUsecase(conf, logger, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := storage.New(conf, logger, subscriber, metricsMetrics, storageStorage)
+	service := storage.New(conf, logger, subscriber, metrics, storageStorage)
 	return service, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metrics2 metrics.Metrics) (storage2.Storage, error) {
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (storage2.Storage, error) {
 	datastoreConfig := &conf.Datastore
 	timerTimer := timer.New()
 	repositories := repos4.New(datastoreConfig, logger, timerTimer)
-	storageStorage := storage2.New(conf, logger, metrics2, repositories)
+	storageStorage := storage2.New(conf, logger, metrics, repositories)
 	return storageStorage, nil
 }
 
@@ -284,7 +284,7 @@ func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *
 	return &conf.Dispatcher.Sender
 }
 
-func ResolveDispatcherMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolveDispatcherMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.Dispatcher.Metrics
 }
 
@@ -302,7 +302,7 @@ func ResolvePortalApiCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.PortalApi.Cache
 }
 
-func ResolvePortalApiMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolvePortalApiMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.PortalApi.Metrics
 }
 
@@ -320,7 +320,7 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.Scheduler.Cache
 }
 
-func ResolveSchedulerMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolveSchedulerMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.Scheduler.Metrics
 }
 
@@ -338,7 +338,7 @@ func ResolveSdkApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
 	return &conf.SdkApi.Authorizator
 }
 
-func ResolveSdkApiMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolveSdkApiMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.SdkApi.Metrics
 }
 
@@ -348,6 +348,6 @@ func ResolveStorageSubscriberConfig(conf *config.Config) *streaming.SubscriberCo
 	return &conf.Storage.Subscriber
 }
 
-func ResolveStorageMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolveStorageMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.Storage.Metrics
 }

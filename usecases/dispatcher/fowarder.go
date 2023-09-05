@@ -7,7 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -33,5 +33,5 @@ type forwarder struct {
 	dispatch  sender.Send
 	cache     cache.Cache
 	cb        circuitbreaker.CircuitBreaker
-	metrics   metrics.Metrics
+	metrics   metric.Metrics
 }

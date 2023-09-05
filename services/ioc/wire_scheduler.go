@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metrics"
+	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
@@ -24,13 +24,13 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 		ResolveSchedulerSubscriberConfig,
 		streaming.NewSubscriber,
 		ResolveSchedulerMetricsConfig,
-		metrics.New,
+		metric.New,
 		InitializeSchedulerUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metrics metrics.Metrics) (scheduleruc.Scheduler, error) {
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (scheduleruc.Scheduler, error) {
 	wire.Build(
 		scheduleruc.New,
 		timer.New,
@@ -57,6 +57,6 @@ func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
 	return &conf.Scheduler.Cache
 }
 
-func ResolveSchedulerMetricsConfig(conf *config.Config) *metrics.Config {
+func ResolveSchedulerMetricsConfig(conf *config.Config) *metric.Config {
 	return &conf.Scheduler.Metrics
 }

@@ -1423,7 +1423,8 @@ const docTemplateSdk = `{
                     }
                 },
                 "type": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "testing.debug"
                 }
             }
         },

@@ -24,7 +24,7 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 	key := utils.Key("scheduler", req.Message.AppId)
 	// @TODO: find a way to notify attempt that message is not able to schedule
 	app, err := cache.Warp(uc.cache, ctx, key, time.Hour, func() (*applicable, error) {
-		uc.metrics.Count("cache_miss_total", 1)
+		uc.metrics.Count(ctx, "cache_miss_total", 1)
 
 		endpoints, err := uc.repos.Endpoint().List(ctx, req.Message.AppId)
 		if err != nil {

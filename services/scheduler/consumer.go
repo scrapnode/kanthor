@@ -25,7 +25,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				service.logger.Debugw("received event", "event_id", event.Id)
 				msg, err := transformation.EventToMessage(event)
 				if err != nil {
-					service.metrics.Count("scheduler_transform_error", 1)
+					service.metrics.Count(ctx, "scheduler_transform_error", 1)
 					service.logger.Error(err)
 					// next retry will be failed because of same error of transformation
 					return
@@ -34,16 +34,16 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				request := &usecase.RequestArrangeReq{Message: *msg}
 				response, err := service.uc.Request().Arrange(ctx, request)
 				if err != nil {
-					service.metrics.Count("dispatcher_arrange_error", 1)
+					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
 					service.logger.Error(err)
 					results[event.Id] = err
 					return
 				}
-				service.metrics.Count("scheduler_arrange_total", int64(len(response.Entities)))
+				service.metrics.Count(ctx, "scheduler_arrange_total", int64(len(response.Entities)))
 
 				// @TODO: use dead-letter
 				if len(response.FailKeys) > 0 {
-					service.metrics.Count("scheduler_arrange_error", int64(len(response.FailKeys)))
+					service.metrics.Count(ctx, "scheduler_arrange_error", int64(len(response.FailKeys)))
 					service.logger.Errorw("got some errors", "fail_keys", response.FailKeys)
 				}
 
