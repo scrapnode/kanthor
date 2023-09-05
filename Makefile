@@ -1,4 +1,4 @@
-all: migration wire docs
+all: wire docs
 
 migration:
 	go run main.go migrate
