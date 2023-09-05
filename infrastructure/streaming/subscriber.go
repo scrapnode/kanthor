@@ -83,7 +83,7 @@ type SubscriberConfigPush struct {
 	// Temporary is a config to allow us to create a temporary consumer that will be deleted after disconnected
 	// this option is only available for Push-Based Model because Pull-Based Model requires consumer to be a durable one
 	// must set it to TRUE explicitly to avoid misconfiguration
-	Temporary bool `json:"temporary" yaml:"temporary" mapstructure:"temporary" validate:"required,boolean"`
+	Temporary bool `json:"temporary" yaml:"temporary" mapstructure:"temporary" validate:"boolean"`
 }
 
 func (conf *SubscriberConfigPush) Validate() error {
