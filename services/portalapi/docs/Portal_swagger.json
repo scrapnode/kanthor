@@ -28,9 +28,6 @@
                 "security": [
                     {
                         "BearerAuth": []
-                    },
-                    {
-                        "WsId": []
                     }
                 ],
                 "tags": [

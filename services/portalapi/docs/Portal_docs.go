@@ -35,9 +35,6 @@ const docTemplatePortal = `{
                 "security": [
                     {
                         "BearerAuth": []
-                    },
-                    {
-                        "WsId": []
                     }
                 ],
                 "tags": [

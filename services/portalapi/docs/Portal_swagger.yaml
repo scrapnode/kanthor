@@ -257,7 +257,6 @@ paths:
             $ref: '#/definitions/gateway.Error'
       security:
       - BearerAuth: []
-      - WsId: []
       tags:
       - account
     put:
