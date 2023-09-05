@@ -1,8 +1,26 @@
 all: wire docs
 
-wire:
-	go generate infrastructure/ioc/generate.go
-	go generate services/ioc/generate.go
+wire: wire-infrastructure wire-services
+
+wire-infrastructure:
+	CHECKSUM_NEW=$$(find infrastructure/ioc -type f -name '*.go' -exec md5sum {} \; | sort -k 2 | md5sum | cut -d  ' ' -f1) && \
+	CHECKSUM_OLD=$$(cat infrastructure/ioc/checksum) && \
+	if [ "$$CHECKSUM_NEW" != "$$CHECKSUM_OLD" ]; \
+	then \
+	  echo "generating infrastructure ioc ..."; \
+	  go generate infrastructure/ioc/generate.go; \
+	  find infrastructure/ioc -type f -name '*.go' -exec md5sum {} \; | sort -k 2 | md5sum | cut -d  ' ' -f1 > infrastructure/ioc/checksum; \
+	fi
+
+wire-services:
+	CHECKSUM_NEW=$$(find services/ioc -type f -name '*.go' -exec md5sum {} \; | sort -k 2 | md5sum | cut -d  ' ' -f1) && \
+	CHECKSUM_OLD=$$(cat services/ioc/checksum) && \
+	if [ "$$CHECKSUM_NEW" != "$$CHECKSUM_OLD" ]; \
+	then \
+	  echo "generating services ioc ..."; \
+	  go generate services/ioc/generate.go; \
+	  find services/ioc -type f -name '*.go' -exec md5sum {} \; | sort -k 2 | md5sum | cut -d  ' ' -f1 > services/ioc/checksum; \
+	fi
 
 docs: docs-portalapi docs-sdkapi
 
