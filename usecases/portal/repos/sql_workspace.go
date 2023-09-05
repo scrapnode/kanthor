@@ -69,12 +69,13 @@ func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*
 
 func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
 	doc := &entities.Workspace{}
+	transaction := database.SqlClientFromContext(ctx, sql.client)
 
-	tx := sql.client.WithContext(ctx).Model(&doc).
+	tx := transaction.WithContext(ctx).Model(&doc).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
 		First(doc)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, database.SqlError(tx.Error)
 	}
 
 	return doc, nil
@@ -82,11 +83,13 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 
 func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
 	doc := &entities.Workspace{}
-	tx := sql.client.WithContext(ctx).Model(&doc).
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+
+	tx := transaction.WithContext(ctx).Model(&doc).
 		Where("owner_id = ?", owner).
 		First(doc)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, database.SqlError(tx.Error)
 	}
 
 	return doc, nil

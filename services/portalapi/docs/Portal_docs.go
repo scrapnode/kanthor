@@ -57,6 +57,41 @@ const docTemplatePortal = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "account"
+                ],
+                "parameters": [
+                    {
+                        "description": "setup options",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/portalapi.AccountSetupReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/portalapi.AccountSetupRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
             }
         },
         "/workspace/me": {
@@ -471,6 +506,17 @@ const docTemplatePortal = `{
             }
         },
         "portalapi.AccountGetRes": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/authenticator.Account"
+                }
+            }
+        },
+        "portalapi.AccountSetupReq": {
+            "type": "object"
+        },
+        "portalapi.AccountSetupRes": {
             "type": "object",
             "properties": {
                 "account": {

@@ -71,7 +71,7 @@ func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, database.SqlError(tx.Error)
 	}
 
 	return doc, nil

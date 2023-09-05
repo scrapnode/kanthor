@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -124,4 +125,11 @@ func (db *sql) Migrator(source string) (migration.Migrator, error) {
 	}
 
 	return migration.NewSql(runner), nil
+}
+
+func SqlError(err error) error {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return ErrRecordNotFound
+	}
+	return err
 }

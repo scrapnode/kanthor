@@ -20,7 +20,7 @@ func (sql *SqlWorkspaceCredentials) Get(ctx context.Context, id string) (*entiti
 		Where(fmt.Sprintf(`"%s".id = ?`, wsc.TableName()), id).
 		First(wsc)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, database.SqlError(tx.Error)
 	}
 
 	return wsc, nil

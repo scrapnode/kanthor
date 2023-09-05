@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UseWorkspaceCredentialsRoutes(router *gin.RouterGroup, service *portalapi) {
+func UseWorkspaceCredentialsRoutes(router gin.IRoutes, service *portalapi) {
 	router.GET("", UseWorkspaceCredentialsList(service.logger, service.validator, service.uc))
 	router.POST("", UseWorkspaceCredentialsCreate(service.logger, service.validator, service.uc, service.coordinator))
 	router.GET("/:wsc_id", UseWorkspaceCredentialsGet(service.logger, service.validator, service.uc))

@@ -87,6 +87,13 @@ definitions:
     properties:
       account:
         $ref: '#/definitions/authenticator.Account'
+    type: object
+  portalapi.AccountSetupReq:
+    type: object
+  portalapi.AccountSetupRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
       workspace:
         $ref: '#/definitions/entities.Workspace'
       workspace_tier:
@@ -251,6 +258,27 @@ paths:
       security:
       - BearerAuth: []
       - WsId: []
+      tags:
+      - account
+    put:
+      parameters:
+      - description: setup options
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/portalapi.AccountSetupReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portalapi.AccountSetupRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
       tags:
       - account
   /workspace/me:

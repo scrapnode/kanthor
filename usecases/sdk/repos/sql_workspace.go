@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +19,7 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 		Where(fmt.Sprintf(`"%s"."id" = ?`, ws.TableName()), id).
 		First(ws)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, database.SqlError(tx.Error)
 	}
 
 	return ws, nil

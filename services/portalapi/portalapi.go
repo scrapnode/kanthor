@@ -120,13 +120,12 @@ func (service *portalapi) router() *gin.Engine {
 		api.Use(ginmw.UseStartup())
 		api.Use(ginmw.UseMetrics(service.metrics))
 		api.Use(ginmw.UseIdempotency(service.logger, service.idempotency))
-		api.Use(middlewares.UseAuth(service.auth))
-		api.Use(middlewares.UseAuthz(service.validator, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
+		api.Use(middlewares.UseAuth(service.auth))
 
-		UseAccountRoutes(api.Group("/account"))
-		UseWorkspaceRoutes(api.Group("/workspace"), service)
-		UseWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials"), service)
+		UseAccountRoutes(api.Group("/account"), service)
+		UseWorkspaceRoutes(api.Group("/workspace").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
+		UseWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
 	}
 
 	return router

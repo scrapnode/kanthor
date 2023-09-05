@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace
     owner_id    VARCHAR(64)  NOT NULL,
     name        VARCHAR(256) NOT NULL
 );
+CREATE UNIQUE INDEX kanthor_ws_owner_unique ON kanthor_workspace(owner_id DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_workspace_tier
 (

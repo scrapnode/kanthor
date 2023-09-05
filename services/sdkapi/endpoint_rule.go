@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UseEndpointRuleRoutes(router *gin.RouterGroup, service *sdkapi) {
+func UseEndpointRuleRoutes(router gin.IRoutes, service *sdkapi) {
 	router.POST("", UseEndpointRuleCreate(service.logger, service.validator, service.uc))
 	router.PUT("/:epr_id", UseEndpointRuleUpdate(service.logger, service.validator, service.uc))
 	router.DELETE("/:epr_id", UseEndpointRuleDelete(service.logger, service.validator, service.uc))

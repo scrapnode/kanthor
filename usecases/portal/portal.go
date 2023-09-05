@@ -15,6 +15,7 @@ import (
 
 type Portal interface {
 	patterns.Connectable
+	Account() Account
 	Workspace() Workspace
 	WorkspaceCredentials() WorkspaceCredentials
 }
@@ -49,6 +50,7 @@ type portal struct {
 	repos        repos.Repositories
 
 	mu                   sync.RWMutex
+	account              *account
 	workspace            *workspace
 	workspaceCredentials *workspaceCredentials
 }
@@ -84,6 +86,24 @@ func (uc *portal) Disconnect(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (uc *portal) Account() Account {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.account == nil {
+		uc.account = &account{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			cryptography: uc.cryptography,
+			metrics:      uc.metrics,
+			timer:        uc.timer,
+			cache:        uc.cache,
+			repos:        uc.repos,
+		}
+	}
+	return uc.account
 }
 
 func (uc *portal) Workspace() Workspace {
