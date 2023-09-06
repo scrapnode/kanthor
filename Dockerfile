@@ -1,16 +1,8 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.20-alpine as build
+FROM scrapnode/kanthor-base:latest as build
 WORKDIR /app
 
 COPY . .
-
-# for Makefile
-RUN apk add build-base
-# for golang wire
-RUN go install github.com/google/wire/cmd/wire@latest
-# for golang swaggo
-RUN go install github.com/swaggo/swag/cmd/swag@latest
-
 RUN make
 RUN go build -mod vendor -o ./.kanthor/kanthor -buildvcs=false
 
