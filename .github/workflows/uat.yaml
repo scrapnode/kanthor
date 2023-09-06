@@ -48,7 +48,7 @@ jobs:
         run: |
           branch=${GITHUB_REF##*/}
           sha=${GITHUB_SHA::8}
-          ts=$(date +%Y%-m%d%-H%M)
+          ts=$(date +%Y%m%d%H%M)
           echo "ID=uat-${sha}-${ts}" >> $GITHUB_OUTPUT
 
   dockerhub:
