@@ -18,8 +18,7 @@ jobs:
 
       - name: Linter
         run: |
-          # only vet on our packages
-          go list ./... | grep kanthor | go vet -v
+          bash scripts/ci_vet.sh
 
       - name: Test
         run: |
