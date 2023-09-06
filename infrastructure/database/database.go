@@ -14,5 +14,5 @@ func New(conf *Config, logger logging.Logger, timer timer.Timer) (Database, erro
 type Database interface {
 	patterns.Connectable
 	Client() any
-	Migrator(source string) (migration.Migrator, error)
+	Migrator() (migration.Migrator, error)
 }

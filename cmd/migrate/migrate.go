@@ -1,110 +1,85 @@
 package migrate
 
 import (
-	"context"
 	"errors"
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/database"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
-	"github.com/sourcegraph/conc"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/spf13/cobra"
 )
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
-		Use: "migrate",
+		Use:       "migrate",
+		ValidArgs: []string{"database", "datastore", "up", "down"},
+		Args:      cobra.MatchAll(cobra.MinimumNArgs(2), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			keepRunning, err := cmd.Flags().GetBool("keep-running")
-			if err != nil {
-				return err
-			}
+			ctx := cmd.Context()
 
-			if len(conf.Migration.Tasks) == 0 {
-				return errors.New("no migration task was configured")
-			}
-
-			var undo bool
-			sources := []migration.Source{}
-			migrators := []migration.Migrator{}
-			for _, t := range conf.Migration.Tasks {
-				mlogger := logger.With("service", "migrate", "task", t.Name)
-
-				task := t
-				source, err := Source(&task, mlogger)
+			var m migration.Migrator
+			if args[0] == "database" {
+				instance, err := database.New(&conf.Database, logger, timer.New())
 				if err != nil {
-					mlogger.Error(err)
-					continue
+					return err
 				}
 
-				if err := source.Connect(context.Background()); err != nil {
-					mlogger.Errorf("task.connect: %v", err)
-					continue
+				if err := instance.Connect(ctx); err != nil {
+					return err
 				}
+				defer func() {
+					if err := instance.Disconnect(ctx); err != nil {
+						logger.Error(err)
+					}
+				}()
 
-				sources = append(sources, source)
-
-				migrator, err := source.Migrator(t.Source)
+				m, err = instance.Migrator()
 				if err != nil {
-					mlogger.Errorf("migrator.init: %v", err)
-					continue
+					return err
 				}
+			}
 
-				migrators = append(migrators, migrator)
-
-				err = migrator.Up()
+			if args[0] == "datastore" {
+				instance, err := datastore.New(&conf.Datastore, logger, timer.New())
 				if err != nil {
-					mlogger.Errorf("migrator.up: %v", err)
-					undo = true
-					break
+					return err
 				}
 
-				mlogger.Info("upped")
-			}
-
-			if undo && len(migrators) > 0 {
-				var wg conc.WaitGroup
-				for _, m := range migrators {
-					migrator := m
-					wg.Go(func() {
-						if err := migrator.Down(); err != nil {
-							logger.Errorf("migrator.dow: %v", err)
-							return
-						}
-
-						logger.Info("downed")
-					})
+				if err := instance.Connect(ctx); err != nil {
+					return err
 				}
-				wg.Wait()
-			}
+				defer func() {
+					if err := instance.Disconnect(ctx); err != nil {
+						logger.Error(err)
+					}
+				}()
 
-			if len(sources) > 0 {
-				var wg conc.WaitGroup
-				for _, s := range sources {
-					source := s
-					wg.Go(func() {
-						if err := source.Disconnect(context.Background()); err != nil {
-							logger.Errorf("task.disconnect: %v", err)
-						}
-					})
+				m, err = instance.Migrator()
+				if err != nil {
+					return err
 				}
-				wg.Wait()
 			}
 
-			if !keepRunning {
+			if args[1] == "up" {
+				if err := m.Steps(1); err != nil {
+					return err
+				}
+				logger.Info("up to next version")
+				return nil
+			}
+			if args[1] == "down" {
+				if err := m.Steps(-1); err != nil {
+					return err
+				}
+				logger.Info("down to previous version")
 				return nil
 			}
 
-			ctx, _ := signal.NotifyContext(context.TODO(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-			<-ctx.Done()
-			return nil
+			return errors.New("unknow migration target")
 		},
 	}
-
-	command.Flags().BoolP("keep-running", "", false, "--keep-running: force migration to run once finished to prevent it from keep restarting. It's useful when you deploy it on UAT/PROD.")
 
 	return command
 }

@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS kanthor_workspace
 (
     id          VARCHAR(64)  NOT NULL PRIMARY KEY,
@@ -82,3 +84,5 @@ CREATE TABLE IF NOT EXISTS kanthor_endpoint_rule
     FOREIGN KEY (endpoint_id) REFERENCES kanthor_endpoint (id) ON DELETE CASCADE
 );
 CREATE INDEX kanthor_epr_ep_ref ON kanthor_endpoint_rule(endpoint_id DESC);
+
+COMMIT;

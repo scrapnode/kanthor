@@ -6,15 +6,11 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	postgresdevier "gorm.io/driver/postgres"
-	sqlitedriver "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"net/url"
-	"strings"
 	"sync"
 	"time"
 
@@ -44,19 +40,8 @@ func (db *sql) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	uri, err := url.Parse(db.conf.Uri)
-	if err != nil {
-		return err
-	}
-
-	var dialector gorm.Dialector
-	if strings.HasPrefix(uri.Scheme, "sqlite") {
-		dialector = sqlitedriver.Open(uri.Host + uri.Path)
-	} else {
-		dialector = postgresdevier.Open(db.conf.Uri)
-	}
-
-	db.client, err = gorm.Open(dialector, &gorm.Config{
+	dialector := postgresdevier.Open(db.conf.Uri)
+	client, err := gorm.Open(dialector, &gorm.Config{
 		Logger: NewSqlLogger(db.logger),
 		NowFunc: func() time.Time {
 			return db.timer.Now()
@@ -65,6 +50,7 @@ func (db *sql) Connect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	db.client = client
 
 	db.logger.Info("connected")
 	return nil
@@ -96,7 +82,7 @@ func (db *sql) Client() any {
 	return db.client
 }
 
-func (db *sql) Migrator(source string) (migration.Migrator, error) {
+func (db *sql) Migrator() (migration.Migrator, error) {
 	instance, err := db.client.DB()
 	if err != nil {
 		return nil, err
@@ -105,21 +91,13 @@ func (db *sql) Migrator(source string) (migration.Migrator, error) {
 	tableName := "kanthor_database_migration"
 	var driver database.Driver
 
-	if db.client.Config.Dialector.Name() == "sqlite" {
-		conf := &sqlite3.Config{MigrationsTable: tableName}
-		driver, err = sqlite3.WithInstance(instance, conf)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		conf := &postgres.Config{MigrationsTable: tableName}
-		driver, err = postgres.WithInstance(instance, conf)
-		if err != nil {
-			return nil, err
-		}
+	conf := &postgres.Config{MigrationsTable: tableName}
+	driver, err = postgres.WithInstance(instance, conf)
+	if err != nil {
+		return nil, err
 	}
 
-	runner, err := migrate.NewWithDatabaseInstance(source, "", driver)
+	runner, err := migrate.NewWithDatabaseInstance(db.conf.Migration.Source, "", driver)
 	if err != nil {
 		return nil, err
 	}

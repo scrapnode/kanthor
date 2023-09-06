@@ -3,6 +3,7 @@ package migration
 import (
 	"errors"
 	"github.com/golang-migrate/migrate/v4"
+	"io/fs"
 )
 
 func NewSql(runner *migrate.Migrate) Migrator {
@@ -13,14 +14,15 @@ type sql struct {
 	runner *migrate.Migrate
 }
 
-func (migration *sql) Up() error {
-	err := migration.runner.Up()
+func (migration *sql) Steps(n int) error {
+	err := migration.runner.Steps(n)
 	if errors.Is(err, migrate.ErrNoChange) {
 		return nil
 	}
-	return err
-}
+	// next/previous version is not exist
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
 
-func (migration *sql) Down() error {
-	return migration.runner.Down()
+	return err
 }
