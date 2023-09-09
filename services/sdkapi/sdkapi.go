@@ -102,6 +102,7 @@ func (service *sdkapi) router() *gin.Engine {
 		ginctx.String(http.StatusOK, "ready")
 	})
 	router.GET("/liveness", func(ginctx *gin.Context) {
+		// @TODO: determine whether the app is running correctly or not
 		ginctx.String(http.StatusOK, "live")
 	})
 
