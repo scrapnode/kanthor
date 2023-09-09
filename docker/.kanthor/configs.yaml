@@ -1,6 +1,6 @@
 # shares
 streaming: &streaming
-  uri: nats://nats:4222
+  uri: nats://streaming:4222
   stream:
     name: default
     subjects:
@@ -17,7 +17,7 @@ streaming: &streaming
       age: 259200
 
 cache: &cache
-  uri: redis://redis:6379/0
+  uri: redis://cache:6379/0
   time_to_live: 3600000 # 1 hour
 
 logger:
@@ -36,13 +36,13 @@ cryptography:
 
 idempotency:
   namespace: idempotency
-  uri: redis://redis:6379/0
+  uri: redis://cache:6379/0
   time_to_live: 86400000 # 1 day
 
 coordinator:
   engine: nats
   nats:
-    uri: nats://nats:4222
+    uri: nats://streaming:4222
     subject: kanthor.coordinator
 
 database:

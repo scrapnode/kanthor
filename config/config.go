@@ -29,7 +29,6 @@ type Config struct {
 	Idempotency idempotency.Config `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency" validate:"required"`
 	Coordinator coordinator.Config `json:"coordinator" yaml:"coordinator" mapstructure:"coordinator" validate:"required"`
 
-	Migration  Migration  `json:"migration" yaml:"migration" mapstructure:"migration"`
 	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi" mapstructure:"sdkapi"`
 	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
 	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
@@ -68,11 +67,6 @@ func (conf *Config) Validate(service string) error {
 		return fmt.Errorf("config: unknown service [%s]", service)
 	}
 
-	if service == services.ALL || service == services.MIGRATION {
-		if err := conf.Migration.Validate(); err != nil {
-			return err
-		}
-	}
 	if service == services.ALL || service == services.SDK_API {
 		if err := conf.SdkApi.Validate(); err != nil {
 			return err

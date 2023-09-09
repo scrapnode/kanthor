@@ -50,7 +50,7 @@ services:
         condition: service_healthy
     container_name: kanthor-services-migrations
     build: .
-    restart: unless-stopped
+    restart: on-failure
     networks:
       - kanthor
     volumes:
@@ -66,14 +66,14 @@ services:
       cache:
         condition: service_healthy
       migrations:
-        condition: service_healthy
+        condition: service_started
     container_name: kanthor-services-sdkapi
     build: .
     restart: unless-stopped
     networks:
       - kanthor
     ports:
-      - "8080:8080"
+      - "8180:8180"
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
@@ -88,14 +88,14 @@ services:
       cache:
         condition: service_healthy
       migrations:
-        condition: service_healthy
+        condition: service_started
     container_name: kanthor-services-portalapi
     build: .
     restart: unless-stopped
     networks:
       - kanthor
     ports:
-      - "8180:8180"
+      - "8280:8280"
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
@@ -110,7 +110,7 @@ services:
       cache:
         condition: service_healthy
       migrations:
-        condition: service_healthy
+        condition: service_started
     container_name: kanthor-services-scheduler
     build: .
     restart: unless-stopped
@@ -130,7 +130,7 @@ services:
       cache:
         condition: service_healthy
       migrations:
-        condition: service_healthy
+        condition: service_started
     container_name: kanthor-services-dispatcher
     build: .
     restart: unless-stopped
@@ -148,7 +148,7 @@ services:
       warehouse:
         condition: service_healthy
       migrations:
-        condition: service_healthy
+        condition: service_started
     container_name: kanthor-services-storage
     build: .
     restart: unless-stopped

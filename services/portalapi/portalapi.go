@@ -20,6 +20,7 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
 	"net/http"
+	"os"
 )
 
 func New(
@@ -97,7 +98,8 @@ func (service *portalapi) router() *gin.Engine {
 	router.Use(cors.Default())
 	// system routes
 	router.GET("/", func(ginctx *gin.Context) {
-		ginctx.JSON(http.StatusOK, gin.H{"version": service.conf.Version})
+		host, _ := os.Hostname()
+		ginctx.JSON(http.StatusOK, gin.H{"host": host, "service": "portalapi", "version": service.conf.Version})
 	})
 	router.GET("/readiness", func(ginctx *gin.Context) {
 		// @TODO: add starting up checking here
