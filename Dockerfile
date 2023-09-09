@@ -13,9 +13,7 @@ COPY --from=build /app/data ./data
 COPY --from=build /app/migration ./migration
 COPY --from=build /app/configs.yaml ./configs.yaml
 
-COPY --from=build /app/.kanthor/kanthor ./kanthor
-COPY --from=build /app/docker/entrypoint.sh ./entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+COPY --from=build /app/.kanthor/kanthor /usr/bin/kanthor
 
 # sdkapi
 EXPOSE 8180
