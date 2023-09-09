@@ -43,7 +43,7 @@ func (server *server) Liveness(check func() error) error {
 			return err
 		}
 
-		server.logger.Debug("live", "timeout", server.conf.Timeout)
+		server.logger.Debugw("live", "timeout", server.conf.Timeout)
 		time.Sleep(time.Millisecond * time.Duration(server.conf.Timeout))
 	}
 }

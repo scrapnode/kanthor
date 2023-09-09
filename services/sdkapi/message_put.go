@@ -76,6 +76,8 @@ func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usec
 		}
 
 		res := &MessagePutRes{ucres.Msg.Id}
+
+		logger.Debugw("put message", "msg_id", ucres.Msg.Id)
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }
