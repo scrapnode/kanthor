@@ -71,7 +71,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			if err := creds(uc, ctx, account.Workspace, withCreds); err != nil {
+			if err := creds(coord, uc, ctx, account.Workspace, withCreds); err != nil {
 				return err
 			}
 
