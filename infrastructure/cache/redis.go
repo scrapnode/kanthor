@@ -73,7 +73,7 @@ func (cache *redis) Get(ctx context.Context, key string) ([]byte, error) {
 		return nil, ErrEntryNotFound
 	}
 
-	return entry, nil
+	return entry, err
 }
 
 func (cache *redis) Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error {
