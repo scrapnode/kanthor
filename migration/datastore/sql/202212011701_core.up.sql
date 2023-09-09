@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS kanthor_message
     body      TEXT         NOT NULL,
     metadata  TEXT         NOT NULL
 );
-CREATE INDEX kanthor_msg_scan ON kanthor_message (bucket DESC, app_id DESC, type DESC);
+CREATE INDEX IF NOT EXISTS kanthor_msg_scan ON kanthor_message (bucket DESC, app_id DESC, type DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_request
 (
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS kanthor_request
     headers   TEXT          NOT NULL,
     body      TEXT          NOT NULL
 );
-CREATE INDEX kanthor_req_scan ON kanthor_request (bucket DESC, app_id DESC, type DESC);
+CREATE INDEX IF NOT EXISTS kanthor_req_scan ON kanthor_request (bucket DESC, app_id DESC, type DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_response
 (
@@ -51,6 +51,6 @@ CREATE TABLE IF NOT EXISTS kanthor_response
 
     error TEXT NOT NULL
 );
-CREATE INDEX kanthor_res_scan ON kanthor_response (bucket DESC, app_id DESC, type DESC);
+CREATE INDEX IF NOT EXISTS kanthor_res_scan ON kanthor_response (bucket DESC, app_id DESC, type DESC);
 
 COMMIT;
