@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/usecases/transformation"
+	"net/http"
 	"time"
 )
 
@@ -31,6 +32,13 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 		Headers:  req.Headers,
 		Metadata: req.Metadata,
 	}
+	if msg.Headers == nil {
+		msg.Headers = http.Header{}
+	}
+	if msg.Metadata == nil {
+		msg.Metadata = entities.Metadata{}
+	}
+
 	msg.GenId()
 	msg.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
 	msg.Metadata[entities.MetaMsgId] = msg.Id
