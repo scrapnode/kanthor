@@ -54,13 +54,15 @@ func UseAuthx(
 			}
 			res, err := send(req)
 			if err != nil {
-				ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				logger.Error(err)
+				ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "remote auth is failed"})
 				return
 			}
 
 			var auth PortalAuth
 			if err := json.Unmarshal(res.Body, &auth); err != nil {
-				ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				logger.Error(err)
+				ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unable to parse auth response from remote server"})
 				return
 			}
 
@@ -94,7 +96,8 @@ func UseAuthx(
 		credentials := ginctx.Request.Header.Get(authenticator.HeaderAuth)
 		ctx, err := sdkauth(validator, uc, ctx, credentials)
 		if err != nil {
-			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			logger.Error(err)
+			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unable to verify your credentials"})
 			return
 		}
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
@@ -103,7 +106,8 @@ func UseAuthx(
 		act := ginctx.Request.Method
 		ok, err := authz.Enforce(acc.Sub, ws.Id, obj, act)
 		if err != nil {
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			logger.Error(err)
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "unable to enforce permission"})
 			return
 		}
 		if !ok {
@@ -114,10 +118,6 @@ func UseAuthx(
 		ginctx.Set(gateway.KeyCtx, ctx)
 		ginctx.Next()
 	}
-}
-
-func portalauth() {
-
 }
 
 func sdkauth(
