@@ -29,7 +29,7 @@ func (client *client) Liveness() error {
 		return err
 	}
 
-	delta := int64(client.conf.Timeout * client.conf.MaxTry)
+	delta := int64(client.conf.Timeout * (client.conf.MaxTry + 1))
 	if diff > delta {
 		return fmt.Errorf("timeout (diff:%d delta:%d)", diff, delta)
 	}
