@@ -27,7 +27,10 @@ func New(
 		metrics:    metrics,
 		uc:         uc,
 
-		healthcheck: background.NewServer(healthcheck.DefaultConfig("kanthor.dispatcher")),
+		healthcheck: background.NewServer(
+			healthcheck.DefaultConfig("kanthor.dispatcher"),
+			logger.With("healthcheck", "background"),
+		),
 	}
 }
 

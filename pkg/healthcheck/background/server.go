@@ -4,19 +4,21 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"os"
 	"path"
 	"time"
 )
 
-func NewServer(conf *healthcheck.Config) healthcheck.Server {
-	return &server{conf: conf, dest: path.Join(Dest, conf.Dest)}
+func NewServer(conf *healthcheck.Config, logger logging.Logger) healthcheck.Server {
+	return &server{conf: conf, logger: logger, dest: path.Join(Dest, conf.Dest)}
 }
 
 type server struct {
-	conf *healthcheck.Config
-	dest string
+	conf   *healthcheck.Config
+	logger logging.Logger
+	dest   string
 }
 
 func (server *server) Readiness(check func() error) error {
@@ -27,6 +29,7 @@ func (server *server) Readiness(check func() error) error {
 		return err
 	}
 
+	server.logger.Debug("ready")
 	return nil
 }
 
@@ -40,6 +43,7 @@ func (server *server) Liveness(check func() error) error {
 			return err
 		}
 
+		server.logger.Debug("live", "timeout", server.conf.Timeout)
 		time.Sleep(time.Millisecond * time.Duration(server.conf.Timeout))
 	}
 }
