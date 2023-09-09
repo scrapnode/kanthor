@@ -6,6 +6,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/healthcheck"
+	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/services"
 	usecase "github.com/scrapnode/kanthor/usecases/dispatcher"
 )
@@ -24,6 +26,8 @@ func New(
 		subscriber: subscriber,
 		metrics:    metrics,
 		uc:         uc,
+
+		healthcheck: background.NewServer(healthcheck.DefaultConfig("kanthor.dispatcher")),
 	}
 }
 
@@ -33,6 +37,8 @@ type dispatcher struct {
 	subscriber streaming.Subscriber
 	metrics    metric.Metrics
 	uc         usecase.Dispatcher
+
+	healthcheck healthcheck.Server
 }
 
 func (service *dispatcher) Start(ctx context.Context) error {
@@ -71,6 +77,26 @@ func (service *dispatcher) Stop(ctx context.Context) error {
 }
 
 func (service *dispatcher) Run(ctx context.Context) error {
+	if err := service.readiness(); err != nil {
+		return err
+	}
+
+	go func() {
+		err := service.healthcheck.Liveness(func() error {
+			return nil
+		})
+		if err != nil {
+			service.logger.Error(err)
+		}
+	}()
+
 	service.logger.Info("running")
 	return service.subscriber.Sub(ctx, Consumer(service))
+}
+
+func (service *dispatcher) readiness() error {
+	return service.healthcheck.Readiness(func() error {
+		// @TODO: add starting up checking here
+		return nil
+	})
 }
