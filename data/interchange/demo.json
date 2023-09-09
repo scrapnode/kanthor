@@ -1,55 +1,47 @@
 {
-  "workspaces": [
+  "name": "demo",
+  "applications": [
     {
-      "name": "demo",
-      "tier": {
-        "name": "default"
-      },
-      "credentials": [],
-      "applications": [
+      "name": "httpbin.org demo",
+      "endpoints": [
         {
-          "name": "httpbin.org demo",
-          "endpoints": [
+          "name": "POST httpbin.org/post",
+          "method": "POST",
+          "uri": "https://httpbin.org/post",
+          "rules": [
             {
-              "name": "POST httpbin.org/post",
-              "method": "POST",
-              "uri": "https://httpbin.org/post",
-              "rules": [
-                {
-                  "name": "pass-through",
-                  "condition_source": "type",
-                  "condition_expression": "regex::.*"
-                }
-              ]
-            },
-            {
-              "name": "PUT httpbin.org/put",
-              "method": "PUT",
-              "uri": "https://httpbin.org/put",
-              "rules": [
-                {
-                  "name": "pass-through",
-                  "condition_source": "type",
-                  "condition_expression": "regex::.*"
-                }
-              ]
+              "name": "pass-through",
+              "condition_source": "type",
+              "condition_expression": "regex::.*"
             }
           ]
         },
         {
-          "name": "example.com demo",
-          "endpoints": [
+          "name": "PUT httpbin.org/put",
+          "method": "PUT",
+          "uri": "https://httpbin.org/put",
+          "rules": [
             {
-              "name": "POST https://example.com/",
-              "method": "POST",
-              "uri": "https://example.com",
-              "rules": [
-                {
-                  "name": "pass-through",
-                  "condition_source": "type",
-                  "condition_expression": "regex::.*"
-                }
-              ]
+              "name": "pass-through",
+              "condition_source": "type",
+              "condition_expression": "regex::.*"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "example.com demo",
+      "endpoints": [
+        {
+          "name": "POST https://example.com/",
+          "method": "POST",
+          "uri": "https://example.com",
+          "rules": [
+            {
+              "name": "pass-through",
+              "condition_source": "type",
+              "condition_expression": "regex::.*"
             }
           ]
         }

@@ -7,8 +7,6 @@ import (
 )
 
 type Workspace interface {
-	BulkCreate(ctx context.Context, docs []entities.Workspace) ([]string, error)
-
 	Create(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error)
 	Update(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error)
 	List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error)
@@ -17,16 +15,12 @@ type Workspace interface {
 }
 
 type WorkspaceTier interface {
-	BulkCreate(ctx context.Context, docs []entities.WorkspaceTier) ([]string, error)
-
 	Create(ctx context.Context, doc *entities.WorkspaceTier) (*entities.WorkspaceTier, error)
 	Update(ctx context.Context, doc *entities.WorkspaceTier) (*entities.WorkspaceTier, error)
 	Get(ctx context.Context, wsId string) (*entities.WorkspaceTier, error)
 }
 
 type WorkspaceCredentials interface {
-	BulkCreate(ctx context.Context, docs []entities.WorkspaceCredentials) ([]string, error)
-
 	Create(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error)
 	Update(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error)
 	Get(ctx context.Context, wsId, id string) (*entities.WorkspaceCredentials, error)

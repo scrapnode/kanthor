@@ -50,7 +50,7 @@ func UseWorkspaceCredentialsCreate(
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 
-		ucreq := &portaluc.WorkspaceCredentialsGenerateReq{WorkspaceId: ws.Id, Count: 1}
+		ucreq := &portaluc.WorkspaceCredentialsGenerateReq{WorkspaceId: ws.Id, Name: req.Name, ExpiredAt: req.ExpiredAt}
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
@@ -67,16 +67,16 @@ func UseWorkspaceCredentialsCreate(
 		err = coord.Send(
 			ctx,
 			command.WorkspaceCredentialsCreated,
-			&command.WorkspaceCredentialsCreatedReq{Docs: ucres.Credentials},
+			&command.WorkspaceCredentialsCreatedReq{Docs: []entities.WorkspaceCredentials{*ucres.Credentials}},
 		)
 		if err != nil {
 			logger.Error(err)
 		}
 
 		res := &WorkspaceCredentialsCreateRes{
-			Id:       ucres.Credentials[0].Id,
-			User:     ucres.Credentials[0].Id,
-			Password: ucres.Passwords[ucres.Credentials[0].Id],
+			Id:       ucres.Credentials.Id,
+			User:     ucres.Credentials.Id,
+			Password: ucres.Password,
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

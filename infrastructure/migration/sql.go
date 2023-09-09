@@ -7,11 +7,17 @@ import (
 )
 
 func NewSql(runner *migrate.Migrate) Migrator {
+
 	return &sql{runner: runner}
 }
 
 type sql struct {
 	runner *migrate.Migrate
+}
+
+func (migration *sql) Version() (uint, bool) {
+	version, dirty, _ := migration.runner.Version()
+	return version, dirty
 }
 
 func (migration *sql) Steps(n int) error {

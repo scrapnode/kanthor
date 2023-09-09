@@ -23,13 +23,13 @@ type WorkspaceCredentials interface {
 
 type WorkspaceCredentialsGenerateReq struct {
 	WorkspaceId string `validate:"required,startswith=ws_"`
-	Name        string
-	Count       int `validate:"required,gt=0,lt=10"`
+	Name        string `validate:"required"`
+	ExpiredAt   int64
 }
 
 type WorkspaceCredentialsGenerateRes struct {
-	Credentials []entities.WorkspaceCredentials
-	Passwords   map[string]string
+	Credentials *entities.WorkspaceCredentials
+	Password    string
 }
 
 type WorkspaceCredentialsUpdateReq struct {

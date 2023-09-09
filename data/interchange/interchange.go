@@ -1,26 +1,44 @@
 package interchange
 
-import "github.com/scrapnode/kanthor/domain/entities"
+import (
+	"encoding/json"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
+)
 
-type Interchange struct {
-	Workspaces []Workspace `json:"workspaces"`
+func Unmarshal(data []byte) (*Workspace, error) {
+	var ws Workspace
+	if err := json.Unmarshal(data, &ws); err != nil {
+		return nil, err
+	}
+	if err := validator.New().Struct(ws); err != nil {
+		return nil, err
+	}
+
+	return &ws, nil
 }
 
 type Workspace struct {
-	*entities.Workspace
-	Applications []Application `json:"applications"`
+	Applications []Application `json:"applications" validate:"required,gt=0"`
 }
 
 type Application struct {
-	*entities.Application
-	Endpoints []Endpoint `json:"endpoints"`
+	Name      string     `json:"name" validate:"required"`
+	Endpoints []Endpoint `json:"endpoints" validate:"required,gt=0"`
 }
 
 type Endpoint struct {
-	*entities.Endpoint
-	Rules []EndpointRule `json:"rules"`
+	Name string `json:"name" validate:"required"`
+
+	SecretKey string         `json:"secret_key"`
+	Method    string         `json:"method" validate:"required,oneof=GET POST PUT PATCH"`
+	Uri       string         `json:"uri" validate:"required,uri"`
+	Rules     []EndpointRule `json:"rules" validate:"required,gt=0"`
 }
 
 type EndpointRule struct {
-	*entities.EndpointRule
+	Name                string `json:"name" validate:"required"`
+	Priority            int32  `json:"priority" validate:"required,gte=0"`
+	Exclusionary        bool   `json:"exclusionary" validate:"boolean"`
+	ConditionSource     string `json:"condition_source" validate:"required"`
+	ConditionExpression string `json:"condition_expression" validate:"required"`
 }

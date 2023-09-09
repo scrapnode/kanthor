@@ -13,25 +13,6 @@ type SqlWorkspace struct {
 	client *gorm.DB
 }
 
-func (sql *SqlWorkspace) BulkCreate(ctx context.Context, docs []entities.Workspace) ([]string, error) {
-	ids := []string{}
-	if len(docs) == 0 {
-		return ids, nil
-	}
-
-	for i, doc := range docs {
-		ids = append(ids, doc.Id)
-		docs[i] = doc
-	}
-
-	transaction := database.SqlClientFromContext(ctx, sql.client)
-	if tx := transaction.WithContext(ctx).Create(docs); tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return ids, nil
-}
-
 func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error) {
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	if tx := transaction.Create(doc); tx.Error != nil {

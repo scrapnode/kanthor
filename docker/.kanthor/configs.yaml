@@ -47,20 +47,15 @@ coordinator:
 
 database:
   uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.database
+  migration:
+    source: file://./migration/database/sql
 
 datastore:
   uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.datastore
+  migration:
+    source: file://./migration/datastore/sql
 
 # services
-migration:
-  tasks:
-    - name: database
-      uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.database
-      source: file://./migration/database/sql
-    - name: datastore
-      uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.datastore
-      source: file://./migration/datastore/sql
-
 sdkapi:
   cache: *cache
   portal_connection:

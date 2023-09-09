@@ -1,6 +1,7 @@
-package migrate
+package setup
 
 import (
+	"github.com/scrapnode/kanthor/cmd/setup/account"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/spf13/cobra"
@@ -8,11 +9,10 @@ import (
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
-		Use: "migrate",
+		Use: "setup",
 	}
 
-	command.AddCommand(NewDatabase(conf, logger))
-	command.AddCommand(NewDatastore(conf, logger))
+	command.AddCommand(account.New(conf, logger))
 
 	return command
 }
