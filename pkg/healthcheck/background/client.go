@@ -24,12 +24,12 @@ func (client *client) Readiness() error {
 }
 
 func (client *client) Liveness() error {
-	diff, err := client.read("readiness")
+	diff, err := client.read("liveness")
 	if err != nil {
 		return err
 	}
 
-	delta := int64(client.conf.Timeout * (client.conf.MaxTry + 1))
+	delta := int64(client.conf.Timeout * client.conf.MaxTry)
 	if diff > delta {
 		return fmt.Errorf("timeout (diff:%d delta:%d)", diff, delta)
 	}
