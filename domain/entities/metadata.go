@@ -1,8 +1,9 @@
 package entities
 
 var (
-	MetaEpId  = "kanthor.ep.id"
-	MetaEprId = "kanthor.epr.id"
+	MetaIdempotencyKey = "kanthor.idempotency_key"
+	MetaEpId           = "kanthor.ep.id"
+	MetaEprId          = "kanthor.epr.id"
 )
 
 type Metadata map[string]string

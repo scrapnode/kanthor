@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
@@ -61,7 +62,7 @@ func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usec
 			Type:     req.Type,
 			Body:     body,
 			Headers:  headers,
-			Metadata: entities.Metadata{},
+			Metadata: entities.Metadata{entities.MetaIdempotencyKey: ginctx.GetHeader(ginmw.HeaderIdempotencyKey)},
 		}
 
 		if err := validator.Struct(ucreq); err != nil {
