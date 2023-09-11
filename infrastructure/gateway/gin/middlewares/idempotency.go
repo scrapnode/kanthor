@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+var HeaderIdempotencyKey = "Idempotency-Key"
+
 func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		method := ginctx.Request.Method
@@ -19,7 +21,7 @@ func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency) gin.H
 			return
 		}
 
-		key := ginctx.GetHeader("Idempotency-Key")
+		key := ginctx.GetHeader(HeaderIdempotencyKey)
 		if key == "" {
 			logger.Warnw("no idempotency key", "method", method)
 			ginctx.Next()

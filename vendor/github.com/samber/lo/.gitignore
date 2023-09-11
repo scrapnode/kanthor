@@ -1,3 +1,8 @@
+
+# Created by https://www.toptal.com/developers/gitignore/api/go
+# Edit at https://www.toptal.com/developers/gitignore?templates=go
+
+### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
@@ -20,11 +25,14 @@
 # Go workspace file
 go.work
 
-# OSs
-.DS_Store
+### Go Patch ###
+/vendor/
+/Godeps/
 
-# IDEs
-.idea
-.kanthor
-!.kanthor/.gitignore
-!docker/.kanthor/configs.yaml
+# End of https://www.toptal.com/developers/gitignore/api/go
+
+cover.out
+cover.html
+.vscode
+
+.idea/

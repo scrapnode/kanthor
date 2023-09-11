@@ -511,10 +511,6 @@ definitions:
         additionalProperties:
           type: string
         type: object
-      metadata:
-        additionalProperties:
-          type: string
-        type: object
       type:
         example: testing.debug
         type: string

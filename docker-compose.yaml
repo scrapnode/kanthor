@@ -44,18 +44,39 @@ services:
       timeout: 4s
       retries: 16
 
-  migrations:
+  migration-database:
     depends_on:
       warehouse:
         condition: service_healthy
-    container_name: kanthor-services-migrations
+    container_name: kanthor-services-migration-database
     build: .
     restart: on-failure
     networks:
       - kanthor
     volumes:
       - ./docker/.kanthor:/root/.kanthor
-    command: " migrate database up &&  migrate datastore up"
+    command: 
+      - kanthor
+      - migrate
+      - database
+      - up
+
+  migration-datastore:
+    depends_on:
+      warehouse:
+        condition: service_healthy
+    container_name: kanthor-services-migration-datastore
+    build: .
+    restart: on-failure
+    networks:
+      - kanthor
+    volumes:
+      - ./docker/.kanthor:/root/.kanthor
+    command: 
+      - kanthor
+      - migrate
+      - datastore
+      - up
 
   sdkapi:
     depends_on:
@@ -77,7 +98,9 @@ services:
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
-      - kanthor serve sdkapi
+      - kanthor
+      - serve
+      - sdkapi
 
   portalapi:
     depends_on:
@@ -87,7 +110,7 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
-      migrations:
+      migration-database:
         condition: service_started
     container_name: kanthor-services-portalapi
     build: .
@@ -99,7 +122,9 @@ services:
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
-      - kanthor serve portalapi
+      - kanthor
+      - serve
+      - portalapi
 
   scheduler:
     depends_on:
@@ -109,7 +134,7 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
-      migrations:
+      migration-database:
         condition: service_started
     container_name: kanthor-services-scheduler
     build: .
@@ -119,7 +144,9 @@ services:
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
-      - kanthor serve scheduler
+      - kanthor
+      - serve
+      - scheduler
 
   dispatcher:
     depends_on:
@@ -129,7 +156,7 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
-      migrations:
+      migration-database:
         condition: service_started
     container_name: kanthor-services-dispatcher
     build: .
@@ -139,7 +166,9 @@ services:
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
-      - kanthor serve dispatcher
+      - kanthor
+      - serve
+      - dispatcher
 
   storage:
     depends_on:
@@ -147,7 +176,7 @@ services:
         condition: service_started
       warehouse:
         condition: service_healthy
-      migrations:
+      migration-datastore:
         condition: service_started
     container_name: kanthor-services-storage
     build: .
@@ -157,7 +186,9 @@ services:
     volumes:
       - ./docker/.kanthor:/root/.kanthor
     command:
-      - kanthor serve storage
+      - kanthor
+      - serve
+      - storage
 
 networks:
   kanthor:

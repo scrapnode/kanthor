@@ -2,13 +2,14 @@ package sdk
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/usecases/transformation"
-	"net/http"
-	"time"
 )
 
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
@@ -25,24 +26,20 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 
 	wst := ctx.Value(authorizator.CtxWst).(*entities.WorkspaceTier)
 	msg := &entities.Message{
+		AttId:    utils.ID("att"),
 		Tier:     wst.Name,
 		AppId:    app.Id,
 		Type:     req.Type,
 		Body:     req.Body,
-		Headers:  req.Headers,
-		Metadata: req.Metadata,
+		Headers:  entities.Header{Header: http.Header{}},
+		Metadata: entities.Metadata{},
 	}
-	if msg.Headers == nil {
-		msg.Headers = http.Header{}
-	}
-	if msg.Metadata == nil {
-		msg.Metadata = entities.Metadata{}
-	}
+	// must use merge function otherwise you will edit the original data
+	msg.Headers.Merge(req.Headers)
+	msg.Metadata.Merge(req.Metadata)
 
 	msg.GenId()
 	msg.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
-	msg.Metadata[entities.MetaMsgId] = msg.Id
-	msg.Metadata[entities.MetaAttId] = utils.ID("att")
 
 	event, err := transformation.EventFromMessage(msg)
 	if err != nil {

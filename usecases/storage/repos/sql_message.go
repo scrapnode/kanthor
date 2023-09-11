@@ -3,15 +3,31 @@ package repos
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
-	"strings"
 )
 
 type SqlMessage struct {
 	client *gorm.DB
 }
+
+var MessageMapping = map[string]func(doc entities.Message) any{
+	"id":        func(doc entities.Message) any { return doc.Id },
+	"timestamp": func(doc entities.Message) any { return doc.Timestamp },
+	"bucket":    func(doc entities.Message) any { return doc.Bucket },
+	"att_id":    func(doc entities.Message) any { return doc.AttId },
+	"tier":      func(doc entities.Message) any { return doc.Tier },
+	"app_id":    func(doc entities.Message) any { return doc.AppId },
+	"type":      func(doc entities.Message) any { return doc.Type },
+	"metadata":  func(doc entities.Message) any { return utils.Stringify(doc.Metadata) },
+	"headers":   func(doc entities.Message) any { return utils.Stringify(doc.Headers) },
+	"body":      func(doc entities.Message) any { return string(doc.Body) },
+}
+var MessageMappingCols = lo.Keys(MessageMapping)
 
 func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]entities.TSEntity, error) {
 	records := []entities.TSEntity{}
@@ -20,7 +36,6 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]e
 		return records, nil
 	}
 
-	cols := []string{"id", "timestamp", "bucket", "tier", "app_id", "type", "metadata", "headers", "body"}
 	names := []string{}
 	values := map[string]interface{}{}
 	for k, doc := range docs {
@@ -31,37 +46,18 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]e
 		records = append(records, record)
 
 		keys := []string{}
-		for _, col := range cols {
+		for _, col := range MessageMappingCols {
 			key := fmt.Sprintf("%s_%d", col, k)
 			keys = append(keys, "@"+key)
-			switch col {
-			case "id":
-				values[key] = doc.Id
-			case "timestamp":
-				values[key] = doc.Timestamp
-			case "bucket":
-				values[key] = doc.Bucket
-			case "tier":
-				values[key] = doc.Tier
-			case "app_id":
-				values[key] = doc.AppId
-			case "type":
-				values[key] = doc.Type
-			case "metadata":
-				values[key] = utils.Stringify(doc.Metadata)
-			case "headers":
-				values[key] = utils.Stringify(doc.Headers)
-			case "body":
-				values[key] = string(doc.Body)
-			default:
-				return nil, fmt.Errorf("unknown column %s", col)
-			}
+
+			mapping := MessageMapping[col]
+			values[key] = mapping(doc)
 		}
 		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 	}
 
 	tableName := fmt.Sprintf(`"%s"`, (&entities.Message{}).TableName())
-	columns := fmt.Sprintf(`"%s"`, strings.Join(cols, `","`))
+	columns := fmt.Sprintf(`"%s"`, strings.Join(MessageMappingCols, `","`))
 	statement := fmt.Sprintf(
 		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(id) DO NOTHING;",
 		tableName,

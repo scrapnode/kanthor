@@ -1415,12 +1415,6 @@ const docTemplateSdk = `{
                         "type": "string"
                     }
                 },
-                "metadata": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
                 "type": {
                     "type": "string",
                     "example": "testing.debug"

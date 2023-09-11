@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
@@ -11,7 +12,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
-	"net/http"
 )
 
 type Message interface {
@@ -23,7 +23,7 @@ type MessagePutReq struct {
 	Type  string `validate:"required"`
 
 	Body     []byte `validate:"required"`
-	Headers  http.Header
+	Headers  entities.Header
 	Metadata entities.Metadata
 }
 

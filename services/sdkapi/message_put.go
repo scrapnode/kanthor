@@ -3,20 +3,21 @@ package sdkapi
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
-	"net/http"
 )
 
 type MessagePutReq struct {
 	Type string `json:"type" binding:"required" example:"testing.debug"`
 
-	Body     map[string]interface{} `json:"body" binding:"required"`
-	Headers  map[string]string      `json:"headers"`
-	Metadata map[string]string      `json:"metadata"`
+	Body    map[string]interface{} `json:"body" binding:"required"`
+	Headers map[string]string      `json:"headers"`
 }
 
 type MessagePutRes struct {
@@ -49,7 +50,7 @@ func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usec
 
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		appId := ginctx.Param("app_id")
-		headers := http.Header{}
+		headers := entities.Header{Header: http.Header{}}
 		if len(req.Headers) > 0 {
 			for k, v := range req.Headers {
 				headers.Set(k, v)
@@ -60,8 +61,9 @@ func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usec
 			Type:     req.Type,
 			Body:     body,
 			Headers:  headers,
-			Metadata: req.Metadata,
+			Metadata: entities.Metadata{},
 		}
+
 		if err := validator.Struct(ucreq); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))

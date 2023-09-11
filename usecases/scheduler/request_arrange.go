@@ -4,15 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc/pool"
-	"regexp"
-	"strings"
-	"time"
 )
 
 type applicable struct {
@@ -68,9 +70,7 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 		p.Go(func() {
 			entKey := utils.Key(
 				req.Message.AppId,
-				ent.Metadata.Get(entities.MetaEpId),
-				ent.Metadata.Get(entities.MetaEprId),
-				ent.Metadata.Get(entities.MetaMsgId),
+				req.Message.AttId,
 				ent.Id,
 			)
 
@@ -141,19 +141,22 @@ func (uc *request) generateRequestsFromEndpoints(
 		// construct request
 		ep := app.Endpoints[epr.EndpointId]
 		req := entities.Request{
+			AttId:    utils.ID("att"),
 			Tier:     msg.Tier,
 			AppId:    msg.AppId,
 			Type:     msg.Type,
 			Uri:      ep.Uri,
 			Method:   ep.Method,
-			Headers:  msg.Headers,
-			Body:     msg.Body,
+			Headers:  entities.Header{Header: http.Header{}},
 			Metadata: entities.Metadata{},
 		}
+		// must use merge function otherwise you will edit the original data
+		req.Headers.Merge(msg.Headers)
+		req.Metadata.Merge(msg.Metadata)
 		req.GenId()
 		req.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
 
-		req.Headers.Set("idempotency-key", req.Id)
+		req.Headers.Set("idempotency-key", req.AttId)
 		req.Headers.Set("kanthor-msg-id", msg.Id)
 		req.Headers.Set("kanthor-req-ts", fmt.Sprintf("%d", req.Timestamp))
 
@@ -161,10 +164,8 @@ func (uc *request) generateRequestsFromEndpoints(
 		signed := uc.signature.Sign(sign, ep.SecretKey)
 		req.Headers.Set("kanthor-req-signature", signed)
 
-		req.Metadata.Merge(msg.Metadata)
 		req.Metadata.Set(entities.MetaEpId, ep.Id)
 		req.Metadata.Set(entities.MetaEprId, epr.Id)
-		req.Metadata.Set(entities.MetaReqId, req.Id)
 
 		requests = append(requests, req)
 	}

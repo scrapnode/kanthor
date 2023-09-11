@@ -3,15 +3,33 @@ package repos
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
-	"strings"
 )
 
 type SqlRequest struct {
 	client *gorm.DB
 }
+
+var RequestMapping = map[string]func(doc entities.Request) any{
+	"id":        func(doc entities.Request) any { return doc.Id },
+	"timestamp": func(doc entities.Request) any { return doc.Timestamp },
+	"bucket":    func(doc entities.Request) any { return doc.Bucket },
+	"att_id":    func(doc entities.Request) any { return doc.AttId },
+	"tier":      func(doc entities.Request) any { return doc.Tier },
+	"app_id":    func(doc entities.Request) any { return doc.AppId },
+	"type":      func(doc entities.Request) any { return doc.Type },
+	"metadata":  func(doc entities.Request) any { return utils.Stringify(doc.Metadata) },
+	"headers":   func(doc entities.Request) any { return utils.Stringify(doc.Headers) },
+	"body":      func(doc entities.Request) any { return string(doc.Body) },
+	"uri":       func(doc entities.Request) any { return doc.Uri },
+	"method":    func(doc entities.Request) any { return doc.Method },
+}
+var RequestMappingCols = lo.Keys(RequestMapping)
 
 func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]entities.TSEntity, error) {
 	records := []entities.TSEntity{}
@@ -20,7 +38,6 @@ func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]e
 		return records, nil
 	}
 
-	cols := []string{"id", "timestamp", "bucket", "tier", "app_id", "type", "metadata", "headers", "body", "uri", "method"}
 	names := []string{}
 	values := map[string]interface{}{}
 	for k, doc := range docs {
@@ -31,41 +48,18 @@ func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]e
 		records = append(records, record)
 
 		keys := []string{}
-		for _, col := range cols {
+		for _, col := range RequestMappingCols {
 			key := fmt.Sprintf("%s_%d", col, k)
 			keys = append(keys, "@"+key)
-			switch col {
-			case "id":
-				values[key] = doc.Id
-			case "timestamp":
-				values[key] = doc.Timestamp
-			case "bucket":
-				values[key] = doc.Bucket
-			case "tier":
-				values[key] = doc.Tier
-			case "app_id":
-				values[key] = doc.AppId
-			case "type":
-				values[key] = doc.Type
-			case "metadata":
-				values[key] = utils.Stringify(doc.Metadata)
-			case "headers":
-				values[key] = utils.Stringify(doc.Headers)
-			case "body":
-				values[key] = string(doc.Body)
-			case "uri":
-				values[key] = doc.Uri
-			case "method":
-				values[key] = doc.Method
-			default:
-				return nil, fmt.Errorf("unknown column %s", col)
-			}
+
+			mapping := RequestMapping[col]
+			values[key] = mapping(doc)
 		}
 		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 	}
 
 	tableName := fmt.Sprintf(`"%s"`, (&entities.Request{}).TableName())
-	columns := fmt.Sprintf(`"%s"`, strings.Join(cols, `","`))
+	columns := fmt.Sprintf(`"%s"`, strings.Join(RequestMappingCols, `","`))
 	statement := fmt.Sprintf(
 		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(id) DO NOTHING;",
 		tableName,
