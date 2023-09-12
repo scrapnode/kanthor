@@ -141,7 +141,7 @@ func (uc *request) generateRequestsFromEndpoints(
 		// construct request
 		ep := app.Endpoints[epr.EndpointId]
 		req := entities.Request{
-			AttId:    utils.ID("att"),
+			AttId:    msg.AttId,
 			Tier:     msg.Tier,
 			AppId:    msg.AppId,
 			Type:     msg.Type,
