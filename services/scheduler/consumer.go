@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/scheduler/transformation"
 	"github.com/sourcegraph/conc"
 )
@@ -31,18 +32,18 @@ func Consumer(service *scheduler) streaming.SubHandler {
 					return
 				}
 
-				request := transformation.MsgToArrangeReq(msg)
-				if err := service.validator.Struct(request); err != nil {
+				ucreq := transformation.MsgToArrangeReq(msg)
+				if err := service.validator.Struct(ucreq); err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
-					service.logger.Errorw(err.Error(), "data", event.String())
+					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 					results[event.Id] = err
 					return
 				}
 
-				response, err := service.uc.Request().Arrange(ctx, request)
+				response, err := service.uc.Request().Arrange(ctx, ucreq)
 				if err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
-					service.logger.Errorw(err.Error(), "data", event.String())
+					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 					results[event.Id] = err
 					return
 				}

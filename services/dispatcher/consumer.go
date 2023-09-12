@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/dispatcher/transformation"
 	"github.com/sourcegraph/conc"
 )
@@ -31,25 +32,25 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 					return
 				}
 
-				request := transformation.ReqToSendReq(req)
-				if err := service.validator.Struct(request); err != nil {
+				ucreq := transformation.ReqToSendReq(req)
+				if err := service.validator.Struct(ucreq); err != nil {
 					service.metrics.Count(ctx, "dispatcher_send_error", 1)
-					service.logger.Errorw(err.Error(), "data", event.String())
+					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 					results[event.Id] = err
 					return
 				}
 
-				response, err := service.uc.Forwarder().Send(ctx, request)
+				response, err := service.uc.Forwarder().Send(ctx, ucreq)
 				if err != nil {
 					service.metrics.Count(ctx, "dispatcher_send_error", 1)
-					service.logger.Errorw(err.Error(), "data", event.String())
+					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 					results[event.Id] = err
 					return
 				}
 				// custom handler for error
 				if response.Response.Error != "" {
 					service.metrics.Count(ctx, "dispatcher_receive_error", 1)
-					service.logger.Errorw(response.Response.Error, "data", event.String())
+					service.logger.Errorw(response.Response.Error, "data", utils.Stringify(ucreq))
 					results[event.Id] = err
 					return
 				}
