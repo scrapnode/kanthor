@@ -145,10 +145,11 @@ func (uc *request) generateRequestsFromEndpoints(
 			Tier:     msg.Tier,
 			AppId:    msg.AppId,
 			Type:     msg.Type,
+			Metadata: entities.Metadata{},
+			Headers:  entities.Header{Header: http.Header{}},
+			Body:     msg.Body,
 			Uri:      ep.Uri,
 			Method:   ep.Method,
-			Headers:  entities.Header{Header: http.Header{}},
-			Metadata: entities.Metadata{},
 		}
 		// must use merge function otherwise you will edit the original data
 		req.Headers.Merge(msg.Headers)
