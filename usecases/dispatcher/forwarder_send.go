@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -34,7 +35,7 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 		Tier:     req.Request.Tier,
 		AppId:    req.Request.AppId,
 		Type:     req.Request.Type,
-		Headers:  entities.Header{},
+		Headers:  entities.Header{Header: http.Header{}},
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data
