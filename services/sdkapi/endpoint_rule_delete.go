@@ -2,13 +2,15 @@ package sdkapi
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
-	"net/http"
 )
 
 type EndpointRuleDeleteRes struct {
@@ -39,7 +41,7 @@ func UseEndpointRuleDelete(logger logging.Logger, validator validator.Validator,
 
 		ucres, err := uc.EndpointRule().Delete(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

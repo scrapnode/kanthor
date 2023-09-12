@@ -2,14 +2,16 @@ package portalapi
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
-	"net/http"
 )
 
 type WorkspaceCredentialsUpdateReq struct {
@@ -48,7 +50,7 @@ func UseWorkspaceCredentialsUpdate(logger logging.Logger, validator validator.Va
 			Name:        req.Name,
 		}
 		if err := validator.Struct(ucreq); err != nil {
-			logger.Error(err)
+			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}

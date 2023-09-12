@@ -11,6 +11,7 @@ import (
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
 
@@ -66,7 +67,7 @@ func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usec
 		}
 
 		if err := validator.Struct(ucreq); err != nil {
-			logger.Error(err)
+			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}

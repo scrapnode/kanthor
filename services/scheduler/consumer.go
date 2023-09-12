@@ -34,7 +34,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				request := transformation.MsgToArrangeReq(msg)
 				if err := service.validator.Struct(request); err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
-					service.logger.Error(err)
+					service.logger.Errorw(err.Error(), "data", event.String())
 					results[event.Id] = err
 					return
 				}
@@ -42,7 +42,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				response, err := service.uc.Request().Arrange(ctx, request)
 				if err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
-					service.logger.Error(err)
+					service.logger.Errorw(err.Error(), "data", event.String())
 					results[event.Id] = err
 					return
 				}
