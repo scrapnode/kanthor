@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )";
 
-sh "$SCRIPT_DIR/scripts/ci_vet.sh"
-sh "$SCRIPT_DIR/scripts/gen_docs.sh"
-sh "$SCRIPT_DIR/scripts/gen_ioc.sh"
+sh "$SCRIPT_DIR/ci_vet.sh"
+sh "$SCRIPT_DIR/gen_docs.sh"
+sh "$SCRIPT_DIR/gen_ioc.sh"
 
 find . -type f -name 'checksum' -exec git add {} \;
 
