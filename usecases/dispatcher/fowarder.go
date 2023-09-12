@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
@@ -18,7 +19,22 @@ type Forwarder interface {
 }
 
 type ForwarderSendReq struct {
-	Request entities.Request `validate:"required"`
+	Request ForwarderSendReqRequest `validate:"required"`
+}
+
+type ForwarderSendReqRequest struct {
+	Id    string `validate:"required,startswith=msg_"`
+	AttId string `validate:"required,startswith=att_"`
+
+	Tier     string            `validate:"required"`
+	AppId    string            `validate:"required,startswith=app_"`
+	Type     string            `validate:"required"`
+	Metadata entities.Metadata `validate:"required"`
+
+	Headers entities.Header `validate:"required"`
+	Body    []byte          `validate:"required"`
+	Uri     string          `validate:"required,uri"`
+	Method  string          `validate:"required"`
 }
 
 type ForwarderSendRes struct {

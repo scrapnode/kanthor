@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -21,6 +22,7 @@ import (
 func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		dispatcher.New,
+		validator.New,
 		ResolveDispatcherSubscriberConfig,
 		streaming.NewSubscriber,
 		ResolveDispatcherMetricsConfig,

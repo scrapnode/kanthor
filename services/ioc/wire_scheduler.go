@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/scheduler"
@@ -21,6 +22,7 @@ import (
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		scheduler.New,
+		validator.New,
 		ResolveSchedulerSubscriberConfig,
 		streaming.NewSubscriber,
 		ResolveSchedulerMetricsConfig,

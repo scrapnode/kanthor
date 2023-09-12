@@ -8,7 +8,7 @@ import (
 
 type Request struct {
 	TSEntity
-	AttId string `json:"attempt_id"`
+	AttId string `json:"att_id"`
 
 	Tier     string   `json:"tier"`
 	AppId    string   `json:"app_id"`

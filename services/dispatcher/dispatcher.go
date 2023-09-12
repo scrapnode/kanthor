@@ -2,10 +2,12 @@ package dispatcher
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/services"
@@ -15,6 +17,7 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
+	validator validator.Validator,
 	subscriber streaming.Subscriber,
 	metrics metric.Metrics,
 	uc usecase.Dispatcher,
@@ -23,6 +26,7 @@ func New(
 	return &dispatcher{
 		conf:       conf,
 		logger:     logger,
+		validator:  validator,
 		subscriber: subscriber,
 		metrics:    metrics,
 		uc:         uc,
@@ -37,6 +41,7 @@ func New(
 type dispatcher struct {
 	conf       *config.Config
 	logger     logging.Logger
+	validator  validator.Validator
 	subscriber streaming.Subscriber
 	metrics    metric.Metrics
 	uc         usecase.Dispatcher

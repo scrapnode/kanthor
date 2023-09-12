@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
@@ -19,7 +20,19 @@ type Request interface {
 }
 
 type RequestArrangeReq struct {
-	Message entities.Message `validate:"required"`
+	Message RequestArrangeReqMessage `validate:"required"`
+}
+
+type RequestArrangeReqMessage struct {
+	Id    string `validate:"required,startswith=msg_"`
+	AttId string `validate:"required,startswith=att_"`
+
+	Tier     string            `validate:"required"`
+	AppId    string            `validate:"required,startswith=app_"`
+	Type     string            `validate:"required"`
+	Metadata entities.Metadata `validate:"required"`
+	Headers  entities.Header   `validate:"required"`
+	Body     []byte            `validate:"required"`
 }
 
 type RequestArrangeRes struct {

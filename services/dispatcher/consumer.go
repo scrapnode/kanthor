@@ -2,11 +2,11 @@ package dispatcher
 
 import (
 	"context"
+	"time"
+
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services/dispatcher/transformation"
-	usecase "github.com/scrapnode/kanthor/usecases/dispatcher"
 	"github.com/sourcegraph/conc"
-	"time"
 )
 
 func Consumer(service *dispatcher) streaming.SubHandler {
@@ -31,7 +31,14 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 					return
 				}
 
-				request := &usecase.ForwarderSendReq{Request: *req}
+				request := transformation.ReqToSendReq(req)
+				if err := service.validator.Struct(request); err != nil {
+					service.metrics.Count(ctx, "dispatcher_send_error", 1)
+					service.logger.Error(err)
+					results[event.Id] = err
+					return
+				}
+
 				response, err := service.uc.Forwarder().Send(ctx, request)
 				if err != nil {
 					service.metrics.Count(ctx, "dispatcher_send_error", 1)

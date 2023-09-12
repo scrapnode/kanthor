@@ -42,6 +42,7 @@ import (
 // Injectors from wire_dispatcher.go:
 
 func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	validatorValidator := validator.New()
 	subscriberConfig := ResolveDispatcherSubscriberConfig(conf)
 	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
 	if err != nil {
@@ -56,7 +57,7 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	if err != nil {
 		return nil, err
 	}
-	service := dispatcher.New(conf, logger, subscriber, metrics, dispatcherDispatcher)
+	service := dispatcher.New(conf, logger, validatorValidator, subscriber, metrics, dispatcherDispatcher)
 	return service, nil
 }
 
@@ -141,6 +142,7 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics
 // Injectors from wire_scheduler.go:
 
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	validatorValidator := validator.New()
 	subscriberConfig := ResolveSchedulerSubscriberConfig(conf)
 	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
 	if err != nil {
@@ -155,7 +157,7 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	service := scheduler.New(conf, logger, subscriber, metrics, schedulerScheduler)
+	service := scheduler.New(conf, logger, validatorValidator, subscriber, metrics, schedulerScheduler)
 	return service, nil
 }
 

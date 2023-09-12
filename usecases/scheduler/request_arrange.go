@@ -94,7 +94,7 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 }
 
 func (uc *request) generateRequestsFromEndpoints(
-	msg entities.Message,
+	msg RequestArrangeReqMessage,
 	app *applicable,
 ) []entities.Request {
 	requests := []entities.Request{}
@@ -174,7 +174,7 @@ func (uc *request) generateRequestsFromEndpoints(
 	return requests
 }
 
-func resolveConditionSource(rule entities.EndpointRule, msg entities.Message) string {
+func resolveConditionSource(rule entities.EndpointRule, msg RequestArrangeReqMessage) string {
 	if rule.ConditionSource == "app_id" {
 		return msg.AppId
 	}

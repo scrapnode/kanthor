@@ -2,11 +2,11 @@ package scheduler
 
 import (
 	"context"
+	"time"
+
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services/scheduler/transformation"
-	usecase "github.com/scrapnode/kanthor/usecases/scheduler"
 	"github.com/sourcegraph/conc"
-	"time"
 )
 
 func Consumer(service *scheduler) streaming.SubHandler {
@@ -31,7 +31,14 @@ func Consumer(service *scheduler) streaming.SubHandler {
 					return
 				}
 
-				request := &usecase.RequestArrangeReq{Message: *msg}
+				request := transformation.MsgToArrangeReq(msg)
+				if err := service.validator.Struct(request); err != nil {
+					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
+					service.logger.Error(err)
+					results[event.Id] = err
+					return
+				}
+
 				response, err := service.uc.Request().Arrange(ctx, request)
 				if err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
