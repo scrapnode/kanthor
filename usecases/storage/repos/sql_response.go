@@ -7,7 +7,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -23,8 +22,8 @@ var ResponseMapping = map[string]func(doc entities.Response) any{
 	"tier":      func(doc entities.Response) any { return doc.Tier },
 	"app_id":    func(doc entities.Response) any { return doc.AppId },
 	"type":      func(doc entities.Response) any { return doc.Type },
-	"metadata":  func(doc entities.Response) any { return utils.Stringify(doc.Metadata) },
-	"headers":   func(doc entities.Response) any { return utils.Stringify(doc.Headers) },
+	"metadata":  func(doc entities.Response) any { return doc.Metadata.String() },
+	"headers":   func(doc entities.Response) any { return doc.Headers.String() },
 	"body":      func(doc entities.Response) any { return string(doc.Body) },
 	"uri":       func(doc entities.Response) any { return doc.Uri },
 	"status":    func(doc entities.Response) any { return doc.Status },

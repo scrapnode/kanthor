@@ -7,7 +7,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -23,8 +22,8 @@ var RequestMapping = map[string]func(doc entities.Request) any{
 	"tier":      func(doc entities.Request) any { return doc.Tier },
 	"app_id":    func(doc entities.Request) any { return doc.AppId },
 	"type":      func(doc entities.Request) any { return doc.Type },
-	"metadata":  func(doc entities.Request) any { return utils.Stringify(doc.Metadata) },
-	"headers":   func(doc entities.Request) any { return utils.Stringify(doc.Headers) },
+	"metadata":  func(doc entities.Request) any { return doc.Metadata.String() },
+	"headers":   func(doc entities.Request) any { return doc.Headers.String() },
 	"body":      func(doc entities.Request) any { return string(doc.Body) },
 	"uri":       func(doc entities.Request) any { return doc.Uri },
 	"method":    func(doc entities.Request) any { return doc.Method },

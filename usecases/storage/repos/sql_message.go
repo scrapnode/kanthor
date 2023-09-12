@@ -7,7 +7,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -23,8 +22,8 @@ var MessageMapping = map[string]func(doc entities.Message) any{
 	"tier":      func(doc entities.Message) any { return doc.Tier },
 	"app_id":    func(doc entities.Message) any { return doc.AppId },
 	"type":      func(doc entities.Message) any { return doc.Type },
-	"metadata":  func(doc entities.Message) any { return utils.Stringify(doc.Metadata) },
-	"headers":   func(doc entities.Message) any { return utils.Stringify(doc.Headers) },
+	"metadata":  func(doc entities.Message) any { return doc.Metadata.String() },
+	"headers":   func(doc entities.Message) any { return doc.Headers.String() },
 	"body":      func(doc entities.Message) any { return string(doc.Body) },
 }
 var MessageMappingCols = lo.Keys(MessageMapping)
