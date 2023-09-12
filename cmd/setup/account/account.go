@@ -2,6 +2,8 @@ package account
 
 import (
 	"context"
+	"time"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -9,7 +11,6 @@ import (
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
@@ -22,8 +23,11 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			withCreds, err := cmd.Flags().GetBool("generate-credentials")
+			if err != nil {
+				return err
+			}
+			dest, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
 			}
@@ -62,24 +66,31 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 			}()
 
+			out := &output{json: map[string]any{}}
+
 			account, err := uc.Account().Setup(ctx, &usecase.AccountSetupReq{AccountId: args[0]})
 			if err != nil {
 				return err
 			}
+			out.AddJson("id", account.Workspace.Id)
+			out.AddJson("tier", account.WorkspaceTier.Name)
 
-			if err := apps(uc, ctx, account.Workspace, file); err != nil {
+			if err := apps(uc, ctx, account.Workspace, file, out); err != nil {
 				return err
 			}
 
-			if err := creds(coord, uc, ctx, account.Workspace, withCreds); err != nil {
-				return err
+			if withCreds {
+				if err := creds(coord, uc, ctx, account.Workspace, out); err != nil {
+					return err
+				}
 			}
 
-			return nil
+			return out.Render(dest)
 		},
 	}
 
 	command.Flags().StringP("data", "", "", "--data=./data/interchange/demo.json | workspace data of setup account")
+	command.Flags().StringP("output", "o", "", "--out=./output.json | either json file or stdout (if no file path is set)")
 	command.Flags().BoolP("generate-credentials", "", false, "--generate-credentials | generate new credentials for the workspace of setup account")
 
 	return command

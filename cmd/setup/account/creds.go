@@ -3,21 +3,17 @@ package account
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/services/command"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
-	"os"
-	"time"
 )
 
-func creds(coord coordinator.Coordinator, uc usecase.Portal, ctx context.Context, ws *entities.Workspace, withCreds bool) error {
-	if !withCreds {
-		return nil
-	}
-
+func creds(coord coordinator.Coordinator, uc usecase.Portal, ctx context.Context, ws *entities.Workspace, out *output) error {
 	ucreq := &usecase.WorkspaceCredentialsGenerateReq{
 		WorkspaceId: ws.Id,
 		Name:        fmt.Sprintf("setup at %s", time.Now().UTC().Format(time.RFC3339)),
@@ -39,10 +35,20 @@ func creds(coord coordinator.Coordinator, uc usecase.Portal, ctx context.Context
 		return err
 	}
 
-	t := table.NewWriter()
-	t.AppendHeader(table.Row{"ws", "key", "secret"})
-	t.AppendRow([]interface{}{ucres.Credentials.WorkspaceId, ucres.Credentials.Id, ucres.Password})
-	t.SetOutputMirror(os.Stdout)
-	t.Render()
+	out.AddStdout(credsOutput(ucres.Credentials.Id, ucres.Password))
+	out.AddJson("credentials", credentials{Username: ucres.Credentials.Id, Password: ucres.Password})
+
 	return nil
+}
+
+type credentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func credsOutput(user, pass string) string {
+	t := table.NewWriter()
+	t.AppendHeader(table.Row{"key", "secret"})
+	t.AppendRow([]interface{}{user, pass})
+	return t.Render()
 }

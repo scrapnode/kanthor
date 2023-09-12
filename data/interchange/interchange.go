@@ -2,6 +2,7 @@ package interchange
 
 import (
 	"encoding/json"
+
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 )
 
@@ -19,6 +20,11 @@ func Unmarshal(data []byte) (*Workspace, error) {
 
 type Workspace struct {
 	Applications []Application `json:"applications" validate:"required,gt=0"`
+}
+
+type Credentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type Application struct {

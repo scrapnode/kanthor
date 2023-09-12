@@ -3,17 +3,18 @@ package account
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
+	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/scrapnode/kanthor/data/interchange"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
-	"os"
-	"strings"
-	"time"
 )
 
-func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file string) error {
+func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file string, out *output) error {
 	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
@@ -38,9 +39,9 @@ func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file s
 		return err
 	}
 
-	fmt.Println(strings.Repeat("-", 2*len(ws.Id)))
-	fmt.Println(status(tree, ucres.Status))
-	fmt.Println(strings.Repeat("-", 2*len(ws.Id)))
+	out.AddStdout(appsOutput(tree, ucres.Status))
+	out.AddJson("applications", ucres.ApplicationIds)
+
 	return nil
 }
 
@@ -110,4 +111,34 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 	}
 
 	return applications, endpoints, rules, tree
+}
+
+func appsOutput(tree *structure.Node[string], status map[string]bool) string {
+	l := list.NewWriter()
+	l.SetStyle(list.StyleConnectedRounded)
+
+	l.AppendItems([]interface{}{tree.Value})
+	// make this one to be simple by 3 lopps
+	for _, app := range tree.Children {
+		l.Indent()
+
+		l.AppendItems([]interface{}{fmt.Sprintf("%s %s", icon(status[app.Value]), app.Value)})
+
+		l.Indent()
+		for _, ep := range app.Children {
+			l.Indent()
+			l.AppendItems([]interface{}{fmt.Sprintf("%s %s", icon(status[ep.Value]), ep.Value)})
+			for _, epr := range ep.Children {
+				l.Indent()
+				l.AppendItems([]interface{}{fmt.Sprintf("%s %s", icon(status[epr.Value]), epr.Value)})
+				l.UnIndent()
+			}
+			l.UnIndent()
+		}
+		l.UnIndent()
+
+		l.UnIndent()
+	}
+
+	return l.Render()
 }
