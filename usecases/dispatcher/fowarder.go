@@ -23,7 +23,7 @@ type ForwarderSendReq struct {
 }
 
 type ForwarderSendReqRequest struct {
-	Id    string `validate:"required,startswith=msg_"`
+	Id    string `validate:"required,startswith=req_"`
 	AttId string `validate:"required,startswith=att_"`
 
 	Tier     string            `validate:"required"`
