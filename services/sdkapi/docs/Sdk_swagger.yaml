@@ -2,6 +2,32 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  authenticator.Account:
+    properties:
+      aud:
+        type: string
+      email:
+        type: string
+      iss:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      picture:
+        type: string
+      sub:
+        type: string
+    required:
+    - sub
+    type: object
+  authorizator.Permission:
+    properties:
+      action:
+        type: string
+      object:
+        type: string
+    type: object
   entities.Application:
     properties:
       created_at:
@@ -88,6 +114,15 @@ definitions:
         type: string
       error:
         type: string
+    type: object
+  sdkapi.AccountGetRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
+      permissions:
+        items:
+          $ref: '#/definitions/authorizator.Permission'
+        type: array
     type: object
   sdkapi.ApplicationCreateReq:
     properties:
@@ -539,6 +574,21 @@ info:
   title: Kanthor SDK API
   version: "1.0"
 paths:
+  /account/me:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sdkapi.AccountGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      tags:
+      - account
   /application:
     get:
       parameters:

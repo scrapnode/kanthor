@@ -59,7 +59,7 @@ datastore:
 sdkapi:
   cache: *cache
   portal_connection:
-    account: http://localhost:8180/api/account/me
+    account: http://portalapi:8280/api/account/me
   gateway:
     engine: httpx
     httpx:

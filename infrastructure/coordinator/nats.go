@@ -2,6 +2,7 @@ package coordinator
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	natscore "github.com/nats-io/nats.go"
@@ -110,7 +111,7 @@ func (coordinator *nats) Receive(handle func(cmd string, req []byte) error) erro
 			return
 		}
 
-		if err := msg.Ack(); err != nil {
+		if err := msg.Ack(); err != nil && !errors.Is(err, natscore.ErrMsgNoReply) {
 			coordinator.logger.Errorw(err.Error(), "msg", utils.Stringify(msg))
 		}
 	})

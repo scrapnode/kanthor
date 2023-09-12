@@ -2,9 +2,10 @@ package sdkapi
 
 import (
 	"context"
+	"time"
+
 	"github.com/scrapnode/kanthor/services/command"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
-	"time"
 )
 
 func (service *sdkapi) coordinate() error {
@@ -22,8 +23,12 @@ func (service *sdkapi) coordinate() error {
 
 			for _, doc := range req.Docs {
 				if err := service.authz.Grant(doc.WorkspaceId, doc.Id, RoleOwner, PermissionOwner); err != nil {
-					return err
+					service.logger.Errorw(err.Error(), "ws_id", doc.WorkspaceId, "wsc_id", doc.Id, "role", RoleOwner)
 				}
+			}
+
+			if err := service.authz.Refresh(ctx); err != nil {
+				return err
 			}
 		}
 

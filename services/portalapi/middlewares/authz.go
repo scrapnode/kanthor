@@ -2,13 +2,14 @@ package middlewares
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
-	"net/http"
 )
 
 func UseAuthz(validator validator.Validator, authz authorizator.Authorizator, uc portaluc.Portal) gin.HandlerFunc {
@@ -34,7 +35,7 @@ func UseAuthz(validator validator.Validator, authz authorizator.Authorizator, uc
 		if !isOwner {
 			obj := ginctx.FullPath() // form of /application/:app_id
 			act := ginctx.Request.Method
-			ok, err := authz.Enforce(acc.Sub, res.Workspace.Id, obj, act)
+			ok, err := authz.Enforce(res.Workspace.Id, acc.Sub, obj, act)
 			if err != nil {
 				ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return

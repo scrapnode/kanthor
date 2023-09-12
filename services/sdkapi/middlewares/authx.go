@@ -3,6 +3,8 @@ package middlewares
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/entities"
@@ -13,7 +15,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	sdkuc "github.com/scrapnode/kanthor/usecases/sdk"
-	"net/http"
 )
 
 var (
@@ -104,7 +105,7 @@ func UseAuthx(
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 		obj := ginctx.FullPath() // form of /application/:app_id
 		act := ginctx.Request.Method
-		ok, err := authz.Enforce(acc.Sub, ws.Id, obj, act)
+		ok, err := authz.Enforce(ws.Id, acc.Sub, obj, act)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "unable to enforce permission"})

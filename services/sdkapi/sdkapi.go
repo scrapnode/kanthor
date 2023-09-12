@@ -2,6 +2,9 @@ package sdkapi
 
 import (
 	"context"
+	"net/http"
+	"os"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
@@ -18,8 +21,6 @@ import (
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
-	"net/http"
-	"os"
 )
 
 func New(
@@ -123,6 +124,7 @@ func (service *sdkapi) router() *gin.Engine {
 		api.Use(middlewares.UseAuthx(service.conf.SdkApi, service.logger, service.validator, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
+		UseAccountRoutes(api.Group("/account"), service)
 		UseApplicationRoutes(api.Group("/application"), service)
 		UseEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
 		UseEndpointRuleRoutes(api.Group("/application/:app_id/endpoint/:ep_id/rule"), service)

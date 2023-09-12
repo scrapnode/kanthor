@@ -30,6 +30,32 @@ const docTemplateSdk = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/account/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "account"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.AccountGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/application": {
             "get": {
                 "security": [
@@ -802,6 +828,46 @@ const docTemplateSdk = `{
         }
     },
     "definitions": {
+        "authenticator.Account": {
+            "type": "object",
+            "required": [
+                "sub"
+            ],
+            "properties": {
+                "aud": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "iss": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "sub": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizator.Permission": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "object": {
+                    "type": "string"
+                }
+            }
+        },
         "entities.Application": {
             "type": "object",
             "properties": {
@@ -899,6 +965,20 @@ const docTemplateSdk = `{
                 },
                 "error": {
                     "type": "string"
+                }
+            }
+        },
+        "sdkapi.AccountGetRes": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/authenticator.Account"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/authorizator.Permission"
+                    }
                 }
             }
         },

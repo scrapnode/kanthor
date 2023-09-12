@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -48,7 +49,9 @@ type credentials struct {
 
 func credsOutput(user, pass string) string {
 	t := table.NewWriter()
-	t.AppendHeader(table.Row{"key", "secret"})
-	t.AppendRow([]interface{}{user, pass})
+	t.AppendHeader(table.Row{"key", "secret", "encoded"})
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", user, pass)))
+	t.AppendRow([]interface{}{user, pass, encoded})
 	return t.Render()
 }

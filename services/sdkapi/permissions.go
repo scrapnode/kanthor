@@ -7,6 +7,8 @@ var (
 )
 
 var PermissionOwner = []authorizator.Permission{
+	{Object: "/api/account/me", Action: "GET"},
+
 	{Object: "/api/application", Action: "POST"},
 	{Object: "/api/application/:app_id", Action: "PUT"},
 	{Object: "/api/application/:app_id", Action: "DELETE"},

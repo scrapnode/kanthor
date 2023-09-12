@@ -3,6 +3,7 @@ package authorizator
 import (
 	"context"
 	"fmt"
+
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
@@ -23,7 +24,7 @@ type Authorizator interface {
 	patterns.Connectable
 	Refresh(ctx context.Context) error
 
-	Enforce(sub, tenant, obj, act string) (bool, error)
+	Enforce(tenant, sub, obj, act string) (bool, error)
 	Grant(tenant, sub, role string, permissions []Permission) error
 	Tenants(sub string) ([]string, error)
 	UsersOfTenant(tenant string) ([]string, error)
@@ -31,6 +32,7 @@ type Authorizator interface {
 }
 
 type Permission struct {
+	Role   string `json:"role,omitempty"`
 	Object string `json:"object"`
 	Action string `json:"action"`
 }
