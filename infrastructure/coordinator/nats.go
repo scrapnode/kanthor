@@ -2,11 +2,12 @@ package coordinator
 
 import (
 	"context"
+	"sync"
+
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"sync"
 )
 
 func NewNats(conf *Config, logger logging.Logger) Coordinator {
@@ -80,9 +81,7 @@ func (coordinator *nats) Send(ctx context.Context, cmd string, req Request) erro
 	msg.Header.Set(HeaderCmd, cmd)
 
 	coordinator.logger.Debugw("sending", "msg", utils.Stringify(msg))
-
-	_, err = coordinator.conn.RequestMsgWithContext(ctx, msg)
-	return err
+	return coordinator.conn.PublishMsg(msg)
 }
 
 func (coordinator *nats) Receive(handle func(cmd string, req []byte) error) error {
