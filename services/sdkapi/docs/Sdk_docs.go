@@ -865,6 +865,9 @@ const docTemplateSdk = `{
                 },
                 "object": {
                     "type": "string"
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },

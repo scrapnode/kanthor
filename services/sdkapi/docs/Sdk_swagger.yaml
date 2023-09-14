@@ -27,6 +27,8 @@ definitions:
         type: string
       object:
         type: string
+      role:
+        type: string
     type: object
   entities.Application:
     properties:
