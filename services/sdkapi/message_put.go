@@ -3,7 +3,9 @@ package sdkapi
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
@@ -26,6 +28,11 @@ type MessagePutRes struct {
 	Id string `json:"id"`
 }
 
+var (
+	total   uint64
+	publish uint64
+)
+
 // UseMessagePut
 // @Tags		message
 // @Router		/application/{app_id}/message		[put]
@@ -36,6 +43,9 @@ type MessagePutRes struct {
 // @Security	BasicAuth
 func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
+		atomic.AddUint64(&total, 1)
+		log.Printf("--> total:%d publish:%d \n", total, publish)
+
 		var req MessagePutReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
@@ -80,6 +90,8 @@ func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usec
 		}
 
 		res := &MessagePutRes{ucres.Msg.Id}
+		atomic.AddUint64(&publish, 1)
+		log.Printf("##> total:%d publish:%d \n", total, publish)
 
 		logger.Debugw("put message", "msg_id", ucres.Msg.Id)
 		ginctx.JSON(http.StatusCreated, res)
