@@ -3,11 +3,12 @@ package streaming
 import (
 	"context"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"sync"
-	"time"
 )
 
 func NewNatsSubscriberPushing(conf *SubscriberConfig, logger logging.Logger) Subscriber {
@@ -108,9 +109,9 @@ func (subscriber *NatsSubscriberPushing) Sub(ctx context.Context, handler SubHan
 				return
 			}
 
-			results := handler([]Event{event})
+			errs := handler([]Event{event})
 			// if we got error from handler, we should retry it by no-ack action
-			if err, ok := results[event.Id].(error); ok && err != nil {
+			if err, ok := errs[event.Id]; ok && err != nil {
 				if err := msg.Nak(); err != nil {
 					// it's important to log entire event here because we can trace it in log
 					subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))

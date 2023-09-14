@@ -3,11 +3,12 @@ package streaming
 import (
 	"context"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"sync"
-	"time"
 )
 
 func NewNatsSubscriberPulling(conf *SubscriberConfig, logger logging.Logger) Subscriber {
@@ -114,9 +115,11 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 			return nil
 		}
 
-		msgs, err := subscriber.subscription.Fetch(3, nats.MaxWait(time.Millisecond*10000))
+		msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch, nats.MaxWait(time.Millisecond*10000))
 		if err != nil {
-			subscriber.logger.Warnw("no more message or timeout", "error", err.Error())
+			if errors.Is(err, nats.ErrTimeout) {
+				subscriber.logger.Errorw("waiting for message but got timeout", "timeout", "10000ms")
+			}
 			continue
 		}
 		subscriber.logger.Debugw("got messages", "count", len(msgs))
@@ -138,12 +141,12 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 			events = append(events, event)
 		}
 
-		results := handler(events)
+		errs := handler(events)
 
 		for _, msg := range msgs {
 			eventId := maps[msg.Header.Get(MetaId)]
 
-			if err, ok := results[eventId].(error); ok && err != nil {
+			if err, ok := errs[eventId]; ok && err != nil {
 				if err := msg.Nak(); err != nil {
 					// it's important to log entire event here because we can trace it in log
 					subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))

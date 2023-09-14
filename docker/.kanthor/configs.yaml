@@ -174,9 +174,9 @@ storage:
     connection: *streaming
     based_model: pull
     pull:
-      max_waiting: 100
-      max_ack_pending: 1000
-      max_request_batch: 10
+      max_waiting: 300
+      max_ack_pending: 3000
+      max_request_batch: 100
     name: storage_default
     filter_subject: kanthor.default.>
     max_deliver: 1

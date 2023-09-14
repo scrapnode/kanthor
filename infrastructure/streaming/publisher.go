@@ -2,6 +2,7 @@ package streaming
 
 import (
 	"context"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -17,7 +18,7 @@ type Publisher interface {
 }
 
 type PublisherConfig struct {
-	Connection ConnectionConfig `json:"connection" yaml:"connection" yaml:"connection" mapstructure:"connection" validate:"required"`
+	Connection ConnectionConfig `json:"connection" yaml:"connection" mapstructure:"connection" validate:"required"`
 }
 
 func (conf *PublisherConfig) Validate() error {
