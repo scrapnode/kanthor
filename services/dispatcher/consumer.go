@@ -14,7 +14,7 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events []streaming.Event) map[string]error {
-		results := map[string]error{}
+		errs := map[string]error{}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
@@ -36,7 +36,7 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 				if err := service.validator.Struct(ucreq); err != nil {
 					service.metrics.Count(ctx, "dispatcher_send_error", 1)
 					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
-					results[event.Id] = err
+					errs[event.Id] = err
 					return
 				}
 
@@ -44,14 +44,14 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 				if err != nil {
 					service.metrics.Count(ctx, "dispatcher_send_error", 1)
 					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
-					results[event.Id] = err
+					errs[event.Id] = err
 					return
 				}
 				// custom handler for error
 				if response.Response.Error != "" {
 					service.metrics.Count(ctx, "dispatcher_receive_error", 1)
 					service.logger.Errorw(response.Response.Error, "data", utils.Stringify(ucreq))
-					results[event.Id] = err
+					errs[event.Id] = err
 					return
 				}
 
@@ -67,12 +67,12 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 
 		select {
 		case <-c:
-			return results
+			return errs
 		case <-ctx.Done():
 			for _, event := range events {
-				results[event.Id] = ctx.Err()
+				errs[event.Id] = ctx.Err()
 			}
-			return results
+			return errs
 		}
 	}
 }

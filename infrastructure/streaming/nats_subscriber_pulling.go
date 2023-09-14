@@ -117,7 +117,9 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 
 		msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch, nats.MaxWait(time.Millisecond*10000))
 		if err != nil {
-			subscriber.logger.Errorw(err.Error(), "timeout", "10000ms")
+			if !errors.Is(err, nats.ErrTimeout) {
+				subscriber.logger.Errorw(err.Error(), "timeout", "10000ms")
+			}
 			continue
 		}
 		subscriber.logger.Debugw("got messages", "count", len(msgs))
