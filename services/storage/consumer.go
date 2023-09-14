@@ -123,17 +123,23 @@ func Consumer(service *storage) streaming.SubHandler {
 
 		select {
 		case <-c:
-			service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
-			service.logger.Errorw("encoutered errors", "error_count", len(errs))
+			if len(errs) > 0 {
+				service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
+				service.logger.Errorw("encoutered errors", "error_count", len(errs))
+			}
 			return errs
 		case <-ctx.Done():
 			// timeout, all events will be considered as failed
 			for _, event := range events {
-				errs[event.Id] = ctx.Err()
+				if err, ok := errs[event.Id]; ok && err != nil {
+					errs[event.Id] = ctx.Err()
+				}
 			}
-			service.metrics.Count(ctx, "storage_put_timeout_error", 1)
-			service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
-			service.logger.Errorw("encoutered errors", "error_count", len(errs))
+			if len(errs) > 0 {
+				service.metrics.Count(ctx, "storage_put_timeout_error", 1)
+				service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
+				service.logger.Errorw("encoutered errors", "error_count", len(errs))
+			}
 			return errs
 		}
 	}
