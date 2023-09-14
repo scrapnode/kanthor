@@ -37,7 +37,7 @@ cryptography:
 idempotency:
   namespace: idempotency
   uri: redis://127.0.0.1:6379/0
-  time_to_live: 86400000 # 1 day
+  time_to_live: 3600000 # 1 hour
 
 coordinator:
   engine: nats
