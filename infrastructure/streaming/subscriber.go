@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -95,12 +96,12 @@ func (conf *SubscriberConfigPush) Validate() error {
 
 type SubscriberConfigPull struct {
 	// if MaxWaiting is 1, and more than one sub.Fetch actions, we will get an error
-	MaxWaiting int `json:"max_waiting" yaml:"max_waiting" mapstructure:"max_waiting" validate:"required,gt=0,lte=100"`
+	MaxWaiting int `json:"max_waiting" yaml:"max_waiting" mapstructure:"max_waiting" validate:"required,gt=0,lte=300"`
 	// if MaxAckPending is 1, and we are processing 1 message already
 	// then we are going to request 2, we will only get 1
 	MaxAckPending int `json:"max_ack_pending" yaml:"max_ack_pending" mapstructure:"max_ack_pending" validate:"required,gt=0,lte=10000"`
 	// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
-	MaxRequestBatch int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch" validate:"required,gt=0,lte=100"`
+	MaxRequestBatch int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch" validate:"required,gt=0,lte=500"`
 }
 
 func (conf *SubscriberConfigPull) Validate() error {
