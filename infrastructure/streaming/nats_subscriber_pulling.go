@@ -9,24 +9,26 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
 func NewNatsSubscriberPulling(conf *SubscriberConfig, logger logging.Logger) Subscriber {
 	logger = logger.With("streaming.subscriber", "nats.pull")
-	return &NatsSubscriberPulling{conf: conf, logger: logger, status: patterns.StatusNone}
+	return &NatsSubscriberPulling{conf: conf, logger: logger, validator: validator.New(), status: patterns.StatusNone}
 }
 
 type NatsSubscriberPulling struct {
-	conf   *SubscriberConfig
-	logger logging.Logger
+	conf      *SubscriberConfig
+	logger    logging.Logger
+	validator validator.Validator
+	status    int
 
 	mu           sync.Mutex
 	conn         *nats.Conn
 	js           nats.JetStreamContext
 	stream       *nats.StreamInfo
 	subscription *nats.Subscription
-	status       int
 }
 
 func (subscriber *NatsSubscriberPulling) Connect(ctx context.Context) error {
@@ -137,7 +139,7 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 		events := []Event{}
 		for _, msg := range msgs {
 			event := natsMsgToEvent(msg)
-			if err := event.Validate(); err != nil {
+			if err := subscriber.validator.Struct(event); err != nil {
 				subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
 				if err := msg.Nak(); err != nil {
 					// it's important to log entire event here because we can trace it in log

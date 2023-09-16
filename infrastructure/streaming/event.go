@@ -3,7 +3,6 @@ package streaming
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"regexp"
 	"strings"
 )
@@ -22,10 +21,6 @@ type Event struct {
 	Id       string            `json:"id" validate:"required"`
 	Data     []byte            `json:"data" validate:"required"`
 	Metadata map[string]string `json:"metadata"`
-}
-
-func (e *Event) Validate() error {
-	return validator.New().Struct(e)
 }
 
 func (e *Event) String() string {

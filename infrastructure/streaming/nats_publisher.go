@@ -3,20 +3,23 @@ package streaming
 import (
 	"context"
 	"fmt"
-	"github.com/nats-io/nats.go"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"sync"
 	"time"
+
+	"github.com/nats-io/nats.go"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 )
 
 func NewNatsPublisher(conf *PublisherConfig, logger logging.Logger) Publisher {
 	logger = logger.With("streaming.publisher", "nats")
-	return &NatsPublisher{conf: conf, logger: logger}
+	return &NatsPublisher{conf: conf, logger: logger, validator: validator.New()}
 }
 
 type NatsPublisher struct {
-	conf   *PublisherConfig
-	logger logging.Logger
+	conf      *PublisherConfig
+	logger    logging.Logger
+	validator validator.Validator
 
 	mu   sync.Mutex
 	conn *nats.Conn
@@ -72,7 +75,7 @@ func (publisher *NatsPublisher) Disconnect(ctx context.Context) error {
 }
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, event *Event) error {
-	if err := event.Validate(); err != nil {
+	if err := publisher.validator.Struct(event); err != nil {
 		return err
 	}
 

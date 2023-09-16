@@ -8,17 +8,19 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/validator"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
 func NewNatsSubscriberPushing(conf *SubscriberConfig, logger logging.Logger) Subscriber {
 	logger = logger.With("streaming.subscriber", "nats.pushing")
-	return &NatsSubscriberPushing{conf: conf, logger: logger}
+	return &NatsSubscriberPushing{conf: conf, logger: logger, validator: validator.New()}
 }
 
 type NatsSubscriberPushing struct {
-	conf   *SubscriberConfig
-	logger logging.Logger
+	conf      *SubscriberConfig
+	logger    logging.Logger
+	validator validator.Validator
 
 	mu           sync.Mutex
 	conn         *nats.Conn
@@ -100,7 +102,7 @@ func (subscriber *NatsSubscriberPushing) Sub(ctx context.Context, handler SubHan
 		subscriber.conf.Push.DeliverGroup,
 		func(msg *nats.Msg) {
 			event := natsMsgToEvent(msg)
-			if err := event.Validate(); err != nil {
+			if err := subscriber.validator.Struct(event); err != nil {
 				subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
 				if err := msg.Nak(); err != nil {
 					// it's important to log entire event here because we can trace it in log
