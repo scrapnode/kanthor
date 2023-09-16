@@ -30,33 +30,33 @@ type server struct {
 }
 
 func (server *server) Start(ctx context.Context) error {
-	if !server.enable {
-		return nil
-	}
-
 	mux := http.NewServeMux()
-	mux.HandleFunc("/debug/pprof/", pprof.Index)
-	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		text := "0"
+		if server.enable {
+			text = "1"
+		}
+		_, _ = w.Write([]byte(text))
+	})
+
+	if server.enable {
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	}
 
 	server.instance = &http.Server{Addr: fmt.Sprintf(":%d", HTTP_PORT), Handler: mux}
 	return nil
 }
 
 func (server *server) Stop(ctx context.Context) error {
-	if !server.enable {
-		return nil
-	}
-
 	return server.instance.Shutdown(ctx)
 }
 
 func (server *server) Run(ctx context.Context) error {
-	if !server.enable {
-		return nil
-	}
-
 	return server.instance.ListenAndServe()
 }
