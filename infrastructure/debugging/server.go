@@ -34,9 +34,9 @@ func (server *server) Start(ctx context.Context) error {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-		text := "0"
+		text := "disable"
 		if server.enable {
-			text = "1"
+			text = "enable"
 		}
 		_, _ = w.Write([]byte(text))
 	})
