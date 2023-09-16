@@ -99,7 +99,7 @@ type SubscriberConfigPull struct {
 	MaxWaiting int `json:"max_waiting" yaml:"max_waiting" mapstructure:"max_waiting" validate:"required,gt=0,lte=300"`
 	// if MaxAckPending is 1, and we are processing 1 message already
 	// then we are going to request 2, we will only get 1
-	MaxAckPending int `json:"max_ack_pending" yaml:"max_ack_pending" mapstructure:"max_ack_pending" validate:"required,gt=0,lte=10000"`
+	MaxAckPending int `json:"max_ack_pending" yaml:"max_ack_pending" mapstructure:"max_ack_pending" validate:"required,gt=0,lte=150000"`
 	// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
 	MaxRequestBatch int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch" validate:"required,gt=0,lte=500"`
 }
