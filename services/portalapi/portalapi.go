@@ -2,12 +2,16 @@ package portalapi
 
 import (
 	"context"
+	"net/http"
+	"os"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
+	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -19,8 +23,6 @@ import (
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
-	"net/http"
-	"os"
 )
 
 func New(
@@ -45,6 +47,7 @@ func New(
 		auth:        auth,
 		authz:       authz,
 		uc:          uc,
+		debugger:    debugging.NewServer(),
 	}
 }
 
@@ -59,10 +62,15 @@ type portalapi struct {
 	authz       authorizator.Authorizator
 	uc          usecase.Portal
 
-	server *http.Server
+	debugger debugging.Server
+	server   *http.Server
 }
 
 func (service *portalapi) Start(ctx context.Context) error {
+	if err := service.debugger.Start(ctx); err != nil {
+		return err
+	}
+
 	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
@@ -109,6 +117,7 @@ func (service *portalapi) router() *gin.Engine {
 		// @TODO: determine whether the app is running correctly or not
 		ginctx.String(http.StatusOK, "live")
 	})
+
 	swagger := router.Group("/swagger")
 	{
 		swagger.GET("/*any", ginswagger.WrapHandler(
@@ -117,7 +126,7 @@ func (service *portalapi) router() *gin.Engine {
 			ginswagger.InstanceName(docs.SwaggerInfoPortal.InfoInstanceName),
 		))
 	}
-	// api routes
+
 	api := router.Group("/api")
 	{
 		api.Use(ginmw.UseStartup())
@@ -126,9 +135,9 @@ func (service *portalapi) router() *gin.Engine {
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 		api.Use(middlewares.UseAuth(service.auth))
 
-		UseAccountRoutes(api.Group("/account"), service)
-		UseWorkspaceRoutes(api.Group("/workspace").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
-		UseWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
+		RegisterAccountRoutes(api.Group("/account"), service)
+		RegisterWorkspaceRoutes(api.Group("/workspace").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
+		RegisterWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
 	}
 
 	return router
@@ -161,6 +170,10 @@ func (service *portalapi) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
+	if err := service.debugger.Stop(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
 	return nil
 }
 
@@ -168,6 +181,12 @@ func (service *portalapi) Run(ctx context.Context) error {
 	if err := service.coordinate(); err != nil {
 		return err
 	}
+
+	go func() {
+		if err := service.debugger.Run(ctx); err != nil {
+			service.logger.Error(err)
+		}
+	}()
 
 	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Httpx.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

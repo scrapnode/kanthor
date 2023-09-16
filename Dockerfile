@@ -15,6 +15,8 @@ COPY --from=build /app/configs.yaml ./configs.yaml
 
 COPY --from=build /app/.kanthor/kanthor /usr/bin/kanthor
 
+# debugging
+EXPOSE 6060
 # sdkapi
 EXPOSE 8180
 # portalapi

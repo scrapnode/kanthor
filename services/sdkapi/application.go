@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UseApplicationRoutes(router gin.IRoutes, service *sdkapi) {
+func RegisterApplicationRoutes(router gin.IRoutes, service *sdkapi) {
 	router.POST("", UseApplicationCreate(service.logger, service.validator, service.uc))
 	router.PUT("/:app_id", UseApplicationUpdate(service.logger, service.validator, service.uc))
 	router.DELETE("/:app_id", UseApplicationDelete(service.logger, service.validator, service.uc))

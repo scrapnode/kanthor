@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
+	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -43,6 +44,8 @@ func New(
 		metrics:     metrics,
 		authz:       authz,
 		uc:          uc,
+
+		debugger: debugging.NewServer(),
 	}
 }
 
@@ -56,10 +59,15 @@ type sdkapi struct {
 	authz       authorizator.Authorizator
 	uc          usecase.Sdk
 
-	server *http.Server
+	debugger debugging.Server
+	server   *http.Server
 }
 
 func (service *sdkapi) Start(ctx context.Context) error {
+	if err := service.debugger.Start(ctx); err != nil {
+		return err
+	}
+
 	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
@@ -96,7 +104,7 @@ func (service *sdkapi) router() *gin.Engine {
 	// system routes
 	router.GET("/", func(ginctx *gin.Context) {
 		host, _ := os.Hostname()
-		ginctx.JSON(http.StatusOK, gin.H{"host": host, "service": "portalapi", "version": service.conf.Version})
+		ginctx.JSON(http.StatusOK, gin.H{"host": host, "service": "sdkapi", "version": service.conf.Version})
 	})
 	router.GET("/readiness", func(ginctx *gin.Context) {
 		// @TODO: add starting up checking here
@@ -115,7 +123,7 @@ func (service *sdkapi) router() *gin.Engine {
 			ginswagger.InstanceName(docs.SwaggerInfoSdk.InfoInstanceName),
 		))
 	}
-	// api routes
+
 	api := router.Group("/api")
 	{
 		api.Use(ginmw.UseStartup())
@@ -124,11 +132,11 @@ func (service *sdkapi) router() *gin.Engine {
 		api.Use(middlewares.UseAuthx(service.conf.SdkApi, service.logger, service.validator, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
-		UseAccountRoutes(api.Group("/account"), service)
-		UseApplicationRoutes(api.Group("/application"), service)
-		UseEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
-		UseEndpointRuleRoutes(api.Group("/application/:app_id/endpoint/:ep_id/rule"), service)
-		UseMessageRoutes(api.Group("/application/:app_id/message"), service)
+		RegisterAccountRoutes(api.Group("/account"), service)
+		RegisterApplicationRoutes(api.Group("/application"), service)
+		RegisterEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
+		RegisterEndpointRuleRoutes(api.Group("/application/:app_id/endpoint/:ep_id/rule"), service)
+		RegisterMessageRoutes(api.Group("/application/:app_id/message"), service)
 	}
 
 	return router
@@ -161,6 +169,10 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
+	if err := service.debugger.Stop(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
 	return nil
 }
 
@@ -168,6 +180,12 @@ func (service *sdkapi) Run(ctx context.Context) error {
 	if err := service.coordinate(); err != nil {
 		return err
 	}
+
+	go func() {
+		if err := service.debugger.Run(ctx); err != nil {
+			service.logger.Error(err)
+		}
+	}()
 
 	service.logger.Infow("running", "addr", service.conf.SdkApi.Gateway.Httpx.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

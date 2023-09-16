@@ -8,12 +8,13 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
 func NewNatsSubscriberPulling(conf *SubscriberConfig, logger logging.Logger) Subscriber {
 	logger = logger.With("streaming.subscriber", "nats.pull")
-	return &NatsSubscriberPulling{conf: conf, logger: logger}
+	return &NatsSubscriberPulling{conf: conf, logger: logger, status: patterns.StatusNone}
 }
 
 type NatsSubscriberPulling struct {
@@ -25,6 +26,7 @@ type NatsSubscriberPulling struct {
 	js           nats.JetStreamContext
 	stream       *nats.StreamInfo
 	subscription *nats.Subscription
+	status       int
 }
 
 func (subscriber *NatsSubscriberPulling) Connect(ctx context.Context) error {
@@ -53,12 +55,14 @@ func (subscriber *NatsSubscriberPulling) Connect(ctx context.Context) error {
 		"stream_name", subscriber.stream.Config.Name,
 		"stream_created_at", subscriber.stream.Created.Format(time.RFC3339),
 	)
+	subscriber.status = patterns.StatusActive
 	return nil
 }
 
 func (subscriber *NatsSubscriberPulling) Disconnect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
+	subscriber.status = patterns.StatusInactive
 
 	if subscriber.subscription.IsValid() {
 		if err := subscriber.subscription.Unsubscribe(); err != nil {
@@ -117,6 +121,11 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 
 		msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch, nats.MaxWait(time.Millisecond*10000))
 		if err != nil {
+			// the subscription is no longer available because we closed it programmatically
+			if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusInactive {
+				return nil
+			}
+
 			if !errors.Is(err, nats.ErrTimeout) {
 				subscriber.logger.Errorw(err.Error(), "timeout", "10000ms")
 			}

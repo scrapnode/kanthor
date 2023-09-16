@@ -1,5 +1,7 @@
 package healthcheck
 
+import "fmt"
+
 type Config struct {
 	Dest    string `json:"dest" yaml:"dest" mapstructure:"dest" validate:"required"`
 	Timeout int    `json:"timeout" yaml:"timeout" mapstructure:"timeout" validate:"required,number,gte=0"`
@@ -7,7 +9,7 @@ type Config struct {
 }
 
 func DefaultConfig(dest string) *Config {
-	return &Config{Dest: dest, Timeout: 3000, MaxTry: 1}
+	return &Config{Dest: fmt.Sprintf("kanthor.%s", dest), Timeout: 3000, MaxTry: 1}
 }
 
 type Server interface {

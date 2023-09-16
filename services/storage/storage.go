@@ -2,7 +2,9 @@ package storage
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -27,8 +29,9 @@ func New(
 		metrics:    metrics,
 		uc:         uc,
 
+		debugger: debugging.NewServer(),
 		healthcheck: background.NewServer(
-			healthcheck.DefaultConfig("kanthor.storage"),
+			healthcheck.DefaultConfig("storage"),
 			logger.With("healthcheck", "background"),
 		),
 	}
@@ -41,10 +44,15 @@ type storage struct {
 	metrics    metric.Metrics
 	uc         usecase.Storage
 
+	debugger    debugging.Server
 	healthcheck healthcheck.Server
 }
 
 func (service *storage) Start(ctx context.Context) error {
+	if err := service.debugger.Start(ctx); err != nil {
+		return err
+	}
+
 	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
@@ -76,6 +84,10 @@ func (service *storage) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
+	if err := service.debugger.Stop(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
 	return nil
 }
 
@@ -89,6 +101,12 @@ func (service *storage) Run(ctx context.Context) error {
 			return nil
 		})
 		if err != nil {
+			service.logger.Error(err)
+		}
+	}()
+
+	go func() {
+		if err := service.debugger.Run(ctx); err != nil {
 			service.logger.Error(err)
 		}
 	}()

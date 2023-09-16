@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -31,8 +32,9 @@ func New(
 		metrics:    metrics,
 		uc:         uc,
 
+		debugger: debugging.NewServer(),
 		healthcheck: background.NewServer(
-			healthcheck.DefaultConfig("kanthor.dispatcher"),
+			healthcheck.DefaultConfig("dispatcher"),
 			logger.With("healthcheck", "background"),
 		),
 	}
@@ -46,10 +48,15 @@ type dispatcher struct {
 	metrics    metric.Metrics
 	uc         usecase.Dispatcher
 
+	debugger    debugging.Server
 	healthcheck healthcheck.Server
 }
 
 func (service *dispatcher) Start(ctx context.Context) error {
+	if err := service.debugger.Start(ctx); err != nil {
+		return err
+	}
+
 	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
@@ -81,6 +88,10 @@ func (service *dispatcher) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
+	if err := service.debugger.Stop(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
 	return nil
 }
 
@@ -94,6 +105,12 @@ func (service *dispatcher) Run(ctx context.Context) error {
 			return nil
 		})
 		if err != nil {
+			service.logger.Error(err)
+		}
+	}()
+
+	go func() {
+		if err := service.debugger.Run(ctx); err != nil {
 			service.logger.Error(err)
 		}
 	}()
