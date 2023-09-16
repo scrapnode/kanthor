@@ -3,10 +3,11 @@ package streaming
 import (
 	"errors"
 	"fmt"
-	"github.com/nats-io/nats.go"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"os"
 	"time"
+
+	"github.com/nats-io/nats.go"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
 func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
@@ -21,12 +22,24 @@ func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
 		nats.MaxReconnects(9),
 		nats.DisconnectErrHandler(func(c *nats.Conn, err error) {
 			if err != nil {
-				logger.Error(fmt.Sprintf("got disconnected with reason: %q", err))
+				logger.Error(fmt.Sprintf("got disconnected with reason: %v", err))
 				return
 			}
 		}),
 		nats.ReconnectHandler(func(conn *nats.Conn) {
 			logger.Infow(fmt.Sprintf("got reconnected to %v", conn.ConnectedUrl()))
+		}),
+
+		nats.ErrorHandler(func(c *nats.Conn, s *nats.Subscription, err error) {
+			if err == nats.ErrSlowConsumer {
+				count, bytes, err := s.Pending()
+				if err != nil {
+					logger.Error(fmt.Sprintf("couldn't get pending messages: %v", err))
+					return
+				}
+
+				logger.Error(fmt.Sprintf("falling behind with %d pending messages (%d bytes) on subject %q", count, bytes, s.Subject))
+			}
 		}),
 	}
 
