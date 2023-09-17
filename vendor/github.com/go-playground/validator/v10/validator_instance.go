@@ -138,7 +138,6 @@ func New() *Validate {
 
 	v.pool = &sync.Pool{
 		New: func() interface{} {
-			log.Printf(" ---> %+v", v.validations["required"])
 			return &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),
@@ -389,8 +388,8 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
 
 	if _, ok := vd.v.validations["required"]; !ok {
-		_, nok := vd.v.validations["required"]
-		log.Printf("---> %v # %+v | %+v", nok, vd.v.validations, s)
+		_, lenok := vd.v.validations["len"]
+		log.Printf("---> %v # %+v | %+v", lenok, vd.v.validations, s)
 	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
