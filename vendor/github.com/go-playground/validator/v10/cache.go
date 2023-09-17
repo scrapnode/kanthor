@@ -293,7 +293,7 @@ func (v *Validate) parseFieldTagsRecursive(tag string, fieldName string, alias s
 					current.runValidationWhenNil = wrapper.runValidatinOnNil
 				} else {
 					_, has := v.validations[current.tag]
-					log.Printf(" %v | %+v", has, v.validations)
+					log.Printf("%q | %v | %+v", current.tag, has, v.validations)
 					panic(strings.TrimSpace(fmt.Sprintf(undefinedValidation, current.tag, fieldName)))
 				}
 
