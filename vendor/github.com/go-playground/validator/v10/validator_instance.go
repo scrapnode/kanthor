@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	ut "github.com/go-playground/universal-translator"
@@ -93,6 +94,8 @@ type Validate struct {
 	rules            map[reflect.Type]map[string]string
 	tagCache         *tagCache
 	structCache      *structCache
+
+	counter atomic.Int64
 }
 
 // New returns a new instance of 'validate' with sane defaults.
@@ -114,6 +117,7 @@ func New() *Validate {
 		validations: make(map[string]internalValidationFuncWrapper, len(bakedInValidators)),
 		tagCache:    tc,
 		structCache: sc,
+		counter:     atomic.Int64{},
 	}
 
 	// must copy alias validators for separate validations to be used in each validator instance
@@ -138,11 +142,7 @@ func New() *Validate {
 
 	v.pool = &sync.Pool{
 		New: func() interface{} {
-			if _, ok := v.validations["required"]; !ok {
-				_, lenok := v.validations["len"]
-				log.Printf("###> %v # %+v | %d", lenok, v.validations, len(v.validations))
-			}
-
+			v.counter.Add(1)
 			return &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),
@@ -394,7 +394,7 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 
 	if _, ok := v.validations["required"]; !ok {
 		_, lenok := v.validations["len"]
-		log.Printf("---> %v # %+v | %d", lenok, v.validations, len(v.validations))
+		log.Printf("---> %d | lenok:%v # %+v | %d", v.counter.Load(), lenok, v.validations, len(v.validations))
 	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
