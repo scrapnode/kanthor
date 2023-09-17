@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -119,6 +120,9 @@ func New() *Validate {
 		structCache: sc,
 		counter:     atomic.Int64{},
 	}
+	runtime.SetFinalizer(v, func(x *Validate) {
+		log.Printf("gc --> %d", x.counter.Load())
+	})
 
 	// must copy alias validators for separate validations to be used in each validator instance
 	for k, val := range bakedInAliases {
