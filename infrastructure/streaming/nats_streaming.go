@@ -31,15 +31,15 @@ func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
 		}),
 
 		nats.ErrorHandler(func(c *nats.Conn, s *nats.Subscription, err error) {
-			if err == nats.ErrSlowConsumer {
-				count, bytes, err := s.Pending()
-				if err != nil {
-					logger.Error(fmt.Sprintf("couldn't get pending messages: %v", err))
-					return
-				}
+			// if err == nats.ErrSlowConsumer {
+			// 	count, bytes, err := s.Pending()
+			// 	if err != nil {
+			// 		logger.Error(fmt.Sprintf("couldn't get pending messages: %v", err))
+			// 		return
+			// 	}
 
-				logger.Error(fmt.Sprintf("falling behind with %d pending messages (%d bytes) on subject %q", count, bytes, s.Subject))
-			}
+			// 	logger.Error(fmt.Sprintf("falling behind with %d pending messages (%d bytes) on subject %q", count, bytes, s.Subject))
+			// }
 		}),
 	}
 
