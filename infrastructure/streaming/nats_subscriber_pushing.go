@@ -97,10 +97,14 @@ func (subscriber *NatsSubscriberPushing) Sub(ctx context.Context, handler SubHan
 		"consumer_temporary", consumer.Config.Durable == "",
 	)
 
+	// var counter atomic.Int64
+
 	subscriber.subscription, err = subscriber.conn.QueueSubscribe(
 		subscriber.conf.Push.DeliverSubject,
 		subscriber.conf.Push.DeliverGroup,
 		func(msg *nats.Msg) {
+			// counter.Add(1)
+			// log.Printf("---> %d", counter.Load())
 			event := natsMsgToEvent(msg)
 			if err := subscriber.validator.Struct(event); err != nil {
 				subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
