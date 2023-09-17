@@ -147,12 +147,17 @@ func New() *Validate {
 	v.pool = &sync.Pool{
 		New: func() interface{} {
 			v.counter.Add(1)
-			return &validate{
+			vv := &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),
 				actualNs: make([]byte, 0, 64),
 				misc:     make([]byte, 32),
 			}
+
+			runtime.SetFinalizer(vv, func(x *validate) {
+				log.Printf("gc ##> %d", x.v.counter.Load())
+			})
+			return vv
 		},
 	}
 
