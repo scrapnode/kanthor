@@ -144,6 +144,9 @@ func New() *Validate {
 		}
 	}
 
+	runtime.SetFinalizer(v.validations, func() {
+		log.Printf("gc -------------------------------------------------- v.validations")
+	})
 	v.pool = &sync.Pool{
 		New: func() interface{} {
 			v.counter.Add(1)
