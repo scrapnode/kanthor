@@ -95,8 +95,6 @@ type Validate struct {
 	rules            map[reflect.Type]map[string]string
 	tagCache         *tagCache
 	structCache      *structCache
-
-	counter atomic.Int64
 }
 
 // New returns a new instance of 'validate' with sane defaults.
@@ -118,11 +116,7 @@ func New() *Validate {
 		validations: make(map[string]internalValidationFuncWrapper, len(bakedInValidators)),
 		tagCache:    tc,
 		structCache: sc,
-		counter:     atomic.Int64{},
 	}
-	runtime.SetFinalizer(v, func(x *Validate) {
-		log.Printf("gc --> %d", x.counter.Load())
-	})
 
 	// must copy alias validators for separate validations to be used in each validator instance
 	for k, val := range bakedInAliases {
@@ -144,18 +138,21 @@ func New() *Validate {
 		}
 	}
 
+	var x atomic.Int64
 	v.pool = &sync.Pool{
 		New: func() interface{} {
-			v.counter.Add(1)
+			x.Add(1)
 			vv := &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),
 				actualNs: make([]byte, 0, 64),
 				misc:     make([]byte, 32),
+
+				counter: x.Load(),
 			}
 
-			runtime.SetFinalizer(vv, func(x *validate) {
-				log.Printf("gc ##> %d", x.v.counter.Load())
+			runtime.SetFinalizer(vv, func(xx *validate) {
+				log.Printf("gc ##> global:%d local:%d", x.Load(), xx.counter)
 			})
 			return vv
 		},
@@ -403,7 +400,7 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 
 	if _, ok := v.validations["required"]; !ok {
 		_, lenok := v.validations["len"]
-		log.Printf("---> %d | lenok:%v # %+v | %d", v.counter.Load(), lenok, v.validations, len(v.validations))
+		log.Printf("---> [%d] lenok:%v # %+v | %d", vd.counter, lenok, v.validations, len(v.validations))
 	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
