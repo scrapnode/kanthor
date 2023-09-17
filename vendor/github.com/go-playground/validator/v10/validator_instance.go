@@ -151,9 +151,10 @@ func New() *Validate {
 				counter: x.Load(),
 			}
 
-			runtime.SetFinalizer(vv, func(xx *validate) {
-				log.Printf("gc ##> global:%d local:%d", x.Load(), xx.counter)
+			runtime.SetFinalizer(vv.v, func(xx *Validate) {
+				log.Printf("gc ##> global:%d", x.Load())
 			})
+
 			return vv
 		},
 	}
@@ -398,9 +399,9 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 	vd.isPartial = false
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
 
-	if _, ok := v.validations["required"]; !ok {
-		_, lenok := v.validations["len"]
-		log.Printf("---> [%d] lenok:%v # %+v | %d", vd.counter, lenok, v.validations, len(v.validations))
+	if _, ok := vd.v.validations["required"]; !ok {
+		_, lenok := vd.v.validations["len"]
+		log.Printf("---> [%d] lenok:%v # %+v | %d", vd.counter, lenok, vd.v.validations, len(vd.v.validations))
 	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
