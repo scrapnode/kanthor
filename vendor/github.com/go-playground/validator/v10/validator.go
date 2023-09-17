@@ -27,8 +27,6 @@ type validate struct {
 	fldIsPointer   bool          // StructLevel & FieldLevel
 	isPartial      bool
 	hasExcludes    bool
-
-	counter int64
 }
 
 // parent and current will be the same the first run of validateStruct

@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	ut "github.com/go-playground/universal-translator"
@@ -138,22 +137,18 @@ func New() *Validate {
 		}
 	}
 
-	var x atomic.Int64
+	runtime.SetFinalizer(v, func(xx *Validate) {
+		log.Println("gc ##>")
+	})
+
 	v.pool = &sync.Pool{
 		New: func() interface{} {
-			x.Add(1)
 			vv := &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),
 				actualNs: make([]byte, 0, 64),
 				misc:     make([]byte, 32),
-
-				counter: x.Load(),
 			}
-
-			runtime.SetFinalizer(vv.v, func(xx *Validate) {
-				log.Printf("gc ##> global:%d", x.Load())
-			})
 
 			return vv
 		},
@@ -401,7 +396,7 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 
 	if _, ok := vd.v.validations["required"]; !ok {
 		_, lenok := vd.v.validations["len"]
-		log.Printf("---> [%d] lenok:%v # %+v | %d", vd.counter, lenok, vd.v.validations, len(vd.v.validations))
+		log.Printf("---> lenok:%v # %+v | %d", lenok, vd.v.validations, len(vd.v.validations))
 	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
