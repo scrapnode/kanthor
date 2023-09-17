@@ -287,12 +287,11 @@ func (v *Validate) parseFieldTagsRecursive(tag string, fieldName string, alias s
 					panic(strings.TrimSpace(fmt.Sprintf(invalidValidation, fieldName)))
 				}
 
-				wrapper, ok := v.validations[current.tag]
-				if ok {
+				if wrapper, ok := v.validations[current.tag]; ok {
 					current.fn = wrapper.fn
 					current.runValidationWhenNil = wrapper.runValidatinOnNil
 				} else {
-					panic(strings.TrimSpace(fmt.Sprintf("Undefined validation function '%s' on field '%s' | %+v | %v | %+v", current.tag, fieldName, v.validations, ok, wrapper)))
+					panic(strings.TrimSpace(fmt.Sprintf(undefinedValidation, current.tag, fieldName)))
 				}
 
 				if len(orVals) > 1 {
