@@ -5,7 +5,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
-func EventToRequest(event streaming.Event) (*entities.Request, error) {
+func EventToRequest(event *streaming.Event) (*entities.Request, error) {
 	var req entities.Request
 	if err := req.Unmarshal(event.Data); err != nil {
 		return nil, err

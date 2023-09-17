@@ -111,7 +111,7 @@ func (subscriber *NatsSubscriberPushing) Sub(ctx context.Context, handler SubHan
 				return
 			}
 
-			errs := handler([]Event{event})
+			errs := handler([]*Event{event})
 			// if we got error from handler, we should retry it by no-ack action
 			if err, ok := errs[event.Id]; ok && err != nil {
 				if err := msg.Nak(); err != nil {

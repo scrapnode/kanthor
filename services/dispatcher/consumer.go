@@ -13,7 +13,7 @@ import (
 func Consumer(service *dispatcher) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events []streaming.Event) map[string]error {
+	return func(events []*streaming.Event) map[string]error {
 		errs := map[string]error{}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -137,6 +138,7 @@ func New() *Validate {
 
 	v.pool = &sync.Pool{
 		New: func() interface{} {
+			log.Printf("---> %+v", v.validations)
 			return &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),

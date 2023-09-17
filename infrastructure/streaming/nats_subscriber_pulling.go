@@ -136,7 +136,7 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 		subscriber.logger.Debugw("got messages", "count", len(msgs))
 
 		maps := map[string]string{}
-		events := []Event{}
+		events := []*Event{}
 		for _, msg := range msgs {
 			event := natsMsgToEvent(msg)
 			if err := subscriber.validator.Struct(event); err != nil {

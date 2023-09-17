@@ -32,7 +32,7 @@ type Subscriber interface {
 	Sub(ctx context.Context, handler SubHandler) error
 }
 
-type SubHandler func(events []Event) map[string]error
+type SubHandler func(events []*Event) map[string]error
 
 type SubscriberConfig struct {
 	Connection ConnectionConfig `json:"connection" yaml:"connection" mapstructure:"connection" validate:"required"`

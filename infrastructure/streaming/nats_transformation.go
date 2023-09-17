@@ -1,12 +1,13 @@
 package streaming
 
 import (
-	"github.com/nats-io/nats.go"
 	"strings"
+
+	"github.com/nats-io/nats.go"
 )
 
-func natsMsgToEvent(msg *nats.Msg) Event {
-	event := Event{
+func natsMsgToEvent(msg *nats.Msg) *Event {
+	event := &Event{
 		Subject:  msg.Subject,
 		AppId:    msg.Header.Get(MetaAppId),
 		Type:     msg.Header.Get(MetaType),
