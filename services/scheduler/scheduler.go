@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/services"
@@ -18,7 +18,7 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	validator validator.Validator,
+	validator validation.Validator,
 	subscriber streaming.Subscriber,
 	metrics metric.Metrics,
 	uc usecase.Scheduler,
@@ -43,7 +43,7 @@ func New(
 type scheduler struct {
 	conf       *config.Config
 	logger     logging.Logger
-	validator  validator.Validator
+	validator  validation.Validator
 	subscriber streaming.Subscriber
 	metrics    metric.Metrics
 	uc         usecase.Scheduler

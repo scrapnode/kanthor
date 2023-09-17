@@ -3,7 +3,7 @@ package interchange
 import (
 	"encoding/json"
 
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 )
 
 func Unmarshal(data []byte) (*Workspace, error) {
@@ -11,7 +11,7 @@ func Unmarshal(data []byte) (*Workspace, error) {
 	if err := json.Unmarshal(data, &ws); err != nil {
 		return nil, err
 	}
-	if err := validator.New().Struct(ws); err != nil {
+	if err := validation.New().Struct(ws); err != nil {
 		return nil, err
 	}
 

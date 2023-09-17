@@ -16,7 +16,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi/docs"
 	"github.com/scrapnode/kanthor/services/portalapi/middlewares"
@@ -28,7 +28,7 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	validator validator.Validator,
+	validator validation.Validator,
 	idempotency idempotency.Idempotency,
 	coordinator coordinator.Coordinator,
 	metrics metric.Metrics,
@@ -54,7 +54,7 @@ func New(
 type portalapi struct {
 	conf        *config.Config
 	logger      logging.Logger
-	validator   validator.Validator
+	validator   validation.Validator
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
 	metrics     metric.Metrics

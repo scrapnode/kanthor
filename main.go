@@ -2,12 +2,13 @@ package main
 
 import (
 	_ "embed"
+	"os"
+	"runtime/debug"
+
 	"github.com/scrapnode/kanthor/cmd"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"os"
-	"runtime/debug"
 )
 
 //go:embed .version

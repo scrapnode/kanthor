@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -30,7 +30,7 @@ type EndpointRuleListRes struct {
 // @Success		200											{object}	EndpointRuleListRes
 // @Failure		default										{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointRuleList(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleList(logger logging.Logger, validator validation.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		appId := ginctx.Param("app_id")

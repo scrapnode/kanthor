@@ -8,19 +8,19 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
-func NewNatsSubscriberPushing(conf *SubscriberConfig, logger logging.Logger) Subscriber {
+func NewNatsSubscriberPushing(conf *SubscriberConfig, logger logging.Logger, validator validation.Validator) Subscriber {
 	logger = logger.With("streaming.subscriber", "nats.pushing")
-	return &NatsSubscriberPushing{conf: conf, logger: logger, validator: validator.New()}
+	return &NatsSubscriberPushing{conf: conf, logger: logger, validator: validator}
 }
 
 type NatsSubscriberPushing struct {
 	conf      *SubscriberConfig
 	logger    logging.Logger
-	validator validator.Validator
+	validator validation.Validator
 
 	mu           sync.Mutex
 	conn         *nats.Conn

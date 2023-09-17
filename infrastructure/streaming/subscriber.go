@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 )
 
 var (
@@ -15,15 +16,15 @@ var (
 	SubModelPull = "pull"
 )
 
-func NewSubscriber(conf *SubscriberConfig, logger logging.Logger) (Subscriber, error) {
+func NewSubscriber(conf *SubscriberConfig, logger logging.Logger, validator validation.Validator) (Subscriber, error) {
 	if conf.BasedModel == SubModelPush {
-		return NewNatsSubscriberPushing(conf, logger), nil
+		return NewNatsSubscriberPushing(conf, logger, validator), nil
 	}
 	if conf.BasedModel == SubModelPull {
-		return NewNatsSubscriberPulling(conf, logger), nil
+		return NewNatsSubscriberPulling(conf, logger, validator), nil
 	}
 
-	return nil, fmt.Errorf("subscriber: unknown based model")
+	return nil, fmt.Errorf("subscriber: unknown subscribe model")
 }
 
 type Subscriber interface {

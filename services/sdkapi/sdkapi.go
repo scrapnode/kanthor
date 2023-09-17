@@ -15,7 +15,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi/docs"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
@@ -27,7 +27,7 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	validator validator.Validator,
+	validator validation.Validator,
 	idempotency idempotency.Idempotency,
 	coordinator coordinator.Coordinator,
 	metrics metric.Metrics,
@@ -52,7 +52,7 @@ func New(
 type sdkapi struct {
 	conf        *config.Config
 	logger      logging.Logger
-	validator   validator.Validator
+	validator   validation.Validator
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
 	metrics     metric.Metrics

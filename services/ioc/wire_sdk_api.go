@@ -14,7 +14,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi"
@@ -25,7 +25,7 @@ import (
 func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		sdkapi.New,
-		validator.New,
+		validation.New,
 		wire.FieldsOf(new(*config.Config), "Idempotency"),
 		idempotency.New,
 		wire.FieldsOf(new(*config.Config), "Coordinator"),
@@ -39,7 +39,7 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	return nil, nil
 }
 
-func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (sdkuc.Sdk, error) {
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (sdkuc.Sdk, error) {
 	wire.Build(
 		sdkuc.New,
 		wire.FieldsOf(new(*config.Config), "Cryptography"),

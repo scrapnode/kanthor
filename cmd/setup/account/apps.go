@@ -10,11 +10,11 @@ import (
 	"github.com/scrapnode/kanthor/data/interchange"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
 
-func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file string, out *output) error {
+func apps(validator validation.Validator, uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file string, out *output) error {
 	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file s
 		Endpoints:     eps,
 		EndpointRules: eprs,
 	}
-	if err := validator.New().Struct(ucreq); err != nil {
+	if err := validator.Struct(ucreq); err != nil {
 		return err
 	}
 	ucres, err := uc.Workspace().Setup(ctx, ucreq)

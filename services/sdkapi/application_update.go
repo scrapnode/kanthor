@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -29,7 +29,7 @@ type ApplicationUpdateRes struct {
 // @Success		200						{object}	ApplicationUpdateRes
 // @Failure		default					{object}	gateway.Error
 // @Security	BasicAuth
-func UseApplicationUpdate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseApplicationUpdate(logger logging.Logger, validator validation.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req ApplicationUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {

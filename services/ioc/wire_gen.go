@@ -19,7 +19,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -42,9 +42,9 @@ import (
 // Injectors from wire_dispatcher.go:
 
 func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	validatorValidator := validator.New()
+	validator := validation.New()
 	subscriberConfig := ResolveDispatcherSubscriberConfig(conf)
-	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
+	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger, validator)
 	if err != nil {
 		return nil, err
 	}
@@ -53,18 +53,18 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	if err != nil {
 		return nil, err
 	}
-	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger, metrics)
+	dispatcherDispatcher, err := InitializeDispatcherUsecase(conf, logger, validator, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := dispatcher.New(conf, logger, validatorValidator, subscriber, metrics, dispatcherDispatcher)
+	service := dispatcher.New(conf, logger, validator, subscriber, metrics, dispatcherDispatcher)
 	return service, nil
 }
 
-func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (dispatcher2.Dispatcher, error) {
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (dispatcher2.Dispatcher, error) {
 	timerTimer := timer.New()
 	publisherConfig := ResolveDispatcherPublisherConfig(conf)
-	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger, validator)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, met
 // Injectors from wire_portal_api.go:
 
 func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	validatorValidator := validator.New()
+	validator := validation.New()
 	idempotencyConfig := &conf.Idempotency
 	idempotencyIdempotency, err := idempotency.New(idempotencyConfig, logger)
 	if err != nil {
@@ -113,15 +113,15 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	portal, err := InitializePortalUsecase(conf, logger, metrics)
+	portal, err := InitializePortalUsecase(conf, logger, validator, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := portalapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metrics, authenticatorAuthenticator, authorizatorAuthorizator, portal)
+	service := portalapi.New(conf, logger, validator, idempotencyIdempotency, coordinatorCoordinator, metrics, authenticatorAuthenticator, authorizatorAuthorizator, portal)
 	return service, nil
 }
 
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (portal.Portal, error) {
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (portal.Portal, error) {
 	cryptographyConfig := &conf.Cryptography
 	cryptographyCryptography, err := cryptography.New(cryptographyConfig)
 	if err != nil {
@@ -142,9 +142,9 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics
 // Injectors from wire_scheduler.go:
 
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	validatorValidator := validator.New()
+	validator := validation.New()
 	subscriberConfig := ResolveSchedulerSubscriberConfig(conf)
-	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
+	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger, validator)
 	if err != nil {
 		return nil, err
 	}
@@ -153,19 +153,19 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger, metrics)
+	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger, validator, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := scheduler.New(conf, logger, validatorValidator, subscriber, metrics, schedulerScheduler)
+	service := scheduler.New(conf, logger, validator, subscriber, metrics, schedulerScheduler)
 	return service, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (scheduler2.Scheduler, error) {
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (scheduler2.Scheduler, error) {
 	timerTimer := timer.New()
 	signatureSignature := signature.New()
 	publisherConfig := ResolveSchedulerPublisherConfig(conf)
-	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger, validator)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metr
 // Injectors from wire_sdk_api.go:
 
 func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	validatorValidator := validator.New()
+	validator := validation.New()
 	idempotencyConfig := &conf.Idempotency
 	idempotencyIdempotency, err := idempotency.New(idempotencyConfig, logger)
 	if err != nil {
@@ -204,15 +204,15 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	sdk, err := InitializeSdkUsecase(conf, logger, metrics)
+	sdk, err := InitializeSdkUsecase(conf, logger, validator, metrics)
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, validatorValidator, idempotencyIdempotency, coordinatorCoordinator, metrics, authorizatorAuthorizator, sdk)
+	service := sdkapi.New(conf, logger, validator, idempotencyIdempotency, coordinatorCoordinator, metrics, authorizatorAuthorizator, sdk)
 	return service, nil
 }
 
-func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (sdk.Sdk, error) {
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (sdk.Sdk, error) {
 	cryptographyConfig := &conf.Cryptography
 	cryptographyCryptography, err := cryptography.New(cryptographyConfig)
 	if err != nil {
@@ -225,7 +225,7 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics me
 		return nil, err
 	}
 	publisherConfig := ResolveSdkApiPublisherConfig(conf)
-	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger, validator)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +239,8 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, metrics me
 
 func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	subscriberConfig := ResolveStorageSubscriberConfig(conf)
-	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
+	validator := validation.New()
+	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger, validator)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +249,7 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	if err != nil {
 		return nil, err
 	}
-	storageStorage, err := InitializeStorageUsecase(conf, logger, metrics)
+	storageStorage, err := InitializeStorageUsecase(conf, logger, validator, metrics)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +257,7 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	return service, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (storage2.Storage, error) {
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (storage2.Storage, error) {
 	datastoreConfig := &conf.Datastore
 	timerTimer := timer.New()
 	repositories := repos4.New(datastoreConfig, logger, timerTimer)

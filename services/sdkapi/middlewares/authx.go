@@ -12,7 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	sdkuc "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -32,7 +32,7 @@ type PortalAuth struct {
 func UseAuthx(
 	conf config.SdkApi,
 	logger logging.Logger,
-	validator validator.Validator,
+	validator validation.Validator,
 	authz authorizator.Authorizator,
 	uc sdkuc.Sdk,
 ) gin.HandlerFunc {
@@ -122,7 +122,7 @@ func UseAuthx(
 }
 
 func sdkauth(
-	validator validator.Validator,
+	validator validation.Validator,
 	uc sdkuc.Sdk,
 	ctx context.Context,
 	credentials string,

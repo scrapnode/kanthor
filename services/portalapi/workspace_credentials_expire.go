@@ -10,7 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/command"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
@@ -36,7 +36,7 @@ type WorkspaceCredentialsExpireRes struct {
 // @Security	WsId
 func UseWorkspaceCredentialsExpire(
 	logger logging.Logger,
-	validator validator.Validator,
+	validator validation.Validator,
 	uc portaluc.Portal,
 	coord coordinator.Coordinator,
 ) gin.HandlerFunc {

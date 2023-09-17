@@ -1,4 +1,4 @@
-package validator
+package validation
 
 func New() Validator {
 	return NewPlayaround()

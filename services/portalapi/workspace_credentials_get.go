@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
@@ -26,7 +26,7 @@ type WorkspaceCredentialsGetRes struct {
 // @Failure		default								{object}	gateway.Error
 // @Security	BearerAuth
 // @Security	WsId
-func UseWorkspaceCredentialsGet(logger logging.Logger, validator validator.Validator, uc portaluc.Portal) gin.HandlerFunc {
+func UseWorkspaceCredentialsGet(logger logging.Logger, validator validation.Validator, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)

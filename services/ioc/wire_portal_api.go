@@ -14,7 +14,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi"
@@ -25,7 +25,7 @@ import (
 func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		portalapi.New,
-		validator.New,
+		validation.New,
 		wire.FieldsOf(new(*config.Config), "Idempotency"),
 		idempotency.New,
 		wire.FieldsOf(new(*config.Config), "Coordinator"),
@@ -40,7 +40,7 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	)
 	return nil, nil
 }
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (portaluc.Portal, error) {
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (portaluc.Portal, error) {
 	wire.Build(
 		portaluc.New,
 		wire.FieldsOf(new(*config.Config), "Cryptography"),

@@ -74,6 +74,7 @@ func Consumer(service *storage) streaming.SubHandler {
 			service.logger.Warnw(err.Error(), "event", utils.Stringify(event))
 		}
 
+		// IMPORTANT: we ignore all validations of storage to trade validity to performance
 		var wg conc.WaitGroup
 
 		wg.Go(func() {

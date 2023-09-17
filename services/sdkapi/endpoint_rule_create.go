@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -35,7 +35,7 @@ type EndpointRuleCreateRes struct {
 // @Success		201											{object}	EndpointRuleCreateRes
 // @Failure		default										{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointRuleCreate(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleCreate(logger logging.Logger, validator validation.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointRuleCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {

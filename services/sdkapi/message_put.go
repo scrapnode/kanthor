@@ -10,7 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validator"
+	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -34,7 +34,7 @@ type MessagePutRes struct {
 // @Success		201									{object}	MessagePutRes
 // @Failure		default								{object}	gateway.Error
 // @Security	BasicAuth
-func UseMessagePut(logger logging.Logger, validator validator.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseMessagePut(logger logging.Logger, validator validation.Validator, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req MessagePutReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
