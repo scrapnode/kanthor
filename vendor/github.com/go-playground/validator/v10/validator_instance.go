@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -81,19 +79,20 @@ type internalValidationFuncWrapper struct {
 
 // Validate contains the validator settings and cache
 type Validate struct {
-	tagName          string
-	pool             *sync.Pool
-	hasCustomFuncs   bool
-	hasTagNameFunc   bool
-	tagNameFunc      TagNameFunc
-	structLevelFuncs map[reflect.Type]StructLevelFuncCtx
-	customFuncs      map[reflect.Type]CustomTypeFunc
-	aliases          map[string]string
-	validations      map[string]internalValidationFuncWrapper
-	transTagFunc     map[ut.Translator]map[string]TranslationFunc // map[<locale>]map[<tag>]TranslationFunc
-	rules            map[reflect.Type]map[string]string
-	tagCache         *tagCache
-	structCache      *structCache
+	tagName               string
+	pool                  *sync.Pool
+	tagNameFunc           TagNameFunc
+	structLevelFuncs      map[reflect.Type]StructLevelFuncCtx
+	customFuncs           map[reflect.Type]CustomTypeFunc
+	aliases               map[string]string
+	validations           map[string]internalValidationFuncWrapper
+	transTagFunc          map[ut.Translator]map[string]TranslationFunc // map[<locale>]map[<tag>]TranslationFunc
+	rules                 map[reflect.Type]map[string]string
+	tagCache              *tagCache
+	structCache           *structCache
+	hasCustomFuncs        bool
+	hasTagNameFunc        bool
+	requiredStructEnabled bool
 }
 
 // New returns a new instance of 'validate' with sane defaults.
@@ -101,7 +100,7 @@ type Validate struct {
 // It caches information about your struct and validations,
 // in essence only parsing your validation tags once per struct type.
 // Using multiple instances neglects the benefit of caching.
-func New() *Validate {
+func New(options ...Option) *Validate {
 
 	tc := new(tagCache)
 	tc.m.Store(make(map[string]*cTag))
@@ -137,23 +136,20 @@ func New() *Validate {
 		}
 	}
 
-	runtime.SetFinalizer(v, func(xx *Validate) {
-		log.Println("gc ##>")
-	})
-
 	v.pool = &sync.Pool{
 		New: func() interface{} {
-			vv := &validate{
+			return &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),
 				actualNs: make([]byte, 0, 64),
 				misc:     make([]byte, 32),
 			}
-
-			return vv
 		},
 	}
 
+	for _, o := range options {
+		o(v)
+	}
 	return v
 }
 
@@ -394,10 +390,6 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 	vd.isPartial = false
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
 
-	if _, ok := vd.v.validations["required"]; !ok {
-		_, lenok := vd.v.validations["len"]
-		log.Printf("---> lenok:%v # %+v | %d", lenok, vd.v.validations, len(vd.v.validations))
-	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
 	if len(vd.errs) > 0 {

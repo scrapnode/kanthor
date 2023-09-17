@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -291,6 +292,8 @@ func (v *Validate) parseFieldTagsRecursive(tag string, fieldName string, alias s
 					current.fn = wrapper.fn
 					current.runValidationWhenNil = wrapper.runValidatinOnNil
 				} else {
+					_, has := v.validations[current.tag]
+					log.Printf(" %v | %+v", has, v.validations)
 					panic(strings.TrimSpace(fmt.Sprintf(undefinedValidation, current.tag, fieldName)))
 				}
 
