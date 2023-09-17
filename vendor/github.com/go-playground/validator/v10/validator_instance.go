@@ -388,7 +388,8 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
 
 	if _, ok := vd.v.validations["required"]; !ok {
-		log.Printf("---> %+v | %+v", vd.v.validations, s)
+		_, nok := vd.v.validations["required"]
+		log.Printf("---> %v # %+v | %+v", nok, vd.v.validations, s)
 	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
