@@ -138,6 +138,7 @@ func New() *Validate {
 
 	v.pool = &sync.Pool{
 		New: func() interface{} {
+			log.Printf(" ---> %+v", v.validations["required"])
 			return &validate{
 				v:        v,
 				ns:       make([]byte, 0, 64),
