@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
+	"unsafe"
 
 	ut "github.com/go-playground/universal-translator"
 )
@@ -367,6 +367,8 @@ func (v *Validate) Struct(s interface{}) error {
 	return v.StructCtx(context.Background(), s)
 }
 
+var ptr string
+
 // StructCtx validates a structs exposed fields, and automatically validates nested structs, unless otherwise specified
 // and also allows passing of context.Context for contextual validation information.
 //
@@ -391,8 +393,11 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 	vd.isPartial = false
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
 
-	if _, ok := vd.v.validations["required"]; !ok {
-		log.Printf("%q | %+v | %+v", ok, s, v.validations)
+	if _, has := vd.v.validations["required"]; has {
+		ptr = fmt.Sprintf("0x%x\n", **(**uintptr)(unsafe.Pointer(&vd.v.validations)))
+	} else {
+		next := fmt.Sprintf("0x%x\n", **(**uintptr)(unsafe.Pointer(&vd.v.validations)))
+		fmt.Println("ptr:" + ptr + " - " + "next: " + next)
 	}
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
