@@ -428,6 +428,12 @@ OUTER:
 			v.cf = cf
 			v.ct = ct
 
+			if ct == nil {
+				fmt.Println("-----------------fuck")
+			} else if ct.fn == nil {
+				fmt.Printf("----------------- also fuck -> %+v | %+v", cf, ct)
+			}
+
 			if !ct.fn(ctx, v) {
 				v.str1 = string(append(ns, cf.altName...))
 

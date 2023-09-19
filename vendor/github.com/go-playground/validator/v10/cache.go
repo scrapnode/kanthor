@@ -2,7 +2,6 @@ package validator
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -291,10 +290,6 @@ func (v *Validate) parseFieldTagsRecursive(tag string, fieldName string, alias s
 				if wrapper, ok := v.validations[current.tag]; ok {
 					current.fn = wrapper.fn
 					current.runValidationWhenNil = wrapper.runValidatinOnNil
-				} else {
-					_, has := v.validations[current.tag]
-					log.Printf("%q | %v | %+v", current.tag, has, v.validations)
-					panic(strings.TrimSpace(fmt.Sprintf(undefinedValidation, current.tag, fieldName)))
 				}
 
 				if len(orVals) > 1 {
