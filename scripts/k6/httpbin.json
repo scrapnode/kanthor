@@ -1,0 +1,45 @@
+{
+  "applications": [
+    {
+      "name": "performance tests",
+      "endpoints": [
+        {
+          "name": "success",
+          "method": "POST",
+          "uri": "http://localhost:10080/post",
+          "rules": [
+            {
+              "name": "pass-through",
+              "condition_source": "type",
+              "condition_expression": "regex::.*"
+            }
+          ]
+        },
+        {
+          "name": "delay",
+          "method": "POST",
+          "uri": "http://localhost:10080/delay/5",
+          "rules": [
+            {
+              "name": "pass-through",
+              "condition_source": "type",
+              "condition_expression": "regex::.*"
+            }
+          ]
+        },
+        {
+          "name": "fail",
+          "method": "POST",
+          "uri": "http://localhost:10080/status/500",
+          "rules": [
+            {
+              "name": "pass-through",
+              "condition_source": "type",
+              "condition_expression": "regex::.*"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

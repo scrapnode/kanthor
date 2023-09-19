@@ -22,7 +22,7 @@ cache: &cache
 
 logger:
   pretty: true
-  level: debug
+  level: warn
   with:
     environment: localhost
 
