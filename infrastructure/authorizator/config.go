@@ -2,7 +2,8 @@ package authorizator
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
+
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 var (
@@ -10,12 +11,16 @@ var (
 )
 
 type Config struct {
-	Engine string        `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=noop casbin"`
-	Casbin *CasbinConfig `json:"casbin" yaml:"casbin" mapstructure:"casbin" validate:"-"`
+	Engine string        `json:"engine" yaml:"engine" mapstructure:"engine"`
+	Casbin *CasbinConfig `json:"casbin" yaml:"casbin" mapstructure:"casbin"`
 }
 
 func (conf *Config) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringOneOf("authorizator.config.engine", conf.Engine, []string{EngineCasbin}),
+	)
+	if err != nil {
 		return err
 	}
 
@@ -32,15 +37,16 @@ func (conf *Config) Validate() error {
 }
 
 type CasbinConfig struct {
-	ModelUri        string `json:"model_uri" yaml:"model_uri" mapstructure:"model_uri" validate:"required,uri"`
-	PolicyUri       string `json:"policy_uri" yaml:"policy_uri" mapstructure:"policy_uri" validate:"required,uri"`
-	PolicyNamespace string `json:"policy_namespace" yaml:"policy_namespace" mapstructure:"policy_namespace" validate:"required"`
+	ModelUri        string `json:"model_uri" yaml:"model_uri" mapstructure:"model_uri"`
+	PolicyUri       string `json:"policy_uri" yaml:"policy_uri" mapstructure:"policy_uri"`
+	PolicyNamespace string `json:"policy_namespace" yaml:"policy_namespace" mapstructure:"policy_namespace"`
 }
 
 func (conf *CasbinConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-
-	return nil
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringUri("authorizator.conf.casbin.model_uri", conf.ModelUri),
+		validator.StringUri("authorizator.conf.casbin.policy_uri", conf.PolicyUri),
+		validator.StringRequired("authorizator.conf.casbin.policy_namespace", conf.PolicyNamespace),
+	)
 }

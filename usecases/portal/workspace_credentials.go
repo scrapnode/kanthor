@@ -2,9 +2,8 @@ package portal
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -19,55 +18,6 @@ type WorkspaceCredentials interface {
 	Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error)
 	List(ctx context.Context, req *WorkspaceCredentialsListReq) (*WorkspaceCredentialsListRes, error)
 	Get(ctx context.Context, req *WorkspaceCredentialsGetReq) (*WorkspaceCredentialsGetRes, error)
-}
-
-type WorkspaceCredentialsGenerateReq struct {
-	WorkspaceId string `validate:"required,startswith=ws_"`
-	Name        string `validate:"required"`
-	ExpiredAt   int64
-}
-
-type WorkspaceCredentialsGenerateRes struct {
-	Credentials *entities.WorkspaceCredentials
-	Password    string
-}
-
-type WorkspaceCredentialsUpdateReq struct {
-	WorkspaceId string `validate:"required,startswith=ws_"`
-	Id          string `validate:"required,startswith=wsc_"`
-	Name        string `validate:"required"`
-}
-
-type WorkspaceCredentialsUpdateRes struct {
-	Doc *entities.WorkspaceCredentials
-}
-
-type WorkspaceCredentialsExpireReq struct {
-	WorkspaceId string `validate:"required,startswith=ws_"`
-	Id          string `validate:"required,startswith=wsc_"`
-	Duration    int64  `validate:"gte=0"`
-}
-
-type WorkspaceCredentialsExpireRes struct {
-	Id        string
-	ExpiredAt int64
-}
-
-type WorkspaceCredentialsListReq struct {
-	*structure.ListReq
-}
-
-type WorkspaceCredentialsListRes struct {
-	*structure.ListRes[entities.WorkspaceCredentials]
-}
-
-type WorkspaceCredentialsGetReq struct {
-	WorkspaceId string `validate:"required,startswith=ws_"`
-	Id          string `validate:"required,startswith=wsc_"`
-}
-
-type WorkspaceCredentialsGetRes struct {
-	Doc *entities.WorkspaceCredentials
 }
 
 type workspaceCredentials struct {

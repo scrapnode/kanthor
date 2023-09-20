@@ -1,14 +1,16 @@
 package migration
 
-import "github.com/go-playground/validator/v10"
+import (
+	"github.com/scrapnode/kanthor/pkg/validator"
+)
 
 type Config struct {
-	Source string `json:"source" yaml:"source"  mapstructure:"source" validate:"required,uri"`
+	Source string `json:"source" yaml:"source" mapstructure:"source"`
 }
 
 func (conf *Config) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-	return nil
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringUri("migration.config.engine", conf.Source),
+	)
 }

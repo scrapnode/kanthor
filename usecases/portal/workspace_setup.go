@@ -2,7 +2,71 @@ package portal
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type WorkspaceSetupReq struct {
+	Workspace     *entities.Workspace
+	Applications  []entities.Application
+	Endpoints     []entities.Endpoint
+	EndpointRules []entities.EndpointRule
+}
+
+func (req *WorkspaceSetupReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.PointerNotNil("wokrspace", req.Workspace),
+		validator.Array(req.Applications, func(i int, item entities.Application) error {
+			prefix := fmt.Sprintf("req.applications[%d]", i)
+			return validator.Validate(
+				validator.DefaultConfig,
+				validator.StringRequired(prefix+".id", item.Id),
+				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
+				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
+				validator.StringStartsWith(prefix+".workspace_id", item.WorkspaceId, "ws_"),
+				validator.StringRequired(prefix+".name", item.Name),
+			)
+		}),
+		validator.Array(req.Endpoints, func(i int, item entities.Endpoint) error {
+			prefix := fmt.Sprintf("req.applications[%d]", i)
+			return validator.Validate(
+				validator.DefaultConfig,
+				validator.StringRequired(prefix+".id", item.Id),
+				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
+				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
+				validator.StringStartsWith(prefix+".app_id", item.AppId, "app_"),
+				validator.StringRequired(prefix+".name", item.Name),
+				validator.StringRequired(prefix+".secret_key", item.SecretKey),
+				validator.StringRequired(prefix+".method", item.Method),
+				validator.StringUri(prefix+".uri", item.Uri),
+			)
+		}),
+		validator.Array(req.EndpointRules, func(i int, item entities.EndpointRule) error {
+			prefix := fmt.Sprintf("req.applications[%d]", i)
+			return validator.Validate(
+				validator.DefaultConfig,
+				validator.StringRequired(prefix+".id", item.Id),
+				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
+				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
+				validator.StringStartsWith(prefix+".endpoint_id", item.EndpointId, "ep_"),
+				validator.StringRequired(prefix+".name", item.Name),
+				validator.NumberGreaterThanOrEqual(prefix+".priority", item.Priority, 0),
+				validator.StringRequired(prefix+".condition_source", item.ConditionSource),
+				validator.StringRequired(prefix+".condition_expression", item.ConditionExpression),
+			)
+		}),
+	)
+}
+
+type WorkspaceSetupRes struct {
+	ApplicationIds  []string
+	EndpointIds     []string
+	EndpointRuleIds []string
+	Status          map[string]bool
+}
 
 func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*WorkspaceSetupRes, error) {
 	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {

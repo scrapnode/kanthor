@@ -9,16 +9,40 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 )
 
+type MessagePutReq struct {
+	AppId string
+	Type  string
+
+	Body     []byte
+	Headers  entities.Header
+	Metadata entities.Metadata
+}
+
+func (req *MessagePutReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("app_id", req.AppId, "app_"),
+		validator.StringRequired("type", req.Type),
+		validator.SliceRequired("body", req.Body),
+	)
+}
+
+type MessagePutRes struct {
+	Msg *entities.Message
+}
+
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+
 	key := CacheKeyApp(ws.Id, req.AppId)
 	app, err := cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
 		uc.metrics.Count(ctx, "cache_miss_total", 1)
 
-		return uc.repos.Application().Get(ctx, ws.Id, req.AppId)
+		return uc.repos.Application().Get(ctx, ws, req.AppId)
 	})
 	if err != nil {
 		return nil, err

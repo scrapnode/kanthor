@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -16,19 +15,6 @@ import (
 
 type Message interface {
 	Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error)
-}
-
-type MessagePutReq struct {
-	AppId string `validate:"required,startswith=app_"`
-	Type  string `validate:"required"`
-
-	Body     []byte `validate:"required"`
-	Headers  entities.Header
-	Metadata entities.Metadata
-}
-
-type MessagePutRes struct {
-	Msg *entities.Message
 }
 
 type message struct {

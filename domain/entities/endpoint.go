@@ -2,16 +2,18 @@ package entities
 
 import (
 	"fmt"
+
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
 type Endpoint struct {
 	Entity
 	AuditTime
+	// @TODO: add deactivated_at
+	// DeactivatedAt int64 `json:"deactivated_at"`
 
-	AppId string `json:"app_id"`
-	Name  string `json:"name"`
-
+	AppId     string `json:"app_id"`
+	Name      string `json:"name"`
 	SecretKey string `json:"secret_key"`
 	// HTTP: POST/PUT/PATCH
 	Method string `json:"method"`
@@ -40,6 +42,8 @@ func (entity *Endpoint) GenSecretKey() {
 type EndpointRule struct {
 	Entity
 	AuditTime
+	// @TODO: add deactivated_at
+	// DeactivatedAt int64 `json:"deactivated_at"`
 
 	EndpointId string `json:"endpoint_id"`
 	Name       string `json:"name"`

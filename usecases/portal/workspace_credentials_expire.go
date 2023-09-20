@@ -3,10 +3,32 @@ package portal
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
-	"time"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type WorkspaceCredentialsExpireReq struct {
+	WorkspaceId string
+	Id          string
+	Duration    int64
+}
+
+func (req *WorkspaceCredentialsExpireReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("workspace_id", req.WorkspaceId, "ws_"),
+		validator.StringStartsWith("id", req.Id, "wsc_"),
+		validator.NumberGreaterThanOrEqual[int64]("expired_at", req.Duration, 0),
+	)
+}
+
+type WorkspaceCredentialsExpireRes struct {
+	Id        string
+	ExpiredAt int64
+}
 
 func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error) {
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)

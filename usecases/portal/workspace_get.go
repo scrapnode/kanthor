@@ -2,10 +2,29 @@ package portal
 
 import (
 	"context"
+	"time"
+
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"time"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type WorkspaceGetReq struct {
+	Id string
+}
+
+func (req *WorkspaceGetReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("id", req.Id, "ws_"),
+	)
+}
+
+type WorkspaceGetRes struct {
+	Workspace     *entities.Workspace
+	WorkspaceTier *entities.WorkspaceTier
+}
 
 func (uc *workspace) Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error) {
 	key := utils.Key("portal", req.Id)

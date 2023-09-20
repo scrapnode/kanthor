@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/command"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
@@ -36,7 +35,6 @@ type WorkspaceCredentialsExpireRes struct {
 // @Security	WsId
 func UseWorkspaceCredentialsExpire(
 	logger logging.Logger,
-	validator validation.Validator,
 	uc portaluc.Portal,
 	coord coordinator.Coordinator,
 ) gin.HandlerFunc {
@@ -57,7 +55,7 @@ func UseWorkspaceCredentialsExpire(
 			Id:          id,
 			Duration:    req.Duration,
 		}
-		if err := validator.Struct(ucreq); err != nil {
+		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return

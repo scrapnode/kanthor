@@ -2,53 +2,46 @@ package config
 
 import (
 	"fmt"
-	"github.com/go-playground/validator/v10"
+
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type Scheduler struct {
-	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher" validate:"required"`
-	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
-	Cache      cache.Config               `json:"cache" yaml:"cache" validate:"required"`
-	Request    Request                    `json:"request" yaml:"request" mapstructure:"request" validate:"required"`
-	Metrics    metric.Config              `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
+	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
+	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
+	Cache      cache.Config               `json:"cache" yaml:"cache"`
+	Request    Request                    `json:"request" yaml:"request" mapstructure:"request"`
+	Metrics    metric.Config              `json:"metrics" yaml:"metrics" mapstructure:"metrics"`
 }
 
 func (conf *Scheduler) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return fmt.Errorf("config.Scheduler: %v", err)
-	}
-
 	if err := conf.Publisher.Validate(); err != nil {
-		return fmt.Errorf("config.Scheduler.Publisher: %v", err)
+		return fmt.Errorf("config.scheduler.publisher: %v", err)
 	}
 	if err := conf.Subscriber.Validate(); err != nil {
-		return fmt.Errorf("config.Scheduler.Subscriber: %v", err)
+		return fmt.Errorf("config.scheduler.subscriber: %v", err)
 	}
 	if err := conf.Request.Validate(); err != nil {
-		return fmt.Errorf("config.Scheduler.Subscriber: %v", err)
+		return fmt.Errorf("config.scheduler.request: %v", err)
 	}
 	if err := conf.Cache.Validate(); err != nil {
-		return fmt.Errorf("config.Scheduler.Cache: %v", err)
+		return fmt.Errorf("config.scheduler.cache: %v", err)
 	}
 	if err := conf.Metrics.Validate(); err != nil {
-		return fmt.Errorf("config.Scheduler.Metrics: %v", err)
+		return fmt.Errorf("config.scheduler.metrics: %v", err)
 	}
 
 	return nil
 }
 
 type Request struct {
-	Arrange RequestArrange `json:"arrange" yaml:"arrange" mapstructure:"arrange" validate:"required"`
+	Arrange RequestArrange `json:"arrange" yaml:"arrange" mapstructure:"arrange"`
 }
 
 func (conf *Request) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-
 	if err := conf.Arrange.Validate(); err != nil {
 		return err
 	}
@@ -57,9 +50,12 @@ func (conf *Request) Validate() error {
 }
 
 type RequestArrange struct {
-	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency" validate:"required,gt=0"`
+	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
 }
 
 func (conf *RequestArrange) Validate() error {
-	return validator.New().Struct(conf)
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThan("config.request.arrange.concurrency", conf.Concurrency, 0),
+	)
 }

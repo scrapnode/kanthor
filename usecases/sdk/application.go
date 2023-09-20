@@ -2,9 +2,8 @@ package sdk
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -20,47 +19,6 @@ type Application interface {
 
 	List(ctx context.Context, req *ApplicationListReq) (*ApplicationListRes, error)
 	Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error)
-}
-
-type ApplicationCreateReq struct {
-	Name string `validate:"required"`
-}
-
-type ApplicationCreateRes struct {
-	Doc *entities.Application
-}
-
-type ApplicationUpdateReq struct {
-	Id   string `validate:"required,startswith=app_"`
-	Name string `validate:"required"`
-}
-
-type ApplicationUpdateRes struct {
-	Doc *entities.Application
-}
-
-type ApplicationDeleteReq struct {
-	Id string `validate:"required,startswith=app_"`
-}
-
-type ApplicationDeleteRes struct {
-	Doc *entities.Application
-}
-
-type ApplicationListReq struct {
-	*structure.ListReq
-}
-
-type ApplicationListRes struct {
-	*structure.ListRes[entities.Application]
-}
-
-type ApplicationGetReq struct {
-	Id string `validate:"required,startswith=app_"`
-}
-
-type ApplicationGetRes struct {
-	Doc *entities.Application
 }
 
 type application struct {

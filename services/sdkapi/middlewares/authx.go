@@ -12,7 +12,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	sdkuc "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -32,7 +31,6 @@ type PortalAuth struct {
 func UseAuthx(
 	conf config.SdkApi,
 	logger logging.Logger,
-	validator validation.Validator,
 	authz authorizator.Authorizator,
 	uc sdkuc.Sdk,
 ) gin.HandlerFunc {
@@ -95,7 +93,7 @@ func UseAuthx(
 
 		// sdk authentication & authorization
 		credentials := ginctx.Request.Header.Get(authenticator.HeaderAuth)
-		ctx, err := sdkauth(validator, uc, ctx, credentials)
+		ctx, err := sdkauth(uc, ctx, credentials)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unable to verify your credentials"})
@@ -122,7 +120,6 @@ func UseAuthx(
 }
 
 func sdkauth(
-	validator validation.Validator,
 	uc sdkuc.Sdk,
 	ctx context.Context,
 	credentials string,
@@ -133,7 +130,7 @@ func sdkauth(
 	}
 
 	req := &sdkuc.WorkspaceCredentialsAuthenticateReq{User: user, Pass: pass}
-	if err := validator.Struct(req); err != nil {
+	if err := req.Validate(); err != nil {
 		return ctx, err
 	}
 

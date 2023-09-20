@@ -2,6 +2,7 @@ package repos
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 )
@@ -11,8 +12,9 @@ type Endpoint interface {
 	Update(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error)
 	Delete(ctx context.Context, doc *entities.Endpoint) error
 
-	List(ctx context.Context, wsId, appId string, opts ...structure.ListOps) (*structure.ListRes[entities.Endpoint], error)
-	Get(ctx context.Context, wsId, appId, id string) (*entities.Endpoint, error)
+	List(ctx context.Context, app *entities.Application, opts ...structure.ListOps) (*structure.ListRes[entities.Endpoint], error)
+	Get(ctx context.Context, app *entities.Application, id string) (*entities.Endpoint, error)
+	GetOfWorkspace(ctx context.Context, ws *entities.Workspace, id string) (*entities.Endpoint, error)
 }
 
 type EndpointRule interface {
@@ -20,6 +22,6 @@ type EndpointRule interface {
 	Update(ctx context.Context, doc *entities.EndpointRule) (*entities.EndpointRule, error)
 	Delete(ctx context.Context, doc *entities.EndpointRule) error
 
-	List(ctx context.Context, wsId, appId, epId string, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error)
-	Get(ctx context.Context, wsId, appId, epId, id string) (*entities.EndpointRule, error)
+	List(ctx context.Context, ep *entities.Endpoint, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error)
+	Get(ctx context.Context, ep *entities.Endpoint, id string) (*entities.EndpointRule, error)
 }

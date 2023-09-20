@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/go-playground/validator/v10"
+
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
@@ -11,32 +11,28 @@ import (
 )
 
 type PortalApi struct {
-	Gateway       gateway.Config       `json:"gateway" yaml:"gateway" mapstructure:"gateway" validate:"required"`
-	Authenticator authenticator.Config `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator" validate:"required"`
-	Authorizator  authorizator.Config  `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator" validate:"required"`
-	Cache         cache.Config         `json:"cache" yaml:"cache" mapstructure:"cache" validate:"required"`
-	Metrics       metric.Config        `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
+	Gateway       gateway.Config       `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
+	Authenticator authenticator.Config `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator"`
+	Authorizator  authorizator.Config  `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
+	Cache         cache.Config         `json:"cache" yaml:"cache" mapstructure:"cache"`
+	Metrics       metric.Config        `json:"metrics" yaml:"metrics" mapstructure:"metrics"`
 }
 
 func (conf *PortalApi) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return fmt.Errorf("config.PortalApi: %v", err)
-	}
-
 	if err := conf.Gateway.Validate(); err != nil {
-		return fmt.Errorf("config.PortalApi.Gateway: %v", err)
+		return fmt.Errorf("config.portalapi.gateway: %v", err)
 	}
 	if err := conf.Authenticator.Validate(); err != nil {
-		return fmt.Errorf("config.PortalApi.Authenticator: %v", err)
+		return fmt.Errorf("config.portalapi.authenticator: %v", err)
 	}
 	if err := conf.Authorizator.Validate(); err != nil {
-		return fmt.Errorf("config.PortalApi.Enforcer: %v", err)
+		return fmt.Errorf("config.portalapi.enforcer: %v", err)
 	}
 	if err := conf.Cache.Validate(); err != nil {
-		return fmt.Errorf("config.PortalApi.Cache: %v", err)
+		return fmt.Errorf("config.portalapi.cache: %v", err)
 	}
 	if err := conf.Metrics.Validate(); err != nil {
-		return fmt.Errorf("config.PortalApi.Metrics: %v", err)
+		return fmt.Errorf("config.portalapi.metrics: %v", err)
 	}
 
 	return nil

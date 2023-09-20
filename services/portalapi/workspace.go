@@ -6,5 +6,5 @@ import (
 
 func RegisterWorkspaceRoutes(router gin.IRoutes, service *portalapi) {
 	router.GET("/me", UseWorkspaceGet())
-	router.PUT("/me", UseWorkspaceUpdate(service.logger, service.validator, service.uc))
+	router.PUT("/me", UseWorkspaceUpdate(service.logger, service.uc))
 }

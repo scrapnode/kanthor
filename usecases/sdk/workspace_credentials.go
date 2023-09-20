@@ -2,8 +2,8 @@ package sdk
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -15,26 +15,6 @@ import (
 type WorkspaceCredentials interface {
 	Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error)
 	Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error)
-}
-
-type WorkspaceCredentialsAuthenticateReq struct {
-	User string `validate:"required,startswith=wsc_"`
-	Pass string `validate:"required"`
-}
-
-type WorkspaceCredentialsAuthenticateRes struct {
-	Workspace            *entities.Workspace
-	WorkspaceCredentials *entities.WorkspaceCredentials
-	WorkspaceTier        *entities.WorkspaceTier
-}
-
-type WorkspaceCredentialsExpireReq struct {
-	User      string `validate:"required,startswith=wsc_"`
-	ExpiredAt int64  `validate:"required,gt=0"`
-}
-
-type WorkspaceCredentialsExpireRes struct {
-	Ok bool
 }
 
 type workspaceCredentials struct {

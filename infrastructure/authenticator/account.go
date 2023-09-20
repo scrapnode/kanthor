@@ -1,7 +1,7 @@
 package authenticator
 
 type Account struct {
-	Sub string `json:"sub" yaml:"sub" validate:"required"`
+	Sub string `json:"sub" yaml:"sub"`
 	Iss string `json:"iss" yaml:"iss"`
 	Aud string `json:"aud" yaml:"aud"`
 

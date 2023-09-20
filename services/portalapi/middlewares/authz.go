@@ -8,17 +8,16 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
 
-func UseAuthz(validator validation.Validator, authz authorizator.Authorizator, uc portaluc.Portal) gin.HandlerFunc {
+func UseAuthz(authz authorizator.Authorizator, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		wsId := ginctx.Request.Header.Get(authorizator.HeaderWorkspace)
 
 		req := &portaluc.WorkspaceGetReq{Id: wsId}
-		if err := validator.Struct(req); err != nil {
+		if err := req.Validate(); err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

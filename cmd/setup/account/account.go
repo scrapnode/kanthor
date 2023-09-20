@@ -8,15 +8,12 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/spf13/cobra"
 )
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
-	validator := validation.New()
-
 	command := &cobra.Command{
 		Use:  "account",
 		Args: cobra.MatchAll(cobra.MinimumNArgs(1)),
@@ -42,7 +39,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			uc, err := ioc.InitializePortalUsecase(conf, logger, validator, meter)
+			uc, err := ioc.InitializePortalUsecase(conf, logger, meter)
 			if err != nil {
 				return err
 			}
@@ -78,12 +75,12 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			out.AddJson("id", account.Workspace.Id)
 			out.AddJson("tier", account.WorkspaceTier.Name)
 
-			if err := apps(validator, uc, ctx, account.Workspace, file, out); err != nil {
+			if err := apps(uc, ctx, account.Workspace, file, out); err != nil {
 				return err
 			}
 
 			if withCreds {
-				if err := creds(validator, coord, uc, ctx, account.Workspace, out); err != nil {
+				if err := creds(coord, uc, ctx, account.Workspace, out); err != nil {
 					return err
 				}
 			}

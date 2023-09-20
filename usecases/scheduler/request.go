@@ -12,6 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
+	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
@@ -20,19 +21,40 @@ type Request interface {
 }
 
 type RequestArrangeReq struct {
-	Message RequestArrangeReqMessage `validate:"required"`
+	Message RequestArrangeReqMessage
+}
+
+func (req *RequestArrangeReq) Validate() error {
+	if err := req.Message.Validate(); err != nil {
+		return err
+	}
+	return nil
 }
 
 type RequestArrangeReqMessage struct {
-	Id    string `validate:"required,startswith=msg_"`
-	AttId string `validate:"required,startswith=att_"`
+	Id    string
+	AttId string
 
-	Tier     string            `validate:"required"`
-	AppId    string            `validate:"required,startswith=app_"`
-	Type     string            `validate:"required"`
-	Metadata entities.Metadata `validate:"required"`
-	Headers  entities.Header   `validate:"required"`
-	Body     []byte            `validate:"required"`
+	Tier     string
+	AppId    string
+	Type     string
+	Metadata entities.Metadata
+	Headers  entities.Header
+	Body     []byte
+}
+
+func (req *RequestArrangeReqMessage) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+
+		validator.StringStartsWith("request.id", req.Id, "req_"),
+		validator.StringStartsWith("request.att_id", req.AttId, "att_"),
+		validator.StringRequired("request.tier", req.Tier),
+		validator.StringStartsWith("request.app_id", req.AppId, "app_"),
+		validator.StringRequired("request.type", req.Type),
+		validator.MapNotNil[string, string]("request.metadata", req.Metadata),
+		validator.SliceRequired("request.body", req.Body),
+	)
 }
 
 type RequestArrangeRes struct {

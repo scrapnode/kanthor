@@ -2,7 +2,8 @@ package metric
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
+
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 var (
@@ -11,12 +12,16 @@ var (
 )
 
 type Config struct {
-	Engine string      `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=noop otel"`
-	Otel   *OtelConfig `json:"otel" yaml:"otel" mapstructure:"otel" validate:"-"`
+	Engine string      `json:"engine" yaml:"engine" mapstructure:"engine"`
+	Otel   *OtelConfig `json:"otel" yaml:"otel" mapstructure:"otel"`
 }
 
 func (conf *Config) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringOneOf("monitoring.metrics.config.engine", conf.Engine, []string{EngineNoop, EngineOtel}),
+	)
+	if err != nil {
 		return err
 	}
 
@@ -33,15 +38,17 @@ func (conf *Config) Validate() error {
 }
 
 type OtelConfig struct {
-	Endpoint string            `json:"endpoint" yaml:"endpoint" mapstructure:"endpoint" validate:"required,hostname_port"`
-	Service  string            `json:"service" yaml:"service" mapstructure:"service" validate:"required"`
-	Interval int               `json:"interval" yaml:"interval" mapstructure:"interval" validate:"required,gte=15000"`
-	Labels   map[string]string `json:"labels" yaml:"labels" mapstructure:"labels" validate:"-"`
+	Endpoint string            `json:"endpoint" yaml:"endpoint" mapstructure:"endpoint"`
+	Service  string            `json:"service" yaml:"service" mapstructure:"service"`
+	Interval int               `json:"interval" yaml:"interval" mapstructure:"interval"`
+	Labels   map[string]string `json:"labels" yaml:"labels" mapstructure:"labels"`
 }
 
 func (conf *OtelConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-	return nil
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringHostPort("monitoring.metrics.config.otel.endpoint", conf.Endpoint),
+		validator.StringRequired("monitoring.metrics.config.otel.service", conf.Endpoint),
+		validator.NumberGreaterThanOrEqual("monitoring.metrics.config.otel.interval", conf.Interval, 5000),
+	)
 }

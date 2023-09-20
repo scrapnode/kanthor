@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -30,7 +29,7 @@ type EndpointUpdateRes struct {
 // @Success		200										{object}	EndpointUpdateRes
 // @Failure		default									{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointUpdate(logger logging.Logger, validator validation.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointUpdate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
@@ -43,7 +42,7 @@ func UseEndpointUpdate(logger logging.Logger, validator validation.Validator, uc
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
 		ucreq := &usecase.EndpointUpdateReq{AppId: appId, Id: id, Name: req.Name}
-		if err := validator.Struct(ucreq); err != nil {
+		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return

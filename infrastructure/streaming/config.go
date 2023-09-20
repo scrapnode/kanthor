@@ -1,34 +1,53 @@
 package streaming
 
-import "github.com/go-playground/validator/v10"
+import (
+	"fmt"
+
+	"github.com/scrapnode/kanthor/pkg/validator"
+)
 
 type ConnectionConfig struct {
-	Uri    string       `json:"uri" yaml:"uri" mapstructure:"uri" validate:"required,uri"`
-	Stream StreamConfig `json:"stream" yaml:"stream" mapstructure:"stream" validate:"required"`
+	Uri    string       `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Stream StreamConfig `json:"stream" yaml:"stream" mapstructure:"stream"`
 }
 
 func (conf *ConnectionConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
+	err := validator.Validate(validator.DefaultConfig, validator.StringUri("streaming.conf.uri", conf.Uri))
+	if err != nil {
 		return err
 	}
+
+	if err := conf.Stream.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 type StreamConfig struct {
-	Name     string   `json:"name" yaml:"name" mapstructure:"name" validate:"required,alphanumunicode"`
-	Replicas int      `json:"replicas" yaml:"replicas" mapstructure:"replicas" validate:"number,gte=0"`
-	Subjects []string `json:"subjects" yaml:"subjects" mapstructure:"subjects" validate:"required,gt=0,dive,required"`
+	Name     string   `json:"name" yaml:"name" mapstructure:"name"`
+	Replicas int      `json:"replicas" yaml:"replicas" mapstructure:"replicas"`
+	Subjects []string `json:"subjects" yaml:"subjects" mapstructure:"subjects"`
 	Limits   struct {
-		Msgs     int64 `json:"msgs" yaml:"msgs" mapstructure:"msgs" validate:"required,number,gte=0"`
-		MsgBytes int32 `json:"msg_bytes" yaml:"msg_bytes" mapstructure:"msg_bytes" validate:"required,number,gte=0"`
-		Bytes    int64 `json:"bytes" yaml:"bytes" mapstructure:"bytes" validate:"required,number,gte=0"`
-		Age      int64 `json:"age" yaml:"age" mapstructure:"age" validate:"required,number,gte=0"`
-	} `json:"limits" yaml:"limits" mapstructure:"limits" validate:"required"`
+		Msgs     int64 `json:"msgs" yaml:"msgs" mapstructure:"msgs"`
+		MsgBytes int32 `json:"msg_bytes" yaml:"msg_bytes" mapstructure:"msg_bytes"`
+		Bytes    int64 `json:"bytes" yaml:"bytes" mapstructure:"bytes"`
+		Age      int64 `json:"age" yaml:"age" mapstructure:"age"`
+	} `json:"limits" yaml:"limits" mapstructure:"limits"`
 }
 
 func (conf *StreamConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-	return nil
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringRequired("streaming.conf.stream.name", conf.Name),
+		validator.NumberGreaterThanOrEqual("streaming.conf.stream.replicas", conf.Replicas, 0),
+		validator.SliceRequired("streaming.conf.stream.subjects", conf.Subjects),
+		validator.Array(conf.Subjects, func(i int, item string) error {
+			return validator.Validate(validator.DefaultConfig, validator.StringRequired(fmt.Sprintf("streaming.conf.stream.subjects[%d]", i), item))
+		}),
+		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.msgs", conf.Limits.Msgs, 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.msg_bytes", int(conf.Limits.MsgBytes), 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.bytes", int(conf.Limits.Bytes), 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.age", int(conf.Limits.Age), 0),
+	)
 }

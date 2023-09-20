@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -25,13 +24,13 @@ type EndpointDeleteRes struct {
 // @Success		200										{object}	EndpointDeleteRes
 // @Failure		default									{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointDelete(logger logging.Logger, validator validation.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointDelete(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
 		ucreq := &usecase.EndpointDeleteReq{AppId: appId, Id: id}
-		if err := validator.Struct(ucreq); err != nil {
+		if err := ucreq.Validate(); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return

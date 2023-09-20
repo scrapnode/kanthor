@@ -3,9 +3,27 @@ package portal
 import (
 	"context"
 	"errors"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/database"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type AccountSetupReq struct {
+	AccountId string
+}
+
+func (req *AccountSetupReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringRequired("account_id", req.AccountId),
+	)
+}
+
+type AccountSetupRes struct {
+	Workspace     *entities.Workspace
+	WorkspaceTier *entities.WorkspaceTier
+}
 
 func (uc *account) Setup(ctx context.Context, req *AccountSetupReq) (*AccountSetupRes, error) {
 	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {

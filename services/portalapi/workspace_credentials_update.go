@@ -9,13 +9,12 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
 
 type WorkspaceCredentialsUpdateReq struct {
-	Name string `json:"name"`
+	Name string `json:"name" binding:"required"`
 }
 
 type WorkspaceCredentialsUpdateRes struct {
@@ -31,7 +30,7 @@ type WorkspaceCredentialsUpdateRes struct {
 // @Failure		default								{object}	gateway.Error
 // @Security	BearerAuth
 // @Security	WsId
-func UseWorkspaceCredentialsUpdate(logger logging.Logger, validator validation.Validator, uc portaluc.Portal) gin.HandlerFunc {
+func UseWorkspaceCredentialsUpdate(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
@@ -49,7 +48,7 @@ func UseWorkspaceCredentialsUpdate(logger logging.Logger, validator validation.V
 			Id:          id,
 			Name:        req.Name,
 		}
-		if err := validator.Struct(ucreq); err != nil {
+		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return

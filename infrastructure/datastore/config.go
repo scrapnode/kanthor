@@ -1,17 +1,18 @@
 package datastore
 
 import (
-	"github.com/go-playground/validator/v10"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type Config struct {
-	Uri       string           `json:"uri" yaml:"uri" mapstructure:"uri" validate:"required,uri"`
-	Migration migration.Config `json:"migration" yaml:"migration" validate:"required"`
+	Uri       string           `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Migration migration.Config `json:"migration" yaml:"migration"`
 }
 
 func (conf *Config) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
+	err := validator.Validate(validator.DefaultConfig, validator.StringUri("datastore.conf.uri", conf.Uri))
+	if err != nil {
 		return err
 	}
 

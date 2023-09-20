@@ -11,7 +11,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -22,7 +21,6 @@ import (
 func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		dispatcher.New,
-		validation.New,
 		ResolveDispatcherSubscriberConfig,
 		streaming.NewSubscriber,
 		ResolveDispatcherMetricsConfig,
@@ -32,7 +30,7 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	return nil, nil
 }
 
-func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, validator validation.Validator, metrics metric.Metrics) (dispatcheruc.Dispatcher, error) {
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (dispatcheruc.Dispatcher, error) {
 	wire.Build(
 		dispatcheruc.New,
 		timer.New,

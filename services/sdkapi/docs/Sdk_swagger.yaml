@@ -874,14 +874,36 @@ paths:
       - BasicAuth: []
       tags:
       - endpoint
-  /application/{app_id}/endpoint/{ep_id}/rule:
-    get:
+  /application/{app_id}/message:
+    put:
       parameters:
       - description: application id
         in: path
         name: app_id
         required: true
         type: string
+      - description: message properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/sdkapi.MessagePutReq'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/sdkapi.MessagePutRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BasicAuth: []
+      tags:
+      - message
+  /endpoint/{ep_id}/rule:
+    get:
+      parameters:
       - description: endpoint id
         in: path
         name: ep_id
@@ -927,11 +949,6 @@ paths:
       - endpoint rule
     post:
       parameters:
-      - description: application id
-        in: path
-        name: app_id
-        required: true
-        type: string
       - description: endpoint id
         in: path
         name: ep_id
@@ -956,14 +973,9 @@ paths:
       - BasicAuth: []
       tags:
       - endpoint rule
-  /application/{app_id}/endpoint/{ep_id}/rule/{epr_id}:
+  /endpoint/{ep_id}/rule/{epr_id}:
     delete:
       parameters:
-      - description: application id
-        in: path
-        name: app_id
-        required: true
-        type: string
       - description: endpoint id
         in: path
         name: ep_id
@@ -989,11 +1001,6 @@ paths:
       - endpoint rule
     get:
       parameters:
-      - description: application id
-        in: path
-        name: app_id
-        required: true
-        type: string
       - description: endpoint id
         in: path
         name: ep_id
@@ -1019,11 +1026,6 @@ paths:
       - endpoint rule
     put:
       parameters:
-      - description: application id
-        in: path
-        name: app_id
-        required: true
-        type: string
       - description: endpoint id
         in: path
         name: ep_id
@@ -1053,33 +1055,6 @@ paths:
       - BasicAuth: []
       tags:
       - endpoint rule
-  /application/{app_id}/message:
-    put:
-      parameters:
-      - description: application id
-        in: path
-        name: app_id
-        required: true
-        type: string
-      - description: message properties
-        in: body
-        name: props
-        required: true
-        schema:
-          $ref: '#/definitions/sdkapi.MessagePutReq'
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/sdkapi.MessagePutRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - BasicAuth: []
-      tags:
-      - message
 produces:
 - application/json
 securityDefinitions:

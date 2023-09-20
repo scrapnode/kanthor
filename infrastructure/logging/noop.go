@@ -8,7 +8,7 @@ type noop struct {
 
 // With returns a new no-op logger.
 func (logger *noop) With(args ...interface{}) Logger {
-	return logger.With(args)
+	return logger
 }
 
 func NewNoop() Logger {

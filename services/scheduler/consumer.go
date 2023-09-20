@@ -33,7 +33,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				}
 
 				ucreq := transformation.MsgToArrangeReq(msg)
-				if err := service.validator.Struct(ucreq); err != nil {
+				if err := ucreq.Validate(); err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
 					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 					errs[event.Id] = err

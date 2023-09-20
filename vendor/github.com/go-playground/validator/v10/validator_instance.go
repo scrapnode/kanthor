@@ -366,10 +366,6 @@ func (v *Validate) Struct(s interface{}) error {
 	return v.StructCtx(context.Background(), s)
 }
 
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
-}
-
 // StructCtx validates a structs exposed fields, and automatically validates nested structs, unless otherwise specified
 // and also allows passing of context.Context for contextual validation information.
 //
@@ -393,6 +389,7 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 	vd.top = top
 	vd.isPartial = false
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
+
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
 
 	if len(vd.errs) > 0 {

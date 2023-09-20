@@ -10,9 +10,15 @@ type Header struct {
 }
 
 func (h Header) Merge(src Header) {
-	for key, values := range src.Header {
-		for _, v := range values {
-			h.Add(key, v)
+	if h.Header == nil {
+		h.Header = http.Header{}
+	}
+
+	if len(src.Header) > 0 {
+		for key, values := range src.Header {
+			for _, v := range values {
+				h.Add(key, v)
+			}
 		}
 	}
 }

@@ -1,19 +1,15 @@
 package cryptography
 
 import (
-	"github.com/go-playground/validator/v10"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type Config struct {
 	KDF       KDFConfig       `json:"kdf" yaml:"kdf" mapstructure:"kdf"`
-	Symmetric SymmetricConfig `json:"symmetric" yaml:"symmetric" mapstructure:"symmetric" validate:"required"`
+	Symmetric SymmetricConfig `json:"symmetric" yaml:"symmetric" mapstructure:"symmetric"`
 }
 
 func (conf *Config) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-
 	if err := conf.KDF.Validate(); err != nil {
 		return err
 	}
@@ -29,19 +25,13 @@ type KDFConfig struct {
 }
 
 func (conf *KDFConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
 	return nil
 }
 
 type SymmetricConfig struct {
-	Key string `json:"key" yaml:"key" mapstructure:"key" validate:"required,len=32"`
+	Key string `json:"key" yaml:"key" mapstructure:"key"`
 }
 
 func (conf *SymmetricConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-	return nil
+	return validator.Validate(validator.DefaultConfig, validator.StringLen("cryptography.conf.ukeyri", conf.Key, 32, 32))
 }

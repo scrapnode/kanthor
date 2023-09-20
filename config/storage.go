@@ -2,21 +2,17 @@ package config
 
 import (
 	"fmt"
-	"github.com/go-playground/validator/v10"
+
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
 type Storage struct {
-	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber" validate:"required"`
-	Metrics    metric.Config              `json:"metrics" yaml:"metrics" mapstructure:"metrics" validate:"required"`
+	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
+	Metrics    metric.Config              `json:"metrics" yaml:"metrics" mapstructure:"metrics"`
 }
 
 func (conf *Storage) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return fmt.Errorf("config.Storage: %v", err)
-	}
-
 	if err := conf.Subscriber.Validate(); err != nil {
 		return fmt.Errorf("config.Storage.Subscriber: %v", err)
 	}

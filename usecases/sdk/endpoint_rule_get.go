@@ -2,23 +2,52 @@ package sdk
 
 import (
 	"context"
+	"time"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"time"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type EndpointRuleGetReq struct {
+	EpId string
+	Id   string
+}
+
+func (req *EndpointRuleGetReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("ep_id", req.EpId, "ep_"),
+		validator.StringStartsWith("id", req.EpId, "epr_"),
+	)
+}
+
+type EndpointRuleGetRes struct {
+	Doc *entities.EndpointRule
+}
 
 func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetReq) (*EndpointRuleGetRes, error) {
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
-	key := CacheKeyEpr(ws.Id, req.AppId, req.EpId, req.Id)
+
+	key := CacheKeyEpr(req.EpId, req.Id)
 	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*EndpointRuleGetRes, error) {
 		uc.metrics.Count(ctx, "cache_miss_total", 1)
 
-		app, err := uc.repos.EndpointRule().Get(ctx, ws.Id, req.AppId, req.EpId, req.Id)
+		ep, err := uc.repos.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
 		if err != nil {
 			return nil, err
 		}
-		res := &EndpointRuleGetRes{Doc: app}
+
+		epr, err := uc.repos.EndpointRule().Get(ctx, ep, req.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		if err != nil {
+			return nil, err
+		}
+		res := &EndpointRuleGetRes{Doc: epr}
 		return res, nil
 	})
 }

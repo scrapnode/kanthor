@@ -16,7 +16,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi/docs"
 	"github.com/scrapnode/kanthor/services/portalapi/middlewares"
@@ -28,7 +27,6 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	validator validation.Validator,
 	idempotency idempotency.Idempotency,
 	coordinator coordinator.Coordinator,
 	metrics metric.Metrics,
@@ -40,7 +38,6 @@ func New(
 	return &portalapi{
 		conf:        conf,
 		logger:      logger,
-		validator:   validator,
 		idempotency: idempotency,
 		coordinator: coordinator,
 		metrics:     metrics,
@@ -54,7 +51,6 @@ func New(
 type portalapi struct {
 	conf        *config.Config
 	logger      logging.Logger
-	validator   validation.Validator
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
 	metrics     metric.Metrics
@@ -136,8 +132,8 @@ func (service *portalapi) router() *gin.Engine {
 		api.Use(middlewares.UseAuth(service.auth))
 
 		RegisterAccountRoutes(api.Group("/account"), service)
-		RegisterWorkspaceRoutes(api.Group("/workspace").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
-		RegisterWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials").Use(middlewares.UseAuthz(service.validator, service.authz, service.uc)), service)
+		RegisterWorkspaceRoutes(api.Group("/workspace").Use(middlewares.UseAuthz(service.authz, service.uc)), service)
+		RegisterWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials").Use(middlewares.UseAuthz(service.authz, service.uc)), service)
 	}
 
 	return router

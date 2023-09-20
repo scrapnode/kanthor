@@ -5,5 +5,5 @@ import (
 )
 
 func RegisterMessageRoutes(router gin.IRoutes, service *sdkapi) {
-	router.PUT("", UseMessagePut(service.logger, service.validator, service.uc))
+	router.PUT("", UseMessagePut(service.logger, service.uc))
 }

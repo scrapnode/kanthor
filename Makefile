@@ -1,6 +1,6 @@
-all: wire docs
+all: ioc docs
 
-wire:
+ioc:
 	./scripts/gen_ioc.sh
 
 docs:

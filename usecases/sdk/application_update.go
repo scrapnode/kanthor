@@ -2,14 +2,34 @@ package sdk
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type ApplicationUpdateReq struct {
+	Id   string
+	Name string
+}
+
+func (req *ApplicationUpdateReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("id", req.Id, "app_"),
+		validator.StringRequired("name", req.Name),
+	)
+}
+
+type ApplicationUpdateRes struct {
+	Doc *entities.Application
+}
 
 func (uc *application) Update(ctx context.Context, req *ApplicationUpdateReq) (*ApplicationUpdateRes, error) {
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+
 	app, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repos.Application().Get(txctx, ws.Id, req.Id)
+		app, err := uc.repos.Application().Get(txctx, ws, req.Id)
 		if err != nil {
 			return nil, err
 		}

@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -19,21 +18,19 @@ type EndpointRuleGetRes struct {
 
 // UseEndpointRuleGet
 // @Tags		endpoint rule
-// @Router		/application/{app_id}/endpoint/{ep_id}/rule/{epr_id}	[get]
-// @Param		app_id													path		string					true	"application id"
-// @Param		ep_id													path		string					true	"endpoint id"
-// @Param		epr_id													path		string					true	"rule id"
-// @Success		200														{object}	EndpointRuleGetRes
-// @Failure		default													{object}	gateway.Error
+// @Router		/endpoint/{ep_id}/rule/{epr_id}	[get]
+// @Param		ep_id							path		string					true	"endpoint id"
+// @Param		epr_id							path		string					true	"rule id"
+// @Success		200								{object}	EndpointRuleGetRes
+// @Failure		default							{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointRuleGet(logger logging.Logger, validator validation.Validator, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleGet(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
-		appId := ginctx.Param("app_id")
 		epId := ginctx.Param("ep_id")
 		id := ginctx.Param("epr_id")
-		ucreq := &usecase.EndpointRuleGetReq{AppId: appId, EpId: epId, Id: id}
-		if err := validator.Struct(ucreq); err != nil {
+		ucreq := &usecase.EndpointRuleGetReq{EpId: epId, Id: id}
+		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return

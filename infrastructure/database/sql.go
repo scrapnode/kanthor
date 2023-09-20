@@ -3,6 +3,9 @@ package database
 import (
 	"context"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -11,8 +14,6 @@ import (
 	"github.com/scrapnode/kanthor/pkg/timer"
 	postgresdevier "gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"sync"
-	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"

@@ -2,7 +2,8 @@ package coordinator
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
+
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 var (
@@ -12,12 +13,16 @@ var (
 )
 
 type Config struct {
-	Engine string      `json:"engine" yaml:"engine" mapstructure:"engine" validate:"required,oneof=nats"`
-	Nats   *NatsConfig `json:"nats" yaml:"nats" mapstructure:"nats" validate:"-"`
+	Engine string      `json:"engine" yaml:"engine" mapstructure:"engine"`
+	Nats   *NatsConfig `json:"nats" yaml:"nats" mapstructure:"nats"`
 }
 
 func (conf *Config) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringOneOf("coordinator.config.engine", conf.Engine, []string{EngineNats}),
+	)
+	if err != nil {
 		return err
 	}
 
@@ -34,14 +39,14 @@ func (conf *Config) Validate() error {
 }
 
 type NatsConfig struct {
-	Uri     string `json:"uri" yaml:"uri" mapstructure:"uri" validate:"required,uri"`
-	Subject string `json:"subject" yaml:"subject" mapstructure:"subject" validate:"required"`
+	Uri     string `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Subject string `json:"subject" yaml:"subject" mapstructure:"subject"`
 }
 
 func (conf *NatsConfig) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-
-	return nil
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringUri("coordinator.conf.nats.uri", conf.Uri),
+		validator.StringRequired("coordinator.conf.nats.subject", conf.Subject),
+	)
 }

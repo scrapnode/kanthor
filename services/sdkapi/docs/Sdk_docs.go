@@ -505,7 +505,51 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "/application/{app_id}/endpoint/{ep_id}/rule": {
+        "/application/{app_id}/message": {
+            "put": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "tags": [
+                    "message"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "message properties",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.MessagePutReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/sdkapi.MessagePutRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/endpoint/{ep_id}/rule": {
             "get": {
                 "security": [
                     {
@@ -516,13 +560,6 @@ const docTemplateSdk = `{
                     "endpoint rule"
                 ],
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "endpoint id",
@@ -592,13 +629,6 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
                         "in": "path",
@@ -630,7 +660,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "/application/{app_id}/endpoint/{ep_id}/rule/{epr_id}": {
+        "/endpoint/{ep_id}/rule/{epr_id}": {
             "get": {
                 "security": [
                     {
@@ -641,13 +671,6 @@ const docTemplateSdk = `{
                     "endpoint rule"
                 ],
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "endpoint id",
@@ -688,13 +711,6 @@ const docTemplateSdk = `{
                     "endpoint rule"
                 ],
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "endpoint id",
@@ -746,13 +762,6 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
                         "in": "path",
@@ -771,50 +780,6 @@ const docTemplateSdk = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/sdkapi.EndpointRuleDeleteRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/application/{app_id}/message": {
-            "put": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
-                ],
-                "tags": [
-                    "message"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "message properties",
-                        "name": "props",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/sdkapi.MessagePutReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/sdkapi.MessagePutRes"
                         }
                     },
                     "default": {

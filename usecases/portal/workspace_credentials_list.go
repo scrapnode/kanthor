@@ -2,10 +2,27 @@ package portal
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type WorkspaceCredentialsListReq struct {
+	*structure.ListReq
+}
+
+func (req *WorkspaceCredentialsListReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.PointerNotNil("list", req.ListReq),
+	)
+}
+
+type WorkspaceCredentialsListRes struct {
+	*structure.ListRes[entities.WorkspaceCredentials]
+}
 
 func (uc *workspaceCredentials) List(ctx context.Context, req *WorkspaceCredentialsListReq) (*WorkspaceCredentialsListRes, error) {
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)

@@ -5,6 +5,8 @@ import "github.com/scrapnode/kanthor/pkg/utils"
 type Application struct {
 	Entity
 	AuditTime
+	// @TODO: add deactivated_at
+	// DeactivatedAt int64 `json:"deactivated_at"`
 
 	WorkspaceId string `json:"workspace_id"`
 	Name        string `json:"name"`

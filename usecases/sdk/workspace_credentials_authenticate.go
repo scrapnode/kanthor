@@ -3,9 +3,31 @@ package sdk
 import (
 	"context"
 	"fmt"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"time"
+
+	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
+
+type WorkspaceCredentialsAuthenticateReq struct {
+	User string
+	Pass string
+}
+
+func (req *WorkspaceCredentialsAuthenticateReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("user", req.User, "wsc_"),
+		validator.StringRequired("pass", req.Pass),
+	)
+}
+
+type WorkspaceCredentialsAuthenticateRes struct {
+	Workspace            *entities.Workspace
+	WorkspaceCredentials *entities.WorkspaceCredentials
+	WorkspaceTier        *entities.WorkspaceTier
+}
 
 func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error) {
 	key := CacheKeyWsAuthenticate(req.User)

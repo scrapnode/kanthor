@@ -15,7 +15,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi/docs"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
@@ -27,7 +26,6 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	validator validation.Validator,
 	idempotency idempotency.Idempotency,
 	coordinator coordinator.Coordinator,
 	metrics metric.Metrics,
@@ -38,7 +36,6 @@ func New(
 	return &sdkapi{
 		conf:        conf,
 		logger:      logger,
-		validator:   validator,
 		idempotency: idempotency,
 		coordinator: coordinator,
 		metrics:     metrics,
@@ -52,7 +49,6 @@ func New(
 type sdkapi struct {
 	conf        *config.Config
 	logger      logging.Logger
-	validator   validation.Validator
 	idempotency idempotency.Idempotency
 	coordinator coordinator.Coordinator
 	metrics     metric.Metrics
@@ -129,7 +125,7 @@ func (service *sdkapi) router() *gin.Engine {
 		api.Use(ginmw.UseStartup())
 		api.Use(ginmw.UseMetrics(service.metrics))
 		api.Use(ginmw.UseIdempotency(service.logger, service.idempotency))
-		api.Use(middlewares.UseAuthx(service.conf.SdkApi, service.logger, service.validator, service.authz, service.uc))
+		api.Use(middlewares.UseAuthx(service.conf.SdkApi, service.logger, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
 		RegisterAccountRoutes(api.Group("/account"), service)

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/go-playground/validator/v10"
+
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/services"
 )
 
@@ -20,14 +21,14 @@ func New(provider configuration.Provider) (*Config, error) {
 
 type Config struct {
 	Version      string
-	Bucket       Bucket              `json:"bucket" yaml:"bucket" mapstructure:"bucket" validate:"required"`
-	Cryptography cryptography.Config `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography" validate:"required"`
+	Bucket       Bucket              `json:"bucket" yaml:"bucket" mapstructure:"bucket"`
+	Cryptography cryptography.Config `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography"`
 
-	Logger      logging.Config     `json:"logger" yaml:"logger" mapstructure:"logger" validate:"required"`
-	Database    database.Config    `json:"database" yaml:"database" mapstructure:"database" validate:"required"`
-	Datastore   datastore.Config   `json:"datastore" yaml:"datastore" mapstructure:"datastore" validate:"required"`
-	Idempotency idempotency.Config `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency" validate:"required"`
-	Coordinator coordinator.Config `json:"coordinator" yaml:"coordinator" mapstructure:"coordinator" validate:"required"`
+	Logger      logging.Config     `json:"logger" yaml:"logger" mapstructure:"logger"`
+	Database    database.Config    `json:"database" yaml:"database" mapstructure:"database"`
+	Datastore   datastore.Config   `json:"datastore" yaml:"datastore" mapstructure:"datastore"`
+	Idempotency idempotency.Config `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
+	Coordinator coordinator.Config `json:"coordinator" yaml:"coordinator" mapstructure:"coordinator"`
 
 	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi" mapstructure:"sdkapi"`
 	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
@@ -37,30 +38,31 @@ type Config struct {
 }
 
 func (conf *Config) Validate(service string) error {
-	if err := validator.New().Struct(conf); err != nil {
+	err := validator.Validate(validator.DefaultConfig, validator.StringRequired("config.version", conf.Version))
+	if err != nil {
 		return err
 	}
 
 	if err := conf.Bucket.Validate(); err != nil {
-		return fmt.Errorf("config.Bucket: %v", err)
+		return fmt.Errorf("config.bucket: %v", err)
 	}
 	if err := conf.Cryptography.Validate(); err != nil {
-		return fmt.Errorf("config.Cryptography: %v", err)
+		return fmt.Errorf("config.cryptography: %v", err)
 	}
 	if err := conf.Logger.Validate(); err != nil {
-		return fmt.Errorf("config.Logger: %v", err)
+		return fmt.Errorf("config.logger: %v", err)
 	}
 	if err := conf.Database.Validate(); err != nil {
-		return fmt.Errorf("config.Database: %v", err)
+		return fmt.Errorf("config.database: %v", err)
 	}
 	if err := conf.Datastore.Validate(); err != nil {
-		return fmt.Errorf("config.Datastore: %v", err)
+		return fmt.Errorf("config.datastore: %v", err)
 	}
 	if err := conf.Idempotency.Validate(); err != nil {
-		return fmt.Errorf("config.Idempotency: %v", err)
+		return fmt.Errorf("config.idempotency: %v", err)
 	}
 	if err := conf.Coordinator.Validate(); err != nil {
-		return fmt.Errorf("config.Coordinator: %v", err)
+		return fmt.Errorf("config.coordinator: %v", err)
 	}
 
 	if !services.Valid(service) {
@@ -97,12 +99,12 @@ func (conf *Config) Validate(service string) error {
 }
 
 type Bucket struct {
-	Layout string `json:"layout" yaml:"layout" mapstructure:"layout" validate:"required"`
+	Layout string `json:"layout" yaml:"layout" mapstructure:"layout"`
 }
 
 func (conf *Bucket) Validate() error {
-	if err := validator.New().Struct(conf); err != nil {
-		return err
-	}
-	return nil
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringRequired("config.bucket.layout", conf.Layout),
+	)
 }

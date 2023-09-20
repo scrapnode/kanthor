@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 	"fmt"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/database"
@@ -44,14 +45,9 @@ func (sql *SqlEndpointRule) Delete(ctx context.Context, doc *entities.EndpointRu
 	return nil
 }
 
-func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error) {
-	app := &entities.Application{}
-	ep := &entities.Endpoint{}
+func (sql *SqlEndpointRule) List(ctx context.Context, ep *entities.Endpoint, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error) {
 	doc := &entities.EndpointRule{}
-	tx := sql.client.WithContext(ctx).Model(doc).
-		Scopes(UseEpId(epId, doc)).
-		Scopes(UseAppId(appId, ep)).
-		Scopes(UseWsId(wsId, app))
+	tx := sql.client.WithContext(ctx).Model(doc).Scopes(UseEpId(ep.Id, doc))
 
 	req := structure.ListReqBuild(opts)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
@@ -64,17 +60,13 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 	return structure.ListResBuild(res, req), nil
 }
 
-func (sql *SqlEndpointRule) Get(ctx context.Context, wsId, appId, epId, id string) (*entities.EndpointRule, error) {
-	app := &entities.Application{}
-	ep := &entities.Endpoint{}
+func (sql *SqlEndpointRule) Get(ctx context.Context, ep *entities.Endpoint, id string) (*entities.EndpointRule, error) {
 	doc := &entities.EndpointRule{}
 	doc.Id = id
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
-		Scopes(UseEpId(epId, doc)).
-		Scopes(UseAppId(appId, ep)).
-		Scopes(UseWsId(wsId, app)).
+		Scopes(UseEpId(ep.Id, doc)).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {

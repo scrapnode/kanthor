@@ -8,18 +8,16 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 )
 
-func NewNatsPublisher(conf *PublisherConfig, logger logging.Logger, validator validation.Validator) Publisher {
+func NewNatsPublisher(conf *PublisherConfig, logger logging.Logger) Publisher {
 	logger = logger.With("streaming.publisher", "nats")
-	return &NatsPublisher{conf: conf, logger: logger, validator: validator}
+	return &NatsPublisher{conf: conf, logger: logger}
 }
 
 type NatsPublisher struct {
-	conf      *PublisherConfig
-	logger    logging.Logger
-	validator validation.Validator
+	conf   *PublisherConfig
+	logger logging.Logger
 
 	mu   sync.Mutex
 	conn *nats.Conn
@@ -75,7 +73,7 @@ func (publisher *NatsPublisher) Disconnect(ctx context.Context) error {
 }
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, event *Event) error {
-	if err := publisher.validator.Struct(event); err != nil {
+	if err := event.Validate(); err != nil {
 		return err
 	}
 

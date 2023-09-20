@@ -9,7 +9,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/validation"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
@@ -30,13 +29,13 @@ type AccountSetupRes struct {
 // @Success		200					{object}	AccountSetupRes
 // @Failure		default				{object}	gateway.Error
 // @Security	BearerAuth
-func UseAccountSetup(logger logging.Logger, validator validation.Validator, uc portaluc.Portal) gin.HandlerFunc {
+func UseAccountSetup(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
 		ucreq := &portaluc.AccountSetupReq{AccountId: acc.Sub}
-		if err := validator.Struct(ucreq); err != nil {
+		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
