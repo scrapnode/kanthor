@@ -47,13 +47,13 @@ func (req *RequestArrangeReqMessage) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 
-		validator.StringStartsWith("request.id", req.Id, "req_"),
-		validator.StringStartsWith("request.att_id", req.AttId, "att_"),
-		validator.StringRequired("request.tier", req.Tier),
-		validator.StringStartsWith("request.app_id", req.AppId, "app_"),
-		validator.StringRequired("request.type", req.Type),
-		validator.MapNotNil[string, string]("request.metadata", req.Metadata),
-		validator.SliceRequired("request.body", req.Body),
+		validator.StringStartsWith("message.id", req.Id, "msg_"),
+		validator.StringStartsWith("message.att_id", req.AttId, "att_"),
+		validator.StringRequired("message.tier", req.Tier),
+		validator.StringStartsWith("message.app_id", req.AppId, "app_"),
+		validator.StringRequired("message.type", req.Type),
+		validator.MapNotNil[string, string]("message.metadata", req.Metadata),
+		validator.SliceRequired("message.body", req.Body),
 	)
 }
 
