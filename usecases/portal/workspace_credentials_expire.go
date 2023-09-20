@@ -19,9 +19,9 @@ type WorkspaceCredentialsExpireReq struct {
 func (req *WorkspaceCredentialsExpireReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, "ws_"),
-		validator.StringStartsWith("id", req.Id, "wsc_"),
-		validator.NumberGreaterThanOrEqual[int64]("expired_at", req.Duration, 0),
+		validator.StringStartsWith(ValidationKey("WorkspaceCredentialsExpireReq.workspace_id"), req.WorkspaceId, "ws_"),
+		validator.StringStartsWith(ValidationKey("WorkspaceCredentialsExpireReq.id"), req.Id, "wsc_"),
+		validator.NumberGreaterThanOrEqual[int64](ValidationKey("WorkspaceCredentialsExpireReq.duration"), req.Duration, 0),
 	)
 }
 

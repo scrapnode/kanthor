@@ -2,6 +2,9 @@ package portal
 
 import (
 	"context"
+	"fmt"
+	"sync"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
@@ -10,7 +13,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
-	"sync"
 )
 
 type Portal interface {
@@ -140,4 +142,8 @@ func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
 		}
 	}
 	return uc.workspaceCredentials
+}
+
+func ValidationKey(name string) string {
+	return fmt.Sprintf("usecases.portal.%s", name)
 }

@@ -2,6 +2,7 @@ package interchange
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/scrapnode/kanthor/pkg/validator"
@@ -24,12 +25,15 @@ type Workspace struct {
 }
 
 func (ws *Workspace) Validate() error {
-	err := validator.Validate(validator.DefaultConfig, validator.SliceRequired("applications", ws.Applications))
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.SliceRequired("data.interchange.applications", ws.Applications),
+	)
 	if err != nil {
 		return err
 	}
-	for _, app := range ws.Applications {
-		if err := app.Validate(); err != nil {
+	for i, app := range ws.Applications {
+		if err := app.Validate(fmt.Sprintf("applications[%d]", i)); err != nil {
 			return err
 		}
 	}
@@ -46,17 +50,17 @@ type Application struct {
 	Endpoints []Endpoint `json:"endpoints"`
 }
 
-func (app *Application) Validate() error {
+func (app *Application) Validate(key string) error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("name", app.Name),
-		validator.SliceRequired("endpoints", app.Endpoints),
+		validator.StringRequired(fmt.Sprintf("%s.name", key), app.Name),
+		validator.SliceRequired(fmt.Sprintf("%s.endpoints", key), app.Endpoints),
 	)
 	if err != nil {
 		return err
 	}
-	for _, ep := range app.Endpoints {
-		if err := ep.Validate(); err != nil {
+	for i, ep := range app.Endpoints {
+		if err := ep.Validate(fmt.Sprintf("%s.endpoints[%d]", key, i)); err != nil {
 			return err
 		}
 	}
@@ -72,20 +76,19 @@ type Endpoint struct {
 	Rules     []EndpointRule `json:"rules"`
 }
 
-func (ep *Endpoint) Validate() error {
+func (ep *Endpoint) Validate(key string) error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("name", ep.Name),
-		validator.StringRequired("secret_key", ep.SecretKey),
-		validator.StringLen("secret_key", ep.SecretKey, 16, 32),
-		validator.StringUri("uri", ep.Uri),
-		validator.StringOneOf("method", ep.Method, []string{http.MethodPost, http.MethodPut}),
+		validator.StringRequired(fmt.Sprintf("%s.name", key), ep.Name),
+		validator.StringLenIfNotEmpty(fmt.Sprintf("%s.secret_key", key), ep.SecretKey, 16, 32),
+		validator.StringUri(fmt.Sprintf("%s.uri", key), ep.Uri),
+		validator.StringOneOf(fmt.Sprintf("%s.method", key), ep.Method, []string{http.MethodPost, http.MethodPut}),
 	)
 	if err != nil {
 		return err
 	}
-	for _, epr := range ep.Rules {
-		if err := epr.Validate(); err != nil {
+	for i, epr := range ep.Rules {
+		if err := epr.Validate(fmt.Sprintf("%s.rules[%d]", key, i)); err != nil {
 			return err
 		}
 	}
@@ -100,12 +103,12 @@ type EndpointRule struct {
 	ConditionExpression string `json:"condition_expression"`
 }
 
-func (epr *EndpointRule) Validate() error {
+func (epr *EndpointRule) Validate(key string) error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("name", epr.Name),
-		validator.NumberGreaterThan("priority", epr.Priority, 0),
-		validator.StringRequired("condition_source", epr.ConditionSource),
-		validator.StringRequired("condition_expression", epr.ConditionExpression),
+		validator.StringRequired(fmt.Sprintf("%s.name", key), epr.Name),
+		validator.NumberGreaterThanOrEqual(fmt.Sprintf("%s.priority", key), epr.Priority, 0),
+		validator.StringRequired(fmt.Sprintf("%s.condition_source", key), epr.ConditionSource),
+		validator.StringRequired(fmt.Sprintf("%s.condition_expression", key), epr.ConditionExpression),
 	)
 }

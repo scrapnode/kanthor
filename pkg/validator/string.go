@@ -51,6 +51,15 @@ func StringLen(prop, value string, min, max int) Fn {
 	}
 }
 
+func StringLenIfNotEmpty(prop, value string, min, max int) Fn {
+	return func() error {
+		if len(value) == 0 {
+			return nil
+		}
+		return StringLen(prop, value, min, max)()
+	}
+}
+
 func StringOneOf(prop, value string, oneOf []string) Fn {
 	m := map[string]bool{}
 	for _, o := range oneOf {
