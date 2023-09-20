@@ -13,9 +13,53 @@ import (
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc/pool"
 )
+
+type RequestArrangeReq struct {
+	Message RequestArrangeReqMessage
+}
+
+func (req *RequestArrangeReq) Validate() error {
+	if err := req.Message.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+type RequestArrangeReqMessage struct {
+	Id    string
+	AttId string
+
+	Tier     string
+	AppId    string
+	Type     string
+	Metadata entities.Metadata
+	Headers  entities.Header
+	Body     []byte
+}
+
+func (req *RequestArrangeReqMessage) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+
+		validator.StringStartsWith("message.id", req.Id, "msg_"),
+		validator.StringStartsWith("message.att_id", req.AttId, "att_"),
+		validator.StringRequired("message.tier", req.Tier),
+		validator.StringStartsWith("message.app_id", req.AppId, "app_"),
+		validator.StringRequired("message.type", req.Type),
+		validator.MapNotNil[string, string]("message.metadata", req.Metadata),
+		validator.SliceRequired("message.body", req.Body),
+	)
+}
+
+type RequestArrangeRes struct {
+	Entities    []structure.BulkRes[entities.Request]
+	FailKeys    []string
+	SuccessKeys []string
+}
 
 type applicable struct {
 	Endpoints map[string]entities.Endpoint
