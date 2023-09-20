@@ -2,7 +2,6 @@ package portal
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
@@ -142,8 +141,4 @@ func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
 		}
 	}
 	return uc.workspaceCredentials
-}
-
-func ValidationKey(name string) string {
-	return fmt.Sprintf("usecases.portal.%s", name)
 }
