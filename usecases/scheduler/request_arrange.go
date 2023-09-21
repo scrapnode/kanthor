@@ -201,13 +201,13 @@ func (uc *request) generateRequestsFromEndpoints(
 		req.GenId()
 		req.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
 
-		req.Headers.Set("idempotency-key", req.AttId)
-		req.Headers.Set("kanthor-msg-id", msg.Id)
-		req.Headers.Set("kanthor-req-ts", fmt.Sprintf("%d", req.Timestamp))
+		req.Headers.Set(HeaderIdempotencyKey, req.AttId)
+		req.Headers.Set(HeaderMsgId, msg.Id)
+		req.Headers.Set(HeaderReqTs, fmt.Sprintf("%d", req.Timestamp))
 
 		sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, string(msg.Body))
 		signed := uc.signature.Sign(sign, ep.SecretKey)
-		req.Headers.Set("kanthor-req-signature", signed)
+		req.Headers.Set(HeaderReqSig, signed)
 
 		req.Metadata.Set(entities.MetaEpId, ep.Id)
 		req.Metadata.Set(entities.MetaEprId, epr.Id)

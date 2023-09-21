@@ -2,14 +2,15 @@ package middlewares
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"net/http"
 )
 
-var HeaderIdempotencyKey = "Idempotency-Key"
+var HeaderIdempotencyKey = "idempotency-key"
 
 func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
