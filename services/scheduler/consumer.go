@@ -27,7 +27,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				msg, err := transformation.EventToMessage(event)
 				if err != nil {
 					service.metrics.Count(ctx, "scheduler_transform_error", 1)
-					service.logger.Error(err)
+					service.logger.Errorw(err.Error(), "event", event.String())
 					// next retry will be failed because of same error of transformation
 					return
 				}
@@ -35,7 +35,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				ucreq := transformation.MsgToArrangeReq(msg)
 				if err := ucreq.Validate(); err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
-					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+					service.logger.Errorw(err.Error(), "event", event.String(), "data", utils.Stringify(ucreq))
 					errs[event.Id] = err
 					return
 				}
@@ -43,7 +43,7 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				response, err := service.uc.Request().Arrange(ctx, ucreq)
 				if err != nil {
 					service.metrics.Count(ctx, "dispatcher_arrange_error", 1)
-					service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+					service.logger.Errorw(err.Error(), "event", event.String(), "data", utils.Stringify(ucreq))
 					errs[event.Id] = err
 					return
 				}
