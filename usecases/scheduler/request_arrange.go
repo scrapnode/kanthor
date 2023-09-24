@@ -44,7 +44,6 @@ type RequestArrangeReqMessage struct {
 func (req *RequestArrangeReqMessage) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-
 		validator.StringStartsWith("message.id", req.Id, "msg_"),
 		validator.StringStartsWith("message.att_id", req.AttId, "att_"),
 		validator.StringRequired("message.tier", req.Tier),
