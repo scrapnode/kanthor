@@ -115,8 +115,8 @@ type SubscriberConfigPull struct {
 func (conf *SubscriberConfigPull) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberLessThanOrEqual("streaming.subscriber.config.pull.max_waiting", conf.MaxWaiting, 300),
-		validator.NumberLessThanOrEqual("streaming.subscriber.config.pull.max_ack_pending", conf.MaxAckPending, 150000),
-		validator.NumberLessThanOrEqual("streaming.subscriber.config.pull.max_request_batch", conf.MaxRequestBatch, 500),
+		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.pull.max_waiting", conf.MaxWaiting, 1),
+		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.pull.max_ack_pending", conf.MaxAckPending, 1),
+		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.pull.max_request_batch", conf.MaxRequestBatch, 1),
 	)
 }
