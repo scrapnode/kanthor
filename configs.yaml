@@ -175,8 +175,8 @@ storage:
     based_model: pull
     pull:
       max_waiting: 100
-      max_ack_pending: 3000
-      max_request_batch: 100
+      max_ack_pending: 5000
+      max_request_batch: 500
     name: storage_default
     filter_subject: kanthor.default.>
     max_deliver: 1
