@@ -22,7 +22,7 @@ func (conf *Config) Validate() error {
 }
 
 func DefaultConfig(dest string) *Config {
-	return &Config{Dest: fmt.Sprintf("kanthor.%s", dest), Timeout: 3000, MaxTry: 1}
+	return &Config{Dest: fmt.Sprintf("kanthor.%s", dest), Timeout: 3000, MaxTry: 3}
 }
 
 type Server interface {
