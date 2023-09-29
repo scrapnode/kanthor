@@ -122,7 +122,7 @@ scheduler:
       temporary: true
     name: schedule_default_push
     filter_subject: kanthor.default.msg.>
-    max_deliver: 1
+    max_deliver: 2
   request:
     arrange:
       concurrency: 100
@@ -149,7 +149,7 @@ dispatcher:
       temporary: true
     name: dispatch_default_push
     filter_subject: kanthor.default.req.>
-    max_deliver: 1
+    max_deliver: 2
   sender:
     timeout: 3000
     retry:
@@ -181,7 +181,7 @@ storage:
       max_request_batch: 300
     name: storage_default_pull
     filter_subject: kanthor.default.>
-    max_deliver: 1
+    max_deliver: 2
   metrics:
     engine: otel
     otel:
