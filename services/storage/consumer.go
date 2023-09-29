@@ -129,7 +129,7 @@ func Consumer(service *storage) streaming.SubHandler {
 
 			inserted := len(events) - len(errs)
 			service.metrics.Count(ctx, "storage_put_total", int64(inserted))
-			service.logger.Debugw("storage_put_total", inserted)
+			service.logger.Debugw("storage_put_total", "inserted", inserted)
 			return errs
 		case <-ctx.Done():
 			// timeout, all events will be considered as failed
