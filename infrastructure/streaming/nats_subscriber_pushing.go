@@ -149,7 +149,10 @@ func (subscriber *NatsSubscriberPushing) consumer(ctx context.Context) (*nats.Co
 		Name:          subscriber.conf.Name,
 		MaxDeliver:    subscriber.conf.MaxDeliver,
 		FilterSubject: subscriber.conf.FilterSubject,
-		// @TODO: consider apply RateLimit
+		// RateLimit is number of message per second
+		// Nats RateLimit is it bites per sec
+		// so the formula will be Number of messagee * Bytes of message * 8
+		RateLimit: uint64(subscriber.conf.Push.MaxRequestBatch) * uint64(subscriber.conf.Connection.Stream.Limits.MsgBytes) * 8,
 
 		DeliverPolicy: nats.DeliverNewPolicy,
 		AckPolicy:     nats.AckExplicitPolicy,

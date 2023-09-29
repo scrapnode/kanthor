@@ -118,8 +118,9 @@ scheduler:
     push:
       deliver_subject: schedule
       deliver_group: default
+      max_request_batch: 300
       temporary: true
-    name: schedule_default
+    name: schedule_default_push
     filter_subject: kanthor.default.msg.>
     max_deliver: 1
   request:
@@ -144,8 +145,9 @@ dispatcher:
     push:
       deliver_subject: dispatch
       deliver_group: default
+      max_request_batch: 300
       temporary: true
-    name: dispatch_default
+    name: dispatch_default_push
     filter_subject: kanthor.default.req.>
     max_deliver: 1
   sender:
@@ -176,8 +178,8 @@ storage:
     pull:
       max_waiting: 100
       max_ack_pending: 5000
-      max_request_batch: 500
-    name: storage_default
+      max_request_batch: 300
+    name: storage_default_pull
     filter_subject: kanthor.default.>
     max_deliver: 1
   metrics:

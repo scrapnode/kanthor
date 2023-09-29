@@ -88,6 +88,8 @@ func (conf *SubscriberConfig) Validate() error {
 type SubscriberConfigPush struct {
 	DeliverSubject string `json:"deliver_subject" yaml:"deliver_subject" mapstructure:"deliver_subject"`
 	DeliverGroup   string `json:"deliver_group" yaml:"deliver_group" mapstructure:"deliver_group"`
+	// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
+	MaxRequestBatch int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch"`
 	// Temporary is a config to allow us to create a temporary consumer that will be deleted after disconnected
 	// this option is only available for Push-Based Model because Pull-Based Model requires consumer to be a durable one
 	// must set it to TRUE explicitly to avoid misconfiguration
@@ -99,6 +101,7 @@ func (conf *SubscriberConfigPush) Validate() error {
 		validator.DefaultConfig,
 		validator.StringRequired("streaming.subscriber.config.push.deliver_subject", conf.DeliverSubject),
 		validator.StringRequired("streaming.subscriber.config.push.deliver_group", conf.DeliverGroup),
+		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.push.max_request_batch", conf.MaxRequestBatch, 1),
 	)
 }
 
