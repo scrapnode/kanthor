@@ -58,7 +58,7 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]e
 	tableName := fmt.Sprintf(`"%s"`, (&entities.Message{}).TableName())
 	columns := fmt.Sprintf(`"%s"`, strings.Join(MessageMappingCols, `","`))
 	statement := fmt.Sprintf(
-		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(id) DO NOTHING;",
+		"INSERT INTO %s(%s) VALUES %s;",
 		tableName,
 		columns,
 		strings.Join(names, ","),

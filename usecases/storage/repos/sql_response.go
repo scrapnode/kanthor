@@ -61,7 +61,7 @@ func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([
 	tableName := fmt.Sprintf(`"%s"`, (&entities.Response{}).TableName())
 	columns := fmt.Sprintf(`"%s"`, strings.Join(ResponseMappingCols, `","`))
 	statement := fmt.Sprintf(
-		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(id) DO NOTHING;",
+		"INSERT INTO %s(%s) VALUES %s;",
 		tableName,
 		columns,
 		strings.Join(names, ","),
