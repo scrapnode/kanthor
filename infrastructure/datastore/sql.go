@@ -2,6 +2,9 @@ package datastore
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -10,8 +13,6 @@ import (
 	"github.com/scrapnode/kanthor/pkg/timer"
 	postgresdevier "gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"sync"
-	"time"
 )
 
 func NewSQL(conf *Config, logger logging.Logger, timer timer.Timer) Datastore {
@@ -46,6 +47,9 @@ func (db *sql) Connect(ctx context.Context) error {
 		NowFunc: func() time.Time {
 			return db.timer.Now()
 		},
+		// @TODO: considering options
+		// CreateBatchSize: 100,
+		// PrepareStmt: false,
 	})
 	if err != nil {
 		return err
