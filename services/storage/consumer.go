@@ -22,8 +22,6 @@ func Consumer(service *storage) streaming.SubHandler {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 
-		service.metrics.Count(ctx, "storage_put_total", int64(len(events)))
-
 		maps := map[string]string{}
 		messages := []entities.Message{}
 		requests := []entities.Request{}
@@ -128,6 +126,10 @@ func Consumer(service *storage) streaming.SubHandler {
 				service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
 				service.logger.Errorw("encoutered errors", "error_count", len(errs))
 			}
+
+			inserted := len(events) - len(errs)
+			service.metrics.Count(ctx, "storage_put_total", int64(inserted))
+			service.logger.Debugw("storage_put_total", inserted)
 			return errs
 		case <-ctx.Done():
 			// timeout, all events will be considered as failed
@@ -136,11 +138,9 @@ func Consumer(service *storage) streaming.SubHandler {
 					errs[event.Id] = ctx.Err()
 				}
 			}
-			if len(errs) > 0 {
-				service.metrics.Count(ctx, "storage_put_timeout_error", 1)
-				service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
-				service.logger.Errorw("encoutered errors", "error_count", len(errs))
-			}
+			service.metrics.Count(ctx, "storage_put_timeout_error", 1)
+			service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
+			service.logger.Errorw("encoutered errors", "error_count", len(errs))
 			return errs
 		}
 	}
