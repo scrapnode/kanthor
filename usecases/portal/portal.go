@@ -56,6 +56,26 @@ type portal struct {
 	workspaceCredentials *workspaceCredentials
 }
 
+func (uc *portal) Readiness() error {
+	if err := uc.cache.Readiness(); err != nil {
+		return err
+	}
+	if err := uc.repos.Readiness(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uc *portal) Liveness() error {
+	if err := uc.cache.Liveness(); err != nil {
+		return err
+	}
+	if err := uc.repos.Liveness(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (uc *portal) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()

@@ -2,10 +2,11 @@ package cache
 
 import (
 	"context"
-	gocache "github.com/patrickmn/go-cache"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"sync"
 	"time"
+
+	gocache "github.com/patrickmn/go-cache"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
 func NewMemory(conf *Config, logger logging.Logger) Cache {
@@ -19,6 +20,14 @@ type memory struct {
 
 	mu     sync.Mutex
 	client *gocache.Cache
+}
+
+func (cache *memory) Readiness() error {
+	return nil
+}
+
+func (cache *memory) Liveness() error {
+	return nil
 }
 
 func (cache *memory) Connect(ctx context.Context) error {

@@ -33,6 +33,40 @@ type sql struct {
 	client *gorm.DB
 }
 
+func (db *sql) Readiness() error {
+	if db.client == nil {
+		return ErrNotConnected
+	}
+
+	var ok int
+	tx := db.client.Raw("SELECT 1").Scan(&ok)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if ok != 1 {
+		return ErrNotReady
+	}
+
+	return nil
+}
+
+func (db *sql) Liveness() error {
+	if db.client == nil {
+		return ErrNotConnected
+	}
+
+	var ok int
+	tx := db.client.Raw("SELECT 1").Scan(&ok)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if ok != 1 {
+		return ErrNotLive
+	}
+
+	return nil
+}
+
 func (db *sql) Connect(ctx context.Context) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
@@ -62,19 +96,17 @@ func (db *sql) Disconnect(ctx context.Context) error {
 	defer db.mu.Unlock()
 
 	if db.client == nil {
-		return ErrNotConnected
-	}
+		conn, err := db.client.DB()
+		if err != nil {
+			return err
+		}
 
-	conn, err := db.client.DB()
-	if err != nil {
-		return err
+		if err := conn.Close(); err != nil {
+			return err
+		}
 	}
-
-	if err := conn.Close(); err != nil {
-		return err
-	}
-
 	db.client = nil
+
 	db.logger.Info("disconnected")
 	return nil
 }

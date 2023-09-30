@@ -2,6 +2,8 @@ package sdk
 
 import (
 	"context"
+	"sync"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
@@ -11,7 +13,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
-	"sync"
 )
 
 type Sdk interface {
@@ -61,6 +62,32 @@ type sdk struct {
 	endpoint             *endpoint
 	endpointRule         *endpointRule
 	message              *message
+}
+
+func (uc *sdk) Readiness() error {
+	if err := uc.cache.Readiness(); err != nil {
+		return err
+	}
+	if err := uc.repos.Readiness(); err != nil {
+		return err
+	}
+	if err := uc.publisher.Readiness(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uc *sdk) Liveness() error {
+	if err := uc.cache.Liveness(); err != nil {
+		return err
+	}
+	if err := uc.repos.Liveness(); err != nil {
+		return err
+	}
+	if err := uc.publisher.Liveness(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (uc *sdk) Connect(ctx context.Context) error {

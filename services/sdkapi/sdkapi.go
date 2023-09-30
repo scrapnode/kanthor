@@ -3,7 +3,6 @@ package sdkapi
 import (
 	"context"
 	"net/http"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -98,18 +97,7 @@ func (service *sdkapi) router() *gin.Engine {
 	router.Use(gin.Recovery())
 	router.Use(cors.Default())
 	// system routes
-	router.GET("/", func(ginctx *gin.Context) {
-		host, _ := os.Hostname()
-		ginctx.JSON(http.StatusOK, gin.H{"host": host, "service": "sdkapi", "version": service.conf.Version})
-	})
-	router.GET("/readiness", func(ginctx *gin.Context) {
-		// @TODO: add starting up checking here
-		ginctx.String(http.StatusOK, "ready")
-	})
-	router.GET("/liveness", func(ginctx *gin.Context) {
-		// @TODO: determine whether the app is running correctly or not
-		ginctx.String(http.StatusOK, "live")
-	})
+	RegisterHealthcheck(router, service)
 
 	swagger := router.Group("/swagger")
 	{

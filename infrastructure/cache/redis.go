@@ -3,10 +3,11 @@ package cache
 import (
 	"context"
 	"errors"
-	goredis "github.com/redis/go-redis/v9"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"sync"
 	"time"
+
+	goredis "github.com/redis/go-redis/v9"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
 func NewRedis(conf *Config, logger logging.Logger) Cache {
@@ -20,6 +21,26 @@ type redis struct {
 
 	mu     sync.Mutex
 	client *goredis.Client
+}
+
+func (cache *redis) Readiness() error {
+	if cache.client == nil {
+		return ErrNotConnected
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	return cache.client.Ping(ctx).Err()
+}
+
+func (cache *redis) Liveness() error {
+	if cache.client == nil {
+		return ErrNotConnected
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	return cache.client.Ping(ctx).Err()
 }
 
 func (cache *redis) Connect(ctx context.Context) error {

@@ -2,6 +2,8 @@ package dispatcher
 
 import (
 	"context"
+	"sync"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -11,7 +13,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/timer"
-	"sync"
 )
 
 type Dispatcher interface {
@@ -53,6 +54,26 @@ type dispatcher struct {
 
 	mu        sync.RWMutex
 	forwarder *forwarder
+}
+
+func (uc *dispatcher) Readiness() error {
+	if err := uc.cache.Readiness(); err != nil {
+		return err
+	}
+	if err := uc.publisher.Readiness(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uc *dispatcher) Liveness() error {
+	if err := uc.cache.Liveness(); err != nil {
+		return err
+	}
+	if err := uc.publisher.Liveness(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (uc *dispatcher) Connect(ctx context.Context) error {

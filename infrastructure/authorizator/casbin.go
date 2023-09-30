@@ -24,8 +24,43 @@ type casbin struct {
 	conf   *Config
 	logger logging.Logger
 
-	mu     sync.Mutex
-	client *gocasbin.Enforcer
+	mu      sync.Mutex
+	adapter *gormadapter.Adapter
+	client  *gocasbin.Enforcer
+}
+
+func (authorizator *casbin) Readiness() error {
+	if authorizator.adapter == nil {
+		return ErrNotConnected
+	}
+
+	var ok int
+	tx := authorizator.adapter.GetDb().Raw("SELECT 1").Scan(&ok)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if ok != 1 {
+		return ErrNotReady
+	}
+
+	return nil
+}
+
+func (authorizator *casbin) Liveness() error {
+	if authorizator.adapter == nil {
+		return ErrNotConnected
+	}
+
+	var ok int
+	tx := authorizator.adapter.GetDb().Raw("SELECT 1").Scan(&ok)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if ok != 1 {
+		return ErrNotLive
+	}
+
+	return nil
 }
 
 func (authorizator *casbin) Connect(ctx context.Context) error {
@@ -50,6 +85,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	authorizator.adapter = adapter
 
 	client, err := gocasbin.NewEnforcer(modelUrl.Host+modelUrl.Path, adapter)
 	if err != nil {
@@ -70,6 +106,13 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 func (authorizator *casbin) Disconnect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
+
+	if authorizator.adapter != nil {
+		if err := authorizator.adapter.Close(); err != nil {
+			authorizator.logger.Error(err)
+		}
+	}
+	authorizator.adapter = nil
 
 	authorizator.client = nil
 	authorizator.logger.Info("disconnected")

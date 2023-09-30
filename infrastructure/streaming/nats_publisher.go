@@ -24,6 +24,24 @@ type NatsPublisher struct {
 	js   nats.JetStreamContext
 }
 
+func (publisher *NatsPublisher) Readiness() error {
+	if publisher.js == nil {
+		return ErrNotConnected
+	}
+
+	_, err := publisher.js.StreamInfo(publisher.conf.Connection.Stream.Name)
+	return err
+}
+
+func (publisher *NatsPublisher) Liveness() error {
+	if publisher.js == nil {
+		return ErrNotConnected
+	}
+
+	_, err := publisher.js.StreamInfo(publisher.conf.Connection.Stream.Name)
+	return err
+}
+
 func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 	publisher.mu.Lock()
 	defer publisher.mu.Unlock()

@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
-docker compose down && docker volume prune -f
-docker compose up -d streaming cache warehouse
-go run main.go migrate database up && go run main.go migrate datastore up
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )";
+/bin/sh "$SCRIPT_DIR/docker_build.sh"
+
+docker compose down || true
+docker compose up -d

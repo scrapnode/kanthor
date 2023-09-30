@@ -1,11 +1,13 @@
 #!/bin/sh
 set -e
 
-K6_VUS=${K6_VUS:-"100"}
-K6_DURATION=${K6_DURATION:-"15m"}
-API_CREDS_PATH=${API_CREDS_PATH:-"/tmp"}
+export K6_VUS=${K6_VUS:-"50"}
+export K6_START_DURATION=${K6_START_DURATION:-"5m"}
+export K6_MID_DURATION=${K6_MID_DURATION:-"15m"}
+export K6_END_DURATION=${K6_MID_DURATION:-"5m"}
+export API_CREDS_PATH=${API_CREDS_PATH:-"/tmp"}
+export API_ENDPOINT=${API_ENDPOINT:-"http://localhost:8180"}
 
-docker compose -f docker-compose.yaml -f docker-compose.monitoring.yaml -f docker-compose.debugging.yaml stop 
 docker compose -f docker-compose.yaml -f docker-compose.monitoring.yaml -f docker-compose.debugging.yaml down
 docker volume prune -f
 
@@ -22,4 +24,5 @@ echo "#2 sleep 5s"
 sleep 5
 
 go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --generate-credentials --output="$API_CREDS_PATH/sdkapi.json"
-K6_VUS=$K6_VUS K6_DURATION=$K6_DURATION API_CREDS_PATH=$API_CREDS_PATH API_ENDPOINT=http://localhost:8180 k6 run scripts/k6/stability.js
+
+k6 run scripts/k6/stability.js

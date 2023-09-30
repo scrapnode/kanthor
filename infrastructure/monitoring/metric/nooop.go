@@ -2,6 +2,7 @@ package metric
 
 import (
 	"context"
+
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
@@ -13,6 +14,14 @@ func NewNoop(conf *Config, logger logging.Logger) (Metrics, error) {
 type noop struct {
 	conf   *Config
 	logger logging.Logger
+}
+
+func (metric *noop) Readiness() error {
+	return nil
+}
+
+func (metric *noop) Liveness() error {
+	return nil
 }
 
 func (metric *noop) Connect(ctx context.Context) error {

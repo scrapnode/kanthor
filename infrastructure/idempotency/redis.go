@@ -2,11 +2,12 @@ package idempotency
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"sync"
-	"time"
 )
 
 func NewRedis(conf *Config, logger logging.Logger) Idempotency {
@@ -20,6 +21,26 @@ type redis struct {
 
 	mu     sync.Mutex
 	client *goredis.Client
+}
+
+func (idempotency *redis) Readiness() error {
+	if idempotency.client == nil {
+		return ErrNotConnected
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	return idempotency.client.Ping(ctx).Err()
+}
+
+func (idempotency *redis) Liveness() error {
+	if idempotency.client == nil {
+		return ErrNotConnected
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	return idempotency.client.Ping(ctx).Err()
 }
 
 func (idempotency *redis) Connect(ctx context.Context) error {
@@ -53,12 +74,10 @@ func (idempotency *redis) Disconnect(ctx context.Context) error {
 	idempotency.mu.Lock()
 	defer idempotency.mu.Unlock()
 
-	if idempotency.client == nil {
-		return ErrNotConnected
-	}
-
-	if err := idempotency.client.Close(); err != nil {
-		return err
+	if idempotency.client != nil {
+		if err := idempotency.client.Close(); err != nil {
+			return err
+		}
 	}
 	idempotency.client = nil
 

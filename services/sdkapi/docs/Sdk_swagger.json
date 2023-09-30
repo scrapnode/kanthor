@@ -788,9 +788,6 @@
     "definitions": {
         "authenticator.Account": {
             "type": "object",
-            "required": [
-                "sub"
-            ],
             "properties": {
                 "aud": {
                     "type": "string"

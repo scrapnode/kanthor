@@ -22,7 +22,7 @@ cache: &cache
 
 logger:
   pretty: true
-  level: warn
+  level: info
   with:
     environment: localhost
 
@@ -75,7 +75,7 @@ sdkapi:
   metrics:
     engine: otel
     otel:
-      endpoint: localhost:4317
+      endpoint: collector:4317
       service: sdkapi
       interval: 15000
       labels:
@@ -102,7 +102,7 @@ portalapi:
   metrics:
     engine: otel
     otel:
-      endpoint: localhost:4317
+      endpoint: collector:4317
       service: portalapi
       interval: 15000
       labels:
@@ -114,12 +114,11 @@ scheduler:
     connection: *streaming
   subscriber:
     connection: *streaming
-    based_model: push
-    push:
-      deliver_subject: schedule
-      deliver_group: default
+    based_model: pull
+    pull:
+      max_waiting: 100
+      max_ack_pending: 3000
       max_request_batch: 300
-      temporary: true
     name: schedule_default_push
     filter_subject: kanthor.default.msg.>
     max_deliver: 2
@@ -129,7 +128,7 @@ scheduler:
   metrics:
     engine: otel
     otel:
-      endpoint: localhost:4317
+      endpoint: collector:4317
       service: scheduler
       interval: 15000
       labels:
@@ -141,12 +140,11 @@ dispatcher:
     connection: *streaming
   subscriber:
     connection: *streaming
-    based_model: push
-    push:
-      deliver_subject: dispatch
-      deliver_group: default
+    based_model: pull
+    pull:
+      max_waiting: 100
+      max_ack_pending: 3000
       max_request_batch: 300
-      temporary: true
     name: dispatch_default_psuh
     filter_subject: kanthor.default.req.>
     max_deliver: 2
@@ -165,7 +163,7 @@ dispatcher:
   metrics:
     engine: otel
     otel:
-      endpoint: localhost:4317
+      endpoint: collector:4317
       service: dispatcher
       interval: 15000
       labels:
@@ -185,7 +183,7 @@ storage:
   metrics:
     engine: otel
     otel:
-      endpoint: localhost:4317
+      endpoint: collector:4317
       service: storage
       interval: 15000
       labels:

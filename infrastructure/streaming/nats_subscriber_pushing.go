@@ -27,6 +27,24 @@ type NatsSubscriberPushing struct {
 	subscription *nats.Subscription
 }
 
+func (subscriber *NatsSubscriberPushing) Readiness() error {
+	if subscriber.js == nil {
+		return ErrNotConnected
+	}
+
+	_, err := subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
+	return err
+}
+
+func (subscriber *NatsSubscriberPushing) Liveness() error {
+	if subscriber.js == nil {
+		return ErrNotConnected
+	}
+
+	_, err := subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
+	return err
+}
+
 func (subscriber *NatsSubscriberPushing) Connect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()

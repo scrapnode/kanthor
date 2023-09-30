@@ -2,14 +2,15 @@ package metric
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-	"sync"
-	"time"
 )
 
 func NewOtel(conf *Config, logger logging.Logger) (Metrics, error) {
@@ -25,9 +26,23 @@ type otel struct {
 	mu sync.Mutex
 }
 
+// we don't need to take care about readiness & liveness for monitoring
+// if they are failed, we will receive alerts from external system
+func (metric *otel) Readiness() error {
+	return nil
+}
+
+func (metric *otel) Liveness() error {
+	return nil
+}
+
 func (metric *otel) Connect(ctx context.Context) error {
 	metric.mu.Lock()
 	defer metric.mu.Unlock()
+
+	if metric.provider != nil {
+		return ErrAlreadyConnected
+	}
 
 	exporter, err := otlpmetricgrpc.New(
 		ctx,

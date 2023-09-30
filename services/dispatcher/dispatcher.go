@@ -98,6 +98,17 @@ func (service *dispatcher) Run(ctx context.Context) error {
 
 	go func() {
 		err := service.healthcheck.Liveness(func() error {
+			if err := service.subscriber.Liveness(); err != nil {
+				return err
+			}
+
+			if err := service.uc.Liveness(); err != nil {
+				return err
+			}
+
+			if err := service.metrics.Liveness(); err != nil {
+				return err
+			}
 			return nil
 		})
 		if err != nil {
@@ -117,7 +128,18 @@ func (service *dispatcher) Run(ctx context.Context) error {
 
 func (service *dispatcher) readiness() error {
 	return service.healthcheck.Readiness(func() error {
-		// @TODO: add starting up checking here
+		if err := service.subscriber.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.uc.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.metrics.Readiness(); err != nil {
+			return err
+		}
+
 		return nil
 	})
 }

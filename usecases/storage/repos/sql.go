@@ -2,11 +2,12 @@ package repos
 
 import (
 	"context"
+	"sync"
+
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
-	"sync"
 )
 
 func NewSql(conf *datastore.Config, logger logging.Logger, timer timer.Timer) Repositories {
@@ -25,6 +26,20 @@ type sql struct {
 	message  *SqlMessage
 	request  *SqlRequest
 	response *SqlResponse
+}
+
+func (repo *sql) Readiness() error {
+	if err := repo.db.Readiness(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *sql) Liveness() error {
+	if err := repo.db.Liveness(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (repo *sql) Connect(ctx context.Context) error {

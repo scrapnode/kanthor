@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM scrapnode/kanthor-base:latest as build
+FROM kanthorlabs/base:latest as build
 WORKDIR /app
 
 COPY . .

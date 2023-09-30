@@ -2,12 +2,13 @@ package storage
 
 import (
 	"context"
+	"sync"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/usecases/storage/repos"
-	"sync"
 )
 
 type Storage interface {
@@ -41,6 +42,20 @@ type storage struct {
 	message  *message
 	request  *request
 	response *response
+}
+
+func (uc *storage) Readiness() error {
+	if err := uc.repos.Readiness(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uc *storage) Liveness() error {
+	if err := uc.repos.Liveness(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (uc *storage) Connect(ctx context.Context) error {

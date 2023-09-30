@@ -2,8 +2,9 @@ package cache
 
 import (
 	"context"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"time"
+
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
 func NewNoop(conf *Config, logger logging.Logger) Cache {
@@ -14,6 +15,14 @@ func NewNoop(conf *Config, logger logging.Logger) Cache {
 type noop struct {
 	conf   *Config
 	logger logging.Logger
+}
+
+func (cache *noop) Readiness() error {
+	return nil
+}
+
+func (cache *noop) Liveness() error {
+	return nil
 }
 
 func (cache *noop) Connect(ctx context.Context) error {

@@ -2,6 +2,8 @@ package scheduler
 
 import (
 	"context"
+	"sync"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -11,7 +13,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
-	"sync"
 )
 
 type Scheduler interface {
@@ -53,6 +54,32 @@ type scheduler struct {
 
 	mu      sync.RWMutex
 	request *request
+}
+
+func (uc *scheduler) Readiness() error {
+	if err := uc.cache.Readiness(); err != nil {
+		return err
+	}
+	if err := uc.repos.Readiness(); err != nil {
+		return err
+	}
+	if err := uc.publisher.Readiness(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uc *scheduler) Liveness() error {
+	if err := uc.cache.Liveness(); err != nil {
+		return err
+	}
+	if err := uc.repos.Liveness(); err != nil {
+		return err
+	}
+	if err := uc.publisher.Liveness(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (uc *scheduler) Connect(ctx context.Context) error {

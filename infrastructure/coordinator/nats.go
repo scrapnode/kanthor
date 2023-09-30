@@ -25,9 +25,37 @@ type nats struct {
 	subscription *natscore.Subscription
 }
 
+func (coordinator *nats) Readiness() error {
+	if coordinator.conn == nil {
+		return ErrNotConnected
+	}
+
+	if !coordinator.conn.IsConnected() {
+		return ErrNotReady
+	}
+
+	return nil
+}
+
+func (coordinator *nats) Liveness() error {
+	if coordinator.conn == nil {
+		return ErrNotConnected
+	}
+
+	if !coordinator.conn.IsConnected() {
+		return ErrNotLive
+	}
+
+	return nil
+}
+
 func (coordinator *nats) Connect(ctx context.Context) error {
 	coordinator.mu.Lock()
 	defer coordinator.mu.Unlock()
+
+	if coordinator.conn != nil {
+		return ErrNotConnected
+	}
 
 	coordinator.id = utils.ID("coordinator")
 
