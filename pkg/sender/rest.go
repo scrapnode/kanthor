@@ -2,10 +2,11 @@ package sender
 
 import (
 	"fmt"
-	"github.com/go-resty/resty/v2"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"net/http"
 	"time"
+
+	"github.com/go-resty/resty/v2"
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
 func Rest(conf *Config, logger logging.Logger) Send {
@@ -20,10 +21,6 @@ func Rest(conf *Config, logger logging.Logger) Send {
 		AddRetryCondition(func(r *resty.Response, err error) bool {
 			status := r.StatusCode()
 			url := r.Request.URL
-			if status == http.StatusTooManyRequests {
-				logger.Warnw("retrying", "status", status, "url", url)
-				return true
-			}
 			if status >= http.StatusInternalServerError {
 				logger.Warnw("retrying", "status", status, "url", url)
 				return true

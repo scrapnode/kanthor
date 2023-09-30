@@ -2,16 +2,17 @@ package serve
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/scrapnode/kanthor/cmd/show"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/spf13/cobra"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
@@ -59,7 +60,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			<-ctx.Done()
 
 			// wait a little to stop our service
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			go func() {
 				if err := service.Stop(ctx); err != nil {
