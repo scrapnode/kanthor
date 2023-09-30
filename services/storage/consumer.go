@@ -7,6 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/ds"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/storage"
 	"github.com/scrapnode/kanthor/usecases/transformation"
@@ -17,12 +18,9 @@ func Consumer(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events []*streaming.Event) map[string]error {
-		errs := map[string]error{}
+		errs := &ds.SafeMap[error]{}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-
-		maps := map[string]string{}
+		entity2eventMaps := map[string]string{}
 		messages := []entities.Message{}
 		requests := []entities.Request{}
 		responses := []entities.Response{}
@@ -31,117 +29,118 @@ func Consumer(service *storage) streaming.SubHandler {
 			if event.Is(streaming.TopicMsg) {
 				msg, err := transformation.EventToMessage(event)
 				if err != nil {
-					errs[event.Id] = err
-					service.logger.Error(err)
-					// next retry will be failed because of same error of transformation
+					service.logger.Errorw(err.Error(), "event", event.String())
+					// unable to parse message from event is considered as un-retriable error
+					// ignore the error, and we need to check it manually with log
 					continue
 				}
 				messages = append(messages, *msg)
-				maps[msg.Id] = event.Id
+				entity2eventMaps[msg.Id] = event.Id
 				continue
 			}
 
 			if event.Is(streaming.TopicReq) {
 				req, err := transformation.EventToRequest(event)
 				if err != nil {
-					errs[event.Id] = err
-					service.logger.Error(err)
-					// next retry will be failed because of same error of transformation
+					service.logger.Errorw(err.Error(), "event", event.String())
+					// unable to parse request from event is considered as un-retriable error
+					// ignore the error, and we need to check it manually with log
 					continue
 				}
 				requests = append(requests, *req)
-				maps[req.Id] = event.Id
+				entity2eventMaps[req.Id] = event.Id
 				continue
 			}
 
 			if event.Is(streaming.TopicRes) {
 				res, err := transformation.EventToResponse(event)
 				if err != nil {
-					errs[event.Id] = err
-					service.logger.Error(err)
-					// next retry will be failed because of same error of transformation
+					service.logger.Errorw(err.Error(), "event", event.String())
+					// unable to parse response from event is considered as un-retriable error
+					// ignore the error, and we need to check it manually with log
 					continue
 				}
 				responses = append(responses, *res)
-				maps[res.Id] = event.Id
+				entity2eventMaps[res.Id] = event.Id
 				continue
 			}
 
 			err := fmt.Errorf("unrecognized event %s", event.Id)
-			errs[event.Id] = err
+			errs.Set(event.Id, err)
 			service.logger.Warnw(err.Error(), "event", utils.Stringify(event))
 		}
 
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
 		// IMPORTANT: we ignore all validations of storage to trade validity to performance
 		var wg conc.WaitGroup
 
-		wg.Go(func() {
-			if len(messages) > 0 {
+		if len(messages) > 0 {
+			wg.Go(func() {
 				_, err := service.uc.Message().Put(ctx, &usecase.MessagePutReq{Docs: messages})
 				if err != nil {
 					for _, msg := range messages {
-						eventId := maps[msg.Id]
-						errs[eventId] = err
+						eventId := entity2eventMaps[msg.Id]
+						errs.Set(eventId, err)
 					}
 					return
 				}
-			}
-		})
+			})
+		}
 
-		wg.Go(func() {
-			if len(requests) > 0 {
+		if len(requests) > 0 {
+			wg.Go(func() {
 				_, err := service.uc.Request().Put(ctx, &usecase.RequestPutReq{Docs: requests})
 				if err != nil {
 					for _, req := range requests {
-						eventId := maps[req.Id]
-						errs[eventId] = err
+						eventId := entity2eventMaps[req.Id]
+						errs.Set(eventId, err)
 					}
 					return
 				}
-			}
-		})
+			})
+		}
 
-		wg.Go(func() {
-			if len(responses) > 0 {
+		if len(responses) > 0 {
+			wg.Go(func() {
 				_, err := service.uc.Response().Put(ctx, &usecase.ResponsePutReq{Docs: responses})
 				if err != nil {
 					for _, res := range responses {
-						eventId := maps[res.Id]
-						errs[eventId] = err
+						eventId := entity2eventMaps[res.Id]
+						errs.Set(eventId, err)
 					}
 					return
 				}
-			}
-		})
+			})
+		}
 
 		c := make(chan bool)
+		defer close(c)
+
 		go func() {
-			defer close(c)
 			wg.Wait()
+			c <- true
 		}()
 
 		select {
 		case <-c:
-			if len(errs) > 0 {
-				service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
-				service.logger.Errorw("encoutered errors", "error_count", len(errs))
+			if errs.Count() > 0 {
+				service.metrics.Count(ctx, "storage_put_error", int64(errs.Count()))
+				service.logger.Errorw("encoutered errors", "error_count", errs.Count())
 			}
-
-			inserted := len(events) - len(errs)
-			service.metrics.Count(ctx, "storage_put_total", int64(inserted))
-			service.logger.Debugw("storage_put_total", "inserted", inserted)
-			return errs
+			return errs.Data()
 		case <-ctx.Done():
 			// timeout, all events will be considered as failed
+			// set non-error event with timeout error
 			for _, event := range events {
-				if err, ok := errs[event.Id]; ok && err != nil {
-					errs[event.Id] = ctx.Err()
+				if err, ok := errs.Get(event.Id); !ok && err == nil {
+					errs.Set(event.Id, ctx.Err())
 				}
 			}
 			service.metrics.Count(ctx, "storage_put_timeout_error", 1)
-			service.metrics.Count(ctx, "storage_put_error", int64(len(errs)))
-			service.logger.Errorw("encoutered errors", "error_count", len(errs))
-			return errs
+			service.metrics.Count(ctx, "storage_put_error", int64(errs.Count()))
+			service.logger.Errorw("encoutered errors", "error_count", errs.Count())
+			return errs.Data()
 		}
 	}
 }

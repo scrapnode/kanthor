@@ -5,7 +5,7 @@ services:
     image: kong/httpbin:0.1.0
     container_name: kanthor-debugging-httpbin
     ports:
-      - "10080:80"
+      - "32080:80"
     networks:
       - kanthor
 

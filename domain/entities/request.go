@@ -39,3 +39,8 @@ func (entity *Request) Marshal() ([]byte, error) {
 func (entity *Request) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, entity)
 }
+
+func (entity *Request) String() string {
+	data, _ := json.Marshal(entity)
+	return string(data)
+}
