@@ -128,6 +128,8 @@ func Consumer(service *storage) streaming.SubHandler {
 				service.metrics.Count(ctx, "storage_put_error", int64(errs.Count()))
 				service.logger.Errorw("encoutered errors", "error_count", errs.Count(), "error_sample", errs.Sample().Error())
 			}
+			service.logger.Infow("save entities", "entity_count", len(events), "save_count", len(events)-errs.Count())
+
 			return errs.Data()
 		case <-ctx.Done():
 			// timeout, all events will be considered as failed
