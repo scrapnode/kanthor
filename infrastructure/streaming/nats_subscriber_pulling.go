@@ -137,7 +137,7 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 			return nil
 		}
 
-		msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch, nats.MaxWait(time.Millisecond*10000))
+		msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch)
 		if err != nil {
 			// the subscription is no longer available because we closed it programmatically
 			if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusInactive {
