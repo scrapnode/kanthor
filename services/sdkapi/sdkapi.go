@@ -2,6 +2,7 @@ package sdkapi
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -166,7 +167,7 @@ func (service *sdkapi) Run(ctx context.Context) error {
 	}
 
 	go func() {
-		if err := service.debugger.Run(ctx); err != nil {
+		if err := service.debugger.Run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			service.logger.Error(err)
 		}
 	}()

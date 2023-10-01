@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/scrapnode/kanthor/domain/entities"
@@ -24,7 +25,8 @@ func (req *ForwarderSendReq) Validate() error {
 
 type ForwarderSendReqRequest struct {
 	Id    string
-	AttId string
+	MsgId string
+	EpId  string
 
 	Tier     string
 	AppId    string
@@ -42,7 +44,8 @@ func (req *ForwarderSendReqRequest) Validate() error {
 		validator.DefaultConfig,
 
 		validator.StringStartsWith("request.id", req.Id, "req_"),
-		validator.StringStartsWith("request.att_id", req.AttId, "att_"),
+		validator.StringStartsWith("request.msg_id", req.MsgId, "msg_"),
+		validator.StringStartsWith("request.ep_id", req.EpId, "ep_"),
 		validator.StringRequired("request.tier", req.Tier),
 		validator.StringStartsWith("request.app_id", req.AppId, "app_"),
 		validator.StringRequired("request.type", req.Type),
@@ -68,9 +71,20 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 	// @TODO: apply rate limit to endpoint
 	response, err := circuitbreaker.Do[sender.Response](
 		uc.cb,
-		req.Request.Metadata.Get(entities.MetaEpId),
+		req.Request.EpId,
 		func() (interface{}, error) {
-			return uc.dispatch(request)
+			res, err := uc.dispatch(request)
+			if err != nil {
+				return nil, err
+			}
+
+			// sending is success, but we got remote server error
+			// must use custom error here to trigger circuit breaker
+			if res.IsServerError() {
+				return res, errors.New(http.StatusText(res.Status))
+			}
+
+			return res, nil
 		},
 		func(err error) error {
 			return err
@@ -78,11 +92,13 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 	)
 
 	res := entities.Response{
-		AttId:    req.Request.AttId,
+		MsgId:    req.Request.MsgId,
+		EpId:     req.Request.EpId,
+		ReqId:    req.Request.Id,
 		Tier:     req.Request.Tier,
 		AppId:    req.Request.AppId,
 		Type:     req.Request.Type,
-		Headers:  entities.Header{Header: http.Header{}},
+		Headers:  entities.NewHeader(),
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data
@@ -90,17 +106,19 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 	res.GenId()
 	res.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
 
-	// either error was happened or not, we need to publish response event, so we can handle custom logic later
-	// example use cases are retry, notification, i.e
-	if err == nil {
+	// IMPORTANT: we have an anti-pattern case that returns both error && response to trigger circuit breaker
+	// so we should test both error and response seperately
+	if err != nil {
+		uc.logger.Errorw(err.Error(), "req_id", req.Request.Id, "ep_id", req.Request.EpId)
+		res.Error = err.Error()
+		res.Status = -1
+	}
+
+	if response != nil {
 		res.Status = response.Status
 		res.Uri = response.Uri
 		res.Headers.Merge(entities.Header{Header: response.Headers})
 		res.Body = response.Body
-	} else {
-		uc.logger.Errorw(err.Error(), "ep_id", req.Request.Metadata.Get(entities.MetaEpId), "req_id", req.Request.Id)
-		res.Status = -1
-		res.Error = err.Error()
 	}
 
 	event, err := transformation.EventFromResponse(&res)

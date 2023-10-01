@@ -2,10 +2,12 @@ package circuitbreaker
 
 import (
 	"errors"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/sony/gobreaker"
+	"log"
 	"sync"
 	"time"
+
+	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/sony/gobreaker"
 )
 
 func NewSony(conf *Config, logger logging.Logger) CircuitBreaker {
@@ -52,11 +54,16 @@ func (cb *sonycb) get(cmd string, onError ErrorHandler) *gobreaker.CircuitBreake
 		Interval: time.Millisecond * time.Duration(cb.conf.CloseStateClearInterval),
 		// the period of the open state, after which the state of CircuitBreaker becomes half-open
 		Timeout: time.Millisecond * time.Duration(cb.conf.OpenStateDuration),
+		// if ReadyToTrip returns true, the CircuitBreaker will be placed into the open state.
 		ReadyToTrip: func(counts gobreaker.Counts) bool {
 			ratio := float64(counts.TotalFailures) / float64(counts.Requests)
-			reachedRequestCount := int(counts.Requests) >= cb.conf.HalfOpenTriggerMinimumRequests
-			reachedErrorRatio := ratio >= cb.conf.HalfOpenTriggerErrorThresholdRatio
-			return reachedRequestCount && reachedErrorRatio
+
+			consecutiveCondition := int(counts.ConsecutiveFailures) >= cb.conf.CloseTriggerMinimumRequests || int(counts.ConsecutiveFailures) >= cb.conf.HalfOpenTriggerMinimumRequests
+			closeCondition := int(counts.Requests) >= cb.conf.CloseTriggerMinimumRequests && ratio >= cb.conf.CloseTriggerErrorThresholdRatio
+			halfOpenCondition := int(counts.Requests) >= cb.conf.HalfOpenTriggerMinimumRequests && ratio >= cb.conf.HalfOpenTriggerErrorThresholdRatio
+
+			log.Printf("%d -> consecutive:%t close:%t half:%t", counts.ConsecutiveFailures, consecutiveCondition, closeCondition, halfOpenCondition)
+			return consecutiveCondition || closeCondition || halfOpenCondition
 		},
 		OnStateChange: func(name string, from gobreaker.State, to gobreaker.State) {
 			cb.logger.Warnw(ErrStageChange.Error(), "name", name, "from", from.String(), "to", to.String())

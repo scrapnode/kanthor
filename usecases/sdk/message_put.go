@@ -2,13 +2,11 @@ package sdk
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 )
@@ -50,12 +48,11 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 
 	wst := ctx.Value(authorizator.CtxWst).(*entities.WorkspaceTier)
 	msg := &entities.Message{
-		AttId:    utils.ID("att"),
 		Tier:     wst.Name,
 		AppId:    app.Id,
 		Type:     req.Type,
 		Body:     req.Body,
-		Headers:  entities.Header{Header: http.Header{}},
+		Headers:  entities.NewHeader(),
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data

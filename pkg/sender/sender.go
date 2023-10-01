@@ -2,10 +2,11 @@ package sender
 
 import (
 	"fmt"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
 func New(conf *Config, logger logging.Logger) Send {
@@ -42,4 +43,8 @@ type Response struct {
 	Headers http.Header `json:"headers"`
 	Uri     string      `json:"uri"`
 	Body    []byte      `json:"body"`
+}
+
+func (res *Response) IsServerError() bool {
+	return res.Status >= http.StatusInternalServerError
 }

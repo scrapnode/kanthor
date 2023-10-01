@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -30,8 +29,7 @@ func (req *RequestArrangeReq) Validate() error {
 }
 
 type RequestArrangeReqMessage struct {
-	Id    string
-	AttId string
+	Id string
 
 	Tier     string
 	AppId    string
@@ -45,7 +43,6 @@ func (req *RequestArrangeReqMessage) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("message.id", req.Id, "msg_"),
-		validator.StringStartsWith("message.att_id", req.AttId, "att_"),
 		validator.StringRequired("message.tier", req.Tier),
 		validator.StringStartsWith("message.app_id", req.AppId, "app_"),
 		validator.StringRequired("message.type", req.Type),
@@ -108,26 +105,22 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 	}
 
 	p := pool.New().WithMaxGoroutines(uc.conf.Scheduler.Request.Arrange.Concurrency)
-	for _, r := range requests {
-		ent := r
+	for _, entity := range requests {
+		r := entity
 		p.Go(func() {
-			entKey := utils.Key(
-				req.Message.AppId,
-				req.Message.AttId,
-				ent.Id,
-			)
+			key := utils.Key(req.Message.AppId, r.Id)
 
-			event, err := transformation.EventFromRequest(&ent)
+			event, err := transformation.EventFromRequest(&r)
 			if err == nil {
 				err = uc.publisher.Pub(ctx, event)
 			}
 
-			res.Entities = append(res.Entities, structure.BulkRes[entities.Request]{Entity: ent, Error: err})
+			res.Entities = append(res.Entities, structure.BulkRes[entities.Request]{Entity: r, Error: err})
 			if err == nil {
-				res.SuccessKeys = append(res.SuccessKeys, entKey)
+				res.SuccessKeys = append(res.SuccessKeys, key)
 			} else {
-				res.FailKeys = append(res.FailKeys, entKey)
-				uc.logger.Errorw(err.Error(), "app_id", req.Message.AppId, "key", entKey)
+				res.FailKeys = append(res.FailKeys, key)
+				uc.logger.Errorw(err.Error(), "key", key)
 			}
 		})
 	}
@@ -184,12 +177,13 @@ func (uc *request) generateRequestsFromEndpoints(
 		// construct request
 		ep := app.Endpoints[epr.EndpointId]
 		req := entities.Request{
-			AttId:    msg.AttId,
+			MsgId:    msg.Id,
+			EpId:     ep.Id,
 			Tier:     msg.Tier,
 			AppId:    msg.AppId,
 			Type:     msg.Type,
 			Metadata: entities.Metadata{},
-			Headers:  entities.Header{Header: http.Header{}},
+			Headers:  entities.NewHeader(),
 			Body:     msg.Body,
 			Uri:      ep.Uri,
 			Method:   ep.Method,
@@ -200,15 +194,14 @@ func (uc *request) generateRequestsFromEndpoints(
 		req.GenId()
 		req.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
 
-		req.Headers.Set(HeaderIdempotencyKey, req.AttId)
+		req.Headers.Set(HeaderIdempotencyKey, req.MsgId)
 		req.Headers.Set(HeaderMsgId, msg.Id)
 		req.Headers.Set(HeaderReqTs, fmt.Sprintf("%d", req.Timestamp))
 
 		sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, string(msg.Body))
 		signed := uc.signature.Sign(sign, ep.SecretKey)
-		req.Headers.Set(HeaderReqSig, signed)
+		req.Headers.Set(HeaderReqSig, fmt.Sprintf("v1=%s", signed))
 
-		req.Metadata.Set(entities.MetaEpId, ep.Id)
 		req.Metadata.Set(entities.MetaEprId, epr.Id)
 
 		requests = append(requests, req)

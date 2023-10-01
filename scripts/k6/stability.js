@@ -12,9 +12,9 @@ const sdkapi = JSON.parse(open(`${__ENV.API_CREDS_PATH}/sdkapi.json`));
 export const options = {
   // Key configurations for Soak test in this section
   stages: [
-    { duration: __ENV.K6_START_DURATION, target: __ENV.K6_VUS },
-    { duration: __ENV.K6_MID_DURATION, target: __ENV.K6_VUS },
-    { duration: __ENV.K6_END_DURATION, target: 0 },
+    { duration: __ENV.TEST_DURATION_START, target: __ENV.TEST_VUS },
+    { duration: __ENV.TEST_DURATION_MID, target: __ENV.TEST_VUS },
+    { duration: __ENV.TEST_DURATION_END, target: 0 },
   ],
 };
 

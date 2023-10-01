@@ -9,7 +9,6 @@ func MsgToArrangeReq(msg *entities.Message) *usecase.RequestArrangeReq {
 	return &usecase.RequestArrangeReq{
 		Message: usecase.RequestArrangeReqMessage{
 			Id:       msg.Id,
-			AttId:    msg.AttId,
 			Tier:     msg.Tier,
 			AppId:    msg.AppId,
 			Type:     msg.Type,

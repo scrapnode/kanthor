@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+func NewHeader() Header {
+	return Header{Header: http.Header{}}
+}
+
 type Header struct {
 	http.Header
 }

@@ -4,7 +4,6 @@ import "encoding/json"
 
 var (
 	MetaIdempotencyKey = "kanthor.idempotency_key"
-	MetaEpId           = "kanthor.ep.id"
 	MetaEprId          = "kanthor.epr.id"
 )
 

@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/scrapnode/kanthor/pkg/validator"
@@ -26,6 +27,8 @@ func DefaultConfig(dest string) *Config {
 }
 
 type Server interface {
+	Connect(ctx context.Context) error
+	Disconnect(ctx context.Context) error
 	Readiness(check func() error) error
 	Liveness(check func() error) error
 }

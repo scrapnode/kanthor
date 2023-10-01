@@ -2,6 +2,8 @@ package scheduler
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
@@ -53,6 +55,10 @@ func (service *scheduler) Start(ctx context.Context) error {
 		return err
 	}
 
+	if err := service.healthcheck.Connect(ctx); err != nil {
+		return err
+	}
+
 	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
@@ -81,6 +87,10 @@ func (service *scheduler) Stop(ctx context.Context) error {
 	}
 
 	if err := service.metrics.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
+
+	if err := service.healthcheck.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 	}
 
@@ -117,7 +127,7 @@ func (service *scheduler) Run(ctx context.Context) error {
 	}()
 
 	go func() {
-		if err := service.debugger.Run(ctx); err != nil {
+		if err := service.debugger.Run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			service.logger.Error(err)
 		}
 	}()

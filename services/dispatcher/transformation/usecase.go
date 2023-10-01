@@ -9,7 +9,8 @@ func ReqToSendReq(req *entities.Request) *usecase.ForwarderSendReq {
 	return &usecase.ForwarderSendReq{
 		Request: usecase.ForwarderSendReqRequest{
 			Id:       req.Id,
-			AttId:    req.AttId,
+			MsgId:    req.MsgId,
+			EpId:     req.EpId,
 			Tier:     req.Tier,
 			AppId:    req.AppId,
 			Type:     req.Type,

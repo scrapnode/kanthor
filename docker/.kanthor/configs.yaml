@@ -9,16 +9,15 @@ streaming: &streaming
       - kanthor.default.res.>
     replicas: 0
     limits:
-      msgs: 50000
-      msg_bytes: 65536
-      # 64kb * 50000 ~ 3Gb
-      bytes: 3500000000
+      msg_bytes: 32000
+      msgs: 1000000
+      bytes: 3200000000
       # 60*60*24*3 = 3d
       age: 259200
 
 cache: &cache
   uri: redis://cache:6379/0
-  time_to_live: 3600000 # 1 hour
+  time_to_live: 900000 # 15 minute
 
 logger:
   pretty: true
@@ -37,7 +36,7 @@ cryptography:
 idempotency:
   namespace: idempotency
   uri: redis://cache:6379/0
-  time_to_live: 86400000 # 1 day
+  time_to_live: 300000 # 5 mins
 
 coordinator:
   engine: nats
@@ -158,8 +157,10 @@ dispatcher:
     half_open_max_pass_through_requests: 5
     half_open_trigger_minimum_requests: 10
     half_open_trigger_error_threshold_ratio: 0.1
+    close_trigger_minimum_requests: 10
+    close_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
-    open_state_duration: 300000
+    open_state_duration: 900000
   metrics:
     engine: otel
     otel:

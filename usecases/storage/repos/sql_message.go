@@ -18,7 +18,6 @@ var MessageMapping = map[string]func(doc entities.Message) any{
 	"id":        func(doc entities.Message) any { return doc.Id },
 	"timestamp": func(doc entities.Message) any { return doc.Timestamp },
 	"bucket":    func(doc entities.Message) any { return doc.Bucket },
-	"att_id":    func(doc entities.Message) any { return doc.AttId },
 	"tier":      func(doc entities.Message) any { return doc.Tier },
 	"app_id":    func(doc entities.Message) any { return doc.AppId },
 	"type":      func(doc entities.Message) any { return doc.Type },

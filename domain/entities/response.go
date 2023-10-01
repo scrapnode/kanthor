@@ -6,9 +6,14 @@ import (
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
+// Responses are allocated based on bucket
+// For SQL: create a composite index for AppId+Type+Bucket, sort by ID (ksuid)
+// for Dynamo-style: partition by AppId+Type+Bucket, sort by ID (ksuid)
 type Response struct {
 	TSEntity
-	AttId string `json:"att_id"`
+	MsgId string `json:"msg_id"`
+	EpId  string `json:"ep_id"`
+	ReqId string `json:"req_id"`
 
 	Tier     string   `json:"tier"`
 	AppId    string   `json:"app_id"`
