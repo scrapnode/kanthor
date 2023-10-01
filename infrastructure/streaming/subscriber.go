@@ -89,7 +89,8 @@ type SubscriberConfigPush struct {
 	DeliverSubject string `json:"deliver_subject" yaml:"deliver_subject" mapstructure:"deliver_subject"`
 	DeliverGroup   string `json:"deliver_group" yaml:"deliver_group" mapstructure:"deliver_group"`
 	// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
-	MaxRequestBatch int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch"`
+	MaxRequestBatch       int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch"`
+	MaxAckWaitingDuration int `json:"max_ack_wating_duration" yaml:"max_ack_wating_duration" mapstructure:"max_ack_wating_duration"`
 	// Temporary is a config to allow us to create a temporary consumer that will be deleted after disconnected
 	// this option is only available for Push-Based Model because Pull-Based Model requires consumer to be a durable one
 	// must set it to TRUE explicitly to avoid misconfiguration
@@ -101,6 +102,7 @@ func (conf *SubscriberConfigPush) Validate() error {
 		validator.DefaultConfig,
 		validator.StringRequired("streaming.subscriber.config.push.deliver_subject", conf.DeliverSubject),
 		validator.StringRequired("streaming.subscriber.config.push.deliver_group", conf.DeliverGroup),
+		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.push.max_ack_wating_duration", conf.MaxAckWaitingDuration, 5000),
 		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.push.max_request_batch", conf.MaxRequestBatch, 1),
 	)
 }
@@ -110,7 +112,8 @@ type SubscriberConfigPull struct {
 	MaxWaiting int `json:"max_waiting" yaml:"max_waiting" mapstructure:"max_waiting"`
 	// if MaxAckPending is 1, and we are processing 1 message already
 	// then we are going to request 2, we will only get 1
-	MaxAckPending int `json:"max_ack_pending" yaml:"max_ack_pending" mapstructure:"max_ack_pending"`
+	MaxAckPending         int `json:"max_ack_pending" yaml:"max_ack_pending" mapstructure:"max_ack_pending"`
+	MaxAckWaitingDuration int `json:"max_ack_wating_duration" yaml:"max_ack_wating_duration" mapstructure:"max_ack_wating_duration"`
 	// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
 	MaxRequestBatch int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch"`
 }
@@ -120,6 +123,7 @@ func (conf *SubscriberConfigPull) Validate() error {
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.pull.max_waiting", conf.MaxWaiting, 1),
 		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.pull.max_ack_pending", conf.MaxAckPending, 1),
+		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.pull.max_ack_wating_duration", conf.MaxAckWaitingDuration, 1),
 		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.pull.max_request_batch", conf.MaxRequestBatch, 1),
 	)
 }

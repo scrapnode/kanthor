@@ -167,6 +167,7 @@ func (subscriber *NatsSubscriberPushing) consumer(ctx context.Context) (*nats.Co
 		Name:          subscriber.conf.Name,
 		MaxDeliver:    subscriber.conf.MaxDeliver,
 		FilterSubject: subscriber.conf.FilterSubject,
+		AckWait:       time.Millisecond * time.Duration(subscriber.conf.Push.MaxAckWaitingDuration),
 		// RateLimit is number of message per second
 		// Nats RateLimit is it bites per sec
 		// so the formula will be Number of messagee * Bytes of message * 8

@@ -118,6 +118,7 @@ scheduler:
       deliver_subject: schedule
       deliver_group: default
       max_request_batch: 300
+      max_ack_wating_duration: 15000
       temporary: true
     name: schedule_default_push
     filter_subject: kanthor.default.msg.>
@@ -145,6 +146,7 @@ dispatcher:
       deliver_subject: dispatch
       deliver_group: default
       max_request_batch: 300
+      max_ack_wating_duration: 15000
       temporary: true
     name: dispatch_default_push
     filter_subject: kanthor.default.req.>
@@ -178,8 +180,9 @@ storage:
     based_model: pull
     pull:
       max_waiting: 100
-      max_ack_pending: 5000
-      max_request_batch: 300
+      max_ack_pending: 100000
+      max_ack_wating_duration: 15000
+      max_request_batch: 1000
     name: storage_default_pull
     filter_subject: kanthor.default.>
     max_deliver: 2

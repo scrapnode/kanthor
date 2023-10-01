@@ -200,6 +200,7 @@ func (subscriber *NatsSubscriberPulling) consumer(ctx context.Context) (*nats.Co
 		MaxAckPending: subscriber.conf.Pull.MaxAckPending,
 		// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
 		MaxRequestBatch: subscriber.conf.Pull.MaxRequestBatch,
+		AckWait:         time.Millisecond * time.Duration(subscriber.conf.Pull.MaxAckWaitingDuration),
 		// general
 		Name:          subscriber.conf.Name,
 		MaxDeliver:    subscriber.conf.MaxDeliver,

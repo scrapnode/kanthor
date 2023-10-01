@@ -18,9 +18,9 @@ type Server interface {
 }
 
 // NewServer of debugging can only enable via environment variable
-// set KANTHOR_DEBUGGING_SERVER=true to enable it
+// set KANTHOR_DEBUGGING_SERVER_ENABLE=true to enable it
 func NewServer() Server {
-	enable := strings.EqualFold(os.Getenv("KANTHOR_DEBUGGING_SERVER"), "true")
+	enable := strings.EqualFold(os.Getenv("KANTHOR_DEBUGGING_SERVER_ENABLE"), "true")
 	return &server{enable: enable}
 }
 
@@ -49,7 +49,11 @@ func (server *server) Start(ctx context.Context) error {
 		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	}
 
-	server.instance = &http.Server{Addr: fmt.Sprintf(":%d", HTTP_PORT), Handler: mux}
+	addr := fmt.Sprintf(":%d", HTTP_PORT)
+	if port := os.Getenv("KANTHOR_DEBUGGING_SERVER_PORT"); port != "" {
+		addr = fmt.Sprintf(":%s", port)
+	}
+	server.instance = &http.Server{Addr: addr, Handler: mux}
 	return nil
 }
 
