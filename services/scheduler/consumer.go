@@ -75,6 +75,8 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				service.metrics.Count(ctx, "scheduler_send_error", int64(errs.Count()))
 				service.logger.Errorw("encoutered errors", "error_count", errs.Count(), "error_sample", errs.Sample().Error())
 			}
+			service.logger.Infow("scheduled requests", "message_count", len(events), "request_count", len(events)-errs.Count())
+
 			return errs.Data()
 		case <-ctx.Done():
 			// timeout, all events will be considered as failed

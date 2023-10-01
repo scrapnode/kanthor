@@ -68,6 +68,8 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 				service.metrics.Count(ctx, "dispatcher_send_error", int64(errs.Count()))
 				service.logger.Errorw("encoutered errors", "error_count", errs.Count(), "error_sample", errs.Sample().Error())
 			}
+			service.logger.Infow("send requests", "request_count", len(events), "response_count", len(events)-errs.Count())
+
 			return errs.Data()
 		case <-ctx.Done():
 			// timeout, all events will be considered as failed
