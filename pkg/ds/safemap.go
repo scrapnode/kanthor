@@ -3,8 +3,9 @@ package ds
 import "sync"
 
 type SafeMap[T any] struct {
-	mu   sync.Mutex
-	data map[string]T
+	mu     sync.Mutex
+	data   map[string]T
+	sample T
 }
 
 func (sm *SafeMap[T]) int() {
@@ -20,6 +21,7 @@ func (sm *SafeMap[T]) Set(key string, value T) {
 	sm.int()
 
 	sm.data[key] = value
+	sm.sample = value
 }
 
 func (sm *SafeMap[T]) Get(key string) (T, bool) {
@@ -30,6 +32,10 @@ func (sm *SafeMap[T]) Get(key string) (T, bool) {
 
 	value, ok := sm.data[key]
 	return value, ok
+}
+
+func (sm *SafeMap[T]) Sample() T {
+	return sm.sample
 }
 
 func (sm *SafeMap[T]) Count() int {

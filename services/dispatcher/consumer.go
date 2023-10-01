@@ -66,7 +66,7 @@ func Consumer(service *dispatcher) streaming.SubHandler {
 		case <-c:
 			if errs.Count() > 0 {
 				service.metrics.Count(ctx, "dispatcher_send_error", int64(errs.Count()))
-				service.logger.Errorw("encoutered errors", "error_count", errs.Count())
+				service.logger.Errorw("encoutered errors", "error_count", errs.Count(), "error_sample", errs.Sample().Error())
 			}
 			return errs.Data()
 		case <-ctx.Done():
