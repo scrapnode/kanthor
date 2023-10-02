@@ -121,7 +121,7 @@ scheduler:
       max_request_batch: 300
     name: schedule_default_push
     filter_subject: kanthor.default.msg.>
-    max_deliver: 2
+    max_deliver: 3
   request:
     arrange:
       concurrency: 100
@@ -148,7 +148,7 @@ dispatcher:
       max_request_batch: 1500
     name: dispatch_default_psuh
     filter_subject: kanthor.default.req.>
-    max_deliver: 2
+    max_deliver: 3
   sender:
     timeout: 3000
     retry:
@@ -183,7 +183,7 @@ storage:
       max_request_batch: 1000
     name: storage_default_pull
     filter_subject: kanthor.default.>
-    max_deliver: 2
+    max_deliver: 3
   metrics:
     engine: otel
     otel:
