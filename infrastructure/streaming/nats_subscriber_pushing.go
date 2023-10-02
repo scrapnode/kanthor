@@ -187,9 +187,8 @@ func (subscriber *NatsSubscriberPushing) consumer(ctx context.Context) (*nats.Co
 	conf.Durable = subscriber.conf.Name
 	consumer, err := subscriber.js.ConsumerInfo(subscriber.stream.Config.Name, subscriber.conf.Name, nats.Context(ctx))
 
-	// ideally we should update consumer options here,
-	// but nats didn't support it yet,
 	if err == nil {
+		subscriber.js.UpdateConsumer(subscriber.stream.Config.Name, conf, nats.Context(ctx))
 		return consumer, nil
 	}
 
