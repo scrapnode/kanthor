@@ -23,7 +23,7 @@ func (req *WorkspaceSetupReq) Validate() error {
 			prefix := fmt.Sprintf("req.applications[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringRequired(prefix+".id", item.Id),
+				validator.StringStartsWith(prefix+".id", item.Id, "app_"),
 				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
 				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
 				validator.StringStartsWith(prefix+".workspace_id", item.WorkspaceId, "ws_"),
@@ -31,10 +31,10 @@ func (req *WorkspaceSetupReq) Validate() error {
 			)
 		}),
 		validator.Array(req.Endpoints, func(i int, item entities.Endpoint) error {
-			prefix := fmt.Sprintf("req.applications[%d]", i)
+			prefix := fmt.Sprintf("req.endpoints[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringRequired(prefix+".id", item.Id),
+				validator.StringStartsWith(prefix+".id", item.Id, "ep_"),
 				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
 				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
 				validator.StringStartsWith(prefix+".app_id", item.AppId, "app_"),
@@ -45,10 +45,10 @@ func (req *WorkspaceSetupReq) Validate() error {
 			)
 		}),
 		validator.Array(req.EndpointRules, func(i int, item entities.EndpointRule) error {
-			prefix := fmt.Sprintf("req.applications[%d]", i)
+			prefix := fmt.Sprintf("req.endpoint_rules[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringRequired(prefix+".id", item.Id),
+				validator.StringStartsWith(prefix+".id", item.Id, "epr_"),
 				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
 				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
 				validator.StringStartsWith(prefix+".endpoint_id", item.EndpointId, "ep_"),

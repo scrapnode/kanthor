@@ -37,8 +37,9 @@ func Consumer(service *scheduler) streaming.SubHandler {
 				if err := ucreq.Validate(); err != nil {
 					service.metrics.Count(ctx, "scheduler_arrange_error", 1)
 					service.logger.Errorw(err.Error(), "event", event.String(), "msg", msg.String())
-					// unable to construct usecase request from message is considered as un-retriable error
-					// ignore the error, and we need to check it manually with log
+					// IMPORTANT: sometime under high-preasure, we got nil pointer
+					// should retry this event anyway
+					errs.Set(event.Id, err)
 					return
 				}
 

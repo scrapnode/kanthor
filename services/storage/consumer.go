@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/ds"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/pkg/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/storage"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc"
@@ -25,41 +26,47 @@ func Consumer(service *storage) streaming.SubHandler {
 		requests := []entities.Request{}
 		responses := []entities.Response{}
 
-		for _, event := range events {
+		for i, event := range events {
 			if event.Is(streaming.TopicMsg) {
-				msg, err := transformation.EventToMessage(event)
+				msg, err := eventToMessage(i, event)
 				if err != nil {
-					service.logger.Errorw(err.Error(), "event", event.String())
-					// unable to parse message from event is considered as un-retriable error
-					// ignore the error, and we need to check it manually with log
+					service.logger.Errorw(err.Error(), "event_id", event.String())
+					// IMPORTANT: sometime under high-preasure, we got nil pointer
+					// should retry this event anyway
+					errs.Set(event.Id, err)
 					continue
 				}
+
 				messages = append(messages, *msg)
 				entity2eventMaps[msg.Id] = event.Id
 				continue
 			}
 
 			if event.Is(streaming.TopicReq) {
-				req, err := transformation.EventToRequest(event)
+				req, err := eventToRequest(i, event)
 				if err != nil {
-					service.logger.Errorw(err.Error(), "event", event.String())
-					// unable to parse request from event is considered as un-retriable error
-					// ignore the error, and we need to check it manually with log
+					service.logger.Errorw(err.Error(), "event_id", event.String())
+					// IMPORTANT: sometime under high-preasure, we got nil pointer
+					// should retry this event anyway
+					errs.Set(event.Id, err)
 					continue
 				}
+
 				requests = append(requests, *req)
 				entity2eventMaps[req.Id] = event.Id
 				continue
 			}
 
 			if event.Is(streaming.TopicRes) {
-				res, err := transformation.EventToResponse(event)
+				res, err := eventToResponse(i, event)
 				if err != nil {
 					service.logger.Errorw(err.Error(), "event", event.String())
-					// unable to parse response from event is considered as un-retriable error
-					// ignore the error, and we need to check it manually with log
+					// IMPORTANT: sometime under high-preasure, we got nil pointer
+					// should retry this event anyway
+					errs.Set(event.Id, err)
 					continue
 				}
+
 				responses = append(responses, *res)
 				entity2eventMaps[res.Id] = event.Id
 				continue
@@ -72,7 +79,7 @@ func Consumer(service *storage) streaming.SubHandler {
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
-		// IMPORTANT: we ignore all validations of storage to trade validity to performance
+
 		var wg conc.WaitGroup
 
 		if len(messages) > 0 {
@@ -145,4 +152,82 @@ func Consumer(service *storage) streaming.SubHandler {
 			return errs.Data()
 		}
 	}
+}
+
+func eventToMessage(i int, event *streaming.Event) (*entities.Message, error) {
+	msg, err := transformation.EventToMessage(event)
+	if err != nil {
+		return nil, err
+	}
+
+	prefix := fmt.Sprintf("events(message).[%d]", i)
+	err = validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith(prefix+".id", msg.Id, "msg_"),
+		validator.NumberGreaterThan(prefix+".timestamp", msg.Timestamp, 0),
+		validator.StringRequired(prefix+".bucket", msg.Bucket),
+		validator.StringRequired(prefix+".tier", msg.Tier),
+		validator.StringStartsWith(prefix+".app_id", msg.AppId, "app_"),
+		validator.StringRequired(prefix+".type", msg.Type),
+		validator.SliceRequired(prefix+".body", msg.Body),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+func eventToRequest(i int, event *streaming.Event) (*entities.Request, error) {
+	req, err := transformation.EventToRequest(event)
+	if err != nil {
+		return nil, err
+	}
+
+	prefix := fmt.Sprintf("events(request).[%d]", i)
+	err = validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith(prefix+".id", req.Id, "req_"),
+		validator.NumberGreaterThan(prefix+".timestamp", req.Timestamp, 0),
+		validator.StringRequired(prefix+".bucket", req.Bucket),
+		validator.StringStartsWith(prefix+".msg_id", req.MsgId, "msg_"),
+		validator.StringStartsWith(prefix+".ep_id", req.EpId, "ep_"),
+		validator.StringRequired(prefix+".tier", req.Tier),
+		validator.StringStartsWith(prefix+".app_id", req.AppId, "app_"),
+		validator.StringRequired(prefix+".type", req.Type),
+		validator.SliceRequired(prefix+".body", req.Body),
+		validator.StringRequired(prefix+".uri", req.Uri),
+		validator.StringRequired(prefix+".method", req.Method),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+func eventToResponse(i int, event *streaming.Event) (*entities.Response, error) {
+	res, err := transformation.EventToResponse(event)
+	if err != nil {
+		return nil, err
+	}
+
+	prefix := fmt.Sprintf("events(response).[%d]", i)
+	err = validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith(prefix+".id", res.Id, "res_"),
+		validator.NumberGreaterThan(prefix+".timestamp", res.Timestamp, 0),
+		validator.StringRequired(prefix+".bucket", res.Bucket),
+		validator.StringStartsWith(prefix+".msg_id", res.MsgId, "msg_"),
+		validator.StringStartsWith(prefix+".ep_id", res.EpId, "ep_"),
+		validator.StringStartsWith(prefix+".req_id", res.ReqId, "req_"),
+		validator.StringRequired(prefix+".tier", res.Tier),
+		validator.StringStartsWith(prefix+".app_id", res.AppId, "app_"),
+		validator.StringRequired(prefix+".type", res.Type),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
