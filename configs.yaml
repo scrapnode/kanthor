@@ -177,12 +177,13 @@ dispatcher:
 storage:
   subscriber:
     connection: *streaming
-    based_model: pull
-    pull:
-      max_waiting: 100
-      max_ack_pending: 100000
+    based_model: push
+    push:
+      deliver_subject: storage
+      deliver_group: default
+      max_request_batch: 300
       max_ack_wating_duration: 15000
-      max_request_batch: 1000
+      temporary: true
     name: storage_default_pull
     filter_subject: kanthor.default.>
     max_deliver: 3
