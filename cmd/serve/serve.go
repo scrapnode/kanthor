@@ -49,10 +49,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			go func() {
 				if err := service.Run(ctx); err != nil {
 					logger.Error(err)
-					stop()
-					return
 				}
-
 				stop()
 			}()
 
