@@ -3,6 +3,7 @@ package streaming
 import (
 	"context"
 	"errors"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -38,12 +39,25 @@ func (subscriber *NatsSubscriberPulling) Readiness() error {
 	return err
 }
 
-func (subscriber *NatsSubscriberPulling) Liveness() error {
+func (subscriber *NatsSubscriberPulling) Liveness() (err error) {
 	if subscriber.js == nil {
 		return ErrNotConnected
 	}
 
-	_, err := subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
+	// sometime, under high preasure, nats throws a nil pointer error
+	defer func() {
+		if r := recover(); r != nil {
+			subscriber.logger.Errorf("streaming.nats.subscriber.pushing.liveness.recover: %v", r)
+			subscriber.logger.Errorf("streaming.nats.subscriber.pushing.liveness.recover.trace: %s", debug.Stack())
+
+			if rerr, ok := r.(error); ok {
+				err = rerr
+				return
+			}
+		}
+	}()
+
+	_, err = subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
 	return err
 }
 
