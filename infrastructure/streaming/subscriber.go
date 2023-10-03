@@ -87,7 +87,8 @@ func (conf *SubscriberConfig) Validate() error {
 type SubscriberConfigPush struct {
 	DeliverSubject string `json:"deliver_subject" yaml:"deliver_subject" mapstructure:"deliver_subject"`
 	DeliverGroup   string `json:"deliver_group" yaml:"deliver_group" mapstructure:"deliver_group"`
-	// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
+	// in Push type, if MaxRequestBatch is 10, no matter how many instances you have, all your instances can only receive 10 messages
+	// for instance, MaxRequestBatch=10 instances=5 -> each instance will receive 2 msgs -> total msgs were transfered is 10 msgs
 	MaxRequestBatch       int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch"`
 	MaxAckWaitingDuration int `json:"max_ack_wating_duration" yaml:"max_ack_wating_duration" mapstructure:"max_ack_wating_duration"`
 	// Temporary is a config to allow us to create a temporary consumer that will be deleted after disconnected
@@ -113,7 +114,8 @@ type SubscriberConfigPull struct {
 	// then we are going to request 2, we will only get 1
 	MaxAckPending         int `json:"max_ack_pending" yaml:"max_ack_pending" mapstructure:"max_ack_pending"`
 	MaxAckWaitingDuration int `json:"max_ack_wating_duration" yaml:"max_ack_wating_duration" mapstructure:"max_ack_wating_duration"`
-	// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
+	// in Pull type, if MaxRequestBatch is 10, that means for each instance you can only fetch maximum 10 messages
+	// for instance, MaxRequestBatch=10 instances=5 -> each instance will receive 10 msgs -> total msgs were transfered is 50 msgs
 	MaxRequestBatch int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch"`
 }
 
