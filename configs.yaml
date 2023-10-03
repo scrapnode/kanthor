@@ -113,13 +113,12 @@ scheduler:
     connection: *streaming
   subscriber:
     connection: *streaming
-    type: push
-    push:
-      deliver_subject: schedule
-      deliver_group: default
-      max_request_batch: 300
+    type: pull
+    pull:
+      max_waiting: 100
+      max_ack_pending: 3000
       max_ack_wating_duration: 15000
-      temporary: true
+      max_request_batch: 300
     name: schedule_default_push
     filter_subject: kanthor.default.msg.>
     max_deliver: 3
@@ -177,13 +176,12 @@ dispatcher:
 storage:
   subscriber:
     connection: *streaming
-    type: push
-    push:
-      deliver_subject: storage
-      deliver_group: default
-      max_request_batch: 300
+    type: pull
+    pull: 
+      max_waiting: 100
+      max_ack_pending: 100000
       max_ack_wating_duration: 15000
-      temporary: true
+      max_request_batch: 1000
     name: storage_default_pull
     filter_subject: kanthor.default.>
     max_deliver: 3

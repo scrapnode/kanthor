@@ -140,12 +140,13 @@ dispatcher:
     connection: *streaming
   subscriber:
     connection: *streaming
-    type: pull
-    pull:
-      max_waiting: 100
-      max_ack_pending: 150000
+    type: push
+    push:
+      deliver_subject: dispatch
+      deliver_group: default
+      max_request_batch: 300
       max_ack_wating_duration: 15000
-      max_request_batch: 1500
+      temporary: true
     name: dispatch_default_psuh
     filter_subject: kanthor.default.req.>
     max_deliver: 3
