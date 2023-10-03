@@ -38,7 +38,7 @@ func (server *server) Disconnect(ctx context.Context) error {
 }
 
 func (server *server) Readiness(check func() error) error {
-	if err := server.check(check); err != nil {
+	if err := server.check(&server.conf.Readiness, check); err != nil {
 		return err
 	}
 	if err := server.write("readiness"); err != nil {
@@ -67,7 +67,7 @@ func (server *server) Liveness(check func() error) (err error) {
 			return
 		}
 
-		if err = server.check(check); err != nil {
+		if err = server.check(&server.conf.Liveness, check); err != nil {
 			return
 		}
 
@@ -75,23 +75,23 @@ func (server *server) Liveness(check func() error) (err error) {
 			return
 		}
 
-		server.logger.Debugw("live", "timeout", server.conf.Timeout)
-		time.Sleep(time.Millisecond * time.Duration(server.conf.Timeout))
+		server.logger.Debugw("live", "timeout", server.conf.Liveness.Timeout)
+		time.Sleep(time.Millisecond * time.Duration(server.conf.Liveness.Timeout))
 	}
 }
 
-func (server *server) check(check func() error) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(server.conf.Timeout))
+func (server *server) check(conf *healthcheck.CheckConfig, check func() error) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(conf.Timeout))
 	defer cancel()
 
 	var err error
-	for i := 0; i < server.conf.MaxTry; i++ {
+	for i := 0; i < conf.MaxTry; i++ {
 		if err = check(); err == nil {
 			return nil
 		}
 	}
 	<-ctx.Done()
-	return ctx.Err()
+	return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR: %v", ctx.Err())
 }
 
 func (server *server) write(name string) error {

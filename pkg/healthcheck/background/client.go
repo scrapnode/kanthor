@@ -3,10 +3,11 @@ package background
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"os"
 	"path"
 	"time"
+
+	"github.com/scrapnode/kanthor/pkg/healthcheck"
 )
 
 func NewClient(conf *healthcheck.Config) healthcheck.Client {
@@ -29,7 +30,7 @@ func (client *client) Liveness() error {
 		return err
 	}
 
-	delta := int64(client.conf.Timeout * client.conf.MaxTry)
+	delta := int64(client.conf.Liveness.Timeout * client.conf.Liveness.MaxTry)
 	if diff > delta {
 		return fmt.Errorf("timeout (diff:%d delta:%d)", diff, delta)
 	}

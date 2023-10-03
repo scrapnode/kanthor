@@ -3,7 +3,6 @@ package scheduler
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/scrapnode/kanthor/config"
@@ -104,7 +103,7 @@ func (service *scheduler) Stop(ctx context.Context) error {
 
 func (service *scheduler) Run(ctx context.Context) error {
 	if err := service.readiness(); err != nil {
-		return fmt.Errorf("HEALTHCHECK.READINESS: %v", err)
+		return err
 	}
 
 	go func() {
@@ -123,7 +122,7 @@ func (service *scheduler) Run(ctx context.Context) error {
 			return nil
 		})
 		if err != nil {
-			service.logger.Errorf("HEALTHCHECK.LIVENESS: %v", err)
+			service.logger.Error(err)
 		}
 	}()
 
