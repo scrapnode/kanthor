@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime/debug"
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -48,18 +49,30 @@ func (server *server) Readiness(check func() error) error {
 	return nil
 }
 
-func (server *server) Liveness(check func() error) error {
+func (server *server) Liveness(check func() error) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			server.logger.Errorf("healthcheck.background.liveness.recover: %v", r)
+			server.logger.Errorf("healthcheck.background.liveness.recover.trace: %s", debug.Stack())
+
+			if rerr, ok := r.(error); ok {
+				err = rerr
+				return
+			}
+		}
+	}()
+
 	for {
 		if server.status == StatusStopped {
-			return nil
+			return
 		}
 
-		if err := server.check(check); err != nil {
-			return err
+		if err = server.check(check); err != nil {
+			return
 		}
 
-		if err := server.write("liveness"); err != nil {
-			return err
+		if err = server.write("liveness"); err != nil {
+			return
 		}
 
 		server.logger.Debugw("live", "timeout", server.conf.Timeout)
