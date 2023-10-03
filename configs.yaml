@@ -113,7 +113,7 @@ scheduler:
     connection: *streaming
   subscriber:
     connection: *streaming
-    based_model: push
+    type: push
     push:
       deliver_subject: schedule
       deliver_group: default
@@ -141,7 +141,7 @@ dispatcher:
     connection: *streaming
   subscriber:
     connection: *streaming
-    based_model: push
+    type: push
     push:
       deliver_subject: dispatch
       deliver_group: default
@@ -177,7 +177,7 @@ dispatcher:
 storage:
   subscriber:
     connection: *streaming
-    based_model: push
+    type: push
     push:
       deliver_subject: storage
       deliver_group: default

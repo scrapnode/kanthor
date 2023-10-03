@@ -30,13 +30,13 @@ type NatsSubscriberPulling struct {
 	subscription *nats.Subscription
 }
 
-func (subscriber *NatsSubscriberPulling) Readiness() error {
+func (subscriber *NatsSubscriberPulling) Readiness() (err error) {
 	if subscriber.js == nil {
 		return ErrNotConnected
 	}
 
-	_, err := subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
-	return err
+	_, err = subscriber.js.ConsumerInfo(subscriber.conf.Connection.Stream.Name, subscriber.conf.Name)
+	return
 }
 
 func (subscriber *NatsSubscriberPulling) Liveness() (err error) {
@@ -57,7 +57,7 @@ func (subscriber *NatsSubscriberPulling) Liveness() (err error) {
 		}
 	}()
 
-	_, err = subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
+	_, err = subscriber.js.ConsumerInfo(subscriber.conf.Connection.Stream.Name, subscriber.conf.Name)
 	return err
 }
 

@@ -34,7 +34,7 @@ func (subscriber *NatsSubscriberPushing) Readiness() (err error) {
 		return
 	}
 
-	_, err = subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
+	_, err = subscriber.js.ConsumerInfo(subscriber.conf.Connection.Stream.Name, subscriber.conf.Name)
 	return
 }
 
@@ -56,7 +56,7 @@ func (subscriber *NatsSubscriberPushing) Liveness() (err error) {
 		}
 	}()
 
-	_, err = subscriber.js.StreamInfo(subscriber.conf.Connection.Stream.Name)
+	_, err = subscriber.js.ConsumerInfo(subscriber.conf.Connection.Stream.Name, subscriber.conf.Name)
 	return err
 }
 

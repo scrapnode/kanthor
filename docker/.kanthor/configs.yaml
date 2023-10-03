@@ -113,7 +113,7 @@ scheduler:
     connection: *streaming
   subscriber:
     connection: *streaming
-    based_model: pull
+    type: pull
     pull:
       max_waiting: 100
       max_ack_pending: 3000
@@ -140,7 +140,7 @@ dispatcher:
     connection: *streaming
   subscriber:
     connection: *streaming
-    based_model: pull
+    type: pull
     pull:
       max_waiting: 100
       max_ack_pending: 150000
@@ -175,7 +175,7 @@ dispatcher:
 storage:
   subscriber:
     connection: *streaming
-    based_model: pull
+    type: pull
     pull:
       max_waiting: 100
       max_ack_pending: 100000

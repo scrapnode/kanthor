@@ -28,7 +28,6 @@ func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
 		nats.ReconnectHandler(func(conn *nats.Conn) {
 			logger.Warnf("STREAMING.NATS.RECONNECT: %v", conn.ConnectedUrl())
 		}),
-
 		nats.ErrorHandler(func(c *nats.Conn, s *nats.Subscription, err error) {
 			if err == nats.ErrSlowConsumer {
 				count, bytes, err := s.Pending()

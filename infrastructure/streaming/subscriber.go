@@ -11,15 +11,15 @@ import (
 )
 
 var (
-	SubModelPush = "push"
-	SubModelPull = "pull"
+	SubTypePush = "push"
+	SubTypePull = "pull"
 )
 
 func NewSubscriber(conf *SubscriberConfig, logger logging.Logger) (Subscriber, error) {
-	if conf.BasedModel == SubModelPush {
+	if conf.Type == SubTypePush {
 		return NewNatsSubscriberPushing(conf, logger), nil
 	}
-	if conf.BasedModel == SubModelPull {
+	if conf.Type == SubTypePull {
 		return NewNatsSubscriberPulling(conf, logger), nil
 	}
 
@@ -35,7 +35,7 @@ type SubHandler func(events []*Event) map[string]error
 
 type SubscriberConfig struct {
 	Connection ConnectionConfig `json:"connection" yaml:"connection" mapstructure:"connection"`
-	BasedModel string           `json:"based_model" yaml:"based_model" mapstructure:"based_model"`
+	Type       string           `json:"type" yaml:"type" mapstructure:"type"`
 
 	// push-specific
 	Push *SubscriberConfigPush `json:"push" yaml:"push" mapstructure:"push"`
@@ -49,13 +49,12 @@ type SubscriberConfig struct {
 	// Advance configuration, don't change it until you know what you are doing
 	// MaxDelivery is how many times we should try to re-deliver message if we get any error
 	MaxDeliver int `json:"max_deliver" yaml:"max_deliver" mapstructure:"max_deliver"`
-	// @TODO: consider apply RateLimit
 }
 
 func (conf *SubscriberConfig) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringOneOf("streaming.subscriber.config.based_model", conf.BasedModel, []string{SubModelPush, SubModelPull}),
+		validator.StringOneOf("streaming.subscriber.config.type", conf.Type, []string{SubTypePush, SubTypePull}),
 		validator.StringRequired("streaming.subscriber.config.name", conf.Name),
 		validator.StringRequired("streaming.subscriber.config.filter_subject", conf.FilterSubject),
 		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.max_deliver", conf.MaxDeliver, 0),
@@ -64,7 +63,7 @@ func (conf *SubscriberConfig) Validate() error {
 		return err
 	}
 
-	if conf.BasedModel == SubModelPush {
+	if conf.Type == SubTypePush {
 		if conf.Push == nil {
 			return errors.New("streaming.subscriber: push config could not be nil")
 		}
@@ -73,7 +72,7 @@ func (conf *SubscriberConfig) Validate() error {
 		}
 	}
 
-	if conf.BasedModel == SubModelPull {
+	if conf.Type == SubTypePull {
 		if conf.Pull == nil {
 			return errors.New("streaming.subscriber: pull config could not be nil")
 		}
