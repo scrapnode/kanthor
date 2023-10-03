@@ -2,7 +2,6 @@ package streaming
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -22,24 +21,23 @@ func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
 		nats.MaxReconnects(9),
 		nats.DisconnectErrHandler(func(c *nats.Conn, err error) {
 			if err != nil {
-				logger.Error(fmt.Sprintf("got disconnected with reason: %v", err))
+				logger.Errorf("STREAMING.NATS.DISCONNECTED: %v", err)
 				return
 			}
 		}),
 		nats.ReconnectHandler(func(conn *nats.Conn) {
-			logger.Infow(fmt.Sprintf("got reconnected to %v", conn.ConnectedUrl()))
+			logger.Warnf("STREAMING.NATS.RECONNECT: %v", conn.ConnectedUrl())
 		}),
 
 		nats.ErrorHandler(func(c *nats.Conn, s *nats.Subscription, err error) {
 			if err == nats.ErrSlowConsumer {
 				count, bytes, err := s.Pending()
-				if err != nil {
-					logger.Error(fmt.Sprintf("couldn't get pending messages: %v", err))
-					return
-				}
-
-				logger.Error(fmt.Sprintf("falling behind with %d pending messages (%d bytes) on subject %q", count, bytes, s.Subject))
+				logger.Errorf("STREAMING.NATS.ERROR: %v | subject:%s behind: %d msgs / %d bytes", err, s.Subject, count, bytes)
+				return
 			}
+
+			logger.Errorf("STREAMING.NATS.ERROR: %v", err)
+
 		}),
 	}
 
