@@ -177,6 +177,7 @@ func (subscriber *NatsSubscriberPushing) consumer(ctx context.Context) (*nats.Co
 		DeliverGroup:   subscriber.conf.Push.DeliverGroup,
 		// general
 		Name:          subscriber.conf.Name,
+		Durable:       subscriber.conf.Name,
 		MaxDeliver:    subscriber.conf.MaxDeliver,
 		FilterSubject: subscriber.conf.FilterSubject,
 		AckWait:       time.Millisecond * time.Duration(subscriber.conf.Push.MaxAckWaitingDuration),
@@ -189,16 +190,7 @@ func (subscriber *NatsSubscriberPushing) consumer(ctx context.Context) (*nats.Co
 		AckPolicy:     nats.AckExplicitPolicy,
 	}
 
-	// do magic work to make create temporary consumer easier
-	if subscriber.conf.Push.Temporary {
-		// add temporary consumer
-		return subscriber.js.AddConsumer(subscriber.stream.Config.Name, conf, nats.Context(ctx))
-	}
-
-	// verify persistent consumer
-	conf.Durable = subscriber.conf.Name
 	consumer, err := subscriber.js.ConsumerInfo(subscriber.stream.Config.Name, subscriber.conf.Name, nats.Context(ctx))
-
 	if err == nil {
 		subscriber.js.UpdateConsumer(subscriber.stream.Config.Name, conf, nats.Context(ctx))
 		return consumer, nil

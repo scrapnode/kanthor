@@ -91,10 +91,6 @@ type SubscriberConfigPush struct {
 	// for instance, MaxRequestBatch=10 instances=5 -> each instance will receive 2 msgs -> total msgs were transfered is 10 msgs
 	MaxRequestBatch       int `json:"max_request_batch" yaml:"max_request_batch" mapstructure:"max_request_batch"`
 	MaxAckWaitingDuration int `json:"max_ack_wating_duration" yaml:"max_ack_wating_duration" mapstructure:"max_ack_wating_duration"`
-	// Temporary is a config to allow us to create a temporary consumer that will be deleted after disconnected
-	// this option is only available for Push-Based Model because Pull-Based Model requires consumer to be a durable one
-	// must set it to TRUE explicitly to avoid misconfiguration
-	Temporary bool `json:"temporary" yaml:"temporary" mapstructure:"temporary"`
 }
 
 func (conf *SubscriberConfigPush) Validate() error {
