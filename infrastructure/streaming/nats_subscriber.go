@@ -13,12 +13,12 @@ import (
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
-func NewNatsSubscriberPulling(conf *SubscriberConfig, logger logging.Logger) Subscriber {
+func NewNatsSubscriber(conf *SubscriberConfig, logger logging.Logger) Subscriber {
 	logger = logger.With("streaming.subscriber", "nats.pull")
-	return &NatsSubscriberPulling{conf: conf, logger: logger, status: patterns.StatusNone}
+	return &NatsSubscriber{conf: conf, logger: logger, status: patterns.StatusNone}
 }
 
-type NatsSubscriberPulling struct {
+type NatsSubscriber struct {
 	conf   *SubscriberConfig
 	logger logging.Logger
 	status int
@@ -30,7 +30,7 @@ type NatsSubscriberPulling struct {
 	subscription *nats.Subscription
 }
 
-func (subscriber *NatsSubscriberPulling) Readiness() (err error) {
+func (subscriber *NatsSubscriber) Readiness() (err error) {
 	if subscriber.js == nil {
 		return ErrNotConnected
 	}
@@ -39,7 +39,7 @@ func (subscriber *NatsSubscriberPulling) Readiness() (err error) {
 	return
 }
 
-func (subscriber *NatsSubscriberPulling) Liveness() (err error) {
+func (subscriber *NatsSubscriber) Liveness() (err error) {
 	if subscriber.js == nil {
 		return ErrNotConnected
 	}
@@ -61,7 +61,7 @@ func (subscriber *NatsSubscriberPulling) Liveness() (err error) {
 	return err
 }
 
-func (subscriber *NatsSubscriberPulling) Connect(ctx context.Context) error {
+func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
 
@@ -91,7 +91,7 @@ func (subscriber *NatsSubscriberPulling) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (subscriber *NatsSubscriberPulling) Disconnect(ctx context.Context) error {
+func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
 	subscriber.status = patterns.StatusInactive
@@ -120,7 +120,7 @@ func (subscriber *NatsSubscriberPulling) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHandler) error {
+func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) error {
 	consumer, err := subscriber.consumer(ctx)
 	if err != nil {
 		return err
@@ -130,12 +130,10 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 		"initialized consumer",
 		"consumer_name", consumer.Config.Name,
 		"consumer_created_at", consumer.Created.Format(time.RFC3339),
-		"consumer_temporary", consumer.Config.Durable == "",
 	)
 
 	subscriber.subscription, err = subscriber.js.PullSubscribe(
 		consumer.Config.FilterSubject,
-		// Not like Push-Based Model, Pull-Based Model requires consumer to be a durable one
 		consumer.Config.Name,
 		nats.Bind(subscriber.stream.Config.Name, consumer.Config.Name),
 	)
@@ -150,7 +148,7 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 				return
 			}
 
-			msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch)
+			msgs, err := subscriber.subscription.Fetch(subscriber.conf.MaxRequestBatch)
 			if err != nil {
 				// the subscription is no longer available because we closed it programmatically
 				if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusInactive {
@@ -203,31 +201,31 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 	}()
 
 	subscriber.logger.Infow("subscribed",
-		"max_waiting", subscriber.conf.Pull.MaxWaiting,
-		"max_ack_pending", subscriber.conf.Pull.MaxAckPending,
-		"max_request_batch", subscriber.conf.Pull.MaxRequestBatch,
+		"max_waiting", subscriber.conf.MaxWaiting,
+		"max_ack_pending", subscriber.conf.MaxAckPending,
+		"max_request_batch", subscriber.conf.MaxRequestBatch,
 	)
 	return nil
 }
 
-func (subscriber *NatsSubscriberPulling) consumer(ctx context.Context) (*nats.ConsumerInfo, error) {
-	// prepare configurations
+func (subscriber *NatsSubscriber) consumer(ctx context.Context) (*nats.ConsumerInfo, error) {
 	conf := &nats.ConsumerConfig{
-		// pull-specific
+		// common config
+		Name:          subscriber.conf.Name,
+		FilterSubject: subscriber.conf.FilterSubject,
+
+		// advance config
+		MaxDeliver: subscriber.conf.MaxRetry,
 		// if MaxWaiting is 1, and more than one sub.Fetch actions, we will get an error
-		MaxWaiting: subscriber.conf.Pull.MaxWaiting,
+		MaxWaiting: subscriber.conf.MaxWaiting,
 		// if MaxAckPending is 1, and we are processing 1 message already
 		// then we are going to request 2, we will only get 1
-		MaxAckPending: subscriber.conf.Pull.MaxAckPending,
+		MaxAckPending: subscriber.conf.MaxAckPending,
+		AckWait:       time.Millisecond * time.Duration(subscriber.conf.MaxAckWaitingDuration),
 		// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
-		MaxRequestBatch: subscriber.conf.Pull.MaxRequestBatch,
-		AckWait:         time.Millisecond * time.Duration(subscriber.conf.Pull.MaxAckWaitingDuration),
-		// general
-		Name:          subscriber.conf.Name,
-		MaxDeliver:    subscriber.conf.MaxDeliver,
-		FilterSubject: subscriber.conf.FilterSubject,
-		// @TODO: consider apply RateLimit
+		MaxRequestBatch: subscriber.conf.MaxRequestBatch,
 
+		// internal config
 		DeliverPolicy: nats.DeliverAllPolicy,
 		AckPolicy:     nats.AckExplicitPolicy,
 	}
