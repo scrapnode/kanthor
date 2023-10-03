@@ -144,7 +144,7 @@ dispatcher:
     push:
       deliver_subject: dispatch
       deliver_group: default
-      max_request_batch: 300
+      max_request_batch: 4000
       max_ack_wating_duration: 15000
       temporary: true
     name: dispatch_default_psuh
