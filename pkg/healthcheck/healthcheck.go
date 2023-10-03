@@ -33,7 +33,7 @@ func DefaultConfig(dest string) *Config {
 	return &Config{
 		Dest:      fmt.Sprintf("kanthor.%s", dest),
 		Readiness: CheckConfig{Timeout: 10000, MaxTry: 3},
-		Liveness:  CheckConfig{Timeout: 3000, MaxTry: 1},
+		Liveness:  CheckConfig{Timeout: 10000, MaxTry: 1},
 	}
 }
 

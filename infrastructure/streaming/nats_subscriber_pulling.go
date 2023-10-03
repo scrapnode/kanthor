@@ -143,64 +143,71 @@ func (subscriber *NatsSubscriberPulling) Sub(ctx context.Context, handler SubHan
 		return err
 	}
 
-	subscriber.logger.Infow("subscribed")
-
-	for {
-		if !subscriber.subscription.IsValid() {
-			subscriber.logger.Warnw("subscription is no more valid")
-			return nil
-		}
-
-		msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch)
-		if err != nil {
-			// the subscription is no longer available because we closed it programmatically
-			if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusInactive {
-				return nil
+	go func() {
+		for {
+			if !subscriber.subscription.IsValid() {
+				subscriber.logger.Warnw("subscription is no more valid")
+				return
 			}
 
-			if !errors.Is(err, nats.ErrTimeout) {
-				subscriber.logger.Errorw(err.Error(), "timeout", "10000ms")
-			}
-			continue
-		}
-		subscriber.logger.Debugw("got messages", "count", len(msgs))
+			msgs, err := subscriber.subscription.Fetch(subscriber.conf.Pull.MaxRequestBatch)
+			if err != nil {
+				// the subscription is no longer available because we closed it programmatically
+				if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusInactive {
+					return
+				}
 
-		maps := map[string]string{}
-		events := []*Event{}
-		for _, msg := range msgs {
-			event := natsMsgToEvent(msg)
-			if err := event.Validate(); err != nil {
-				subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
-				if err := msg.Nak(); err != nil {
-					// it's important to log entire event here because we can trace it in log
-					subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
+				if !errors.Is(err, nats.ErrTimeout) {
+					subscriber.logger.Errorw(err.Error(), "timeout", "10000ms")
 				}
 				continue
 			}
+			subscriber.logger.Debugw("got messages", "count", len(msgs))
 
-			maps[msg.Header.Get(MetaId)] = event.Id
-			events = append(events, event)
-		}
-
-		errs := handler(events)
-
-		for _, msg := range msgs {
-			eventId := maps[msg.Header.Get(MetaId)]
-
-			if err, ok := errs[eventId]; ok && err != nil {
-				if err := msg.Nak(); err != nil {
-					// it's important to log entire event here because we can trace it in log
-					subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
+			maps := map[string]string{}
+			events := []*Event{}
+			for _, msg := range msgs {
+				event := natsMsgToEvent(msg)
+				if err := event.Validate(); err != nil {
+					subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
+					if err := msg.Nak(); err != nil {
+						// it's important to log entire event here because we can trace it in log
+						subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
+					}
+					continue
 				}
-				continue
+
+				maps[msg.Header.Get(MetaId)] = event.Id
+				events = append(events, event)
 			}
 
-			if err := msg.Ack(); err != nil {
-				// it's important to log entire event here because we can trace it in log
-				subscriber.logger.Errorw(ErrSubAckFail.Error(), "nats_msg", utils.Stringify(msg))
+			errs := handler(events)
+
+			for _, msg := range msgs {
+				eventId := maps[msg.Header.Get(MetaId)]
+
+				if err, ok := errs[eventId]; ok && err != nil {
+					if err := msg.Nak(); err != nil {
+						// it's important to log entire event here because we can trace it in log
+						subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
+					}
+					continue
+				}
+
+				if err := msg.Ack(); err != nil {
+					// it's important to log entire event here because we can trace it in log
+					subscriber.logger.Errorw(ErrSubAckFail.Error(), "nats_msg", utils.Stringify(msg))
+				}
 			}
 		}
-	}
+	}()
+
+	subscriber.logger.Infow("subscribed",
+		"max_waiting", subscriber.conf.Pull.MaxWaiting,
+		"max_ack_pending", subscriber.conf.Pull.MaxAckPending,
+		"max_request_batch", subscriber.conf.Pull.MaxRequestBatch,
+	)
+	return nil
 }
 
 func (subscriber *NatsSubscriberPulling) consumer(ctx context.Context) (*nats.ConsumerInfo, error) {

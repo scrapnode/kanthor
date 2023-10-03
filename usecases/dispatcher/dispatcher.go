@@ -30,6 +30,8 @@ func New(
 	cb circuitbreaker.CircuitBreaker,
 	metrics metric.Metrics,
 ) Dispatcher {
+	logger = logger.With("usecase", "dispatcher")
+
 	return &dispatcher{
 		conf:      conf,
 		logger:    logger,

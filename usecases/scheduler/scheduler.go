@@ -30,6 +30,8 @@ func New(
 	metrics metric.Metrics,
 	repos repos.Repositories,
 ) Scheduler {
+	logger = logger.With("usecase", "scheduler")
+
 	return &scheduler{
 		conf:      conf,
 		logger:    logger,

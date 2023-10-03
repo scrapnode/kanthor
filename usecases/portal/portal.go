@@ -30,6 +30,8 @@ func New(
 	cache cache.Cache,
 	repos repos.Repositories,
 ) Portal {
+	logger = logger.With("usecase", "portal")
+
 	return &portal{
 		conf:         conf,
 		logger:       logger,

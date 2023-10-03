@@ -163,12 +163,9 @@ func (subscriber *NatsSubscriberPushing) Sub(ctx context.Context, handler SubHan
 	}
 
 	subscriber.logger.Infow("subscribed",
-		"subscription_push_delivery_subject", subscriber.conf.Push.DeliverSubject,
-		"subscription_push_delivery_group", subscriber.conf.Push.DeliverGroup,
+		"delivery_subject", subscriber.conf.Push.DeliverSubject,
+		"delivery_group", subscriber.conf.Push.DeliverGroup,
 	)
-
-	c := make(chan int)
-	<-c
 	return nil
 }
 

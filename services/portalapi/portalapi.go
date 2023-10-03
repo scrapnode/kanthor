@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"sync"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -58,11 +59,15 @@ type portalapi struct {
 	authz       authorizator.Authorizator
 	uc          usecase.Portal
 
+	mu       sync.Mutex
 	debugger debugging.Server
 	server   *http.Server
 }
 
 func (service *portalapi) Start(ctx context.Context) error {
+	service.mu.Lock()
+	defer service.mu.Unlock()
+
 	if err := service.debugger.Start(ctx); err != nil {
 		return err
 	}
@@ -129,6 +134,9 @@ func (service *portalapi) router() *gin.Engine {
 }
 
 func (service *portalapi) Stop(ctx context.Context) error {
+	service.mu.Lock()
+	defer service.mu.Unlock()
+
 	service.logger.Info("stopped")
 
 	if err := service.server.Shutdown(ctx); err != nil {

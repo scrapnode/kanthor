@@ -21,7 +21,7 @@ cache: &cache
 
 logger:
   pretty: true
-  level: info
+  level: debug
   with:
     environment: localhost
 

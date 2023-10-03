@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"sync"
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
@@ -46,19 +47,20 @@ type storage struct {
 	metrics    metric.Metrics
 	uc         usecase.Storage
 
+	mu          sync.Mutex
+	terminating chan bool
+
 	debugger    debugging.Server
 	healthcheck healthcheck.Server
 }
 
 func (service *storage) Start(ctx context.Context) error {
+	service.mu.Lock()
+	defer service.mu.Unlock()
+
 	if err := service.debugger.Start(ctx); err != nil {
 		return err
 	}
-
-	if err := service.healthcheck.Connect(ctx); err != nil {
-		return err
-	}
-
 	if err := service.metrics.Connect(ctx); err != nil {
 		return err
 	}
@@ -71,12 +73,23 @@ func (service *storage) Start(ctx context.Context) error {
 		return err
 	}
 
+	if err := service.healthcheck.Connect(ctx); err != nil {
+		return err
+	}
+
 	service.logger.Info("started")
 	return nil
 }
 
 func (service *storage) Stop(ctx context.Context) error {
+	service.mu.Lock()
+	defer service.mu.Unlock()
+
 	service.logger.Info("stopped")
+
+	if err := service.healthcheck.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+	}
 
 	if err := service.subscriber.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
@@ -90,10 +103,6 @@ func (service *storage) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
-	if err := service.healthcheck.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
-	}
-
 	if err := service.debugger.Stop(ctx); err != nil {
 		service.logger.Error(err)
 	}
@@ -102,12 +111,18 @@ func (service *storage) Stop(ctx context.Context) error {
 }
 
 func (service *storage) Run(ctx context.Context) error {
+	if err := service.subscriber.Sub(ctx, Consumer(service)); err != nil {
+		return err
+	}
+
 	if err := service.readiness(); err != nil {
 		return err
 	}
 
 	go func() {
 		err := service.healthcheck.Liveness(func() error {
+			service.logger.Debug("checking liveness")
+
 			if err := service.subscriber.Liveness(); err != nil {
 				return err
 			}
@@ -133,11 +148,14 @@ func (service *storage) Run(ctx context.Context) error {
 	}()
 
 	service.logger.Info("running")
-	return service.subscriber.Sub(ctx, Consumer(service))
+	<-service.terminating
+	return nil
 }
 
 func (service *storage) readiness() error {
 	return service.healthcheck.Readiness(func() error {
+		service.logger.Debug("checking readiness")
+
 		if err := service.subscriber.Readiness(); err != nil {
 			return err
 		}

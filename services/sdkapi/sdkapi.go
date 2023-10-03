@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"sync"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -55,11 +56,15 @@ type sdkapi struct {
 	authz       authorizator.Authorizator
 	uc          usecase.Sdk
 
+	mu       sync.Mutex
 	debugger debugging.Server
 	server   *http.Server
 }
 
 func (service *sdkapi) Start(ctx context.Context) error {
+	service.mu.Lock()
+	defer service.mu.Unlock()
+
 	if err := service.debugger.Start(ctx); err != nil {
 		return err
 	}
@@ -128,6 +133,9 @@ func (service *sdkapi) router() *gin.Engine {
 }
 
 func (service *sdkapi) Stop(ctx context.Context) error {
+	service.mu.Lock()
+	defer service.mu.Unlock()
+
 	service.logger.Info("stopped")
 
 	if err := service.server.Shutdown(ctx); err != nil {

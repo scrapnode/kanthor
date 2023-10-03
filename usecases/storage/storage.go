@@ -24,6 +24,8 @@ func New(
 	metrics metric.Metrics,
 	repos repos.Repositories,
 ) Storage {
+	logger = logger.With("usecase", "storage")
+
 	return &storage{
 		conf:    conf,
 		logger:  logger,

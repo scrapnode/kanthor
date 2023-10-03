@@ -17,15 +17,13 @@ func NewServer(conf *healthcheck.Config, logger logging.Logger) healthcheck.Serv
 	return &server{conf: conf, logger: logger, dest: path.Join(Dest, conf.Dest)}
 }
 
-var (
-	StatusStopped = -1
-)
+var ()
 
 type server struct {
-	conf   *healthcheck.Config
-	logger logging.Logger
-	dest   string
-	status int
+	conf       *healthcheck.Config
+	logger     logging.Logger
+	dest       string
+	terminated bool
 }
 
 func (server *server) Connect(ctx context.Context) error {
@@ -33,7 +31,7 @@ func (server *server) Connect(ctx context.Context) error {
 }
 
 func (server *server) Disconnect(ctx context.Context) error {
-	server.status = StatusStopped
+	server.terminated = true
 	return nil
 }
 
@@ -63,7 +61,7 @@ func (server *server) Liveness(check func() error) (err error) {
 	}()
 
 	for {
-		if server.status == StatusStopped {
+		if server.terminated {
 			return
 		}
 
@@ -86,6 +84,10 @@ func (server *server) check(conf *healthcheck.CheckConfig, check func() error) e
 
 	var err error
 	for i := 0; i < conf.MaxTry; i++ {
+		if server.terminated {
+			return nil
+		}
+
 		if err = check(); err == nil {
 			return nil
 		}

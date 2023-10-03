@@ -77,6 +77,7 @@ func (metric *otel) Connect(ctx context.Context) error {
 		),
 	)
 
+	metric.logger.Info("connected")
 	metric.provider = provider
 	return nil
 }
@@ -84,6 +85,8 @@ func (metric *otel) Connect(ctx context.Context) error {
 func (metric *otel) Disconnect(ctx context.Context) error {
 	metric.mu.Lock()
 	defer metric.mu.Unlock()
+
+	metric.logger.Info("disconnected")
 
 	if metric.provider != nil {
 		if err := metric.provider.Shutdown(ctx); err != nil {

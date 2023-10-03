@@ -34,6 +34,8 @@ func New(
 	publisher streaming.Publisher,
 	repos repos.Repositories,
 ) Sdk {
+	logger = logger.With("usecase", "sdk")
+
 	return &sdk{
 		conf:         conf,
 		logger:       logger,
