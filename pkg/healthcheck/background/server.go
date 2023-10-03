@@ -91,7 +91,7 @@ func (server *server) check(conf *healthcheck.CheckConfig, check func() error) e
 		}
 	}
 	<-ctx.Done()
-	return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR: %v", ctx.Err())
+	return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR: %v | timeout:%d max_try:%d", ctx.Err(), conf.Timeout, conf.MaxTry)
 }
 
 func (server *server) write(name string) error {
