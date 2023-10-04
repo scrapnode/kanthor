@@ -17,7 +17,6 @@ type SqlMessage struct {
 var MessageMapping = map[string]func(doc entities.Message) any{
 	"id":        func(doc entities.Message) any { return doc.Id },
 	"timestamp": func(doc entities.Message) any { return doc.Timestamp },
-	"bucket":    func(doc entities.Message) any { return doc.Bucket },
 	"tier":      func(doc entities.Message) any { return doc.Tier },
 	"app_id":    func(doc entities.Message) any { return doc.AppId },
 	"type":      func(doc entities.Message) any { return doc.Type },
@@ -27,8 +26,8 @@ var MessageMapping = map[string]func(doc entities.Message) any{
 }
 var MessageMappingCols = lo.Keys(MessageMapping)
 
-func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]entities.TSEntity, error) {
-	records := []entities.TSEntity{}
+func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]entities.Entity, error) {
+	records := []entities.Entity{}
 
 	if len(docs) == 0 {
 		return records, nil
@@ -37,9 +36,8 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]e
 	names := []string{}
 	values := map[string]interface{}{}
 	for k, doc := range docs {
-		record := entities.TSEntity{}
+		record := entities.Entity{}
 		record.Id = doc.Id
-		record.Bucket = doc.Bucket
 		record.Timestamp = doc.Timestamp
 		records = append(records, record)
 

@@ -2,7 +2,7 @@ package scheduler
 
 var (
 	HeaderIdempotencyKey = "idempotency-key"
-	HeaderMsgId          = "x-kanthor-msg-id"
+	HeaderMsg            = "x-kanthor-msg"
 	HeaderReqTs          = "x-kanthor-req-ts"
 	HeaderReqSig         = "x-kanthor-req-signatures"
 )

@@ -2,15 +2,10 @@ package entities
 
 import (
 	"encoding/json"
-
-	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
-// Requests are allocated based on bucket
-// For SQL: create a composite index for AppId+Type+Bucket, sort by ID (ksuid)
-// for Dynamo-style: partition by AppId+Type+Bucket, sort by ID (ksuid)
 type Request struct {
-	TSEntity
+	Entity
 	MsgId string `json:"msg_id"`
 	EpId  string `json:"ep_id"`
 
@@ -32,7 +27,7 @@ func (entity *Request) TableName() string {
 
 func (entity *Request) GenId() {
 	if entity.Id == "" {
-		entity.Id = utils.ID("req")
+		entity.Id = ReqId()
 	}
 }
 

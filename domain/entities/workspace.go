@@ -1,9 +1,5 @@
 package entities
 
-import (
-	"github.com/scrapnode/kanthor/pkg/utils"
-)
-
 type Workspace struct {
 	Entity
 	AuditTime
@@ -18,7 +14,7 @@ func (entity *Workspace) TableName() string {
 
 func (entity *Workspace) GenId() {
 	if entity.Id == "" {
-		entity.Id = utils.ID("ws")
+		entity.Id = WsId()
 	}
 }
 
@@ -36,7 +32,7 @@ func (entity *WorkspaceTier) TableName() string {
 
 func (entity *WorkspaceTier) GenId() {
 	if entity.Id == "" {
-		entity.Id = utils.ID("wst")
+		entity.Id = WstId()
 	}
 }
 
@@ -56,6 +52,6 @@ func (entity *WorkspaceCredentials) TableName() string {
 
 func (entity *WorkspaceCredentials) GenId() {
 	if entity.Id == "" {
-		entity.Id = utils.ID("wsc")
+		entity.Id = WscId()
 	}
 }

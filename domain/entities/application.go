@@ -1,7 +1,5 @@
 package entities
 
-import "github.com/scrapnode/kanthor/pkg/utils"
-
 type Application struct {
 	Entity
 	AuditTime
@@ -18,6 +16,6 @@ func (entity *Application) TableName() string {
 
 func (entity *Application) GenId() {
 	if entity.Id == "" {
-		entity.Id = utils.ID("app")
+		entity.Id = AppId()
 	}
 }

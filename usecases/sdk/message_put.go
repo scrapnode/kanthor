@@ -60,7 +60,7 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 	msg.Metadata.Merge(req.Metadata)
 
 	msg.GenId()
-	msg.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+	msg.SetTS(uc.timer.Now())
 
 	event, err := transformation.EventFromMessage(msg)
 	if err != nil {

@@ -3,8 +3,9 @@ package entities
 import "encoding/json"
 
 var (
-	MetaIdempotencyKey = "kanthor.idempotency_key"
-	MetaEprId          = "kanthor.epr.id"
+	MetaMsgIdempotencyKey = "kanthor.msg.idempotency_key"
+	MetaAttId             = "kanthor.att.id"
+	MetaEprId             = "kanthor.epr.id"
 )
 
 type Metadata map[string]string

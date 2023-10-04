@@ -29,7 +29,7 @@ func (entity *Endpoint) TableName() string {
 
 func (entity *Endpoint) GenId() {
 	if entity.Id == "" {
-		entity.Id = utils.ID("ep")
+		entity.Id = EpId()
 	}
 }
 
@@ -71,6 +71,6 @@ func (entity *EndpointRule) TableName() string {
 
 func (entity *EndpointRule) GenId() {
 	if entity.Id == "" {
-		entity.Id = utils.ID("epr")
+		entity.Id = EprId()
 	}
 }

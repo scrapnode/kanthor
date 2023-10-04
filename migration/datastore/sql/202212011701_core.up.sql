@@ -1,11 +1,12 @@
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS kanthor_message (
-    id VARCHAR(64) NOT NULL PRIMARY KEY,
-    timestamp BIGINT NOT NULL DEFAULT 0,
-    bucket VARCHAR(64) NOT NULL,
-    tier VARCHAR(64) NOT NULL,
     app_id VARCHAR(64) NOT NULL,
+    id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (app_id, id),
+
+    timestamp BIGINT NOT NULL DEFAULT 0,
+    tier VARCHAR(64) NOT NULL,
     type VARCHAR(256) NOT NULL,
     headers TEXT NOT NULL,
     body TEXT NOT NULL,
@@ -13,13 +14,14 @@ CREATE TABLE IF NOT EXISTS kanthor_message (
 );
 
 CREATE TABLE IF NOT EXISTS kanthor_request (
-    id VARCHAR(64) NOT NULL PRIMARY KEY,
-    timestamp BIGINT NOT NULL DEFAULT 0,
-    bucket VARCHAR(64) NOT NULL,
+    app_id VARCHAR(64) NOT NULL,
     msg_id VARCHAR(64) NOT NULL,
+    id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (app_id, msg_id, id),
+
+    timestamp BIGINT NOT NULL DEFAULT 0,
     ep_id VARCHAR(64) NOT NULL,
     tier VARCHAR(64) NOT NULL,
-    app_id VARCHAR(64) NOT NULL,
     type VARCHAR(256) NOT NULL,
     metadata TEXT NOT NULL,
     method VARCHAR(64) NOT NULL,
@@ -29,14 +31,15 @@ CREATE TABLE IF NOT EXISTS kanthor_request (
 );
 
 CREATE TABLE IF NOT EXISTS kanthor_response (
-    id VARCHAR(64) NOT NULL PRIMARY KEY,
-    timestamp BIGINT NOT NULL DEFAULT 0,
-    bucket VARCHAR(64) NOT NULL,
+    app_id VARCHAR(64) NOT NULL,
     msg_id VARCHAR(64) NOT NULL,
+    id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (app_id, msg_id, id),
+    
+    timestamp BIGINT NOT NULL DEFAULT 0,
     ep_id VARCHAR(64) NOT NULL,
     req_id VARCHAR(64) NOT NULL,
     tier VARCHAR(64) NOT NULL,
-    app_id VARCHAR(64) NOT NULL,
     type VARCHAR(256) NOT NULL,
     metadata TEXT NOT NULL,
     status INT NOT NULL,
@@ -46,4 +49,15 @@ CREATE TABLE IF NOT EXISTS kanthor_response (
     error TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS kanthor_attempt (
+    req_id VARCHAR(64) NOT NULL,
+    id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (req_id, id),
+
+    res_id VARCHAR(64) NOT NULL,
+    tier VARCHAR(64) NOT NULL,
+    status INT NOT NULL,
+    scheduled_at BIGINT NOT NULL DEFAULT 0,
+    completed_at BIGINT NOT NULL DEFAULT 0
+)
 COMMIT;

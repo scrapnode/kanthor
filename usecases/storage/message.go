@@ -19,7 +19,7 @@ type MessagePutReq struct {
 }
 
 type MessagePutRes struct {
-	Entities []entities.TSEntity
+	Entities []entities.Entity
 }
 
 type message struct {

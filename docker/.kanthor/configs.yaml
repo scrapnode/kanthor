@@ -120,9 +120,6 @@ scheduler:
     max_ack_pending: 100000
     max_ack_wating_duration: 15000
     max_request_batch: 1000
-  request:
-    arrange:
-      concurrency: 100
   metrics:
     engine: otel
     otel:

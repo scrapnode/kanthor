@@ -62,7 +62,7 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			Type:     req.Type,
 			Body:     body,
 			Headers:  headers,
-			Metadata: entities.Metadata{entities.MetaIdempotencyKey: ginctx.GetHeader(ginmw.HeaderIdempotencyKey)},
+			Metadata: entities.Metadata{entities.MetaMsgIdempotencyKey: ginctx.GetHeader(ginmw.HeaderIdempotencyKey)},
 		}
 
 		if err := ucreq.Validate(); err != nil {

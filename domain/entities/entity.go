@@ -5,7 +5,14 @@ import (
 )
 
 type Entity struct {
-	Id string `json:"id"`
+	Id        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
+}
+
+func (e *Entity) SetTS(now time.Time) {
+	if e.Timestamp == 0 {
+		e.Timestamp = now.UnixMilli()
+	}
 }
 
 type AuditTime struct {
@@ -21,21 +28,4 @@ func (at *AuditTime) SetAT(now time.Time) {
 		at.CreatedAt = now.UnixMilli()
 	}
 	at.UpdatedAt = now.UnixMilli()
-}
-
-type TimeSeries struct {
-	Timestamp int64  `json:"timestamp"`
-	Bucket    string `json:"bucket"`
-}
-
-func (ts *TimeSeries) SetTS(now time.Time, layout string) {
-	if ts.Timestamp == 0 {
-		ts.Timestamp = now.UnixMilli()
-	}
-	ts.Bucket = now.Format(layout)
-}
-
-type TSEntity struct {
-	Entity
-	TimeSeries
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
-	"github.com/sourcegraph/conc/pool"
+	"github.com/sourcegraph/conc"
 )
 
 type RequestArrangeReq struct {
@@ -104,11 +104,11 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 		return res, nil
 	}
 
-	p := pool.New().WithMaxGoroutines(uc.conf.Scheduler.Request.Arrange.Concurrency)
+	var wg conc.WaitGroup
 	for _, entity := range requests {
 		r := entity
-		p.Go(func() {
-			key := utils.Key(req.Message.AppId, r.Id)
+		wg.Go(func() {
+			key := utils.Key(req.Message.AppId, req.Message.Id, r.Id)
 
 			event, err := transformation.EventFromRequest(&r)
 			if err == nil {
@@ -124,7 +124,7 @@ func (uc *request) Arrange(ctx context.Context, req *RequestArrangeReq) (*Reques
 			}
 		})
 	}
-	p.Wait()
+	wg.Wait()
 
 	return res, nil
 }
@@ -192,17 +192,18 @@ func (uc *request) generateRequestsFromEndpoints(
 		req.Headers.Merge(msg.Headers)
 		req.Metadata.Merge(msg.Metadata)
 		req.GenId()
-		req.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+		req.SetTS(uc.timer.Now())
 
-		req.Headers.Set(HeaderIdempotencyKey, req.MsgId)
-		req.Headers.Set(HeaderMsgId, msg.Id)
+		req.Metadata.Set(entities.MetaAttId, entities.AttId())
+		req.Metadata.Set(entities.MetaEprId, epr.Id)
+
+		req.Headers.Set(HeaderIdempotencyKey, req.Id)
+		req.Headers.Set(HeaderMsg, fmt.Sprintf("%s/%s", msg.AppId, msg.Id))
 		req.Headers.Set(HeaderReqTs, fmt.Sprintf("%d", req.Timestamp))
 
 		sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, string(msg.Body))
 		signed := uc.signature.Sign(sign, ep.SecretKey)
 		req.Headers.Set(HeaderReqSig, fmt.Sprintf("v1=%s", signed))
-
-		req.Metadata.Set(entities.MetaEprId, epr.Id)
 
 		requests = append(requests, req)
 	}

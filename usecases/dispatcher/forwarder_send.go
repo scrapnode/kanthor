@@ -104,7 +104,7 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 	// must use merge function otherwise you will edit the original data
 	res.Metadata.Merge(req.Request.Metadata)
 	res.GenId()
-	res.SetTS(uc.timer.Now(), uc.conf.Bucket.Layout)
+	res.SetTS(uc.timer.Now())
 
 	// IMPORTANT: we have an anti-pattern case that returns both error && response to trigger circuit breaker
 	// so we should test both error and response seperately

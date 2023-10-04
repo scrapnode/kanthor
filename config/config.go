@@ -21,7 +21,6 @@ func New(provider configuration.Provider) (*Config, error) {
 
 type Config struct {
 	Version      string
-	Bucket       Bucket              `json:"bucket" yaml:"bucket" mapstructure:"bucket"`
 	Cryptography cryptography.Config `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography"`
 
 	Logger      logging.Config     `json:"logger" yaml:"logger" mapstructure:"logger"`
@@ -43,9 +42,6 @@ func (conf *Config) Validate(service string) error {
 		return err
 	}
 
-	if err := conf.Bucket.Validate(); err != nil {
-		return fmt.Errorf("config.bucket: %v", err)
-	}
 	if err := conf.Cryptography.Validate(); err != nil {
 		return fmt.Errorf("config.cryptography: %v", err)
 	}
@@ -96,15 +92,4 @@ func (conf *Config) Validate(service string) error {
 	}
 
 	return nil
-}
-
-type Bucket struct {
-	Layout string `json:"layout" yaml:"layout" mapstructure:"layout"`
-}
-
-func (conf *Bucket) Validate() error {
-	return validator.Validate(
-		validator.DefaultConfig,
-		validator.StringRequired("config.bucket.layout", conf.Layout),
-	)
 }

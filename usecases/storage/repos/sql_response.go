@@ -17,7 +17,6 @@ type SqlResponse struct {
 var ResponseMapping = map[string]func(doc entities.Response) any{
 	"id":        func(doc entities.Response) any { return doc.Id },
 	"timestamp": func(doc entities.Response) any { return doc.Timestamp },
-	"bucket":    func(doc entities.Response) any { return doc.Bucket },
 	"msg_id":    func(doc entities.Response) any { return doc.MsgId },
 	"ep_id":     func(doc entities.Response) any { return doc.EpId },
 	"req_id":    func(doc entities.Response) any { return doc.ReqId },
@@ -33,8 +32,8 @@ var ResponseMapping = map[string]func(doc entities.Response) any{
 }
 var ResponseMappingCols = lo.Keys(ResponseMapping)
 
-func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([]entities.TSEntity, error) {
-	records := []entities.TSEntity{}
+func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([]entities.Entity, error) {
+	records := []entities.Entity{}
 
 	if len(docs) == 0 {
 		return records, nil
@@ -43,9 +42,8 @@ func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([
 	names := []string{}
 	values := map[string]interface{}{}
 	for k, doc := range docs {
-		record := entities.TSEntity{}
+		record := entities.Entity{}
 		record.Id = doc.Id
-		record.Bucket = doc.Bucket
 		record.Timestamp = doc.Timestamp
 		records = append(records, record)
 

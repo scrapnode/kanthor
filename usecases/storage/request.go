@@ -19,7 +19,7 @@ type RequestPutReq struct {
 }
 
 type RequestPutRes struct {
-	Entities []entities.TSEntity
+	Entities []entities.Entity
 }
 
 type request struct {
