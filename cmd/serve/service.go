@@ -2,6 +2,7 @@ package serve
 
 import (
 	"fmt"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
@@ -9,19 +10,19 @@ import (
 )
 
 func Service(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
-	if name == services.PORTAL_API {
+	if name == config.SERVICE_PORTAL_API {
 		return ioc.InitializePortalApi(conf, logger)
 	}
-	if name == services.SDK_API {
+	if name == config.SERVICE_SDK_API {
 		return ioc.InitializeSdkApi(conf, logger)
 	}
-	if name == services.SCHEDULER {
+	if name == config.SERVICE_SCHEDULER {
 		return ioc.InitializeScheduler(conf, logger)
 	}
-	if name == services.DISPATCHER {
+	if name == config.SERVICE_DISPATCHER {
 		return ioc.InitializeDispatcher(conf, logger)
 	}
-	if name == services.STORAGE {
+	if name == config.SERVICE_STORAGE {
 		return ioc.InitializeStorage(conf, logger)
 	}
 

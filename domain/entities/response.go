@@ -39,3 +39,11 @@ func (entity *Response) Marshal() ([]byte, error) {
 func (entity *Response) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, entity)
 }
+
+func Is5xx(status int) bool {
+	return int(status/100) == 5
+}
+
+func Is2xx(status int) bool {
+	return int(status/100) == 2
+}

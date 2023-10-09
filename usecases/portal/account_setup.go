@@ -21,8 +21,7 @@ func (req *AccountSetupReq) Validate() error {
 }
 
 type AccountSetupRes struct {
-	Workspace     *entities.Workspace
-	WorkspaceTier *entities.WorkspaceTier
+	Workspace *entities.Workspace
 }
 
 func (uc *account) Setup(ctx context.Context, req *AccountSetupReq) (*AccountSetupRes, error) {
@@ -42,22 +41,7 @@ func (uc *account) Setup(ctx context.Context, req *AccountSetupReq) (*AccountSet
 			}
 		}
 
-		tier, err := uc.repos.WorkspaceTier().Get(ctx, ws.Id)
-		if err != nil {
-			is404 := errors.Is(err, database.ErrRecordNotFound)
-			if !is404 {
-				return nil, err
-			}
-
-			tier = &entities.WorkspaceTier{WorkspaceId: ws.Id, Name: entities.DefaultTier}
-			tier.GenId()
-			tier.SetAT(uc.timer.Now())
-			if _, err := uc.repos.WorkspaceTier().Create(ctx, tier); err != nil {
-				return nil, err
-			}
-		}
-
-		return &AccountSetupRes{Workspace: ws, WorkspaceTier: tier}, nil
+		return &AccountSetupRes{Workspace: ws}, nil
 	})
 
 	if err != nil {

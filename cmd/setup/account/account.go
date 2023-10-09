@@ -73,7 +73,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 			out.AddJson("id", account.Workspace.Id)
-			out.AddJson("tier", account.WorkspaceTier.Name)
+			out.AddJson("tier", account.Workspace.Tier)
 
 			if err := apps(uc, ctx, account.Workspace, file, out); err != nil {
 				return err

@@ -21,11 +21,10 @@ type sql struct {
 	logger logging.Logger
 	db     database.Database
 
-	mu           sync.RWMutex
-	client       *gorm.DB
-	application  *SqlApplication
-	endpoint     *SqlEndpoint
-	endpointRule *SqlEndpointRule
+	mu          sync.RWMutex
+	client      *gorm.DB
+	application *SqlApplication
+	endpoint    *SqlEndpoint
 }
 
 func (repo *sql) Readiness() error {
@@ -90,15 +89,4 @@ func (repo *sql) Endpoint() Endpoint {
 	}
 
 	return repo.endpoint
-}
-
-func (repo *sql) EndpointRule() EndpointRule {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.endpointRule == nil {
-		repo.endpointRule = &SqlEndpointRule{client: repo.client}
-	}
-
-	return repo.endpointRule
 }

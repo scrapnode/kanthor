@@ -46,7 +46,6 @@ func UseAuthz(authz authorizator.Authorizator, uc portaluc.Portal) gin.HandlerFu
 		}
 
 		ctx = context.WithValue(ctx, authorizator.CtxWs, res.Workspace)
-		ctx = context.WithValue(ctx, authorizator.CtxWst, res.WorkspaceTier)
 		ginctx.Set(gateway.KeyCtx, ctx)
 		ginctx.Next()
 	}

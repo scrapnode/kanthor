@@ -11,9 +11,9 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/scrapnode/kanthor/services"
 )
 
+// @TODO: mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Config
 	return &conf, provider.Unmarshal(&conf)
@@ -34,6 +34,7 @@ type Config struct {
 	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
 	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
 	Storage    Storage    `json:"storage" yaml:"storage" mapstructure:"storage"`
+	Attempt    Attempt    `json:"attempt" yaml:"attempt" mapstructure:"attempt"`
 }
 
 func (conf *Config) Validate(service string) error {
@@ -61,32 +62,37 @@ func (conf *Config) Validate(service string) error {
 		return fmt.Errorf("config.coordinator: %v", err)
 	}
 
-	if !services.Valid(service) {
+	if !IsValidServiceName(service) {
 		return fmt.Errorf("config: unknown service [%s]", service)
 	}
 
-	if service == services.ALL || service == services.SDK_API {
+	if service == SERVICE_ALL || service == SERVICE_SDK_API {
 		if err := conf.SdkApi.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.ALL || service == services.PORTAL_API {
+	if service == SERVICE_ALL || service == SERVICE_PORTAL_API {
 		if err := conf.PortalApi.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.ALL || service == services.SCHEDULER {
+	if service == SERVICE_ALL || service == SERVICE_SCHEDULER {
 		if err := conf.Scheduler.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.ALL || service == services.DISPATCHER {
+	if service == SERVICE_ALL || service == SERVICE_DISPATCHER {
 		if err := conf.Dispatcher.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.ALL || service == services.STORAGE {
+	if service == SERVICE_ALL || service == SERVICE_STORAGE {
 		if err := conf.Storage.Validate(); err != nil {
+			return err
+		}
+	}
+	if service == SERVICE_ALL || service == SERVICE_ATTEMPT {
+		if err := conf.Attempt.Validate(); err != nil {
 			return err
 		}
 	}

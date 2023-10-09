@@ -43,11 +43,11 @@ func (req *ForwarderSendReqRequest) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 
-		validator.StringStartsWith("request.id", req.Id, "req_"),
-		validator.StringStartsWith("request.msg_id", req.MsgId, "msg_"),
-		validator.StringStartsWith("request.ep_id", req.EpId, "ep_"),
+		validator.StringStartsWith("request.id", req.Id, entities.IdNsReq),
+		validator.StringStartsWith("request.msg_id", req.MsgId, entities.IdNsMsg),
+		validator.StringStartsWith("request.ep_id", req.EpId, entities.IdNsEp),
 		validator.StringRequired("request.tier", req.Tier),
-		validator.StringStartsWith("request.app_id", req.AppId, "app_"),
+		validator.StringStartsWith("request.app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("request.type", req.Type),
 		validator.MapNotNil[string, string]("request.metadata", req.Metadata),
 		validator.SliceRequired("request.body", req.Body),
@@ -80,7 +80,7 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 
 			// sending is success, but we got remote server error
 			// must use custom error here to trigger circuit breaker
-			if res.IsServerError() {
+			if entities.Is5xx(res.Status) {
 				return res, errors.New(http.StatusText(res.Status))
 			}
 

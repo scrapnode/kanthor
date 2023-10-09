@@ -17,7 +17,7 @@ type EndpointListReq struct {
 func (req *EndpointListReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("app_id", req.AppId, "app_"),
+		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.PointerNotNil("list", req.ListReq),
 	)
 }

@@ -17,8 +17,8 @@ type EndpointRuleUpdateReq struct {
 func (req *EndpointRuleUpdateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ep_id", req.EpId, "ep_"),
-		validator.StringStartsWith("id", req.EpId, "epr_"),
+		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
+		validator.StringStartsWith("id", req.EpId, entities.IdNsEpr),
 		validator.StringRequired("name", req.Name),
 	)
 }

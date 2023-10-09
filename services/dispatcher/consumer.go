@@ -10,7 +10,7 @@ import (
 	"github.com/sourcegraph/conc"
 )
 
-func Consumer(service *dispatcher) streaming.SubHandler {
+func NewConsumer(service *dispatcher) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events []*streaming.Event) map[string]error {

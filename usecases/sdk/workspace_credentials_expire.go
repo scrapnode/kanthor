@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -15,7 +16,7 @@ type WorkspaceCredentialsExpireReq struct {
 func (req *WorkspaceCredentialsExpireReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("user", req.User, "wsc_"),
+		validator.StringStartsWith("user", req.User, entities.IdNsWsc),
 		validator.NumberGreaterThan("expired_at", req.ExpiredAt, 0),
 	)
 }

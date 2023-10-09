@@ -24,7 +24,6 @@ type sql struct {
 	mu                   sync.RWMutex
 	client               *gorm.DB
 	workspace            *SqlWorkspace
-	workspaceTier        *SqlWorkspaceTier
 	workspaceCredentials *SqlWorkspaceCredentials
 	application          *SqlApplication
 	endpoint             *SqlEndpoint
@@ -90,17 +89,6 @@ func (repo *sql) Workspace() Workspace {
 	}
 
 	return repo.workspace
-}
-
-func (repo *sql) WorkspaceTier() WorkspaceTier {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.workspaceTier == nil {
-		repo.workspaceTier = &SqlWorkspaceTier{client: repo.client}
-	}
-
-	return repo.workspaceTier
 }
 
 func (repo *sql) WorkspaceCredentials() WorkspaceCredentials {

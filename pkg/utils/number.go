@@ -13,3 +13,10 @@ func MinInt(x, y int) int {
 	}
 	return x
 }
+
+func AbsInt(x int) int {
+	if x > 0 {
+		return x
+	}
+	return -x
+}

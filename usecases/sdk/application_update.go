@@ -16,7 +16,7 @@ type ApplicationUpdateReq struct {
 func (req *ApplicationUpdateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("id", req.Id, "app_"),
+		validator.StringStartsWith("id", req.Id, entities.IdNsApp),
 		validator.StringRequired("name", req.Name),
 	)
 }

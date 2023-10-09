@@ -43,6 +43,14 @@ func (cache *noop) Set(ctx context.Context, key string, entry []byte, ttl time.D
 	return nil
 }
 
+func (cache *noop) StringGet(ctx context.Context, key string) (string, error) {
+	return "", nil
+}
+
+func (cache *noop) StringSet(ctx context.Context, key string, entry string, ttl time.Duration) error {
+	return nil
+}
+
 func (cache *noop) Exist(ctx context.Context, key string) bool {
 	return false
 }

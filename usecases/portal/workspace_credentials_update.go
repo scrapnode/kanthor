@@ -17,8 +17,8 @@ type WorkspaceCredentialsUpdateReq struct {
 func (req *WorkspaceCredentialsUpdateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, "ws_"),
-		validator.StringStartsWith("id", req.Id, "wsc_"),
+		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("id", req.Id, entities.IdNsWsc),
 		validator.StringRequired("name", req.Name),
 	)
 }

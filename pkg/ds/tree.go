@@ -1,4 +1,4 @@
-package structure
+package ds
 
 type Node[T any] struct {
 	Value    T

@@ -23,10 +23,10 @@ func (req *WorkspaceSetupReq) Validate() error {
 			prefix := fmt.Sprintf("req.applications[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringStartsWith(prefix+".id", item.Id, "app_"),
+				validator.StringStartsWith(prefix+".id", item.Id, entities.IdNsApp),
 				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
 				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
-				validator.StringStartsWith(prefix+".workspace_id", item.WorkspaceId, "ws_"),
+				validator.StringStartsWith(prefix+".workspace_id", item.WsId, entities.IdNsWs),
 				validator.StringRequired(prefix+".name", item.Name),
 			)
 		}),
@@ -34,10 +34,10 @@ func (req *WorkspaceSetupReq) Validate() error {
 			prefix := fmt.Sprintf("req.endpoints[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringStartsWith(prefix+".id", item.Id, "ep_"),
+				validator.StringStartsWith(prefix+".id", item.Id, entities.IdNsEp),
 				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
 				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
-				validator.StringStartsWith(prefix+".app_id", item.AppId, "app_"),
+				validator.StringStartsWith(prefix+".app_id", item.AppId, entities.IdNsApp),
 				validator.StringRequired(prefix+".name", item.Name),
 				validator.StringRequired(prefix+".secret_key", item.SecretKey),
 				validator.StringRequired(prefix+".method", item.Method),
@@ -48,10 +48,10 @@ func (req *WorkspaceSetupReq) Validate() error {
 			prefix := fmt.Sprintf("req.endpoint_rules[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringStartsWith(prefix+".id", item.Id, "epr_"),
+				validator.StringStartsWith(prefix+".id", item.Id, entities.IdNsEpr),
 				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
 				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
-				validator.StringStartsWith(prefix+".endpoint_id", item.EndpointId, "ep_"),
+				validator.StringStartsWith(prefix+".endpoint_id", item.EpId, entities.IdNsEp),
 				validator.StringRequired(prefix+".name", item.Name),
 				validator.NumberGreaterThanOrEqual(prefix+".priority", item.Priority, 0),
 				validator.StringRequired(prefix+".condition_source", item.ConditionSource),

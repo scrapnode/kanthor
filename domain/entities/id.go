@@ -1,43 +1,59 @@
 package entities
 
-import "github.com/scrapnode/kanthor/pkg/utils"
+import (
+	"fmt"
+
+	"github.com/scrapnode/kanthor/pkg/suid"
+)
+
+var (
+	IdNsWs  = "ws"
+	IdNsWst = "wst"
+	IdNsWsc = "wsc"
+	IdNsApp = "app"
+	IdNsEp  = "ep"
+	IdNsEpr = "epr"
+	IdNsMsg = "msg"
+	IdNsReq = "req"
+	IdNsRes = "res"
+)
+
+func Id(ns, id string) string {
+	return fmt.Sprintf("%s_%s", ns, id)
+}
 
 func WsId() string {
-	return utils.ID("ws")
+	return suid.New(IdNsWs)
 }
 
 func WstId() string {
-	return utils.ID("wst")
+	return suid.New(IdNsWst)
 }
 
 func WscId() string {
-	return utils.ID("wsc")
+	return suid.New(IdNsWsc)
 }
 
 func AppId() string {
-	return utils.ID("app")
+	return suid.New(IdNsApp)
 }
 
 func EpId() string {
-	return utils.ID("ep")
+	return suid.New(IdNsEp)
 }
 
 func EprId() string {
-	return utils.ID("epr")
+	return suid.New(IdNsEpr)
 }
 
 func MsgId() string {
-	return utils.ID("msg")
+	return suid.New(IdNsMsg)
 }
 
 func ReqId() string {
-	return utils.ID("req")
+	return suid.New(IdNsReq)
 }
 
 func ResId() string {
-	return utils.ID("res")
-}
-
-func AttId() string {
-	return utils.ID("att")
+	return suid.New(IdNsRes)
 }

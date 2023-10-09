@@ -9,7 +9,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
-	"github.com/scrapnode/kanthor/infrastructure/signature"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
@@ -34,7 +33,6 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metr
 	wire.Build(
 		scheduleruc.New,
 		timer.New,
-		signature.New,
 		ResolveSchedulerPublisherConfig,
 		streaming.NewPublisher,
 		ResolveSchedulerCacheConfig,

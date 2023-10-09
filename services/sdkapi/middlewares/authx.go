@@ -22,10 +22,9 @@ var (
 )
 
 type PortalAuth struct {
-	Error         string                  `json:"error"`
-	Account       *authenticator.Account  `json:"account"`
-	Workspace     *entities.Workspace     `json:"workspace"`
-	WorkspaceTier *entities.WorkspaceTier `json:"workspace_tier"`
+	Error     string                 `json:"error"`
+	Account   *authenticator.Account `json:"account"`
+	Workspace *entities.Workspace    `json:"workspace"`
 }
 
 func UseAuthx(
@@ -80,11 +79,6 @@ func UseAuthx(
 				return
 			}
 			ctx = context.WithValue(ctx, authorizator.CtxWs, auth.Workspace)
-			if auth.WorkspaceTier == nil {
-				ginctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "no workspace tier"})
-				return
-			}
-			ctx = context.WithValue(ctx, authorizator.CtxWst, auth.WorkspaceTier)
 
 			ginctx.Set(gateway.KeyCtx, ctx)
 			ginctx.Next()
@@ -142,6 +136,5 @@ func sdkauth(
 	acc := &authenticator.Account{Sub: user, Name: res.WorkspaceCredentials.Name}
 	ctx = context.WithValue(ctx, authenticator.CtxAcc, acc)
 	ctx = context.WithValue(ctx, authorizator.CtxWs, res.Workspace)
-	ctx = context.WithValue(ctx, authorizator.CtxWst, res.WorkspaceTier)
 	return ctx, nil
 }

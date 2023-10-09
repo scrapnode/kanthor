@@ -19,7 +19,7 @@ type WorkspaceCredentialsGenerateReq struct {
 func (req *WorkspaceCredentialsGenerateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, "ws_"),
+		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringRequired("name", req.Name),
 		validator.NumberGreaterThanOrEqual[int64]("expired_at", req.ExpiredAt, 0),
 	)

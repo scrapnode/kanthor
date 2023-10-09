@@ -23,7 +23,7 @@ type MessagePutReq struct {
 func (req *MessagePutReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("app_id", req.AppId, "app_"),
+		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("type", req.Type),
 		validator.SliceRequired("body", req.Body),
 	)
@@ -46,9 +46,8 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 		return nil, err
 	}
 
-	wst := ctx.Value(authorizator.CtxWst).(*entities.WorkspaceTier)
 	msg := &entities.Message{
-		Tier:     wst.Name,
+		Tier:     ws.Tier,
 		AppId:    app.Id,
 		Type:     req.Type,
 		Body:     req.Body,

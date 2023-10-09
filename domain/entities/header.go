@@ -5,6 +5,13 @@ import (
 	"net/http"
 )
 
+var (
+	HeaderIdempotencyKey = "idempotency-key"
+	HeaderMsgRef         = "x-kanthor-msg-ref"
+	HeaderReqTs          = "x-kanthor-req-ts"
+	HeaderReqSig         = "x-kanthor-req-signatures"
+)
+
 func NewHeader() Header {
 	return Header{Header: http.Header{}}
 }

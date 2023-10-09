@@ -2,14 +2,10 @@ package utils
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
-	"github.com/segmentio/ksuid"
 	"strings"
-)
 
-func ID(ns string) string {
-	return strings.Join([]string{ns, ksuid.New().String()}, "_")
-}
+	"github.com/google/uuid"
+)
 
 func Key(values ...string) string {
 	return strings.Join(values, "/")

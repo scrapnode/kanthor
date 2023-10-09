@@ -15,7 +15,7 @@ import (
 	"github.com/sourcegraph/conc"
 )
 
-func Consumer(service *storage) streaming.SubHandler {
+func NewConsumer(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events []*streaming.Event) map[string]error {
@@ -163,10 +163,10 @@ func eventToMessage(i int, event *streaming.Event) (*entities.Message, error) {
 	prefix := fmt.Sprintf("events(message).[%d]", i)
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith(prefix+".id", msg.Id, "msg_"),
+		validator.StringStartsWith(prefix+".id", msg.Id, entities.IdNsMsg),
 		validator.NumberGreaterThan(prefix+".timestamp", msg.Timestamp, 0),
 		validator.StringRequired(prefix+".tier", msg.Tier),
-		validator.StringStartsWith(prefix+".app_id", msg.AppId, "app_"),
+		validator.StringStartsWith(prefix+".app_id", msg.AppId, entities.IdNsApp),
 		validator.StringRequired(prefix+".type", msg.Type),
 		validator.SliceRequired(prefix+".body", msg.Body),
 	)
@@ -186,12 +186,12 @@ func eventToRequest(i int, event *streaming.Event) (*entities.Request, error) {
 	prefix := fmt.Sprintf("events(request).[%d]", i)
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith(prefix+".id", req.Id, "req_"),
+		validator.StringStartsWith(prefix+".id", req.Id, entities.IdNsReq),
 		validator.NumberGreaterThan(prefix+".timestamp", req.Timestamp, 0),
-		validator.StringStartsWith(prefix+".msg_id", req.MsgId, "msg_"),
-		validator.StringStartsWith(prefix+".ep_id", req.EpId, "ep_"),
+		validator.StringStartsWith(prefix+".msg_id", req.MsgId, entities.IdNsMsg),
+		validator.StringStartsWith(prefix+".ep_id", req.EpId, entities.IdNsEp),
 		validator.StringRequired(prefix+".tier", req.Tier),
-		validator.StringStartsWith(prefix+".app_id", req.AppId, "app_"),
+		validator.StringStartsWith(prefix+".app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired(prefix+".type", req.Type),
 		validator.SliceRequired(prefix+".body", req.Body),
 		validator.StringRequired(prefix+".uri", req.Uri),
@@ -213,13 +213,13 @@ func eventToResponse(i int, event *streaming.Event) (*entities.Response, error) 
 	prefix := fmt.Sprintf("events(response).[%d]", i)
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith(prefix+".id", res.Id, "res_"),
+		validator.StringStartsWith(prefix+".id", res.Id, entities.IdNsRes),
 		validator.NumberGreaterThan(prefix+".timestamp", res.Timestamp, 0),
-		validator.StringStartsWith(prefix+".msg_id", res.MsgId, "msg_"),
-		validator.StringStartsWith(prefix+".ep_id", res.EpId, "ep_"),
-		validator.StringStartsWith(prefix+".req_id", res.ReqId, "req_"),
+		validator.StringStartsWith(prefix+".msg_id", res.MsgId, entities.IdNsMsg),
+		validator.StringStartsWith(prefix+".ep_id", res.EpId, entities.IdNsEp),
+		validator.StringStartsWith(prefix+".req_id", res.ReqId, entities.IdNsReq),
 		validator.StringRequired(prefix+".tier", res.Tier),
-		validator.StringStartsWith(prefix+".app_id", res.AppId, "app_"),
+		validator.StringStartsWith(prefix+".app_id", res.AppId, entities.IdNsApp),
 		validator.StringRequired(prefix+".type", res.Type),
 	)
 	if err != nil {

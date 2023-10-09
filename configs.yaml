@@ -110,7 +110,7 @@ scheduler:
     connection: *streaming
   subscriber:
     connection: *streaming
-    name: schedule
+    name: scheduler
     filter_subject: kanthor.default.msg.>
     max_retry: 3
     max_waiting: 100
@@ -125,6 +125,9 @@ scheduler:
       interval: 15000
       labels:
         env: local
+  request:
+    schedule:
+      concurrency: 300
 
 dispatcher:
   cache: *cache
@@ -180,3 +183,32 @@ storage:
       interval: 15000
       labels:
         env: local
+
+attempt:
+  cache: *cache
+  publisher:
+    connection: *streaming
+  dlocker:
+    uri: redis://127.0.0.1:6379/0
+  metrics:
+    engine: otel
+    otel:
+      endpoint: localhost:4317
+      service: scheduler
+      interval: 15000
+      labels:
+        env: local
+  trigger:
+    cron:
+      lock_duration: 900
+      scan_size: 10000
+      publish_size: 300
+    consumer:
+      lock_duration: 900
+      scan_from: -10800
+      scan_to: -1800
+    schedule:
+      concurrency: 300
+    create:
+      concurrency: 300
+      schedule_delay: 900

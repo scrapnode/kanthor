@@ -6,6 +6,7 @@ type Workspace struct {
 
 	OwnerId string `json:"owner_id"`
 	Name    string `json:"name"`
+	Tier    string `json:"tier"`
 }
 
 func (entity *Workspace) TableName() string {
@@ -15,24 +16,6 @@ func (entity *Workspace) TableName() string {
 func (entity *Workspace) GenId() {
 	if entity.Id == "" {
 		entity.Id = WsId()
-	}
-}
-
-type WorkspaceTier struct {
-	Entity
-	AuditTime
-
-	WorkspaceId string `json:"workspace_id"`
-	Name        string `json:"name"`
-}
-
-func (entity *WorkspaceTier) TableName() string {
-	return "kanthor_workspace_tier"
-}
-
-func (entity *WorkspaceTier) GenId() {
-	if entity.Id == "" {
-		entity.Id = WstId()
 	}
 }
 

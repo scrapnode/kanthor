@@ -10,7 +10,7 @@ import (
 	"github.com/sourcegraph/conc"
 )
 
-func Consumer(service *scheduler) streaming.SubHandler {
+func NewConsumer(service *scheduler) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events []*streaming.Event) map[string]error {
@@ -33,9 +33,9 @@ func Consumer(service *scheduler) streaming.SubHandler {
 					return
 				}
 
-				ucreq := transformation.MsgToArrangeReq(msg)
+				ucreq := transformation.MessageToRequestArrangeReq(msg)
 				if err := ucreq.Validate(); err != nil {
-					service.metrics.Count(ctx, "scheduler_arrange_error", 1)
+					service.metrics.Count(ctx, "scheduler_request_arrange_error", 1)
 					service.logger.Errorw(err.Error(), "event", event.String(), "msg", msg.String())
 					// IMPORTANT: sometime under high-preasure, we got nil pointer
 					// should retry this event anyway
@@ -43,22 +43,33 @@ func Consumer(service *scheduler) streaming.SubHandler {
 					return
 				}
 
-				response, err := service.uc.Request().Arrange(ctx, ucreq)
+				arranged, err := service.uc.Request().Arrange(ctx, ucreq)
 				if err != nil {
-					service.metrics.Count(ctx, "scheduler_arrange_error", 1)
+					service.metrics.Count(ctx, "scheduler_request_arrange_error", 1)
 					service.logger.Errorw(err.Error(), "evt_id", event.Id, "msg_id", msg.Id)
 					errs.Set(event.Id, err)
 					return
 				}
-				service.metrics.Count(ctx, "scheduler_arrange_total", int64(len(response.Entities)))
+				service.metrics.Count(ctx, "scheduler_request_arrange_total", int64(len(arranged.Requests)))
+
+				scheduled, err := service.uc.Request().Schedule(ctx, transformation.RequestToRequestScheduleReq(arranged.Requests))
+				if err != nil {
+					service.metrics.Count(ctx, "scheduler_request_schedule_error", 1)
+					service.logger.Errorw(err.Error(), "evt_id", event.Id, "msg_id", msg.Id)
+					errs.Set(event.Id, err)
+					return
+				}
+				service.metrics.Count(ctx, "scheduler_request_schedule_success", int64(len(scheduled.Success)))
+				service.metrics.Count(ctx, "scheduler_request_schedule_error", int64(len(scheduled.Error)))
 
 				// @TODO: use dead-letter
-				if len(response.FailKeys) > 0 {
-					service.metrics.Count(ctx, "scheduler_arrange_error", int64(len(response.FailKeys)))
-					service.logger.Errorw("got some errors", "fail_keys", response.FailKeys)
+				if len(scheduled.Error) > 0 {
+					for key, err := range scheduled.Error {
+						service.logger.Errorw("schedule error", "key", key, "err", err.Error())
+					}
 				}
 
-				service.logger.Debugw("scheduled requests", "success_count", len(response.SuccessKeys))
+				service.logger.Debugw("scheduled requests", "success_count", len(scheduled.Success))
 			})
 		}
 

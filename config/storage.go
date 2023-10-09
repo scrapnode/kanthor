@@ -14,10 +14,10 @@ type Storage struct {
 
 func (conf *Storage) Validate() error {
 	if err := conf.Subscriber.Validate(); err != nil {
-		return fmt.Errorf("config.Storage.Subscriber: %v", err)
+		return fmt.Errorf("config.storage.subscriber: %v", err)
 	}
 	if err := conf.Metrics.Validate(); err != nil {
-		return fmt.Errorf("config.Storage.Subscriber: %v", err)
+		return fmt.Errorf("config.storage.metrics: %v", err)
 	}
 
 	return nil

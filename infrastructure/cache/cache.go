@@ -3,11 +3,12 @@ package cache
 import (
 	"context"
 	"fmt"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
 func New(conf *Config, logger logging.Logger) (Cache, error) {
@@ -36,6 +37,8 @@ type Cache interface {
 	patterns.Connectable
 	Get(ctx context.Context, key string) ([]byte, error)
 	Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error
+	StringGet(ctx context.Context, key string) (string, error)
+	StringSet(ctx context.Context, key string, entry string, ttl time.Duration) error
 	Exist(ctx context.Context, key string) bool
 	Del(ctx context.Context, key string) error
 	ExpireAt(ctx context.Context, key string, at time.Time) (bool, error)

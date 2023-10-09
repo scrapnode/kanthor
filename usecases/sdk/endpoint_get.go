@@ -18,8 +18,8 @@ type EndpointGetReq struct {
 func (req *EndpointGetReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("app_id", req.AppId, "app_"),
-		validator.StringStartsWith("id", req.Id, "ep_"),
+		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
+		validator.StringStartsWith("id", req.Id, entities.IdNsEp),
 	)
 }
 

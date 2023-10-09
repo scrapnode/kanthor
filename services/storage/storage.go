@@ -111,7 +111,7 @@ func (service *storage) Stop(ctx context.Context) error {
 }
 
 func (service *storage) Run(ctx context.Context) error {
-	if err := service.subscriber.Sub(ctx, Consumer(service)); err != nil {
+	if err := service.subscriber.Sub(ctx, NewConsumer(service)); err != nil {
 		return err
 	}
 

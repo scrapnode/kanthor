@@ -29,6 +29,30 @@ func EventToResponse(event *streaming.Event) (*entities.Response, error) {
 	return &req, nil
 }
 
+func EventFromApplication(app *entities.Application, tier string) (*streaming.Event, error) {
+	data, err := app.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	event := &streaming.Event{
+		AppId:    app.Id,
+		Type:     "kanthor.internal.application",
+		Id:       app.Id,
+		Data:     data,
+		Metadata: map[string]string{},
+	}
+	event.Subject = streaming.Subject(
+		streaming.Namespace,
+		tier,
+		streaming.TopicApp,
+		event.AppId,
+		event.Type,
+	)
+
+	return event, nil
+}
+
 func EventFromMessage(msg *entities.Message) (*streaming.Event, error) {
 	data, err := msg.Marshal()
 	if err != nil {

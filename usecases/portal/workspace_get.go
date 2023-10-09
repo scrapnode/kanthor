@@ -17,13 +17,12 @@ type WorkspaceGetReq struct {
 func (req *WorkspaceGetReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("id", req.Id, "ws_"),
+		validator.StringStartsWith("id", req.Id, entities.IdNsWs),
 	)
 }
 
 type WorkspaceGetRes struct {
-	Workspace     *entities.Workspace
-	WorkspaceTier *entities.WorkspaceTier
+	Workspace *entities.Workspace
 }
 
 func (uc *workspace) Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error) {
@@ -36,12 +35,7 @@ func (uc *workspace) Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceG
 			return nil, err
 		}
 
-		tier, err := uc.repos.WorkspaceTier().Get(ctx, req.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		res := &WorkspaceGetRes{Workspace: ws, WorkspaceTier: tier}
+		res := &WorkspaceGetRes{Workspace: ws}
 		return res, nil
 	})
 }

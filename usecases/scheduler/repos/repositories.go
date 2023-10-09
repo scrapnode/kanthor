@@ -15,5 +15,4 @@ type Repositories interface {
 	patterns.Connectable
 	Application() Application
 	Endpoint() Endpoint
-	EndpointRule() EndpointRule
 }

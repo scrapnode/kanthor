@@ -77,6 +77,18 @@ func (cache *memory) Set(ctx context.Context, key string, entry []byte, ttl time
 	return nil
 }
 
+func (cache *memory) StringGet(ctx context.Context, key string) (string, error) {
+	bytes, err := cache.Get(ctx, key)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+func (cache *memory) StringSet(ctx context.Context, key string, entry string, ttl time.Duration) error {
+	return cache.Set(ctx, key, []byte(entry), ttl)
+}
+
 func (cache *memory) Exist(ctx context.Context, key string) bool {
 	_, found := cache.client.Get(key)
 	return found

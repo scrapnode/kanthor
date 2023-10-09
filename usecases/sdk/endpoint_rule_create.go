@@ -21,7 +21,7 @@ type EndpointRuleCreateReq struct {
 func (req *EndpointRuleCreateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ep_id", req.EpId, "ep_"),
+		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
 		validator.StringRequired("name", req.Name),
 		validator.NumberGreaterThan("priority", req.Priority, 0),
 		validator.StringRequired("condition_source", req.ConditionSource),
@@ -42,7 +42,7 @@ func (uc *endpointRule) Create(ctx context.Context, req *EndpointRuleCreateReq) 
 	}
 
 	doc := &entities.EndpointRule{
-		EndpointId:          ep.Id,
+		EpId:                ep.Id,
 		Name:                req.Name,
 		Priority:            req.Priority,
 		Exclusionary:        req.Exclusionary,

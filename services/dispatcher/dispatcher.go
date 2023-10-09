@@ -112,7 +112,7 @@ func (service *dispatcher) Stop(ctx context.Context) error {
 }
 
 func (service *dispatcher) Run(ctx context.Context) error {
-	if err := service.subscriber.Sub(ctx, Consumer(service)); err != nil {
+	if err := service.subscriber.Sub(ctx, NewConsumer(service)); err != nil {
 		return err
 	}
 

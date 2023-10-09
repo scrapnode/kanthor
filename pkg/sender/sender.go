@@ -44,7 +44,3 @@ type Response struct {
 	Uri     string      `json:"uri"`
 	Body    []byte      `json:"body"`
 }
-
-func (res *Response) IsServerError() bool {
-	return res.Status >= http.StatusInternalServerError
-}

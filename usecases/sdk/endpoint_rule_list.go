@@ -17,7 +17,7 @@ type EndpointRuleListReq struct {
 func (req *EndpointRuleListReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ep_id", req.EpId, "ep_"),
+		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
 		validator.PointerNotNil("list", req.ListReq),
 	)
 }

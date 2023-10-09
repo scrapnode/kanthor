@@ -17,8 +17,8 @@ type EndpointUpdateReq struct {
 func (req *EndpointUpdateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("app_id", req.AppId, "app_"),
-		validator.StringStartsWith("id", req.Id, "ep_"),
+		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
+		validator.StringStartsWith("id", req.Id, entities.IdNsEp),
 		validator.StringRequired("name", req.Name),
 	)
 }

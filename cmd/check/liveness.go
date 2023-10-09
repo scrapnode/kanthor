@@ -3,9 +3,9 @@ package check
 import (
 	"fmt"
 
+	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
-	"github.com/scrapnode/kanthor/services"
 	"github.com/spf13/cobra"
 )
 
@@ -13,11 +13,10 @@ func NewLiveness() *cobra.Command {
 	command := &cobra.Command{
 		Use: "liveness",
 		ValidArgs: []string{
-			services.PORTAL_API,
-			services.SDK_API,
-			services.SCHEDULER,
-			services.DISPATCHER,
-			services.STORAGE,
+			config.SERVICE_SCHEDULER,
+			config.SERVICE_DISPATCHER,
+			config.SERVICE_STORAGE,
+			config.SERVICE_ATTEMPT,
 		},
 		Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {

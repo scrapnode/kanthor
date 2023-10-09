@@ -45,8 +45,8 @@ type EndpointRule struct {
 	// @TODO: add deactivated_at
 	// DeactivatedAt int64 `json:"deactivated_at"`
 
-	EndpointId string `json:"endpoint_id"`
-	Name       string `json:"name"`
+	EpId string `json:"ep_id"`
+	Name string `json:"name"`
 
 	Priority int32 `json:"priority"`
 	// the logic of not-false is true should be used here

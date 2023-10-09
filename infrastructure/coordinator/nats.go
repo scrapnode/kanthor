@@ -8,6 +8,7 @@ import (
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
@@ -57,7 +58,7 @@ func (coordinator *nats) Connect(ctx context.Context) error {
 		return ErrNotConnected
 	}
 
-	coordinator.id = utils.ID("coordinator")
+	coordinator.id = suid.New("coordinator")
 
 	conn, err := streaming.NewNats(streaming.ConnectionConfig{Uri: coordinator.conf.Nats.Uri}, coordinator.logger)
 	if err != nil {
@@ -105,7 +106,7 @@ func (coordinator *nats) Send(ctx context.Context, cmd string, req Request) erro
 		Subject: coordinator.conf.Nats.Subject,
 		Data:    data,
 	}
-	msg.Header.Set(natscore.MsgIdHdr, utils.ID("coord"))
+	msg.Header.Set(natscore.MsgIdHdr, suid.New("coord"))
 	msg.Header.Set(HeaderNodeId, coordinator.id)
 	msg.Header.Set(HeaderCmd, cmd)
 

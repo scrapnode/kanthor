@@ -7,6 +7,7 @@ require (
 	github.com/casbin/gorm-adapter/v3 v3.18.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.1
+	github.com/go-redsync/redsync/v4 v4.9.4
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golang-migrate/migrate/v4 v4.16.1
 	github.com/google/uuid v1.3.0
@@ -18,6 +19,7 @@ require (
 	github.com/nats-io/nats.go v1.26.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/redis/go-redis/v9 v9.0.5
+	github.com/robfig/cron/v3 v3.0.0
 	github.com/samber/lo v1.38.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sony/gobreaker v0.5.0

@@ -9,7 +9,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/scrapnode/kanthor/data/interchange"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/structure"
+	"github.com/scrapnode/kanthor/pkg/ds"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
 
@@ -44,26 +44,26 @@ func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file s
 	return nil
 }
 
-func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.Application, []entities.Endpoint, []entities.EndpointRule, *structure.Node[string]) {
+func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.Application, []entities.Endpoint, []entities.EndpointRule, *ds.Node[string]) {
 	now := time.Now().UTC()
 	applications := []entities.Application{}
 	endpoints := []entities.Endpoint{}
 	rules := []entities.EndpointRule{}
 
-	tree := &structure.Node[string]{
+	tree := &ds.Node[string]{
 		Value:    doc.Id,
-		Children: []structure.Node[string]{},
+		Children: []ds.Node[string]{},
 	}
 
 	for _, app := range ws.Applications {
-		application := entities.Application{WorkspaceId: doc.Id, Name: app.Name}
+		application := entities.Application{WsId: doc.Id, Name: app.Name}
 		application.GenId()
 		application.SetAT(now)
 		applications = append(applications, application)
 
-		appNode := structure.Node[string]{
+		appNode := ds.Node[string]{
 			Value:    application.Id,
-			Children: []structure.Node[string]{},
+			Children: []ds.Node[string]{},
 		}
 
 		for _, ep := range app.Endpoints {
@@ -78,14 +78,14 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 			endpoint.GenSecretKey()
 			endpoints = append(endpoints, endpoint)
 
-			epNode := structure.Node[string]{
+			epNode := ds.Node[string]{
 				Value:    endpoint.Id,
-				Children: []structure.Node[string]{},
+				Children: []ds.Node[string]{},
 			}
 
 			for _, epr := range ep.Rules {
 				rule := entities.EndpointRule{
-					EndpointId:          endpoint.Id,
+					EpId:                endpoint.Id,
 					Name:                epr.Name,
 					Priority:            epr.Priority,
 					Exclusionary:        epr.Exclusionary,
@@ -96,9 +96,9 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 				rule.SetAT(now)
 				rules = append(rules, rule)
 
-				eprNode := structure.Node[string]{
+				eprNode := ds.Node[string]{
 					Value:    rule.Id,
-					Children: []structure.Node[string]{},
+					Children: []ds.Node[string]{},
 				}
 				epNode.Children = append(epNode.Children, eprNode)
 			}
@@ -112,7 +112,7 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 	return applications, endpoints, rules, tree
 }
 
-func appsOutput(tree *structure.Node[string], status map[string]bool) string {
+func appsOutput(tree *ds.Node[string], status map[string]bool) string {
 	l := list.NewWriter()
 	l.SetStyle(list.StyleConnectedRounded)
 

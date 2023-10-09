@@ -17,9 +17,8 @@ type AccountSetupReq struct {
 }
 
 type AccountSetupRes struct {
-	Account       *authenticator.Account  `json:"account"`
-	Workspace     *entities.Workspace     `json:"workspace"`
-	WorkspaceTier *entities.WorkspaceTier `json:"workspace_tier"`
+	Account   *authenticator.Account `json:"account"`
+	Workspace *entities.Workspace    `json:"workspace"`
 }
 
 // UseAccountSetup
@@ -48,7 +47,7 @@ func UseAccountSetup(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc 
 			return
 		}
 
-		res := &AccountSetupRes{Account: acc, Workspace: ucres.Workspace, WorkspaceTier: ucres.WorkspaceTier}
+		res := &AccountSetupRes{Account: acc, Workspace: ucres.Workspace}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

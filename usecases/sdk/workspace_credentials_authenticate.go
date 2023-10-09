@@ -18,7 +18,7 @@ type WorkspaceCredentialsAuthenticateReq struct {
 func (req *WorkspaceCredentialsAuthenticateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("user", req.User, "wsc_"),
+		validator.StringStartsWith("user", req.User, entities.IdNsWsc),
 		validator.StringRequired("pass", req.Pass),
 	)
 }
@@ -26,7 +26,6 @@ func (req *WorkspaceCredentialsAuthenticateReq) Validate() error {
 type WorkspaceCredentialsAuthenticateRes struct {
 	Workspace            *entities.Workspace
 	WorkspaceCredentials *entities.WorkspaceCredentials
-	WorkspaceTier        *entities.WorkspaceTier
 }
 
 func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error) {
@@ -55,12 +54,6 @@ func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *Workspace
 			return res, nil
 		}
 		res.Workspace = ws
-
-		tier, err := uc.repos.WorkspaceTier().Get(ctx, credentials.WorkspaceId)
-		if err != nil {
-			return res, nil
-		}
-		res.WorkspaceTier = tier
 
 		return res, nil
 	})

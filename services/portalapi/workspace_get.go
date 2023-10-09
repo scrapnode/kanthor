@@ -2,16 +2,16 @@ package portalapi
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"net/http"
 )
 
 type WorkspaceGetRes struct {
 	*entities.Workspace
-	Tier *entities.WorkspaceTier `json:"tier"`
 }
 
 // UseWorkspaceGet
@@ -25,9 +25,8 @@ func UseWorkspaceGet() gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
-		wst := ctx.Value(authorizator.CtxWst).(*entities.WorkspaceTier)
 
-		res := &WorkspaceGetRes{Workspace: ws, Tier: wst}
+		res := &WorkspaceGetRes{Workspace: ws}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

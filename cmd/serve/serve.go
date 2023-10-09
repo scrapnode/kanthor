@@ -11,7 +11,6 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/services"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +18,12 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use: "serve",
 		ValidArgs: []string{
-			services.PORTAL_API,
-			services.SDK_API,
-			services.SCHEDULER,
-			services.DISPATCHER,
-			services.STORAGE,
+			config.SERVICE_PORTAL_API,
+			config.SERVICE_SDK_API,
+			config.SERVICE_SCHEDULER,
+			config.SERVICE_DISPATCHER,
+			config.SERVICE_STORAGE,
+			config.SERVICE_ATTEMPT,
 		},
 		Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {

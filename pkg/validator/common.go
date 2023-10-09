@@ -28,7 +28,7 @@ func SliceRequired[T any](prop string, value []T) Fn {
 		}
 
 		if len(value) == 0 {
-			return fmt.Errorf("%s is required", prop)
+			return fmt.Errorf("%s must not be empty", prop)
 		}
 
 		return nil
