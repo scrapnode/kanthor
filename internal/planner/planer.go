@@ -13,12 +13,12 @@ type Applicable struct {
 	Rules       []entities.EndpointRule
 }
 
-func Requests(msg *entities.Message, app *Applicable, timer timer.Timer) ([]entities.Request, [][]interface{}) {
+func Requests(msg *entities.Message, applicable *Applicable, timer timer.Timer) ([]entities.Request, [][]interface{}) {
 	requests := []entities.Request{}
 	logs := [][]interface{}{}
 	seen := map[string]bool{}
 
-	for _, epr := range app.Rules {
+	for _, epr := range applicable.Rules {
 		// already evaluated rules of this endpoint, ignore
 		if ignore, ok := seen[epr.EpId]; ok && ignore {
 			continue
@@ -62,7 +62,7 @@ func Requests(msg *entities.Message, app *Applicable, timer timer.Timer) ([]enti
 			continue
 		}
 
-		ep := app.EndpointMap[epr.EpId]
+		ep := applicable.EndpointMap[epr.EpId]
 		req := Request(msg, &ep, &epr, timer)
 		requests = append(requests, req)
 	}

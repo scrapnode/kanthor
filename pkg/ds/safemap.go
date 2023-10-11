@@ -34,6 +34,12 @@ func (sm *SafeMap[T]) Get(key string) (T, bool) {
 	return value, ok
 }
 
+func (sm *SafeMap[T]) Merge(values map[string]T) {
+	for k, v := range values {
+		sm.Set(k, v)
+	}
+}
+
 func (sm *SafeMap[T]) Sample() T {
 	return sm.sample
 }

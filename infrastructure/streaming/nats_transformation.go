@@ -31,7 +31,6 @@ func natsMsgFromEvent(subject string, event *Event) *nats.Msg {
 	msg := &nats.Msg{
 		Subject: subject,
 		Header: nats.Header{
-			// for deduplicate purpose
 			MetaAppId: []string{event.AppId},
 			MetaType:  []string{event.Type},
 			MetaId:    []string{event.Id},

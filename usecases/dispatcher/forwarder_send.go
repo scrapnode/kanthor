@@ -68,7 +68,6 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 		Body:    req.Request.Body,
 	}
 
-	// @TODO: apply rate limit to endpoint
 	response, err := circuitbreaker.Do[sender.Response](
 		uc.cb,
 		req.Request.EpId,

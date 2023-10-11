@@ -13,7 +13,7 @@ type SqlMessage struct {
 	client *gorm.DB
 }
 
-func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time) (map[string]Msg, error) {
+func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time, cursor string) ([]Msg, error) {
 	// convert timestamp to safe id, so we can the table efficiently with primary key
 	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
@@ -26,14 +26,14 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 		Where("id > ?", low).
 		Where("id < ?", high).
 		Order("app_id DESC, id DESC").
-		Select(selects).
-		Find(&records)
+		Select(selects)
 
-	returning := map[string]Msg{}
-	for _, record := range records {
-		returning[record.Id] = record
+	if cursor != "" {
+		tx = tx.Where("id", ">", cursor)
 	}
-	return returning, tx.Error
+
+	tx = tx.Find(&records)
+	return records, tx.Error
 }
 
 func (sql *SqlMessage) ListByIds(ctx context.Context, ids []string) ([]entities.Message, error) {

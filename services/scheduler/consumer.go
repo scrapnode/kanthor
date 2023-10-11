@@ -16,8 +16,14 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 	return func(events []*streaming.Event) map[string]error {
 		errs := &ds.SafeMap[error]{}
 
+		// @TODO: remove hardcode timeout
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
+
+		// @TODO: use pool with WithContext and max goroutine is number of events
+		// if err := p.Wait(); err != nil {
+		// 	return nil, err
+		// }
 
 		var wg conc.WaitGroup
 		for _, e := range events {

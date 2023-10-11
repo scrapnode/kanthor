@@ -5,6 +5,7 @@ import (
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/dlocker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -13,9 +14,8 @@ import (
 )
 
 type Trigger interface {
-	Scan(ctx context.Context, req *TriggerScanReq) (*TriggerScanRes, error)
-	Schedule(ctx context.Context, req *TriggerScheduleReq) (*TriggerScheduleRes, error)
-	Create(ctx context.Context, req *TriggerCreateReq) (*TriggerCreateRes, error)
+	Initiate(ctx context.Context, req *TriggerInitiateReq) (*TriggerInitiateRes, error)
+	Consume(ctx context.Context, req *TriggerConsumeReq) (*TriggerConsumeRes, error)
 }
 
 type trigger struct {
@@ -23,6 +23,7 @@ type trigger struct {
 	logger    logging.Logger
 	timer     timer.Timer
 	cache     cache.Cache
+	locker    dlocker.Factory
 	publisher streaming.Publisher
 	metrics   metric.Metrics
 	repos     repos.Repositories

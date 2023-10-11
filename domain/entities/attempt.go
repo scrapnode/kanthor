@@ -33,3 +33,23 @@ func (entity *Attempt) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
 }
+
+type AttemptNotification struct {
+	AppId string `json:"app_id"`
+	Tier  string `json:"tier"`
+	From  int64  `json:"from"`
+	To    int64  `json:"to"`
+}
+
+func (noti *AttemptNotification) Marshal() ([]byte, error) {
+	return json.Marshal(noti)
+}
+
+func (noti *AttemptNotification) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, noti)
+}
+
+func (noti *AttemptNotification) String() string {
+	data, _ := json.Marshal(noti)
+	return string(data)
+}

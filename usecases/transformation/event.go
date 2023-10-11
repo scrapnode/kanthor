@@ -29,30 +29,6 @@ func EventToResponse(event *streaming.Event) (*entities.Response, error) {
 	return &req, nil
 }
 
-func EventFromApplication(app *entities.Application, tier string) (*streaming.Event, error) {
-	data, err := app.Marshal()
-	if err != nil {
-		return nil, err
-	}
-
-	event := &streaming.Event{
-		AppId:    app.Id,
-		Type:     "kanthor.internal.application",
-		Id:       app.Id,
-		Data:     data,
-		Metadata: map[string]string{},
-	}
-	event.Subject = streaming.Subject(
-		streaming.Namespace,
-		tier,
-		streaming.TopicApp,
-		event.AppId,
-		event.Type,
-	)
-
-	return event, nil
-}
-
 func EventFromMessage(msg *entities.Message) (*streaming.Event, error) {
 	data, err := msg.Marshal()
 	if err != nil {
@@ -123,4 +99,37 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 	)
 
 	return event, nil
+}
+
+func EventFromNotification(noti *entities.AttemptNotification) (*streaming.Event, error) {
+	data, err := noti.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	event := &streaming.Event{
+		AppId:    noti.AppId,
+		Type:     "internal.attempt.trigger.notification",
+		Id:       noti.AppId,
+		Data:     data,
+		Metadata: map[string]string{},
+	}
+	event.Subject = streaming.Subject(
+		streaming.Namespace,
+		noti.Tier,
+		streaming.TopicApp,
+		event.AppId,
+		event.Type,
+	)
+
+	return event, nil
+}
+
+func EventToNotification(event *streaming.Event) (*entities.AttemptNotification, error) {
+	var noti entities.AttemptNotification
+	if err := noti.Unmarshal(event.Data); err != nil {
+		return nil, err
+	}
+
+	return &noti, nil
 }

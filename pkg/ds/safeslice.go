@@ -7,11 +7,11 @@ type SafeSlice[T any] struct {
 	data []T
 }
 
-func (sm *SafeSlice[T]) Append(value T) {
+func (sm *SafeSlice[T]) Append(values ...T) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
-	sm.data = append(sm.data, value)
+	sm.data = append(sm.data, values...)
 }
 
 func (sm *SafeSlice[T]) Count() int {

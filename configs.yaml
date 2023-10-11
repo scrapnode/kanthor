@@ -198,6 +198,7 @@ attempt:
       interval: 15000
       labels:
         env: local
+        
   trigger:
     cron:
       lock_duration: 900

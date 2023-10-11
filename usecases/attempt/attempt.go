@@ -6,6 +6,7 @@ import (
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/dlocker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -16,7 +17,6 @@ import (
 
 type Attempt interface {
 	patterns.Connectable
-	Application() Application
 	Trigger() Trigger
 }
 
@@ -25,6 +25,7 @@ func New(
 	logger logging.Logger,
 	cache cache.Cache,
 	timer timer.Timer,
+	locker dlocker.Factory,
 	publisher streaming.Publisher,
 	metrics metric.Metrics,
 	repos repos.Repositories,
@@ -36,6 +37,7 @@ func New(
 		logger:    logger,
 		cache:     cache,
 		timer:     timer,
+		locker:    locker,
 		publisher: publisher,
 		metrics:   metrics,
 		repos:     repos,
@@ -47,13 +49,13 @@ type attempt struct {
 	logger    logging.Logger
 	cache     cache.Cache
 	timer     timer.Timer
+	locker    dlocker.Factory
 	publisher streaming.Publisher
 	metrics   metric.Metrics
 	repos     repos.Repositories
 
-	mu          sync.RWMutex
-	application *application
-	trigger     *trigger
+	mu      sync.RWMutex
+	trigger *trigger
 }
 
 func (uc *attempt) Readiness() error {
@@ -95,24 +97,6 @@ func (uc *attempt) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (uc *attempt) Application() Application {
-	uc.mu.Lock()
-	defer uc.mu.Unlock()
-
-	if uc.application == nil {
-		uc.application = &application{
-			conf:      uc.conf,
-			logger:    uc.logger,
-			cache:     uc.cache,
-			timer:     uc.timer,
-			publisher: uc.publisher,
-			metrics:   uc.metrics,
-			repos:     uc.repos,
-		}
-	}
-	return uc.application
-}
-
 func (uc *attempt) Trigger() Trigger {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
@@ -123,6 +107,7 @@ func (uc *attempt) Trigger() Trigger {
 			logger:    uc.logger,
 			cache:     uc.cache,
 			timer:     uc.timer,
+			locker:    uc.locker,
 			publisher: uc.publisher,
 			metrics:   uc.metrics,
 			repos:     uc.repos,

@@ -42,11 +42,11 @@ func (e *Event) String() string {
 	return string(bytes)
 }
 
-func (e *Event) Is(topic string) bool {
-	r := regexp.MustCompile(fmt.Sprintf("%s.([a-zA-z0-9]+).%s", Namespace, topic))
+func (e *Event) Is(ns, topic string) bool {
+	r := regexp.MustCompile(fmt.Sprintf("%s.([a-zA-z0-9]+).%s", ns, topic))
 	return r.MatchString(e.Subject)
 }
 
-func Subject(ns string, tier string, topic string, segments ...string) string {
+func Subject(ns, tier, topic string, segments ...string) string {
 	return strings.Join(append([]string{ns, tier, topic}, segments...), ".")
 }

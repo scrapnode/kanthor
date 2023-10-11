@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/ds"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
-	"github.com/sourcegraph/conc"
+	"github.com/sourcegraph/conc/pool"
 )
 
 type RequestScheduleReq struct {
@@ -48,47 +48,32 @@ type RequestScheduleRes struct {
 }
 
 func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*RequestScheduleRes, error) {
-	res := &RequestScheduleRes{Success: []string{}, Error: map[string]error{}}
-	chunks := lo.Chunk(req.Requests, uc.conf.Scheduler.Request.Schedule.Concurrency)
+	ok := &ds.SafeSlice[string]{}
+	ko := &ds.SafeMap[error]{}
 
-	for _, requests := range chunks {
-		resp, err := uc.schedule(ctx, requests)
-		if err != nil {
-			for _, request := range requests {
-				res.Error[request.Id] = err
-			}
-			continue
-		}
+	p := pool.New().WithMaxGoroutines(uc.conf.Scheduler.Request.Schedule.Concurrency)
+	for _, r := range req.Requests {
+		request := r
+		p.Go(func() {
+			key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
 
-		res.Success = append(res.Success, resp.Success...)
-		utils.SliceMerge[error](res.Error, resp.Error)
-	}
-
-	return res, nil
-}
-
-func (uc *request) schedule(ctx context.Context, requests []entities.Request) (*RequestScheduleRes, error) {
-	res := &RequestScheduleRes{Success: []string{}, Error: map[string]error{}}
-	var wg conc.WaitGroup
-	for _, entity := range requests {
-		r := entity
-		wg.Go(func() {
-			key := utils.Key(r.AppId, r.Id, r.Id)
-
-			event, err := transformation.EventFromRequest(&r)
-			if err == nil {
-				err = uc.publisher.Pub(ctx, event)
+			event, err := transformation.EventFromRequest(&request)
+			if err != nil {
+				ko.Set(request.Id, err)
+				return
 			}
 
-			if err == nil {
-				res.Success = append(res.Success, key)
-			} else {
-				res.Error[key] = err
-				uc.logger.Errorw(err.Error(), "key", key)
+			if err := uc.publisher.Pub(ctx, event); err != nil {
+				ko.Set(request.Id, err)
+				return
 			}
+
+			ok.Append(key)
 		})
-	}
-	wg.Wait()
 
+	}
+	p.Wait()
+
+	res := &RequestScheduleRes{Success: ok.Data(), Error: ko.Data()}
 	return res, nil
 }

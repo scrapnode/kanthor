@@ -27,7 +27,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 		responses := []entities.Response{}
 
 		for i, event := range events {
-			if event.Is(streaming.TopicMsg) {
+			if event.Is(streaming.Namespace, streaming.TopicMsg) {
 				msg, err := eventToMessage(i, event)
 				if err != nil {
 					service.logger.Errorw(err.Error(), "event_id", event.String())
@@ -42,7 +42,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				continue
 			}
 
-			if event.Is(streaming.TopicReq) {
+			if event.Is(streaming.Namespace, streaming.TopicReq) {
 				req, err := eventToRequest(i, event)
 				if err != nil {
 					service.logger.Errorw(err.Error(), "event_id", event.String())
@@ -57,7 +57,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				continue
 			}
 
-			if event.Is(streaming.TopicRes) {
+			if event.Is(streaming.Namespace, streaming.TopicRes) {
 				res, err := eventToResponse(i, event)
 				if err != nil {
 					service.logger.Errorw(err.Error(), "event", event.String())
@@ -77,11 +77,15 @@ func NewConsumer(service *storage) streaming.SubHandler {
 			service.logger.Warnw(err.Error(), "event", utils.Stringify(event))
 		}
 
+		// @TODO: remove hardcode timeout
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 
+		// @TODO: use pool with WithContext and max goroutine is number of events
+		// if err := p.Wait(); err != nil {
+		// 	return nil, err
+		// }
 		var wg conc.WaitGroup
-
 		if len(messages) > 0 {
 			wg.Go(func() {
 				_, err := service.uc.Message().Put(ctx, &usecase.MessagePutReq{Docs: messages})

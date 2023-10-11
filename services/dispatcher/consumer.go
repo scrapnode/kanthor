@@ -6,7 +6,8 @@ import (
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/ds"
-	"github.com/scrapnode/kanthor/services/dispatcher/transformation"
+	usecase "github.com/scrapnode/kanthor/usecases/dispatcher"
+	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc"
 )
 
@@ -16,8 +17,14 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 	return func(events []*streaming.Event) map[string]error {
 		errs := &ds.SafeMap[error]{}
 
+		// @TODO: remove hardcode timeout
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
+
+		// @TODO: use pool with WithContext and max goroutine is number of events
+		// if err := p.Wait(); err != nil {
+		// 	return nil, err
+		// }
 
 		var wg conc.WaitGroup
 		for _, e := range events {
@@ -33,7 +40,21 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 					return
 				}
 
-				ucreq := transformation.ReqToSendReq(req)
+				ucreq := &usecase.ForwarderSendReq{
+					Request: usecase.ForwarderSendReqRequest{
+						Id:       req.Id,
+						MsgId:    req.MsgId,
+						EpId:     req.EpId,
+						Tier:     req.Tier,
+						AppId:    req.AppId,
+						Type:     req.Type,
+						Metadata: req.Metadata,
+						Headers:  req.Headers,
+						Body:     req.Body,
+						Uri:      req.Uri,
+						Method:   req.Method,
+					},
+				}
 				if err := ucreq.Validate(); err != nil {
 					service.metrics.Count(ctx, "dispatcher_send_error", 1)
 					service.logger.Errorw(err.Error(), "event", event.String(), "req", req.String())
