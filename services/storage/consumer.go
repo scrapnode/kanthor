@@ -7,7 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/ds"
+	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/storage"
@@ -19,7 +19,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events []*streaming.Event) map[string]error {
-		errs := &ds.SafeMap[error]{}
+		errs := &safe.Map[error]{}
 
 		entity2eventMaps := map[string]string{}
 		messages := []entities.Message{}

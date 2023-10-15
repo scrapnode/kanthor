@@ -1,4 +1,4 @@
-package ds
+package safe
 
 type Node[T any] struct {
 	Value    T

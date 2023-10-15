@@ -9,7 +9,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/scrapnode/kanthor/data/interchange"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/pkg/ds"
+	"github.com/scrapnode/kanthor/pkg/safe"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
 
@@ -44,15 +44,15 @@ func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file s
 	return nil
 }
 
-func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.Application, []entities.Endpoint, []entities.EndpointRule, *ds.Node[string]) {
+func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.Application, []entities.Endpoint, []entities.EndpointRule, *safe.Node[string]) {
 	now := time.Now().UTC()
 	applications := []entities.Application{}
 	endpoints := []entities.Endpoint{}
 	rules := []entities.EndpointRule{}
 
-	tree := &ds.Node[string]{
+	tree := &safe.Node[string]{
 		Value:    doc.Id,
-		Children: []ds.Node[string]{},
+		Children: []safe.Node[string]{},
 	}
 
 	for _, app := range ws.Applications {
@@ -61,9 +61,9 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 		application.SetAT(now)
 		applications = append(applications, application)
 
-		appNode := ds.Node[string]{
+		appNode := safe.Node[string]{
 			Value:    application.Id,
-			Children: []ds.Node[string]{},
+			Children: []safe.Node[string]{},
 		}
 
 		for _, ep := range app.Endpoints {
@@ -78,9 +78,9 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 			endpoint.GenSecretKey()
 			endpoints = append(endpoints, endpoint)
 
-			epNode := ds.Node[string]{
+			epNode := safe.Node[string]{
 				Value:    endpoint.Id,
-				Children: []ds.Node[string]{},
+				Children: []safe.Node[string]{},
 			}
 
 			for _, epr := range ep.Rules {
@@ -96,9 +96,9 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 				rule.SetAT(now)
 				rules = append(rules, rule)
 
-				eprNode := ds.Node[string]{
+				eprNode := safe.Node[string]{
 					Value:    rule.Id,
-					Children: []ds.Node[string]{},
+					Children: []safe.Node[string]{},
 				}
 				epNode.Children = append(epNode.Children, eprNode)
 			}
@@ -112,7 +112,7 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 	return applications, endpoints, rules, tree
 }
 
-func appsOutput(tree *ds.Node[string], status map[string]bool) string {
+func appsOutput(tree *safe.Node[string], status map[string]bool) string {
 	l := list.NewWriter()
 	l.SetStyle(list.StyleConnectedRounded)
 

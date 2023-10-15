@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/internal/planner"
-	"github.com/scrapnode/kanthor/pkg/ds"
+	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/attempt/repos"
@@ -18,11 +18,22 @@ import (
 )
 
 type TriggerConsumeReq struct {
-	ConsumeSize   int
+	Timeout       int64
+	ChunkSize     int
 	Notifications []entities.AttemptNotification
 }
 
 func (req *TriggerConsumeReq) Validate() error {
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.SliceRequired("notifications", req.Notifications),
+		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
+		validator.NumberGreaterThan("chunk_size", int(req.ChunkSize), 1),
+	)
+	if err != nil {
+		return err
+	}
+
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.Array(req.Notifications, func(i int, item entities.AttemptNotification) error {
@@ -44,34 +55,45 @@ type TriggerConsumeRes struct {
 }
 
 func (uc *trigger) Consume(ctx context.Context, req *TriggerConsumeReq) (*TriggerConsumeRes, error) {
-	ok := &ds.SafeSlice[string]{}
-	ko := &ds.SafeMap[error]{}
+	ok := &safe.Slice[string]{}
+	ko := &safe.Map[error]{}
 
-	p := pool.New().
-		WithContext(ctx).
-		WithCancelOnError().
-		WithFirstError().
-		WithMaxGoroutines(req.ConsumeSize)
+	// timeout duration will be scaled based on how many notifications you have
+	duration := time.Duration(req.Timeout * int64(len(req.Notifications)+1))
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
+	defer cancel()
+
+	p := pool.New().WithMaxGoroutines(req.ChunkSize)
 	for _, noti := range req.Notifications {
 		notification := noti
-		p.Go(func(subctx context.Context) error {
-			resp, err := uc.consume(subctx, &notification)
+		p.Go(func() {
+			resp, err := uc.consume(ctx, &notification)
 			if err != nil {
-				return err
+				uc.logger.Errorw("unable to consume attempt notification", "notification", notification.String())
+				return
 			}
 
 			ko.Merge(resp.Error)
 			ok.Append(resp.Success...)
-			return nil
 		})
 	}
 
-	if err := p.Wait(); err != nil {
-		return nil, err
-	}
+	c := make(chan bool)
+	defer close(c)
 
-	res := &TriggerConsumeRes{Success: ok.Data(), Error: ko.Data()}
-	return res, nil
+	go func() {
+		p.Wait()
+		c <- true
+	}()
+
+	select {
+	case <-c:
+		return &TriggerConsumeRes{Success: ok.Data(), Error: ko.Data()}, nil
+	case <-timeout.Done():
+		// actually we may have some success entries, but we can ignore them
+		// let cronjob pickup and retry them redundantly
+		return nil, ctx.Err()
+	}
 }
 
 func (uc *trigger) consume(ctx context.Context, notification *entities.AttemptNotification) (*TriggerConsumeRes, error) {
@@ -102,8 +124,8 @@ func (uc *trigger) consume(ctx context.Context, notification *entities.AttemptNo
 		return nil, err
 	}
 
-	ok := &ds.SafeSlice[string]{}
-	ko := &ds.SafeMap[error]{}
+	ok := &safe.Slice[string]{}
+	ko := &safe.Map[error]{}
 
 	uc.schedule(ctx, ok, ko, applicable, msgIds)
 	uc.create(ctx, ok, ko, requests)
@@ -253,8 +275,8 @@ func reskey(msgId, epId string) string {
 // schedule messages
 func (uc *trigger) schedule(
 	ctx context.Context,
-	ok *ds.SafeSlice[string],
-	ko *ds.SafeMap[error],
+	ok *safe.Slice[string],
+	ko *safe.Map[error],
 	applicable *planner.Applicable,
 	msgIds []string,
 ) {
@@ -295,7 +317,8 @@ func (uc *trigger) schedule(
 
 			event, err := transformation.EventFromRequest(&request)
 			if err != nil {
-				ko.Set(request.Id, err)
+				// un-recoverable error
+				uc.logger.Errorw("could not transform request to event", "request", request.String())
 				return
 			}
 
@@ -314,8 +337,8 @@ func (uc *trigger) schedule(
 // create attempts
 func (uc *trigger) create(
 	ctx context.Context,
-	ok *ds.SafeSlice[string],
-	ko *ds.SafeMap[error],
+	ok *safe.Slice[string],
+	ko *safe.Map[error],
 	requests []repos.Req,
 ) {
 	attempts := []entities.Attempt{}

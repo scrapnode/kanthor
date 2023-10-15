@@ -1,6 +1,7 @@
 package sender
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -31,8 +32,9 @@ func Rest(conf *Config, logger logging.Logger) Send {
 		client = client.EnableTrace()
 	}
 
-	return func(req *Request) (*Response, error) {
+	return func(ctx context.Context, req *Request) (*Response, error) {
 		r := client.R().
+			SetContext(ctx).
 			SetHeaderMultiValues(req.Headers)
 		logger.Debugw("sending", "uri", req.Uri)
 		err := fmt.Errorf("sender.rest: unsupported method [%s]", req.Method)

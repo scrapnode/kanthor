@@ -1,6 +1,7 @@
 package sender
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,7 +13,7 @@ import (
 func New(conf *Config, logger logging.Logger) Send {
 	rest := Rest(conf, logger)
 
-	return func(req *Request) (*Response, error) {
+	return func(ctx context.Context, req *Request) (*Response, error) {
 		uri, err := url.Parse(req.Uri)
 		if err != nil {
 			return nil, fmt.Errorf("sender: %v", err)
@@ -20,7 +21,7 @@ func New(conf *Config, logger logging.Logger) Send {
 
 		// http & https
 		if strings.HasPrefix(uri.Scheme, "http") {
-			return rest(req)
+			return rest(ctx, req)
 		}
 
 		return nil, fmt.Errorf("sender: unsupported scheme [%s]", uri.Scheme)
@@ -29,7 +30,7 @@ func New(conf *Config, logger logging.Logger) Send {
 
 type Sender func(conf *Config) Send
 
-type Send func(req *Request) (*Response, error)
+type Send func(context.Context, *Request) (*Response, error)
 
 type Request struct {
 	Method  string      `json:"method"`

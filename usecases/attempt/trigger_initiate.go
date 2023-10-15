@@ -7,7 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/pkg/ds"
+	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc/pool"
 )
@@ -36,17 +36,18 @@ func (uc *trigger) Initiate(ctx context.Context, req *TriggerInitiateReq) (*Trig
 	from := uc.timer.Now().Add(time.Duration(uc.conf.Attempt.Trigger.Consumer.ScanFrom) * time.Second)
 	to := uc.timer.Now().Add(time.Duration(uc.conf.Attempt.Trigger.Consumer.ScanTo) * time.Second)
 
-	ok := &ds.SafeSlice[string]{}
-	ko := &ds.SafeMap[error]{}
+	ok := &safe.Slice[string]{}
+	ko := &safe.Map[error]{}
 
 	p := pool.New().WithMaxGoroutines(req.PublishSize)
 	for _, app := range apps {
-		noti := &entities.AttemptNotification{AppId: app.Id, Tier: tiers[app.Id], From: from.UnixMilli(), To: to.UnixMilli()}
+		notification := &entities.AttemptNotification{AppId: app.Id, Tier: tiers[app.Id], From: from.UnixMilli(), To: to.UnixMilli()}
 
 		p.Go(func() {
-			event, err := transformation.EventFromNotification(noti)
+			event, err := transformation.EventFromNotification(notification)
 			if err != nil {
-				ko.Set(app.Id, err)
+				// un-recoverable error
+				uc.logger.Errorw("could not transform notification to event", "notification", notification.String())
 				return
 			}
 
@@ -59,10 +60,24 @@ func (uc *trigger) Initiate(ctx context.Context, req *TriggerInitiateReq) (*Trig
 			ko.Set(app.Id, err)
 		})
 	}
-	p.Wait()
 
-	res := &TriggerInitiateRes{Cursor: cursor, Success: ok.Data(), Error: ko.Data()}
-	return res, nil
+	c := make(chan bool)
+	defer close(c)
+
+	go func() {
+		p.Wait()
+		c <- true
+	}()
+
+	select {
+	case <-c:
+		return &TriggerInitiateRes{Cursor: cursor, Success: ok.Data(), Error: ko.Data()}, nil
+	case <-ctx.Done():
+		// we don't need to check which notication was consumed
+		// because it could be simply retry later with the cronjob
+		// once the context deadline is exceeded, consider all notications are failed
+		return nil, ctx.Err()
+	}
 }
 
 func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Application, string, error) {

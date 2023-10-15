@@ -50,7 +50,7 @@ func UseAuthx(
 				Headers: ginctx.Request.Header.Clone(),
 				Uri:     conf.PortalConnection.Account,
 			}
-			res, err := send(req)
+			res, err := send(context.Background(), req)
 			if err != nil {
 				logger.Error(err)
 				ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "remote auth is failed"})

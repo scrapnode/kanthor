@@ -40,6 +40,11 @@ func (entity *Response) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, entity)
 }
 
+func (entity *Response) String() string {
+	data, _ := json.Marshal(entity)
+	return string(data)
+}
+
 func Is5xx(status int) bool {
 	return int(status/100) == 5
 }

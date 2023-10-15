@@ -13,7 +13,6 @@ import (
 )
 
 type Request interface {
-	Arrange(ctx context.Context, req *RequestArrangeReq) (*RequestArrangeRes, error)
 	Schedule(ctx context.Context, req *RequestScheduleReq) (*RequestScheduleRes, error)
 }
 
