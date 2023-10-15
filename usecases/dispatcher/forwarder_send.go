@@ -19,9 +19,9 @@ import (
 )
 
 type ForwarderSendReq struct {
-	Timeout     int64
-	Concurrency int
-	Requests    []entities.Request
+	ChunkTimeout int64
+	ChunkSize    int
+	Requests     []entities.Request
 }
 
 func ValidateForwarderSendRequest(prefix string, item entities.Request) error {
@@ -44,8 +44,8 @@ func (req *ForwarderSendReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("requests", req.Requests),
-		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
-		validator.NumberGreaterThan("concurrency", int(req.Concurrency), 1),
+		validator.NumberGreaterThan("chunk_timeout", req.ChunkTimeout, 1000),
+		validator.NumberGreaterThan("chunk_size", req.ChunkSize, 1),
 	)
 	if err != nil {
 		return err
@@ -84,11 +84,11 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 
 	// but publishing need implementing the global timeout
 	// timeout duration will be scaled based on how many responses you have
-	duration := time.Duration(req.Timeout * int64(len(responses)+1))
+	duration := time.Duration(req.ChunkTimeout * int64(len(responses)+1))
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
 	defer cancel()
 
-	p := pool.New().WithMaxGoroutines(req.Concurrency)
+	p := pool.New().WithMaxGoroutines(req.ChunkSize)
 	for _, rs := range responses {
 		response := rs
 		p.Go(func() {

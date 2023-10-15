@@ -8,13 +8,27 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/safe"
+	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc/pool"
 )
 
 type TriggerInitiateReq struct {
-	ScanSize    int
-	PublishSize int
+	ScanFrom int64
+	ScanTo   int64
+
+	ChunkTimeout int64
+	ChunkSize    int
+}
+
+func (req *TriggerInitiateReq) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThan("scan_from", req.ScanFrom, req.ScanTo),
+		validator.NumberLessThan("scan_to", req.ScanTo, req.ScanFrom),
+		validator.NumberGreaterThan("chunk_timeout", req.ChunkTimeout, 1000),
+		validator.NumberGreaterThan("chunk_size", req.ChunkSize, 1),
+	)
 }
 
 type TriggerInitiateRes struct {
@@ -24,7 +38,7 @@ type TriggerInitiateRes struct {
 }
 
 func (uc *trigger) Initiate(ctx context.Context, req *TriggerInitiateReq) (*TriggerInitiateRes, error) {
-	apps, cursor, err := uc.applications(ctx, req.ScanSize)
+	apps, cursor, err := uc.applications(ctx, req.ChunkSize)
 	if err != nil {
 		return nil, err
 	}
@@ -33,13 +47,18 @@ func (uc *trigger) Initiate(ctx context.Context, req *TriggerInitiateReq) (*Trig
 		return nil, err
 	}
 
-	from := uc.timer.Now().Add(time.Duration(uc.conf.Attempt.Trigger.Consumer.ScanFrom) * time.Second)
-	to := uc.timer.Now().Add(time.Duration(uc.conf.Attempt.Trigger.Consumer.ScanTo) * time.Second)
+	from := uc.timer.Now().Add(time.Duration(req.ScanFrom) * time.Millisecond)
+	to := uc.timer.Now().Add(time.Duration(req.ScanTo) * time.Millisecond)
 
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 
-	p := pool.New().WithMaxGoroutines(req.PublishSize)
+	// timeout duration will be scaled based on how many applications you have
+	duration := time.Duration(req.ChunkTimeout * int64(len(apps)+1))
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
+	defer cancel()
+
+	p := pool.New().WithMaxGoroutines(req.ChunkSize)
 	for _, app := range apps {
 		notification := &entities.AttemptNotification{AppId: app.Id, Tier: tiers[app.Id], From: from.UnixMilli(), To: to.UnixMilli()}
 
@@ -72,7 +91,7 @@ func (uc *trigger) Initiate(ctx context.Context, req *TriggerInitiateReq) (*Trig
 	select {
 	case <-c:
 		return &TriggerInitiateRes{Cursor: cursor, Success: ok.Data(), Error: ko.Data()}, nil
-	case <-ctx.Done():
+	case <-timeout.Done():
 		// we don't need to check which notication was consumed
 		// because it could be simply retry later with the cronjob
 		// once the context deadline is exceeded, consider all notications are failed

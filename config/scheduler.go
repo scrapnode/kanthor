@@ -50,14 +50,14 @@ func (conf *SchedulerRequest) Validate() error {
 }
 
 type SchedulerRequestSchedule struct {
-	Concurrency int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
-	Timeout     int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	ChunkSize    int   `json:"chunk_size" yaml:"chunk_size" mapstructure:"chunk_size"`
+	ChunkTimeout int64 `json:"chunk_timeout" yaml:"chunk_timeout" mapstructure:"chunk_timeout"`
 }
 
 func (conf *SchedulerRequestSchedule) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("config.scheduler.request.schedule.concurrency", conf.Concurrency, 0),
-		validator.NumberGreaterThanOrEqual("config.scheduler.request.schedule.timeout", conf.Timeout, 1000),
+		validator.NumberGreaterThan("config.scheduler.request.schedule.chunk_size", conf.ChunkSize, 0),
+		validator.NumberGreaterThanOrEqual("config.scheduler.request.schedule.chunk_timeout", conf.ChunkTimeout, 1000),
 	)
 }

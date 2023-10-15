@@ -12,13 +12,11 @@ import (
 
 func RegisterTriggerCron(service *attempt) func() {
 	key := "kanthor.services.attempt.trigger"
-	duration := time.Duration(service.conf.Attempt.Trigger.Cron.LockDuration) * time.Second
+	duration := time.Millisecond * time.Duration(service.conf.Attempt.Trigger.Cron.LockDuration)
 
 	return func() {
-		// @TODO: remove hardcode timeout
 		locker := service.locker(key, duration)
-		ctx, cancel := context.WithTimeout(context.Background(), duration)
-		defer cancel()
+		ctx := context.Background()
 
 		if err := locker.Lock(ctx); err != nil {
 			service.logger.Errorw("unable to acquire a lock", "key", key)
@@ -33,8 +31,10 @@ func RegisterTriggerCron(service *attempt) func() {
 		}()
 
 		ucreq := &usecase.TriggerInitiateReq{
-			ScanSize:    service.conf.Attempt.Trigger.Cron.ScanSize,
-			PublishSize: service.conf.Attempt.Trigger.Cron.PublishSize,
+			ScanFrom:     service.conf.Attempt.Trigger.Cron.ScanFrom,
+			ScanTo:       service.conf.Attempt.Trigger.Cron.ScanTo,
+			ChunkTimeout: service.conf.Attempt.Trigger.Cron.ChunkTimeout,
+			ChunkSize:    service.conf.Attempt.Trigger.Cron.ChunkSize,
 		}
 		ucres, err := service.uc.Trigger().Initiate(ctx, ucreq)
 		if err != nil {

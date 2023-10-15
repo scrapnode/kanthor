@@ -18,9 +18,9 @@ import (
 )
 
 type RequestScheduleReq struct {
-	Timeout     int64
-	Concurrency int
-	Messages    []entities.Message
+	ChunkTimeout int64
+	ChunkSize    int
+	Messages     []entities.Message
 }
 
 func ValidateRequestScheduleMessaeg(prefix string, message entities.Message) error {
@@ -39,8 +39,8 @@ func (req *RequestScheduleReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("messages", req.Messages),
-		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
-		validator.NumberGreaterThan("concurrency", int(req.Concurrency), 1),
+		validator.NumberGreaterThan("chunk_timeout", req.ChunkTimeout, 1000),
+		validator.NumberGreaterThan("chunk_size", req.ChunkTimeout, 1),
 	)
 	if err != nil {
 		return err
@@ -70,11 +70,11 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 	ko := &safe.Map[error]{}
 
 	// timeout duration will be scaled based on how many requests you have
-	duration := time.Duration(req.Timeout * int64(len(requests)+1))
+	duration := time.Duration(req.ChunkTimeout * int64(len(requests)+1))
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
 	defer cancel()
 
-	p := pool.New().WithMaxGoroutines(req.Concurrency)
+	p := pool.New().WithMaxGoroutines(req.ChunkSize)
 	for _, r := range requests {
 		request := r
 		p.Go(func() {

@@ -60,14 +60,14 @@ func (conf *DispatcherForwarder) Validate() error {
 }
 
 type DispatcherForwarderSend struct {
-	Concurrency int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
-	Timeout     int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	ChunkSize    int   `json:"chunk_size" yaml:"chunk_size" mapstructure:"chunk_size"`
+	ChunkTimeout int64 `json:"chunk_timeout" yaml:"chunk_timeout" mapstructure:"chunk_timeout"`
 }
 
 func (conf *DispatcherForwarderSend) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("config.dispatcher.forwarder.send.concurrency", conf.Concurrency, 0),
-		validator.NumberGreaterThanOrEqual("config.dispatcher.forwarder.send.timeout", conf.Timeout, 1000),
+		validator.NumberGreaterThan("config.dispatcher.forwarder.send.chunk_size", conf.ChunkSize, 0),
+		validator.NumberGreaterThanOrEqual("config.dispatcher.forwarder.send.chunk_timeout", conf.ChunkTimeout, 1000),
 	)
 }

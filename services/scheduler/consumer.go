@@ -40,9 +40,9 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 		ctx := context.Background()
 
 		ucreq := &usecase.RequestScheduleReq{
-			Timeout:     service.conf.Scheduler.Request.Schedule.Timeout,
-			Concurrency: service.conf.Scheduler.Request.Schedule.Concurrency,
-			Messages:    messages,
+			ChunkTimeout: service.conf.Scheduler.Request.Schedule.ChunkTimeout,
+			ChunkSize:    service.conf.Scheduler.Request.Schedule.ChunkSize,
+			Messages:     messages,
 		}
 		// we alreay validated messages of request, don't need to validate again
 		ucres, err := service.uc.Request().Schedule(ctx, ucreq)

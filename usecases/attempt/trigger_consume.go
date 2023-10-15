@@ -19,6 +19,7 @@ import (
 
 type TriggerConsumeReq struct {
 	Timeout       int64
+	Delay         int64
 	ChunkSize     int
 	Notifications []entities.AttemptNotification
 }
@@ -27,8 +28,8 @@ func (req *TriggerConsumeReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("notifications", req.Notifications),
-		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
-		validator.NumberGreaterThan("chunk_size", int(req.ChunkSize), 1),
+		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
+		validator.NumberGreaterThan("chunk_size", req.ChunkSize, 1),
 	)
 	if err != nil {
 		return err
@@ -67,7 +68,7 @@ func (uc *trigger) Consume(ctx context.Context, req *TriggerConsumeReq) (*Trigge
 	for _, noti := range req.Notifications {
 		notification := noti
 		p.Go(func() {
-			resp, err := uc.consume(ctx, &notification)
+			resp, err := uc.consume(ctx, &notification, duration, req.ChunkSize, req.Delay)
 			if err != nil {
 				uc.logger.Errorw("unable to consume attempt notification", "notification", notification.String())
 				return
@@ -96,9 +97,17 @@ func (uc *trigger) Consume(ctx context.Context, req *TriggerConsumeReq) (*Trigge
 	}
 }
 
-func (uc *trigger) consume(ctx context.Context, notification *entities.AttemptNotification) (*TriggerConsumeRes, error) {
+func (uc *trigger) consume(
+	ctx context.Context,
+	notification *entities.AttemptNotification,
+	duration time.Duration,
+	size int,
+	delay int64,
+) (*TriggerConsumeRes, error) {
 	key := fmt.Sprintf("kanthor.services.attempt.trigger.consumer/%s", notification.AppId)
-	duration := time.Duration(uc.conf.Attempt.Trigger.Consumer.LockDuration) * time.Second
+	// the lock duration will be long as much as possible
+	// so we will time the global timeout as as the lock duration
+	// in that duration, we could not consume the same app until the lock is released
 	locker := uc.locker(key, duration)
 
 	if err := locker.Lock(ctx); err != nil {
@@ -127,8 +136,8 @@ func (uc *trigger) consume(ctx context.Context, notification *entities.AttemptNo
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 
-	uc.schedule(ctx, ok, ko, applicable, msgIds)
-	uc.create(ctx, ok, ko, requests)
+	uc.schedule(ctx, ok, ko, size, applicable, msgIds)
+	uc.create(ctx, ok, ko, size, delay, requests)
 
 	res := &TriggerConsumeRes{Success: ok.Data(), Error: ko.Data()}
 	return res, nil
@@ -277,11 +286,11 @@ func (uc *trigger) schedule(
 	ctx context.Context,
 	ok *safe.Slice[string],
 	ko *safe.Map[error],
+	size int,
 	applicable *planner.Applicable,
 	msgIds []string,
 ) {
 	requests := []entities.Request{}
-	size := uc.conf.Attempt.Trigger.Schedule.Concurrency
 
 	for i := 0; i < len(msgIds); i += size {
 		j := i + size
@@ -339,20 +348,21 @@ func (uc *trigger) create(
 	ctx context.Context,
 	ok *safe.Slice[string],
 	ko *safe.Map[error],
+	size int,
+	delay int64,
 	requests []repos.Req,
 ) {
 	attempts := []entities.Attempt{}
-	size := uc.conf.Attempt.Trigger.Create.Concurrency
 
-	next := uc.timer.Now().Add(time.Duration(uc.conf.Attempt.Trigger.Create.ScheduleDelay) * time.Second).UnixMilli()
-	now := uc.timer.Now().UnixMilli()
+	now := uc.timer.Now()
+	next := now.Add(time.Duration(delay) * time.Millisecond)
 
 	for _, request := range requests {
 		attempts = append(attempts, entities.Attempt{
 			ReqId:        request.Id,
 			Tier:         request.Tier,
-			ScheduleNext: next,
-			ScheduledAt:  now,
+			ScheduleNext: next.UnixMilli(),
+			ScheduledAt:  now.UnixMilli(),
 		})
 	}
 

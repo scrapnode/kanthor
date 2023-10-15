@@ -21,7 +21,8 @@ func NewConsumer(service *storage) streaming.SubHandler {
 	return func(events []*streaming.Event) map[string]error {
 		errs := &safe.Map[error]{}
 
-		entity2eventMaps := map[string]string{}
+		// create a map of events & entities so we can generate error map later
+		maps := map[string]string{}
 		messages := []entities.Message{}
 		requests := []entities.Request{}
 		responses := []entities.Response{}
@@ -38,7 +39,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				}
 
 				messages = append(messages, *msg)
-				entity2eventMaps[msg.Id] = event.Id
+				maps[msg.Id] = event.Id
 				continue
 			}
 
@@ -53,7 +54,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				}
 
 				requests = append(requests, *req)
-				entity2eventMaps[req.Id] = event.Id
+				maps[req.Id] = event.Id
 				continue
 			}
 
@@ -68,7 +69,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				}
 
 				responses = append(responses, *res)
-				entity2eventMaps[res.Id] = event.Id
+				maps[res.Id] = event.Id
 				continue
 			}
 
@@ -91,7 +92,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				_, err := service.uc.Message().Put(ctx, &usecase.MessagePutReq{Docs: messages})
 				if err != nil {
 					for _, msg := range messages {
-						eventId := entity2eventMaps[msg.Id]
+						eventId := maps[msg.Id]
 						errs.Set(eventId, err)
 					}
 					return
@@ -104,7 +105,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				_, err := service.uc.Request().Put(ctx, &usecase.RequestPutReq{Docs: requests})
 				if err != nil {
 					for _, req := range requests {
-						eventId := entity2eventMaps[req.Id]
+						eventId := maps[req.Id]
 						errs.Set(eventId, err)
 					}
 					return
@@ -117,7 +118,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				_, err := service.uc.Response().Put(ctx, &usecase.ResponsePutReq{Docs: responses})
 				if err != nil {
 					for _, res := range responses {
-						eventId := entity2eventMaps[res.Id]
+						eventId := maps[res.Id]
 						errs.Set(eventId, err)
 					}
 					return
