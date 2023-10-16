@@ -9,11 +9,11 @@ import (
 	"github.com/scrapnode/kanthor/usecases/storage/repos"
 )
 
-type Message interface {
-	Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error)
+type Warehouse interface {
+	Put(ctx context.Context, req *WarehousePutReq) (*WarehousePutRes, error)
 }
 
-type message struct {
+type warehose struct {
 	conf    *config.Config
 	logger  logging.Logger
 	metrics metric.Metrics

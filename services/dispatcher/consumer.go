@@ -26,7 +26,7 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 				continue
 			}
 
-			if err := usecase.ValidateForwarderSendRequest("request", request); err != nil {
+			if err := usecase.ValidateForwarderSendReqRequest("request", request); err != nil {
 				service.logger.Errorw(err.Error(), "event", event.String(), "request", request.String())
 				// got malformed request, should ignore and not retry it
 				continue

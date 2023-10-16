@@ -24,7 +24,7 @@ type ForwarderSendReq struct {
 	Requests     []entities.Request
 }
 
-func ValidateForwarderSendRequest(prefix string, item *entities.Request) error {
+func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("request.id", item.Id, entities.IdNsReq),
@@ -55,7 +55,7 @@ func (req *ForwarderSendReq) Validate() error {
 		validator.DefaultConfig,
 		validator.Array(req.Requests, func(i int, item *entities.Request) error {
 			prefix := fmt.Sprintf("requests[%d]", i)
-			return ValidateForwarderSendRequest(prefix, item)
+			return ValidateForwarderSendReqRequest(prefix, item)
 		}),
 	)
 }

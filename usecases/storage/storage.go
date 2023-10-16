@@ -13,9 +13,7 @@ import (
 
 type Storage interface {
 	patterns.Connectable
-	Message() Message
-	Request() Request
-	Response() Response
+	Warehouse() Warehouse
 }
 
 func New(
@@ -41,9 +39,7 @@ type storage struct {
 	repos   repos.Repositories
 
 	mu       sync.RWMutex
-	message  *message
-	request  *request
-	response *response
+	warehose *warehose
 }
 
 func (uc *storage) Readiness() error {
@@ -85,47 +81,17 @@ func (uc *storage) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (uc *storage) Message() Message {
+func (uc *storage) Warehouse() Warehouse {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if uc.message == nil {
-		uc.message = &message{
+	if uc.warehose == nil {
+		uc.warehose = &warehose{
 			conf:    uc.conf,
 			logger:  uc.logger,
 			metrics: uc.metrics,
 			repos:   uc.repos,
 		}
 	}
-	return uc.message
-}
-
-func (uc *storage) Request() Request {
-	uc.mu.Lock()
-	defer uc.mu.Unlock()
-
-	if uc.request == nil {
-		uc.request = &request{
-			conf:    uc.conf,
-			logger:  uc.logger,
-			metrics: uc.metrics,
-			repos:   uc.repos,
-		}
-	}
-	return uc.request
-}
-
-func (uc *storage) Response() Response {
-	uc.mu.Lock()
-	defer uc.mu.Unlock()
-
-	if uc.response == nil {
-		uc.response = &response{
-			conf:    uc.conf,
-			logger:  uc.logger,
-			metrics: uc.metrics,
-			repos:   uc.repos,
-		}
-	}
-	return uc.response
+	return uc.warehose
 }

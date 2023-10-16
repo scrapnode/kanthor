@@ -23,7 +23,7 @@ type RequestScheduleReq struct {
 	Messages     []entities.Message
 }
 
-func ValidateRequestScheduleMessaeg(prefix string, message *entities.Message) error {
+func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".id", message.Id, entities.IdNsMsg),
@@ -50,7 +50,7 @@ func (req *RequestScheduleReq) Validate() error {
 		validator.DefaultConfig,
 		validator.Array(req.Messages, func(i int, item *entities.Message) error {
 			prefix := fmt.Sprintf("messages[%d]", i)
-			return ValidateRequestScheduleMessaeg(prefix, item)
+			return ValidateRequestScheduleReqMessage(prefix, item)
 		}),
 	)
 }
@@ -78,7 +78,6 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 	for _, r := range requests {
 		request := r
 		p.Go(func() {
-
 			event, err := transformation.EventFromRequest(&request)
 			if err != nil {
 				// un-recoverable error

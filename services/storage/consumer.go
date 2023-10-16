@@ -3,233 +3,109 @@ package storage
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/safe"
-	"github.com/scrapnode/kanthor/pkg/utils"
-	"github.com/scrapnode/kanthor/pkg/validator"
 	usecase "github.com/scrapnode/kanthor/usecases/storage"
 	"github.com/scrapnode/kanthor/usecases/transformation"
-	"github.com/sourcegraph/conc"
 )
 
 func NewConsumer(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events []*streaming.Event) map[string]error {
-		errs := &safe.Map[error]{}
+		retruning := map[string]error{}
+		ctx := context.Background()
 
 		// create a map of events & entities so we can generate error map later
 		maps := map[string]string{}
-		messages := []entities.Message{}
-		requests := []entities.Request{}
-		responses := []entities.Response{}
+
+		ucreq := &usecase.WarehousePutReq{
+			ChunkTimeout: 60000,
+			ChunkSize:    1000,
+			Messages:     []entities.Message{},
+			Requests:     []entities.Request{},
+			Responses:    []entities.Response{},
+		}
 
 		for i, event := range events {
+			prefix := fmt.Sprintf("event[%d]", i)
+
 			if event.Is(streaming.Namespace, streaming.TopicMsg) {
-				msg, err := eventToMessage(i, event)
+				message, err := transformation.EventToMessage(event)
 				if err != nil {
-					service.logger.Errorw(err.Error(), "event_id", event.String())
-					// IMPORTANT: sometime under high-preasure, we got nil pointer
-					// should retry this event anyway
-					errs.Set(event.Id, err)
+					// un-recoverable error
+					service.logger.Errorw("could not transform message to event", "event", event.String(), "err", err.Error())
 					continue
 				}
+				maps[message.Id] = event.Id
 
-				messages = append(messages, *msg)
-				maps[msg.Id] = event.Id
-				continue
+				if err := usecase.ValidateWarehousePutReqMessage(prefix, message); err != nil {
+					// un-recoverable error
+					service.logger.Errorw("could not validate message", "event", event.String(), "message", message.String(), "err", err.Error())
+					continue
+				}
+				ucreq.Messages = append(ucreq.Messages, *message)
 			}
 
 			if event.Is(streaming.Namespace, streaming.TopicReq) {
-				req, err := eventToRequest(i, event)
+				request, err := transformation.EventToRequest(event)
 				if err != nil {
-					service.logger.Errorw(err.Error(), "event_id", event.String())
-					// IMPORTANT: sometime under high-preasure, we got nil pointer
-					// should retry this event anyway
-					errs.Set(event.Id, err)
+					// un-recoverable error
+					service.logger.Errorw("could not transform request to event", "event", event.String(), "err", err.Error())
 					continue
 				}
+				maps[request.Id] = event.Id
 
-				requests = append(requests, *req)
-				maps[req.Id] = event.Id
-				continue
+				if err := usecase.ValidateWarehousePutReqRequest(prefix, request); err != nil {
+					// un-recoverable error
+					service.logger.Errorw("could not validate request", "event", event.String(), "request", request.String(), "err", err.Error())
+					continue
+				}
+				ucreq.Requests = append(ucreq.Requests, *request)
 			}
 
 			if event.Is(streaming.Namespace, streaming.TopicRes) {
-				res, err := eventToResponse(i, event)
+				response, err := transformation.EventToResponse(event)
 				if err != nil {
-					service.logger.Errorw(err.Error(), "event", event.String())
-					// IMPORTANT: sometime under high-preasure, we got nil pointer
-					// should retry this event anyway
-					errs.Set(event.Id, err)
+					// un-recoverable error
+					service.logger.Errorw("could not transform response to event", "event", event.String(), "err", err.Error())
 					continue
 				}
+				maps[response.Id] = event.Id
 
-				responses = append(responses, *res)
-				maps[res.Id] = event.Id
-				continue
+				if err := usecase.ValidateWarehousePutReqResponse(prefix, response); err != nil {
+					// un-recoverable error
+					service.logger.Errorw("could not validate response", "event", event.String(), "response", response.String(), "err", err.Error())
+					continue
+				}
+				ucreq.Responses = append(ucreq.Responses, *response)
 			}
 
 			err := fmt.Errorf("unrecognized event %s", event.Id)
-			errs.Set(event.Id, err)
-			service.logger.Warnw(err.Error(), "event", utils.Stringify(event))
+			retruning[event.Id] = err
+			service.logger.Warnw(err.Error(), "event", event.String())
 		}
 
-		// @TODO: remove hardcode timeout
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-
-		// @TODO: use pool with WithContext and max goroutine is number of events
-		// if err := p.Wait(); err != nil {
-		// 	return nil, err
-		// }
-		var wg conc.WaitGroup
-		if len(messages) > 0 {
-			wg.Go(func() {
-				_, err := service.uc.Message().Put(ctx, &usecase.MessagePutReq{Docs: messages})
-				if err != nil {
-					for _, msg := range messages {
-						eventId := maps[msg.Id]
-						errs.Set(eventId, err)
-					}
-					return
-				}
-			})
-		}
-
-		if len(requests) > 0 {
-			wg.Go(func() {
-				_, err := service.uc.Request().Put(ctx, &usecase.RequestPutReq{Docs: requests})
-				if err != nil {
-					for _, req := range requests {
-						eventId := maps[req.Id]
-						errs.Set(eventId, err)
-					}
-					return
-				}
-			})
-		}
-
-		if len(responses) > 0 {
-			wg.Go(func() {
-				_, err := service.uc.Response().Put(ctx, &usecase.ResponsePutReq{Docs: responses})
-				if err != nil {
-					for _, res := range responses {
-						eventId := maps[res.Id]
-						errs.Set(eventId, err)
-					}
-					return
-				}
-			})
-		}
-
-		c := make(chan bool)
-		defer close(c)
-
-		go func() {
-			wg.Wait()
-			c <- true
-		}()
-
-		select {
-		case <-c:
-			if errs.Count() > 0 {
-				service.metrics.Count(ctx, "storage_put_error", int64(errs.Count()))
-				service.logger.Errorw("encoutered errors", "error_count", errs.Count(), "error_sample", errs.Sample().Error())
-			}
-			service.logger.Infow("save entities", "entity_count", len(events), "save_count", len(events)-errs.Count())
-
-			return errs.Data()
-		case <-ctx.Done():
-			// timeout, all events will be considered as failed
-			// set non-error event with timeout error
+		// we alreay validated messages, request and response, don't need to validate again
+		ucres, err := service.uc.Warehouse().Put(ctx, ucreq)
+		if err != nil {
+			// got un-coverable error, should retry all event
 			for _, event := range events {
-				if err, ok := errs.Get(event.Id); !ok && err == nil {
-					errs.Set(event.Id, ctx.Err())
-				}
+				retruning[event.Id] = err
 			}
-			service.metrics.Count(ctx, "storage_put_timeout_error", 1)
-			service.metrics.Count(ctx, "storage_put_error", int64(errs.Count()))
-			service.logger.Errorw("encoutered errors", "error_count", errs.Count())
-			return errs.Data()
+			return retruning
 		}
+
+		// ucres.Error contain a map of entity id and error
+		// should convert it to a map of event id and error so our streaming service can retry it
+		if len(ucres.Error) > 0 {
+			for entId, err := range ucres.Error {
+				eventId := maps[entId]
+				retruning[eventId] = err
+			}
+		}
+
+		return retruning
 	}
-}
-
-func eventToMessage(i int, event *streaming.Event) (*entities.Message, error) {
-	msg, err := transformation.EventToMessage(event)
-	if err != nil {
-		return nil, err
-	}
-
-	prefix := fmt.Sprintf("events(message).[%d]", i)
-	err = validator.Validate(
-		validator.DefaultConfig,
-		validator.StringStartsWith(prefix+".id", msg.Id, entities.IdNsMsg),
-		validator.NumberGreaterThan(prefix+".timestamp", msg.Timestamp, 0),
-		validator.StringRequired(prefix+".tier", msg.Tier),
-		validator.StringStartsWith(prefix+".app_id", msg.AppId, entities.IdNsApp),
-		validator.StringRequired(prefix+".type", msg.Type),
-		validator.SliceRequired(prefix+".body", msg.Body),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return msg, nil
-}
-
-func eventToRequest(i int, event *streaming.Event) (*entities.Request, error) {
-	req, err := transformation.EventToRequest(event)
-	if err != nil {
-		return nil, err
-	}
-
-	prefix := fmt.Sprintf("events(request).[%d]", i)
-	err = validator.Validate(
-		validator.DefaultConfig,
-		validator.StringStartsWith(prefix+".id", req.Id, entities.IdNsReq),
-		validator.NumberGreaterThan(prefix+".timestamp", req.Timestamp, 0),
-		validator.StringStartsWith(prefix+".msg_id", req.MsgId, entities.IdNsMsg),
-		validator.StringStartsWith(prefix+".ep_id", req.EpId, entities.IdNsEp),
-		validator.StringRequired(prefix+".tier", req.Tier),
-		validator.StringStartsWith(prefix+".app_id", req.AppId, entities.IdNsApp),
-		validator.StringRequired(prefix+".type", req.Type),
-		validator.SliceRequired(prefix+".body", req.Body),
-		validator.StringRequired(prefix+".uri", req.Uri),
-		validator.StringRequired(prefix+".method", req.Method),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-func eventToResponse(i int, event *streaming.Event) (*entities.Response, error) {
-	res, err := transformation.EventToResponse(event)
-	if err != nil {
-		return nil, err
-	}
-
-	prefix := fmt.Sprintf("events(response).[%d]", i)
-	err = validator.Validate(
-		validator.DefaultConfig,
-		validator.StringStartsWith(prefix+".id", res.Id, entities.IdNsRes),
-		validator.NumberGreaterThan(prefix+".timestamp", res.Timestamp, 0),
-		validator.StringStartsWith(prefix+".msg_id", res.MsgId, entities.IdNsMsg),
-		validator.StringStartsWith(prefix+".ep_id", res.EpId, entities.IdNsEp),
-		validator.StringStartsWith(prefix+".req_id", res.ReqId, entities.IdNsReq),
-		validator.StringRequired(prefix+".tier", res.Tier),
-		validator.StringStartsWith(prefix+".app_id", res.AppId, entities.IdNsApp),
-		validator.StringRequired(prefix+".type", res.Type),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
 }
