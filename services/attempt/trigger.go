@@ -30,13 +30,13 @@ func RegisterTriggerCron(service *attempt) func() {
 			}
 		}()
 
-		ucreq := &usecase.TriggerInitiateReq{
+		ucreq := &usecase.TriggerPlanReq{
 			ScanFrom:     service.conf.Attempt.Trigger.Cron.ScanFrom,
 			ScanTo:       service.conf.Attempt.Trigger.Cron.ScanTo,
 			ChunkTimeout: service.conf.Attempt.Trigger.Cron.ChunkTimeout,
 			ChunkSize:    service.conf.Attempt.Trigger.Cron.ChunkSize,
 		}
-		ucres, err := service.uc.Trigger().Initiate(ctx, ucreq)
+		ucres, err := service.uc.Trigger().Plan(ctx, ucreq)
 		if err != nil {
 			service.logger.Errorw("unable to initiate attempt notification", "err", err.Error())
 			return
@@ -68,8 +68,8 @@ func RegisterTriggerConsumer(service *attempt) streaming.SubHandler {
 		ctx := context.Background()
 		retruning := map[string]error{}
 
-		ucreq := &usecase.TriggerConsumeReq{ChunkSize: 3, Notifications: notifications}
-		ucres, err := service.uc.Trigger().Consume(ctx, ucreq)
+		ucreq := &usecase.TriggerExecReq{ChunkSize: 3, Notifications: notifications}
+		ucres, err := service.uc.Trigger().Exec(ctx, ucreq)
 		if err != nil {
 			service.logger.Errorw("unable to consume attempt notifications", "err", err.Error())
 			// basically we will not try to retry an attempt notification

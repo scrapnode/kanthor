@@ -14,8 +14,8 @@ import (
 )
 
 type Trigger interface {
-	Initiate(ctx context.Context, req *TriggerInitiateReq) (*TriggerInitiateRes, error)
-	Consume(ctx context.Context, req *TriggerConsumeReq) (*TriggerConsumeRes, error)
+	Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanRes, error)
+	Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecRes, error)
 }
 
 type trigger struct {

@@ -17,14 +17,14 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-type TriggerConsumeReq struct {
+type TriggerExecReq struct {
 	Timeout       int64
 	Delay         int64
 	ChunkSize     int
 	Notifications []entities.AttemptNotification
 }
 
-func (req *TriggerConsumeReq) Validate() error {
+func (req *TriggerExecReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("notifications", req.Notifications),
@@ -37,7 +37,7 @@ func (req *TriggerConsumeReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Notifications, func(i int, item entities.AttemptNotification) error {
+		validator.Array(req.Notifications, func(i int, item *entities.AttemptNotification) error {
 			prefix := fmt.Sprintf("notifications.[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
@@ -50,12 +50,12 @@ func (req *TriggerConsumeReq) Validate() error {
 	)
 }
 
-type TriggerConsumeRes struct {
+type TriggerExecRes struct {
 	Success []string
 	Error   map[string]error
 }
 
-func (uc *trigger) Consume(ctx context.Context, req *TriggerConsumeReq) (*TriggerConsumeRes, error) {
+func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecRes, error) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 
@@ -89,7 +89,7 @@ func (uc *trigger) Consume(ctx context.Context, req *TriggerConsumeReq) (*Trigge
 
 	select {
 	case <-c:
-		return &TriggerConsumeRes{Success: ok.Data(), Error: ko.Data()}, nil
+		return &TriggerExecRes{Success: ok.Data(), Error: ko.Data()}, nil
 	case <-timeout.Done():
 		// actually we may have some success entries, but we can ignore them
 		// let cronjob pickup and retry them redundantly
@@ -103,7 +103,7 @@ func (uc *trigger) consume(
 	duration time.Duration,
 	size int,
 	delay int64,
-) (*TriggerConsumeRes, error) {
+) (*TriggerExecRes, error) {
 	key := fmt.Sprintf("kanthor.services.attempt.trigger.consumer/%s", notification.AppId)
 	// the lock duration will be long as much as possible
 	// so we will time the global timeout as as the lock duration
@@ -139,7 +139,7 @@ func (uc *trigger) consume(
 	uc.schedule(ctx, ok, ko, size, applicable, msgIds)
 	uc.create(ctx, ok, ko, size, delay, requests)
 
-	res := &TriggerConsumeRes{Success: ok.Data(), Error: ko.Data()}
+	res := &TriggerExecRes{Success: ok.Data(), Error: ko.Data()}
 	return res, nil
 }
 

@@ -13,7 +13,7 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-type TriggerInitiateReq struct {
+type TriggerPlanReq struct {
 	ScanFrom int64
 	ScanTo   int64
 
@@ -21,7 +21,7 @@ type TriggerInitiateReq struct {
 	ChunkSize    int
 }
 
-func (req *TriggerInitiateReq) Validate() error {
+func (req *TriggerPlanReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThan("scan_from", req.ScanFrom, req.ScanTo),
@@ -31,13 +31,13 @@ func (req *TriggerInitiateReq) Validate() error {
 	)
 }
 
-type TriggerInitiateRes struct {
+type TriggerPlanRes struct {
 	Cursor  string
 	Success []string
 	Error   map[string]error
 }
 
-func (uc *trigger) Initiate(ctx context.Context, req *TriggerInitiateReq) (*TriggerInitiateRes, error) {
+func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanRes, error) {
 	apps, cursor, err := uc.applications(ctx, req.ChunkSize)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (uc *trigger) Initiate(ctx context.Context, req *TriggerInitiateReq) (*Trig
 
 	select {
 	case <-c:
-		return &TriggerInitiateRes{Cursor: cursor, Success: ok.Data(), Error: ko.Data()}, nil
+		return &TriggerPlanRes{Cursor: cursor, Success: ok.Data(), Error: ko.Data()}, nil
 	case <-timeout.Done():
 		// we don't need to check which notication was consumed
 		// because it could be simply retry later with the cronjob

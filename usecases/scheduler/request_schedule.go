@@ -23,7 +23,7 @@ type RequestScheduleReq struct {
 	Messages     []entities.Message
 }
 
-func ValidateRequestScheduleMessaeg(prefix string, message entities.Message) error {
+func ValidateRequestScheduleMessaeg(prefix string, message *entities.Message) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".id", message.Id, entities.IdNsMsg),
@@ -48,7 +48,7 @@ func (req *RequestScheduleReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Messages, func(i int, item entities.Message) error {
+		validator.Array(req.Messages, func(i int, item *entities.Message) error {
 			prefix := fmt.Sprintf("messages[%d]", i)
 			return ValidateRequestScheduleMessaeg(prefix, item)
 		}),

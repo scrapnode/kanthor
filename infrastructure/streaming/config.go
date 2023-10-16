@@ -42,8 +42,8 @@ func (conf *StreamConfig) Validate() error {
 		validator.StringRequired("streaming.conf.stream.name", conf.Name),
 		validator.NumberGreaterThanOrEqual("streaming.conf.stream.replicas", conf.Replicas, 0),
 		validator.SliceRequired("streaming.conf.stream.subjects", conf.Subjects),
-		validator.Array(conf.Subjects, func(i int, item string) error {
-			return validator.Validate(validator.DefaultConfig, validator.StringRequired(fmt.Sprintf("streaming.conf.stream.subjects[%d]", i), item))
+		validator.Array(conf.Subjects, func(i int, item *string) error {
+			return validator.Validate(validator.DefaultConfig, validator.StringRequired(fmt.Sprintf("streaming.conf.stream.subjects[%d]", i), *item))
 		}),
 		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.msgs", conf.Limits.Msgs, 0),
 		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.msg_bytes", int(conf.Limits.MsgBytes), 0),

@@ -26,7 +26,7 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 				continue
 			}
 
-			if err := usecase.ValidateRequestScheduleMessaeg("message", *message); err != nil {
+			if err := usecase.ValidateRequestScheduleMessaeg("message", message); err != nil {
 				service.logger.Errorw(err.Error(), "event", event.String(), "message", message.String())
 				// got malformed message, should ignore and not retry it
 				continue
