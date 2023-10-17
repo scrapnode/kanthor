@@ -35,21 +35,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ExportMetricServiceRequest struct {
+type ExportMetricsServiceRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// An array of ResourceMetric.
+	// An array of ResourceMetrics.
 	// For data coming from a single resource this array will typically contain one
 	// element. Intermediary nodes (such as OpenTelemetry Collector) that receive
 	// data from multiple origins typically batch the data before forwarding further and
 	// in that case this array will contain multiple elements.
-	ResourceMetric []*v1.ResourceMetric `protobuf:"bytes,1,rep,name=resource_metrics,json=resourceMetric,proto3" json:"resource_metrics,omitempty"`
+	ResourceMetrics []*v1.ResourceMetrics `protobuf:"bytes,1,rep,name=resource_metrics,json=resourceMetrics,proto3" json:"resource_metrics,omitempty"`
 }
 
-func (x *ExportMetricServiceRequest) Reset() {
-	*x = ExportMetricServiceRequest{}
+func (x *ExportMetricsServiceRequest) Reset() {
+	*x = ExportMetricsServiceRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -57,13 +57,13 @@ func (x *ExportMetricServiceRequest) Reset() {
 	}
 }
 
-func (x *ExportMetricServiceRequest) String() string {
+func (x *ExportMetricsServiceRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ExportMetricServiceRequest) ProtoMessage() {}
+func (*ExportMetricsServiceRequest) ProtoMessage() {}
 
-func (x *ExportMetricServiceRequest) ProtoReflect() protoreflect.Message {
+func (x *ExportMetricsServiceRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -75,19 +75,19 @@ func (x *ExportMetricServiceRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ExportMetricServiceRequest.ProtoReflect.Descriptor instead.
-func (*ExportMetricServiceRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExportMetricsServiceRequest.ProtoReflect.Descriptor instead.
+func (*ExportMetricsServiceRequest) Descriptor() ([]byte, []int) {
 	return file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ExportMetricServiceRequest) GetResourceMetric() []*v1.ResourceMetric {
+func (x *ExportMetricsServiceRequest) GetResourceMetrics() []*v1.ResourceMetrics {
 	if x != nil {
-		return x.ResourceMetric
+		return x.ResourceMetrics
 	}
 	return nil
 }
 
-type ExportMetricServiceResponse struct {
+type ExportMetricsServiceResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -107,11 +107,11 @@ type ExportMetricServiceResponse struct {
 	// A `partial_success` message with an empty value (rejected_<signal> = 0 and
 	// `error_message` = "") is equivalent to it not being set/present. Senders
 	// SHOULD interpret it the same way as in the full success case.
-	PartialSuccess *ExportMetricPartialSuccess `protobuf:"bytes,1,opt,name=partial_success,json=partialSuccess,proto3" json:"partial_success,omitempty"`
+	PartialSuccess *ExportMetricsPartialSuccess `protobuf:"bytes,1,opt,name=partial_success,json=partialSuccess,proto3" json:"partial_success,omitempty"`
 }
 
-func (x *ExportMetricServiceResponse) Reset() {
-	*x = ExportMetricServiceResponse{}
+func (x *ExportMetricsServiceResponse) Reset() {
+	*x = ExportMetricsServiceResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -119,13 +119,13 @@ func (x *ExportMetricServiceResponse) Reset() {
 	}
 }
 
-func (x *ExportMetricServiceResponse) String() string {
+func (x *ExportMetricsServiceResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ExportMetricServiceResponse) ProtoMessage() {}
+func (*ExportMetricsServiceResponse) ProtoMessage() {}
 
-func (x *ExportMetricServiceResponse) ProtoReflect() protoreflect.Message {
+func (x *ExportMetricsServiceResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -137,19 +137,19 @@ func (x *ExportMetricServiceResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ExportMetricServiceResponse.ProtoReflect.Descriptor instead.
-func (*ExportMetricServiceResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExportMetricsServiceResponse.ProtoReflect.Descriptor instead.
+func (*ExportMetricsServiceResponse) Descriptor() ([]byte, []int) {
 	return file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ExportMetricServiceResponse) GetPartialSuccess() *ExportMetricPartialSuccess {
+func (x *ExportMetricsServiceResponse) GetPartialSuccess() *ExportMetricsPartialSuccess {
 	if x != nil {
 		return x.PartialSuccess
 	}
 	return nil
 }
 
-type ExportMetricPartialSuccess struct {
+type ExportMetricsPartialSuccess struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -169,8 +169,8 @@ type ExportMetricPartialSuccess struct {
 	ErrorMessage string `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
 }
 
-func (x *ExportMetricPartialSuccess) Reset() {
-	*x = ExportMetricPartialSuccess{}
+func (x *ExportMetricsPartialSuccess) Reset() {
+	*x = ExportMetricsPartialSuccess{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -178,13 +178,13 @@ func (x *ExportMetricPartialSuccess) Reset() {
 	}
 }
 
-func (x *ExportMetricPartialSuccess) String() string {
+func (x *ExportMetricsPartialSuccess) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ExportMetricPartialSuccess) ProtoMessage() {}
+func (*ExportMetricsPartialSuccess) ProtoMessage() {}
 
-func (x *ExportMetricPartialSuccess) ProtoReflect() protoreflect.Message {
+func (x *ExportMetricsPartialSuccess) ProtoReflect() protoreflect.Message {
 	mi := &file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -196,19 +196,19 @@ func (x *ExportMetricPartialSuccess) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ExportMetricPartialSuccess.ProtoReflect.Descriptor instead.
-func (*ExportMetricPartialSuccess) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExportMetricsPartialSuccess.ProtoReflect.Descriptor instead.
+func (*ExportMetricsPartialSuccess) Descriptor() ([]byte, []int) {
 	return file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ExportMetricPartialSuccess) GetRejectedDataPoints() int64 {
+func (x *ExportMetricsPartialSuccess) GetRejectedDataPoints() int64 {
 	if x != nil {
 		return x.RejectedDataPoints
 	}
 	return 0
 }
 
-func (x *ExportMetricPartialSuccess) GetErrorMessage() string {
+func (x *ExportMetricsPartialSuccess) GetErrorMessage() string {
 	if x != nil {
 		return x.ErrorMessage
 	}
@@ -290,16 +290,16 @@ func file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_rawDesc
 
 var file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_goTypes = []interface{}{
-	(*ExportMetricServiceRequest)(nil),  // 0: opentelemetry.proto.collector.metrics.v1.ExportMetricServiceRequest
-	(*ExportMetricServiceResponse)(nil), // 1: opentelemetry.proto.collector.metrics.v1.ExportMetricServiceResponse
-	(*ExportMetricPartialSuccess)(nil),  // 2: opentelemetry.proto.collector.metrics.v1.ExportMetricPartialSuccess
-	(*v1.ResourceMetric)(nil),           // 3: opentelemetry.proto.metrics.v1.ResourceMetric
+	(*ExportMetricsServiceRequest)(nil),  // 0: opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest
+	(*ExportMetricsServiceResponse)(nil), // 1: opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse
+	(*ExportMetricsPartialSuccess)(nil),  // 2: opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess
+	(*v1.ResourceMetrics)(nil),           // 3: opentelemetry.proto.metrics.v1.ResourceMetrics
 }
 var file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_depIdxs = []int32{
-	3, // 0: opentelemetry.proto.collector.metrics.v1.ExportMetricServiceRequest.resource_metrics:type_name -> opentelemetry.proto.metrics.v1.ResourceMetric
-	2, // 1: opentelemetry.proto.collector.metrics.v1.ExportMetricServiceResponse.partial_success:type_name -> opentelemetry.proto.collector.metrics.v1.ExportMetricPartialSuccess
-	0, // 2: opentelemetry.proto.collector.metrics.v1.MetricService.Export:input_type -> opentelemetry.proto.collector.metrics.v1.ExportMetricServiceRequest
-	1, // 3: opentelemetry.proto.collector.metrics.v1.MetricService.Export:output_type -> opentelemetry.proto.collector.metrics.v1.ExportMetricServiceResponse
+	3, // 0: opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest.resource_metrics:type_name -> opentelemetry.proto.metrics.v1.ResourceMetrics
+	2, // 1: opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse.partial_success:type_name -> opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess
+	0, // 2: opentelemetry.proto.collector.metrics.v1.MetricsService.Export:input_type -> opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest
+	1, // 3: opentelemetry.proto.collector.metrics.v1.MetricsService.Export:output_type -> opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse
 	3, // [3:4] is the sub-list for method output_type
 	2, // [2:3] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -314,7 +314,7 @@ func file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_init() 
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ExportMetricServiceRequest); i {
+			switch v := v.(*ExportMetricsServiceRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -326,7 +326,7 @@ func file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_init() 
 			}
 		}
 		file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ExportMetricServiceResponse); i {
+			switch v := v.(*ExportMetricsServiceResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -338,7 +338,7 @@ func file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_init() 
 			}
 		}
 		file_opentelemetry_proto_collector_metrics_v1_metrics_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ExportMetricPartialSuccess); i {
+			switch v := v.(*ExportMetricsPartialSuccess); i {
 			case 0:
 				return &v.state
 			case 1:

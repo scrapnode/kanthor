@@ -284,7 +284,7 @@ const (
 	SizeofIfaMsghdr        = 0x18
 	SizeofIfAnnounceMsghdr = 0x18
 	SizeofRtMsghdr         = 0x78
-	SizeofRtMetric        = 0x50
+	SizeofRtMetrics        = 0x50
 )
 
 type IfMsghdr struct {
@@ -356,10 +356,10 @@ type RtMsghdr struct {
 	Use       int32
 	Inits     int32
 	Pad_cgo_1 [4]byte
-	Rmx       RtMetric
+	Rmx       RtMetrics
 }
 
-type RtMetric struct {
+type RtMetrics struct {
 	Locks    uint64
 	Mtu      uint64
 	Hopcount uint64

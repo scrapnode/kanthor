@@ -379,7 +379,7 @@ const (
 	SizeofIfmaMsghdr       = 0x10
 	SizeofIfAnnounceMsghdr = 0x18
 	SizeofRtMsghdr         = 0x5c
-	SizeofRtMetric        = 0x38
+	SizeofRtMetrics        = 0x38
 )
 
 type ifMsghdr struct {
@@ -503,10 +503,10 @@ type RtMsghdr struct {
 	Errno   int32
 	Fmask   int32
 	Inits   uint32
-	Rmx     RtMetric
+	Rmx     RtMetrics
 }
 
-type RtMetric struct {
+type RtMetrics struct {
 	Locks    uint32
 	Mtu      uint32
 	Hopcount uint32

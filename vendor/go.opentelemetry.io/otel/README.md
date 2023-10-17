@@ -14,13 +14,13 @@ It provides a set of APIs to directly measure performance and behavior of your s
 | Signal  | Status     | Project               |
 |---------|------------|-----------------------|
 | Traces  | Stable     | N/A                   |
-| Metric | Mixed [1]  | [Go: Metric SDK (GA)] |
+| Metrics | Mixed [1]  | [Go: Metric SDK (GA)] |
 | Logs    | Frozen [2] | N/A                   |
 
 [Go: Metric SDK (GA)]: https://github.com/orgs/open-telemetry/projects/34
 
-- [1]: [Metric API](https://pkg.go.dev/go.opentelemetry.io/otel/metric) is Stable. [Metric SDK](https://pkg.go.dev/go.opentelemetry.io/otel/sdk/metric) is Beta.
-- [2]: The Logs signal development is halted for this project while we stabilize the Metric SDK.
+- [1]: [Metrics API](https://pkg.go.dev/go.opentelemetry.io/otel/metric) is Stable. [Metrics SDK](https://pkg.go.dev/go.opentelemetry.io/otel/sdk/metric) is Beta.
+- [2]: The Logs signal development is halted for this project while we stabilize the Metrics SDK.
    No Logs Pull Requests are currently being accepted.
 
 Progress and status specific to this repository is tracked in our
@@ -104,7 +104,7 @@ export pipeline to send that telemetry to an observability platform.
 
 All officially supported exporters for the OpenTelemetry project are contained in the [exporters directory](./exporters).
 
-| Exporter                              | Metric | Traces |
+| Exporter                              | Metrics | Traces |
 |---------------------------------------|:-------:|:------:|
 | [OTLP](./exporters/otlp/)             |    ✓    |   ✓    |
 | [Prometheus](./exporters/prometheus/) |    ✓    |        |

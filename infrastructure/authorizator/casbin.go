@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	psqlwatcher "github.com/IguteChung/casbin-psql-watcher"
 	gocasbin "github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/jackc/pgerrcode"
@@ -95,6 +96,14 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 		return err
 	}
 	authorizator.client = client
+
+	watcher, err := psqlwatcher.NewWatcherWithConnString(context.Background(), authorizator.conf.Casbin.PolicyUri, psqlwatcher.Option{})
+	if err != nil {
+		return err
+	}
+	if err := client.SetWatcher(watcher); err != nil {
+		return err
+	}
 
 	authorizator.logger.Info("connected")
 	return nil

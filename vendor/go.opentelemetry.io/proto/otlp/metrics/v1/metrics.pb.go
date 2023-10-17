@@ -206,7 +206,7 @@ func (DataPointFlags) EnumDescriptor() ([]byte, []int) {
 	return file_opentelemetry_proto_metrics_v1_metrics_proto_rawDescGZIP(), []int{1}
 }
 
-// MetricData represents the metrics data that can be stored in a persistent
+// MetricsData represents the metrics data that can be stored in a persistent
 // storage, OR can be embedded by other protocols that transfer OTLP metrics
 // data but do not implement the OTLP protocol.
 //
@@ -216,21 +216,21 @@ func (DataPointFlags) EnumDescriptor() ([]byte, []int) {
 //
 // When new fields are added into this message, the OTLP request MUST be updated
 // as well.
-type MetricData struct {
+type MetricsData struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// An array of ResourceMetric.
+	// An array of ResourceMetrics.
 	// For data coming from a single resource this array will typically contain
 	// one element. Intermediary nodes that receive data from multiple origins
 	// typically batch the data before forwarding further and in that case this
 	// array will contain multiple elements.
-	ResourceMetric []*ResourceMetric `protobuf:"bytes,1,rep,name=resource_metrics,json=resourceMetric,proto3" json:"resource_metrics,omitempty"`
+	ResourceMetrics []*ResourceMetrics `protobuf:"bytes,1,rep,name=resource_metrics,json=resourceMetrics,proto3" json:"resource_metrics,omitempty"`
 }
 
-func (x *MetricData) Reset() {
-	*x = MetricData{}
+func (x *MetricsData) Reset() {
+	*x = MetricsData{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -238,13 +238,13 @@ func (x *MetricData) Reset() {
 	}
 }
 
-func (x *MetricData) String() string {
+func (x *MetricsData) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MetricData) ProtoMessage() {}
+func (*MetricsData) ProtoMessage() {}
 
-func (x *MetricData) ProtoReflect() protoreflect.Message {
+func (x *MetricsData) ProtoReflect() protoreflect.Message {
 	mi := &file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -256,20 +256,20 @@ func (x *MetricData) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use MetricData.ProtoReflect.Descriptor instead.
-func (*MetricData) Descriptor() ([]byte, []int) {
+// Deprecated: Use MetricsData.ProtoReflect.Descriptor instead.
+func (*MetricsData) Descriptor() ([]byte, []int) {
 	return file_opentelemetry_proto_metrics_v1_metrics_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *MetricData) GetResourceMetric() []*ResourceMetric {
+func (x *MetricsData) GetResourceMetrics() []*ResourceMetrics {
 	if x != nil {
-		return x.ResourceMetric
+		return x.ResourceMetrics
 	}
 	return nil
 }
 
-// A collection of ScopeMetric from a Resource.
-type ResourceMetric struct {
+// A collection of ScopeMetrics from a Resource.
+type ResourceMetrics struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -278,14 +278,14 @@ type ResourceMetric struct {
 	// If this field is not set then no resource info is known.
 	Resource *v1.Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
 	// A list of metrics that originate from a resource.
-	ScopeMetric []*ScopeMetric `protobuf:"bytes,2,rep,name=scope_metrics,json=scopeMetric,proto3" json:"scope_metrics,omitempty"`
+	ScopeMetrics []*ScopeMetrics `protobuf:"bytes,2,rep,name=scope_metrics,json=scopeMetrics,proto3" json:"scope_metrics,omitempty"`
 	// This schema_url applies to the data in the "resource" field. It does not apply
 	// to the data in the "scope_metrics" field which have their own schema_url field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 }
 
-func (x *ResourceMetric) Reset() {
-	*x = ResourceMetric{}
+func (x *ResourceMetrics) Reset() {
+	*x = ResourceMetrics{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -293,13 +293,13 @@ func (x *ResourceMetric) Reset() {
 	}
 }
 
-func (x *ResourceMetric) String() string {
+func (x *ResourceMetrics) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ResourceMetric) ProtoMessage() {}
+func (*ResourceMetrics) ProtoMessage() {}
 
-func (x *ResourceMetric) ProtoReflect() protoreflect.Message {
+func (x *ResourceMetrics) ProtoReflect() protoreflect.Message {
 	mi := &file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -311,34 +311,34 @@ func (x *ResourceMetric) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ResourceMetric.ProtoReflect.Descriptor instead.
-func (*ResourceMetric) Descriptor() ([]byte, []int) {
+// Deprecated: Use ResourceMetrics.ProtoReflect.Descriptor instead.
+func (*ResourceMetrics) Descriptor() ([]byte, []int) {
 	return file_opentelemetry_proto_metrics_v1_metrics_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ResourceMetric) GetResource() *v1.Resource {
+func (x *ResourceMetrics) GetResource() *v1.Resource {
 	if x != nil {
 		return x.Resource
 	}
 	return nil
 }
 
-func (x *ResourceMetric) GetScopeMetric() []*ScopeMetric {
+func (x *ResourceMetrics) GetScopeMetrics() []*ScopeMetrics {
 	if x != nil {
-		return x.ScopeMetric
+		return x.ScopeMetrics
 	}
 	return nil
 }
 
-func (x *ResourceMetric) GetSchemaUrl() string {
+func (x *ResourceMetrics) GetSchemaUrl() string {
 	if x != nil {
 		return x.SchemaUrl
 	}
 	return ""
 }
 
-// A collection of Metric produced by an Scope.
-type ScopeMetric struct {
+// A collection of Metrics produced by an Scope.
+type ScopeMetrics struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -348,13 +348,13 @@ type ScopeMetric struct {
 	// an empty instrumentation scope name (unknown).
 	Scope *v11.InstrumentationScope `protobuf:"bytes,1,opt,name=scope,proto3" json:"scope,omitempty"`
 	// A list of metrics that originate from an instrumentation library.
-	Metric []*Metric `protobuf:"bytes,2,rep,name=metrics,proto3" json:"metrics,omitempty"`
+	Metrics []*Metric `protobuf:"bytes,2,rep,name=metrics,proto3" json:"metrics,omitempty"`
 	// This schema_url applies to all metrics in the "metrics" field.
 	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 }
 
-func (x *ScopeMetric) Reset() {
-	*x = ScopeMetric{}
+func (x *ScopeMetrics) Reset() {
+	*x = ScopeMetrics{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -362,13 +362,13 @@ func (x *ScopeMetric) Reset() {
 	}
 }
 
-func (x *ScopeMetric) String() string {
+func (x *ScopeMetrics) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ScopeMetric) ProtoMessage() {}
+func (*ScopeMetrics) ProtoMessage() {}
 
-func (x *ScopeMetric) ProtoReflect() protoreflect.Message {
+func (x *ScopeMetrics) ProtoReflect() protoreflect.Message {
 	mi := &file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -380,26 +380,26 @@ func (x *ScopeMetric) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ScopeMetric.ProtoReflect.Descriptor instead.
-func (*ScopeMetric) Descriptor() ([]byte, []int) {
+// Deprecated: Use ScopeMetrics.ProtoReflect.Descriptor instead.
+func (*ScopeMetrics) Descriptor() ([]byte, []int) {
 	return file_opentelemetry_proto_metrics_v1_metrics_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ScopeMetric) GetScope() *v11.InstrumentationScope {
+func (x *ScopeMetrics) GetScope() *v11.InstrumentationScope {
 	if x != nil {
 		return x.Scope
 	}
 	return nil
 }
 
-func (x *ScopeMetric) GetMetric() []*Metric {
+func (x *ScopeMetrics) GetMetrics() []*Metric {
 	if x != nil {
-		return x.Metric
+		return x.Metrics
 	}
 	return nil
 }
 
-func (x *ScopeMetric) GetSchemaUrl() string {
+func (x *ScopeMetrics) GetSchemaUrl() string {
 	if x != nil {
 		return x.SchemaUrl
 	}
@@ -889,7 +889,7 @@ func (x *ExponentialHistogram) GetAggregationTemporality() AggregationTemporalit
 
 // Summary metric data are used to convey quantile summaries,
 // a Prometheus (see: https://prometheus.io/docs/concepts/metric_types/#summary)
-// and OpenMetric (see: https://github.com/OpenObservability/OpenMetric/blob/4dbf6075567ab43296eed941037c12951faafb92/protos/prometheus.proto#L45)
+// and OpenMetrics (see: https://github.com/OpenObservability/OpenMetrics/blob/4dbf6075567ab43296eed941037c12951faafb92/protos/prometheus.proto#L45)
 // data type. These data points cannot always be merged in a meaningful way.
 // While they can be useful in some applications, histogram data points are
 // recommended for new applications.
@@ -1123,8 +1123,8 @@ type HistogramDataPoint struct {
 	// Note: Sum should only be filled out when measuring non-negative discrete
 	// events, and is assumed to be monotonic over the values of these events.
 	// Negative events *can* be recorded, but sum should not be filled out when
-	// doing so.  This is specifically to enforce compatibility w/ OpenMetric,
-	// see: https://github.com/OpenObservability/OpenMetric/blob/main/specification/OpenMetric.md#histogram
+	// doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
+	// see: https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#histogram
 	Sum *float64 `protobuf:"fixed64,5,opt,name=sum,proto3,oneof" json:"sum,omitempty"`
 	// bucket_counts is an optional field contains the count values of histogram
 	// for each bucket.
@@ -1146,7 +1146,7 @@ type HistogramDataPoint struct {
 	//
 	// Histogram buckets are inclusive of their upper boundary, except the last
 	// bucket where the boundary is at infinity. This format is intentionally
-	// compatible with the OpenMetric histogram definition.
+	// compatible with the OpenMetrics histogram definition.
 	ExplicitBounds []float64 `protobuf:"fixed64,7,rep,packed,name=explicit_bounds,json=explicitBounds,proto3" json:"explicit_bounds,omitempty"`
 	// (Optional) List of exemplars collected from
 	// measurements that were used to form the data point
@@ -1305,8 +1305,8 @@ type ExponentialHistogramDataPoint struct {
 	// Note: Sum should only be filled out when measuring non-negative discrete
 	// events, and is assumed to be monotonic over the values of these events.
 	// Negative events *can* be recorded, but sum should not be filled out when
-	// doing so.  This is specifically to enforce compatibility w/ OpenMetric,
-	// see: https://github.com/OpenObservability/OpenMetric/blob/main/specification/OpenMetric.md#histogram
+	// doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
+	// see: https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#histogram
 	Sum *float64 `protobuf:"fixed64,5,opt,name=sum,proto3,oneof" json:"sum,omitempty"`
 	// scale describes the resolution of the histogram.  Boundaries are
 	// located at powers of the base, where:
@@ -1517,8 +1517,8 @@ type SummaryDataPoint struct {
 	// Note: Sum should only be filled out when measuring non-negative discrete
 	// events, and is assumed to be monotonic over the values of these events.
 	// Negative events *can* be recorded, but sum should not be filled out when
-	// doing so.  This is specifically to enforce compatibility w/ OpenMetric,
-	// see: https://github.com/OpenObservability/OpenMetric/blob/main/specification/OpenMetric.md#summary
+	// doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
+	// see: https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#summary
 	Sum float64 `protobuf:"fixed64,5,opt,name=sum,proto3" json:"sum,omitempty"`
 	// (Optional) list of values at different quantiles of the distribution calculated
 	// from the current snapshot. The quantiles must be strictly increasing.
@@ -2194,9 +2194,9 @@ var file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes = make([]protoimp
 var file_opentelemetry_proto_metrics_v1_metrics_proto_goTypes = []interface{}{
 	(AggregationTemporality)(0),                   // 0: opentelemetry.proto.metrics.v1.AggregationTemporality
 	(DataPointFlags)(0),                           // 1: opentelemetry.proto.metrics.v1.DataPointFlags
-	(*MetricData)(nil),                           // 2: opentelemetry.proto.metrics.v1.MetricData
-	(*ResourceMetric)(nil),                       // 3: opentelemetry.proto.metrics.v1.ResourceMetric
-	(*ScopeMetric)(nil),                          // 4: opentelemetry.proto.metrics.v1.ScopeMetric
+	(*MetricsData)(nil),                           // 2: opentelemetry.proto.metrics.v1.MetricsData
+	(*ResourceMetrics)(nil),                       // 3: opentelemetry.proto.metrics.v1.ResourceMetrics
+	(*ScopeMetrics)(nil),                          // 4: opentelemetry.proto.metrics.v1.ScopeMetrics
 	(*Metric)(nil),                                // 5: opentelemetry.proto.metrics.v1.Metric
 	(*Gauge)(nil),                                 // 6: opentelemetry.proto.metrics.v1.Gauge
 	(*Sum)(nil),                                   // 7: opentelemetry.proto.metrics.v1.Sum
@@ -2215,11 +2215,11 @@ var file_opentelemetry_proto_metrics_v1_metrics_proto_goTypes = []interface{}{
 	(*v11.KeyValue)(nil),                          // 20: opentelemetry.proto.common.v1.KeyValue
 }
 var file_opentelemetry_proto_metrics_v1_metrics_proto_depIdxs = []int32{
-	3,  // 0: opentelemetry.proto.metrics.v1.MetricData.resource_metrics:type_name -> opentelemetry.proto.metrics.v1.ResourceMetric
-	18, // 1: opentelemetry.proto.metrics.v1.ResourceMetric.resource:type_name -> opentelemetry.proto.resource.v1.Resource
-	4,  // 2: opentelemetry.proto.metrics.v1.ResourceMetric.scope_metrics:type_name -> opentelemetry.proto.metrics.v1.ScopeMetric
-	19, // 3: opentelemetry.proto.metrics.v1.ScopeMetric.scope:type_name -> opentelemetry.proto.common.v1.InstrumentationScope
-	5,  // 4: opentelemetry.proto.metrics.v1.ScopeMetric.metrics:type_name -> opentelemetry.proto.metrics.v1.Metric
+	3,  // 0: opentelemetry.proto.metrics.v1.MetricsData.resource_metrics:type_name -> opentelemetry.proto.metrics.v1.ResourceMetrics
+	18, // 1: opentelemetry.proto.metrics.v1.ResourceMetrics.resource:type_name -> opentelemetry.proto.resource.v1.Resource
+	4,  // 2: opentelemetry.proto.metrics.v1.ResourceMetrics.scope_metrics:type_name -> opentelemetry.proto.metrics.v1.ScopeMetrics
+	19, // 3: opentelemetry.proto.metrics.v1.ScopeMetrics.scope:type_name -> opentelemetry.proto.common.v1.InstrumentationScope
+	5,  // 4: opentelemetry.proto.metrics.v1.ScopeMetrics.metrics:type_name -> opentelemetry.proto.metrics.v1.Metric
 	6,  // 5: opentelemetry.proto.metrics.v1.Metric.gauge:type_name -> opentelemetry.proto.metrics.v1.Gauge
 	7,  // 6: opentelemetry.proto.metrics.v1.Metric.sum:type_name -> opentelemetry.proto.metrics.v1.Sum
 	8,  // 7: opentelemetry.proto.metrics.v1.Metric.histogram:type_name -> opentelemetry.proto.metrics.v1.Histogram
@@ -2258,7 +2258,7 @@ func file_opentelemetry_proto_metrics_v1_metrics_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MetricData); i {
+			switch v := v.(*MetricsData); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2270,7 +2270,7 @@ func file_opentelemetry_proto_metrics_v1_metrics_proto_init() {
 			}
 		}
 		file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResourceMetric); i {
+			switch v := v.(*ResourceMetrics); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2282,7 +2282,7 @@ func file_opentelemetry_proto_metrics_v1_metrics_proto_init() {
 			}
 		}
 		file_opentelemetry_proto_metrics_v1_metrics_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ScopeMetric); i {
+			switch v := v.(*ScopeMetrics); i {
 			case 0:
 				return &v.state
 			case 1:
