@@ -37,7 +37,7 @@ func UseAccountGet(service *sdkapi) gin.HandlerFunc {
 			return
 		}
 
-		permissions, err := service.authz.UserPermissionsInTenant(req.WorkspcaeId, acc.Sub)
+		permissions, err := service.infra.Authorizator.UserPermissionsInTenant(req.WorkspcaeId, acc.Sub)
 		if err != nil {
 			service.logger.Errorw(err.Error(), "worksapce_id", req.WorkspcaeId)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to get your permissions"))

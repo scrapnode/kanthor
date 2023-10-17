@@ -4,19 +4,20 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointUpdateReq struct {
-	AppId string
-	Id    string
-	Name  string
+	WorkspaceId string
+	AppId       string
+	Id          string
+	Name        string
 }
 
 func (req *EndpointUpdateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringStartsWith("id", req.Id, entities.IdNsEp),
 		validator.StringRequired("name", req.Name),
@@ -28,10 +29,8 @@ type EndpointUpdateRes struct {
 }
 
 func (uc *endpoint) Update(ctx context.Context, req *EndpointUpdateReq) (*EndpointUpdateRes, error) {
-	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
-
 	ep, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repos.Application().Get(ctx, ws, req.AppId)
+		app, err := uc.repos.Application().Get(ctx, req.WorkspaceId, req.AppId)
 		if err != nil {
 			return nil, err
 		}

@@ -7,7 +7,6 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
@@ -20,8 +19,6 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	wire.Build(
 		sdkapi.New,
 		infrastructure.New,
-		ResolveSdkApiAuthorizatorConfig,
-		authorizator.New,
 		InitializeSdkUsecase,
 	)
 	return nil, nil
@@ -40,8 +37,4 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, infra *inf
 
 func ResolveSdkApiPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 	return &conf.SdkApi.Publisher
-}
-
-func ResolveSdkApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.SdkApi.Authorizator
 }

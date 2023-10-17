@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi"
@@ -22,8 +21,6 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 		infrastructure.New,
 		ResolvePortalApiAuthenticatorConfig,
 		authenticator.New,
-		ResolvePortalApiAuthorizatorConfig,
-		authorizator.New,
 		InitializePortalUsecase,
 	)
 	return nil, nil
@@ -39,8 +36,4 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger, infra *
 
 func ResolvePortalApiAuthenticatorConfig(conf *config.Config) *authenticator.Config {
 	return &conf.PortalApi.Authenticator
-}
-
-func ResolvePortalApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.PortalApi.Authorizator
 }

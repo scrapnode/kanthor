@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
@@ -75,16 +74,11 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	authorizatorConfig := ResolvePortalApiAuthorizatorConfig(conf)
-	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
-	if err != nil {
-		return nil, err
-	}
 	portal, err := InitializePortalUsecase(conf, logger, infrastructureInfrastructure)
 	if err != nil {
 		return nil, err
 	}
-	service := portalapi.New(conf, logger, infrastructureInfrastructure, authenticatorAuthenticator, authorizatorAuthorizator, portal)
+	service := portalapi.New(conf, logger, infrastructureInfrastructure, authenticatorAuthenticator, portal)
 	return service, nil
 }
 
@@ -134,16 +128,11 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	authorizatorConfig := ResolveSdkApiAuthorizatorConfig(conf)
-	authorizatorAuthorizator, err := authorizator.New(authorizatorConfig, logger)
-	if err != nil {
-		return nil, err
-	}
 	sdk, err := InitializeSdkUsecase(conf, logger, infrastructureInfrastructure)
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, infrastructureInfrastructure, authorizatorAuthorizator, sdk)
+	service := sdkapi.New(conf, logger, infrastructureInfrastructure, sdk)
 	return service, nil
 }
 
@@ -206,10 +195,6 @@ func ResolvePortalApiAuthenticatorConfig(conf *config.Config) *authenticator.Con
 	return &conf.PortalApi.Authenticator
 }
 
-func ResolvePortalApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.PortalApi.Authorizator
-}
-
 // wire_scheduler.go:
 
 func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
@@ -224,10 +209,6 @@ func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.Subscriber
 
 func ResolveSdkApiPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 	return &conf.SdkApi.Publisher
-}
-
-func ResolveSdkApiAuthorizatorConfig(conf *config.Config) *authorizator.Config {
-	return &conf.SdkApi.Authorizator
 }
 
 // wire_storage.go:

@@ -30,7 +30,7 @@ type WorkspaceCredentialsAuthenticateRes struct {
 
 func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error) {
 	key := CacheKeyWsAuthenticate(req.User)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*WorkspaceCredentialsAuthenticateRes, error) {
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*1, func() (*WorkspaceCredentialsAuthenticateRes, error) {
 		res := &WorkspaceCredentialsAuthenticateRes{}
 
 		credentials, err := uc.repos.WorkspaceCredentials().Get(ctx, req.User)
@@ -39,14 +39,14 @@ func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *Workspace
 		}
 		res.WorkspaceCredentials = credentials
 
-		if err := uc.infra.Cryptography.KDF().StringCompare(credentials.Hash, req.Pass); err != nil {
-			return nil, err
-		}
-
 		expired := credentials.ExpiredAt > 0 && credentials.ExpiredAt < uc.infra.Timer.Now().UnixMilli()
 		if expired {
 			expiredAt := time.UnixMilli(credentials.ExpiredAt).Format(time.RFC3339)
 			return nil, fmt.Errorf("workspace credentials was expired (%s)", expiredAt)
+		}
+
+		if err := uc.infra.Cryptography.KDF().StringCompare(credentials.Hash, req.Pass); err != nil {
+			return nil, err
 		}
 
 		ws, err := uc.repos.Workspace().Get(ctx, credentials.WorkspaceId)

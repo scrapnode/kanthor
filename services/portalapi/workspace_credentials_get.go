@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
@@ -28,7 +27,7 @@ type WorkspaceCredentialsGetRes struct {
 func UseWorkspaceCredentialsGet(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 		id := ginctx.Param("wsc_id")
 		ucreq := &portaluc.WorkspaceCredentialsGetReq{

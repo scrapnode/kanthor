@@ -24,11 +24,6 @@ func RegisterHealthcheck(router gin.IRoutes, service *portalapi) {
 			return
 		}
 
-		if err := service.authz.Readiness(); err != nil {
-			ginctx.Status(http.StatusInternalServerError)
-			return
-		}
-
 		ginctx.String(http.StatusOK, "ready")
 	})
 	router.GET("/liveness", func(ginctx *gin.Context) {
@@ -38,11 +33,6 @@ func RegisterHealthcheck(router gin.IRoutes, service *portalapi) {
 		}
 
 		if err := service.uc.Liveness(); err != nil {
-			ginctx.Status(http.StatusInternalServerError)
-			return
-		}
-
-		if err := service.authz.Liveness(); err != nil {
 			ginctx.Status(http.StatusInternalServerError)
 			return
 		}

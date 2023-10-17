@@ -5,19 +5,20 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointGetReq struct {
-	AppId string
-	Id    string
+	WorkspaceId string
+	AppId       string
+	Id          string
 }
 
 func (req *EndpointGetReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringStartsWith("id", req.Id, entities.IdNsEp),
 	)
@@ -28,11 +29,10 @@ type EndpointGetRes struct {
 }
 
 func (uc *endpoint) Get(ctx context.Context, req *EndpointGetReq) (*EndpointGetRes, error) {
-	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
-
 	key := CacheKeyEp(req.AppId, req.Id)
+	// @TODO: remove hardcode time-to-live
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*EndpointGetRes, error) {
-		app, err := uc.repos.Application().Get(ctx, ws, req.AppId)
+		app, err := uc.repos.Application().Get(ctx, req.WorkspaceId, req.AppId)
 		if err != nil {
 			return nil, err
 		}

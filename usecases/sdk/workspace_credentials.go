@@ -11,7 +11,6 @@ import (
 
 type WorkspaceCredentials interface {
 	Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error)
-	Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error)
 }
 
 type workspaceCredentials struct {

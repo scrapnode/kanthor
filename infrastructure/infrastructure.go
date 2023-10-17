@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
-	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/dlm"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
@@ -26,11 +26,11 @@ func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
-	coord, err := coordinator.New(&conf.Coordinator, logger)
+	cb, err := circuitbreaker.New(&conf.CircuitBreaker, logger)
 	if err != nil {
 		return nil, err
 	}
-	cb, err := circuitbreaker.New(&conf.CircuitBreaker, logger)
+	authz, err := authorizator.New(&conf.Authorizator, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +54,8 @@ func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
 		Timer:                  t,
 		Cryptography:           crypt,
 		Idempotency:            idemp,
-		Coordinator:            coord,
 		CircuitBreaker:         cb,
+		Authorizator:           authz,
 		DistributedLockManager: lock,
 		Metric:                 m,
 		Cache:                  c,
@@ -70,24 +70,24 @@ type Infrastructure struct {
 	Timer                  timer.Timer
 	Cryptography           cryptography.Cryptography
 	Idempotency            idempotency.Idempotency
-	Coordinator            coordinator.Coordinator
 	CircuitBreaker         circuitbreaker.CircuitBreaker
 	DistributedLockManager dlm.Factory
-	Metric                 metric.Metric
+	Authorizator           authorizator.Authorizator
 	Cache                  cache.Cache
+	Metric                 metric.Metric
 }
 
 func (infra *Infrastructure) Connect(ctx context.Context) error {
 	if err := infra.Idempotency.Connect(ctx); err != nil {
 		return err
 	}
-	if err := infra.Coordinator.Connect(ctx); err != nil {
-		return err
-	}
-	if err := infra.Metric.Connect(ctx); err != nil {
+	if err := infra.Authorizator.Connect(ctx); err != nil {
 		return err
 	}
 	if err := infra.Cache.Connect(ctx); err != nil {
+		return err
+	}
+	if err := infra.Metric.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -103,15 +103,15 @@ func (infra *Infrastructure) Disconnect(ctx context.Context) error {
 		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
-	if err := infra.Coordinator.Disconnect(ctx); err != nil {
-		infra.logger.Error(err)
-		returning = errors.Join(returning, err)
-	}
-	if err := infra.Metric.Disconnect(ctx); err != nil {
+	if err := infra.Authorizator.Disconnect(ctx); err != nil {
 		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 	if err := infra.Cache.Disconnect(ctx); err != nil {
+		infra.logger.Error(err)
+		returning = errors.Join(returning, err)
+	}
+	if err := infra.Metric.Disconnect(ctx); err != nil {
 		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
@@ -123,13 +123,13 @@ func (infra *Infrastructure) Readiness() error {
 	if err := infra.Idempotency.Readiness(); err != nil {
 		return err
 	}
-	if err := infra.Coordinator.Readiness(); err != nil {
-		return err
-	}
-	if err := infra.Metric.Readiness(); err != nil {
+	if err := infra.Authorizator.Readiness(); err != nil {
 		return err
 	}
 	if err := infra.Cache.Readiness(); err != nil {
+		return err
+	}
+	if err := infra.Metric.Readiness(); err != nil {
 		return err
 	}
 	return nil
@@ -139,7 +139,7 @@ func (infra *Infrastructure) Liveness() error {
 	if err := infra.Idempotency.Liveness(); err != nil {
 		return err
 	}
-	if err := infra.Coordinator.Liveness(); err != nil {
+	if err := infra.Authorizator.Liveness(); err != nil {
 		return err
 	}
 	if err := infra.Metric.Liveness(); err != nil {

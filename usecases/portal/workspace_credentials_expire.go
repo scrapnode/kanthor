@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -31,9 +30,8 @@ type WorkspaceCredentialsExpireRes struct {
 }
 
 func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error) {
-	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 	wsc, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, ws.Id, req.Id)
+		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, req.WorkspaceId, req.Id)
 		if err != nil {
 			return nil, err
 		}

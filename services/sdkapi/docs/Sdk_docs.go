@@ -846,10 +846,13 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -877,6 +880,9 @@ const docTemplateSdk = `{
                 "secret_key": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -901,7 +907,7 @@ const docTemplateSdk = `{
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -915,6 +921,9 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -971,10 +980,13 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -992,10 +1004,13 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -1013,10 +1028,13 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -1059,10 +1077,13 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -1119,6 +1140,9 @@ const docTemplateSdk = `{
                 "secret_key": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1151,6 +1175,9 @@ const docTemplateSdk = `{
                 "secret_key": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1182,6 +1209,9 @@ const docTemplateSdk = `{
                 },
                 "secret_key": {
                     "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1246,7 +1276,7 @@ const docTemplateSdk = `{
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1260,6 +1290,9 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1282,7 +1315,7 @@ const docTemplateSdk = `{
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1296,6 +1329,9 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1318,7 +1354,7 @@ const docTemplateSdk = `{
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1332,6 +1368,9 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1379,7 +1418,7 @@ const docTemplateSdk = `{
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1393,6 +1432,9 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1433,6 +1475,9 @@ const docTemplateSdk = `{
                 },
                 "secret_key": {
                     "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"

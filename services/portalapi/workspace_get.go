@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 )
 
@@ -24,7 +23,7 @@ type WorkspaceGetRes struct {
 func UseWorkspaceGet() gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 		res := &WorkspaceGetRes{Workspace: ws}
 		ginctx.JSON(http.StatusOK, res)

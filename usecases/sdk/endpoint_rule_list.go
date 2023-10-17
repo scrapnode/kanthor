@@ -5,7 +5,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -27,7 +27,7 @@ type EndpointRuleListRes struct {
 }
 
 func (uc *endpointRule) List(ctx context.Context, req *EndpointRuleListReq) (*EndpointRuleListRes, error) {
-	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 	ep, err := uc.repos.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
 	if err != nil {

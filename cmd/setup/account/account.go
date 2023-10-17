@@ -6,7 +6,6 @@ import (
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
@@ -20,10 +19,6 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// hoisting flags
 			file, err := cmd.Flags().GetString("data")
-			if err != nil {
-				return err
-			}
-			withCreds, err := cmd.Flags().GetBool("generate-credentials")
 			if err != nil {
 				return err
 			}
@@ -43,15 +38,10 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if err := infra.Connect(ctx); err != nil {
+				return err
+			}
 			if err := uc.Connect(ctx); err != nil {
-				return err
-			}
-
-			coord, err := coordinator.New(&conf.Coordinator, logger)
-			if err != nil {
-				return err
-			}
-			if err := coord.Connect(ctx); err != nil {
 				return err
 			}
 
@@ -60,7 +50,7 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 					logger.Error(err)
 				}
 
-				if err := coord.Disconnect(ctx); err != nil {
+				if err := infra.Disconnect(ctx); err != nil {
 					logger.Error(err)
 				}
 
@@ -78,11 +68,8 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err := apps(uc, ctx, account.Workspace, file, out); err != nil {
 				return err
 			}
-
-			if withCreds {
-				if err := creds(coord, uc, ctx, account.Workspace, out); err != nil {
-					return err
-				}
+			if err := creds(uc, ctx, account.Workspace, out); err != nil {
+				return err
 			}
 
 			return out.Render(dest)
@@ -91,7 +78,6 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 
 	command.Flags().StringP("data", "", "", "--data=./data/interchange/demo.json | workspace data of setup account")
 	command.Flags().StringP("output", "o", "", "--out=./output.json | either json file or stdout (if no file path is set)")
-	command.Flags().BoolP("generate-credentials", "", false, "--generate-credentials | generate new credentials for the workspace of setup account")
 
 	return command
 }

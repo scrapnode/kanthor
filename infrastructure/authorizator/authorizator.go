@@ -8,9 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-var (
-	HeaderWorkspace = "kanthor-ws-id"
-)
+var Namespace = "kanthor_authz"
 
 func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 	if conf.Engine == EngineCasbin {

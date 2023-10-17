@@ -5,15 +5,16 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 )
 
 type MessagePutReq struct {
-	AppId string
-	Type  string
+	WorkspaceId   string
+	WorkspaceTier string
+	AppId         string
+	Type          string
 
 	Body     []byte
 	Headers  entities.Header
@@ -23,6 +24,8 @@ type MessagePutReq struct {
 func (req *MessagePutReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringRequired("workspace_tier", req.WorkspaceTier),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("type", req.Type),
 		validator.SliceRequired("body", req.Body),
@@ -34,18 +37,16 @@ type MessagePutRes struct {
 }
 
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
-	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
-
-	key := CacheKeyApp(ws.Id, req.AppId)
+	key := CacheKeyApp(req.WorkspaceId, req.AppId)
 	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
-		return uc.repos.Application().Get(ctx, ws, req.AppId)
+		return uc.repos.Application().Get(ctx, req.WorkspaceId, req.AppId)
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	msg := &entities.Message{
-		Tier:     ws.Tier,
+		Tier:     req.WorkspaceTier,
 		AppId:    app.Id,
 		Type:     req.Type,
 		Body:     req.Body,

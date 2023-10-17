@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
@@ -39,7 +38,7 @@ func UseWorkspaceUpdate(logger logging.Logger, uc portaluc.Portal) gin.HandlerFu
 		}
 
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 		ucreq := &portaluc.WorkspaceUpdateReq{Id: ws.Id, Name: req.Name}
 		if err := ucreq.Validate(); err != nil {

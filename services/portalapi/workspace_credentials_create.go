@@ -6,12 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
-	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
-	"github.com/scrapnode/kanthor/services/command"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
 
@@ -37,7 +34,6 @@ type WorkspaceCredentialsCreateRes struct {
 func UseWorkspaceCredentialsCreate(
 	logger logging.Logger,
 	uc portaluc.Portal,
-	coord coordinator.Coordinator,
 ) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsCreateReq
@@ -48,7 +44,7 @@ func UseWorkspaceCredentialsCreate(
 		}
 
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
+		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 		ucreq := &portaluc.WorkspaceCredentialsGenerateReq{WorkspaceId: ws.Id, Name: req.Name, ExpiredAt: req.ExpiredAt}
 		if err := ucreq.Validate(); err != nil {
@@ -62,15 +58,6 @@ func UseWorkspaceCredentialsCreate(
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
-		}
-
-		err = coord.Send(
-			ctx,
-			command.WorkspaceCredentialsCreated,
-			&command.WorkspaceCredentialsCreatedReq{Docs: []entities.WorkspaceCredentials{*ucres.Credentials}},
-		)
-		if err != nil {
-			logger.Error(err)
 		}
 
 		res := &WorkspaceCredentialsCreateRes{

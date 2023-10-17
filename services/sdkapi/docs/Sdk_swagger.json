@@ -839,10 +839,13 @@
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -870,6 +873,9 @@
                 "secret_key": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -894,7 +900,7 @@
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -908,6 +914,9 @@
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -964,10 +973,13 @@
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -985,10 +997,13 @@
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -1006,10 +1021,13 @@
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -1052,10 +1070,13 @@
                 "name": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -1112,6 +1133,9 @@
                 "secret_key": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1144,6 +1168,9 @@
                 "secret_key": {
                     "type": "string"
                 },
+                "timestamp": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1175,6 +1202,9 @@
                 },
                 "secret_key": {
                     "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1239,7 +1269,7 @@
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1253,6 +1283,9 @@
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1275,7 +1308,7 @@
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1289,6 +1322,9 @@
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1311,7 +1347,7 @@
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1325,6 +1361,9 @@
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1372,7 +1411,7 @@
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
-                "endpoint_id": {
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1386,6 +1425,9 @@
                     "type": "string"
                 },
                 "priority": {
+                    "type": "integer"
+                },
+                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1426,6 +1468,9 @@
                 },
                 "secret_key": {
                     "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"

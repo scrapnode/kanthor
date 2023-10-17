@@ -3,10 +3,10 @@ package config
 import (
 	"fmt"
 
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
-	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
@@ -30,11 +30,11 @@ type Config struct {
 
 	Cryptography           cryptography.Config   `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography"`
 	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
-	Coordinator            coordinator.Config    `json:"coordinator" yaml:"coordinator" mapstructure:"coordinator"`
 	CircuitBreaker         circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
 	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
-	Metric                 metric.Config         `json:"metric" yaml:"metric" mapstructure:"metric"`
+	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
 	Cache                  cache.Config          `json:"cache" yaml:"cache" mapstructure:"cache"`
+	Metric                 metric.Config         `json:"metric" yaml:"metric" mapstructure:"metric"`
 
 	Database  database.Config  `json:"database" yaml:"database" mapstructure:"database"`
 	Datastore datastore.Config `json:"datastore" yaml:"datastore" mapstructure:"datastore"`
@@ -56,14 +56,12 @@ func (conf *Config) Validate(service string) error {
 		return fmt.Errorf("config.logger: %v", err)
 	}
 
+	// infrastructure
 	if err := conf.Cryptography.Validate(); err != nil {
 		return fmt.Errorf("config.cryptography: %v", err)
 	}
 	if err := conf.Idempotency.Validate(); err != nil {
 		return fmt.Errorf("config.idempotency: %v", err)
-	}
-	if err := conf.Coordinator.Validate(); err != nil {
-		return fmt.Errorf("config.coordinator: %v", err)
 	}
 	if err := conf.CircuitBreaker.Validate(); err != nil {
 		return fmt.Errorf("config.circuit_breaker: %v", err)
@@ -71,12 +69,17 @@ func (conf *Config) Validate(service string) error {
 	if err := conf.DistributedLockManager.Validate(); err != nil {
 		return fmt.Errorf("config.distributed_lock_manager: %v", err)
 	}
-	if err := conf.Metric.Validate(); err != nil {
-		return fmt.Errorf("config.metric: %v", err)
+	if err := conf.Authorizator.Validate(); err != nil {
+		return fmt.Errorf("config.authorizator: %v", err)
 	}
 	if err := conf.Cache.Validate(); err != nil {
 		return fmt.Errorf("config.cache: %v", err)
 	}
+	if err := conf.Metric.Validate(); err != nil {
+		return fmt.Errorf("config.metric: %v", err)
+	}
+
+	// data
 	if err := conf.Database.Validate(); err != nil {
 		return fmt.Errorf("config.database: %v", err)
 	}
@@ -84,6 +87,7 @@ func (conf *Config) Validate(service string) error {
 		return fmt.Errorf("config.datastore: %v", err)
 	}
 
+	// services
 	if !services.IsValidServiceName(service) {
 		return fmt.Errorf("config: unknown service [%s]", service)
 	}

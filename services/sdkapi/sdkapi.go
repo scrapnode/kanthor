@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -26,7 +25,6 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	authz authorizator.Authorizator,
 	uc usecase.Sdk,
 ) services.Service {
 	logger = logger.With("service", "sdkapi")
@@ -34,7 +32,6 @@ func New(
 		conf:   conf,
 		logger: logger,
 		infra:  infra,
-		authz:  authz,
 		uc:     uc,
 
 		debugger: debugging.NewServer(),
@@ -45,7 +42,6 @@ type sdkapi struct {
 	conf   *config.Config
 	logger logging.Logger
 	infra  *infrastructure.Infrastructure
-	authz  authorizator.Authorizator
 	uc     usecase.Sdk
 
 	mu       sync.Mutex
@@ -66,10 +62,6 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	}
 
 	if err := service.uc.Connect(ctx); err != nil {
-		return err
-	}
-
-	if err := service.authz.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -103,7 +95,8 @@ func (service *sdkapi) router() *gin.Engine {
 		api.Use(ginmw.UseStartup())
 		api.Use(ginmw.UseMetric(services.SERVICE_SDK_API, service.infra.Metric))
 		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
-		api.Use(middlewares.UseAuthx(service.conf.SdkApi, service.logger, service.authz, service.uc))
+		api.Use(middlewares.UseAuth(service.infra.Authorizator, service.uc))
+		api.Use(ginmw.UseAuthz(service.infra.Authorizator))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
 		RegisterAccountRoutes(api.Group("/account"), service)
@@ -128,11 +121,6 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
-	if err := service.authz.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
-		returning = errors.Join(returning, err)
-	}
-
 	if err := service.uc.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 		returning = errors.Join(returning, err)
@@ -147,10 +135,6 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 }
 
 func (service *sdkapi) Run(ctx context.Context) error {
-	if err := service.coordinate(); err != nil {
-		return err
-	}
-
 	go func() {
 		if err := service.debugger.Run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			service.logger.Error(err)

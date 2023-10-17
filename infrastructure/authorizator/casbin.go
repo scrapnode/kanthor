@@ -3,7 +3,6 @@ package authorizator
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/url"
 	"strings"
 	"sync"
@@ -67,8 +66,6 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
 
-	ns := authorizator.conf.Casbin.PolicyNamespace
-
 	modelUrl, err := url.Parse(authorizator.conf.Casbin.ModelUri)
 	if err != nil {
 		return err
@@ -79,7 +76,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 		return err
 	}
 	databaseName := strings.ReplaceAll(policyUrl.Path, "/", "")
-	tableName := fmt.Sprintf("kanthor_authz_%s", ns)
+	tableName := authorizator.conf.Casbin.PolicyNamespace
 
 	adapter, err := gormadapter.NewAdapter(policyUrl.Scheme, authorizator.conf.Casbin.PolicyUri, databaseName, tableName, true)
 	if err != nil {

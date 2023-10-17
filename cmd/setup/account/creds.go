@@ -8,12 +8,10 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/coordinator"
-	"github.com/scrapnode/kanthor/services/command"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
 
-func creds(coord coordinator.Coordinator, uc usecase.Portal, ctx context.Context, ws *entities.Workspace, out *output) error {
+func creds(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, out *output) error {
 	ucreq := &usecase.WorkspaceCredentialsGenerateReq{
 		WorkspaceId: ws.Id,
 		Name:        fmt.Sprintf("setup at %s", time.Now().UTC().Format(time.RFC3339)),
@@ -22,15 +20,6 @@ func creds(coord coordinator.Coordinator, uc usecase.Portal, ctx context.Context
 		return err
 	}
 	ucres, err := uc.WorkspaceCredentials().Generate(ctx, ucreq)
-	if err != nil {
-		return err
-	}
-
-	err = coord.Send(
-		ctx,
-		command.WorkspaceCredentialsCreated,
-		&command.WorkspaceCredentialsCreatedReq{Docs: []entities.WorkspaceCredentials{*ucres.Credentials}},
-	)
 	if err != nil {
 		return err
 	}

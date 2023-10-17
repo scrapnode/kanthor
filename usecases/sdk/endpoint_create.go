@@ -5,13 +5,13 @@ import (
 	"net/http"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointCreateReq struct {
-	AppId string
-	Name  string
+	WorkspaceId string
+	AppId       string
+	Name        string
 
 	SecretKey string
 	Uri       string
@@ -21,6 +21,7 @@ type EndpointCreateReq struct {
 func (req *EndpointCreateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("name", req.Name),
 		validator.StringRequired("secret_key", req.SecretKey),
@@ -35,9 +36,7 @@ type EndpointCreateRes struct {
 }
 
 func (uc *endpoint) Create(ctx context.Context, req *EndpointCreateReq) (*EndpointCreateRes, error) {
-	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
-
-	app, err := uc.repos.Application().Get(ctx, ws, req.AppId)
+	app, err := uc.repos.Application().Get(ctx, req.WorkspaceId, req.AppId)
 	if err != nil {
 		return nil, err
 	}
