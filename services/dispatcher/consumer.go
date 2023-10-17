@@ -40,9 +40,9 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 		ctx := context.Background()
 
 		ucreq := &usecase.ForwarderSendReq{
-			ChunkTimeout: service.conf.Dispatcher.Forwarder.Send.ChunkTimeout,
-			ChunkSize:    service.conf.Dispatcher.Forwarder.Send.ChunkSize,
-			Requests:     requests,
+			Timeout:   service.conf.Dispatcher.Forwarder.Send.Timeout,
+			RateLimit: service.conf.Dispatcher.Forwarder.Send.RateLimit,
+			Requests:  requests,
 		}
 		// we alreay validated messages of request, don't need to validate again
 		ucres, err := service.uc.Forwarder().Send(ctx, ucreq)

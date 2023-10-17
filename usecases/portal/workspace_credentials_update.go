@@ -36,7 +36,7 @@ func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCreden
 		}
 
 		wsc.Name = req.Name
-		wsc.SetAT(uc.timer.Now())
+		wsc.SetAT(uc.infra.Timer.Now())
 		return uc.repos.WorkspaceCredentials().Update(txctx, wsc)
 	})
 	if err != nil {

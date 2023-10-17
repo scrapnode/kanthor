@@ -2,10 +2,11 @@ package portalapi
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"net/http"
 )
 
 type AccountGetRes struct {
@@ -21,7 +22,7 @@ type AccountGetRes struct {
 // @Security	WsId
 func UseAccountGet() gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
 		res := &AccountGetRes{Account: acc}

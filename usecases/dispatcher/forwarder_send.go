@@ -19,9 +19,9 @@ import (
 )
 
 type ForwarderSendReq struct {
-	ChunkTimeout int64
-	ChunkSize    int
-	Requests     []entities.Request
+	Timeout   int64
+	RateLimit int
+	Requests  []entities.Request
 }
 
 func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) error {
@@ -44,8 +44,8 @@ func (req *ForwarderSendReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("requests", req.Requests),
-		validator.NumberGreaterThan("chunk_timeout", req.ChunkTimeout, 1000),
-		validator.NumberGreaterThan("chunk_size", req.ChunkSize, 1),
+		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
+		validator.NumberGreaterThan("date_limit", req.RateLimit, 1),
 	)
 	if err != nil {
 		return err
@@ -84,11 +84,13 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 
 	// but publishing need implementing the global timeout
 	// timeout duration will be scaled based on how many responses you have
-	duration := time.Duration(req.ChunkTimeout * int64(len(responses)+1))
+	duration := time.Duration(req.Timeout * int64(len(responses)+1))
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
 	defer cancel()
 
-	p := pool.New().WithMaxGoroutines(req.ChunkSize)
+	// we must limit how many publish action could be performed at the same time
+	// otherwise our system will be lag
+	p := pool.New().WithMaxGoroutines(req.RateLimit)
 	for _, rs := range responses {
 		response := rs
 		p.Go(func() {
@@ -146,7 +148,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	}
 
 	res, err := circuitbreaker.Do[sender.Response](
-		uc.cb,
+		uc.infra.CircuitBreaker,
 		request.EpId,
 		func() (interface{}, error) {
 			res, err := uc.dispatch(ctx, req)
@@ -180,7 +182,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	// must use merge function otherwise you will edit the original data
 	response.Metadata.Merge(request.Metadata)
 	response.GenId()
-	response.SetTS(uc.timer.Now())
+	response.SetTS(uc.infra.Timer.Now())
 
 	// IMPORTANT: we have an anti-pattern response that returns both error && response to trigger circuit breaker
 	// so we should test both error and response seperately

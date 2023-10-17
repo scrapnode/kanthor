@@ -9,13 +9,11 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
-	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
-	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi/docs"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
@@ -27,34 +25,28 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	idempotency idempotency.Idempotency,
-	coordinator coordinator.Coordinator,
-	metrics metric.Metrics,
+	infra *infrastructure.Infrastructure,
 	authz authorizator.Authorizator,
 	uc usecase.Sdk,
 ) services.Service {
 	logger = logger.With("service", "sdkapi")
 	return &sdkapi{
-		conf:        conf,
-		logger:      logger,
-		idempotency: idempotency,
-		coordinator: coordinator,
-		metrics:     metrics,
-		authz:       authz,
-		uc:          uc,
+		conf:   conf,
+		logger: logger,
+		infra:  infra,
+		authz:  authz,
+		uc:     uc,
 
 		debugger: debugging.NewServer(),
 	}
 }
 
 type sdkapi struct {
-	conf        *config.Config
-	logger      logging.Logger
-	idempotency idempotency.Idempotency
-	coordinator coordinator.Coordinator
-	metrics     metric.Metrics
-	authz       authorizator.Authorizator
-	uc          usecase.Sdk
+	conf   *config.Config
+	logger logging.Logger
+	infra  *infrastructure.Infrastructure
+	authz  authorizator.Authorizator
+	uc     usecase.Sdk
 
 	mu       sync.Mutex
 	debugger debugging.Server
@@ -69,7 +61,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := service.metrics.Connect(ctx); err != nil {
+	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -78,14 +70,6 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	}
 
 	if err := service.authz.Connect(ctx); err != nil {
-		return err
-	}
-
-	if err := service.idempotency.Connect(ctx); err != nil {
-		return err
-	}
-
-	if err := service.coordinator.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -117,8 +101,8 @@ func (service *sdkapi) router() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.Use(ginmw.UseStartup())
-		api.Use(ginmw.UseMetrics(service.metrics))
-		api.Use(ginmw.UseIdempotency(service.logger, service.idempotency))
+		api.Use(ginmw.UseMetric(services.SERVICE_SDK_API, service.infra.Metric))
+		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(middlewares.UseAuthx(service.conf.SdkApi, service.logger, service.authz, service.uc))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 
@@ -137,36 +121,29 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 	defer service.mu.Unlock()
 
 	service.logger.Info("stopped")
+	var returning error
 
 	if err := service.server.Shutdown(ctx); err != nil {
-		return err
-	}
-
-	if err := service.coordinator.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
-	}
-
-	if err := service.idempotency.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.authz.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.uc.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
-	if err := service.metrics.Disconnect(ctx); err != nil {
+	if err := service.infra.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
-	if err := service.debugger.Stop(ctx); err != nil {
-		service.logger.Error(err)
-	}
-
-	return nil
+	return returning
 }
 
 func (service *sdkapi) Run(ctx context.Context) error {

@@ -47,7 +47,7 @@ func UseWorkspaceCredentialsCreate(
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 
 		ucreq := &portaluc.WorkspaceCredentialsGenerateReq{WorkspaceId: ws.Id, Name: req.Name, ExpiredAt: req.ExpiredAt}

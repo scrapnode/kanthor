@@ -29,7 +29,7 @@ type ApplicationListRes struct {
 // @Security	BasicAuth
 func UseApplicationList(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ucreq := &usecase.ApplicationListReq{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
 		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))

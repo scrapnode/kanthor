@@ -35,7 +35,7 @@ func (uc *account) Setup(ctx context.Context, req *AccountSetupReq) (*AccountSet
 
 			ws = &entities.Workspace{OwnerId: req.AccountId, Name: entities.DefaultWorkspace}
 			ws.GenId()
-			ws.SetAT(uc.timer.Now())
+			ws.SetAT(uc.infra.Timer.Now())
 			if _, err := uc.repos.Workspace().Create(ctx, ws); err != nil {
 				return nil, err
 			}

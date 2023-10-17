@@ -30,7 +30,7 @@ type WorkspaceCredentialsListRes struct {
 // @Security	WsId
 func UseWorkspaceCredentialsList(logger logging.Logger, uc usecase.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ucreq := &usecase.WorkspaceCredentialsListReq{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
 		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))

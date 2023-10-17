@@ -30,7 +30,7 @@ type EndpointRuleListRes struct {
 // @Security	BasicAuth
 func UseEndpointRuleList(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		epId := ginctx.Param("ep_id")
 
 		ucreq := &usecase.EndpointRuleListReq{

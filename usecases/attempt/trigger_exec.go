@@ -19,8 +19,8 @@ import (
 
 type TriggerExecReq struct {
 	Timeout       int64
+	RateLimit     int
 	Delay         int64
-	ChunkSize     int
 	Notifications []entities.AttemptNotification
 }
 
@@ -29,7 +29,7 @@ func (req *TriggerExecReq) Validate() error {
 		validator.DefaultConfig,
 		validator.SliceRequired("notifications", req.Notifications),
 		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
-		validator.NumberGreaterThan("chunk_size", req.ChunkSize, 1),
+		validator.NumberGreaterThan("rate_limit", req.RateLimit, 1),
 	)
 	if err != nil {
 		return err
@@ -64,11 +64,13 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
 	defer cancel()
 
-	p := pool.New().WithMaxGoroutines(req.ChunkSize)
+	// we must limit how many publish action could be performed at the same time
+	// otherwise our system will be lag
+	p := pool.New().WithMaxGoroutines(req.RateLimit)
 	for _, noti := range req.Notifications {
 		notification := noti
 		p.Go(func() {
-			resp, err := uc.consume(ctx, &notification, duration, req.ChunkSize, req.Delay)
+			resp, err := uc.consume(ctx, &notification, duration, req.RateLimit, req.Delay)
 			if err != nil {
 				uc.logger.Errorw("unable to consume attempt notification", "notification", notification.String())
 				return
@@ -108,7 +110,7 @@ func (uc *trigger) consume(
 	// the lock duration will be long as much as possible
 	// so we will time the global timeout as as the lock duration
 	// in that duration, we could not consume the same app until the lock is released
-	locker := uc.locker(key, duration)
+	locker := uc.infra.DistributedLockManager(key, duration)
 
 	if err := locker.Lock(ctx); err != nil {
 		uc.logger.Errorw("unable to acquire a lock | key:%s", key)
@@ -193,7 +195,7 @@ func (uc *trigger) examine(
 }
 
 func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (map[string]repos.Msg, []string, error) {
-	cursor, err := uc.cache.StringGet(ctx, "kanthor.usecases.attempt.message.scan")
+	cursor, err := uc.infra.Cache.StringGet(ctx, "kanthor.usecases.attempt.message.scan")
 	if !errors.Is(err, cache.ErrEntryNotFound) {
 		return nil, nil, err
 	}
@@ -207,7 +209,7 @@ func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (
 		cursor = messages[len(messages)-1].Id
 	}
 
-	err = uc.cache.StringSet(ctx, "kanthor.usecases.attempt.message.scan", cursor, time.Hour)
+	err = uc.infra.Cache.StringSet(ctx, "kanthor.usecases.attempt.message.scan", cursor, time.Hour)
 	if err != nil {
 		uc.logger.Errorw("unable to set scan cursor to reuse later", "err", err.Error(), "cursor", cursor)
 	}
@@ -224,9 +226,7 @@ func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (
 
 func (uc *trigger) applicable(ctx context.Context, appId string) (*planner.Applicable, error) {
 	key := utils.Key("scheduler", appId)
-	return cache.Warp(uc.cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
-		uc.metrics.Count(ctx, "cache_miss_total", 1)
-
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
 		endpoints, err := uc.repos.Endpoint().List(ctx, appId)
 		if err != nil {
 			return nil, err
@@ -293,6 +293,7 @@ func (uc *trigger) schedule(
 	requests := []entities.Request{}
 
 	for i := 0; i < len(msgIds); i += size {
+		// @TODO: out of bound
 		j := i + size
 
 		messages, err := uc.repos.Message().ListByIds(ctx, msgIds[i:j])
@@ -304,7 +305,7 @@ func (uc *trigger) schedule(
 		}
 
 		for _, message := range messages {
-			reqs, logs := planner.Requests(&message, applicable, uc.timer)
+			reqs, logs := planner.Requests(&message, applicable, uc.infra.Timer)
 			if len(logs) > 0 {
 				for _, l := range logs {
 					uc.logger.Warnw(l[0].(string), l[1:]...)
@@ -318,6 +319,8 @@ func (uc *trigger) schedule(
 		return
 	}
 
+	// we must limit how many publish action could be performed at the same time
+	// otherwise our system will be lag
 	p := pool.New().WithMaxGoroutines(size)
 	for _, r := range requests {
 		request := r
@@ -354,7 +357,7 @@ func (uc *trigger) create(
 ) {
 	attempts := []entities.Attempt{}
 
-	now := uc.timer.Now()
+	now := uc.infra.Timer.Now()
 	next := now.Add(time.Duration(delay) * time.Millisecond)
 
 	for _, request := range requests {

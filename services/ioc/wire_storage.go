@@ -6,10 +6,9 @@ package ioc
 import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/storage"
 	storageuc "github.com/scrapnode/kanthor/usecases/storage"
@@ -19,20 +18,18 @@ import (
 func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		storage.New,
+		infrastructure.New,
 		ResolveStorageSubscriberConfig,
 		streaming.NewSubscriber,
-		ResolveStorageMetricsConfig,
-		metric.New,
 		InitializeStorageUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (storageuc.Storage, error) {
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (storageuc.Storage, error) {
 	wire.Build(
 		storageuc.New,
 		wire.FieldsOf(new(*config.Config), "Datastore"),
-		timer.New,
 		repos.New,
 	)
 	return nil, nil
@@ -40,8 +37,4 @@ func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, metric
 
 func ResolveStorageSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
 	return &conf.Storage.Subscriber
-}
-
-func ResolveStorageMetricsConfig(conf *config.Config) *metric.Config {
-	return &conf.Storage.Metrics
 }

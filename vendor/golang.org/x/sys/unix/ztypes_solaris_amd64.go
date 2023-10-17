@@ -279,7 +279,7 @@ const (
 	SizeofIfData    = 0x44
 	SizeofIfaMsghdr = 0x14
 	SizeofRtMsghdr  = 0x4c
-	SizeofRtMetrics = 0x28
+	SizeofRtMetric = 0x28
 )
 
 type IfMsghdr struct {
@@ -335,10 +335,10 @@ type RtMsghdr struct {
 	Errno   int32
 	Use     int32
 	Inits   uint32
-	Rmx     RtMetrics
+	Rmx     RtMetric
 }
 
-type RtMetrics struct {
+type RtMetric struct {
 	Locks    uint32
 	Mtu      uint32
 	Hopcount uint32

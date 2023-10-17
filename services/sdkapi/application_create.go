@@ -35,7 +35,7 @@ func UseApplicationCreate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ucreq := &usecase.ApplicationCreateReq{Name: req.Name}
 		if err := ucreq.Validate(); err != nil {
 			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))

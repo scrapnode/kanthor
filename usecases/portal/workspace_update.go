@@ -32,7 +32,7 @@ func (uc *workspace) Update(ctx context.Context, req *WorkspaceUpdateReq) (*Work
 		}
 
 		ws.Name = req.Name
-		ws.SetAT(uc.timer.Now())
+		ws.SetAT(uc.infra.Timer.Now())
 		return uc.repos.Workspace().Update(txctx, ws)
 	})
 	if err != nil {

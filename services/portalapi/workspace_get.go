@@ -23,7 +23,7 @@ type WorkspaceGetRes struct {
 // @Security	WsId
 func UseWorkspaceGet() gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 
 		res := &WorkspaceGetRes{Workspace: ws}

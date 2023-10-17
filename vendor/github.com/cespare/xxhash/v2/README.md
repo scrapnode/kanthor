@@ -67,6 +67,6 @@ benchstat <(go test -benchtime 500ms -count 15 -bench 'Sum64$')
 
 - [InfluxDB](https://github.com/influxdata/influxdb)
 - [Prometheus](https://github.com/prometheus/prometheus)
-- [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
+- [VictoriaMetric](https://github.com/VictoriaMetric/VictoriaMetric)
 - [FreeCache](https://github.com/coocood/freecache)
-- [FastCache](https://github.com/VictoriaMetrics/fastcache)
+- [FastCache](https://github.com/VictoriaMetric/fastcache)

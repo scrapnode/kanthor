@@ -29,49 +29,49 @@ import (
 	rpb "go.opentelemetry.io/proto/otlp/resource/v1"
 )
 
-// ResourceMetrics returns an OTLP ResourceMetrics generated from rm. If rm
-// contains invalid ScopeMetrics, an error will be returned along with an OTLP
-// ResourceMetrics that contains partial OTLP ScopeMetrics.
-func ResourceMetrics(rm *metricdata.ResourceMetrics) (*mpb.ResourceMetrics, error) {
-	sms, err := ScopeMetrics(rm.ScopeMetrics)
-	return &mpb.ResourceMetrics{
+// ResourceMetric returns an OTLP ResourceMetric generated from rm. If rm
+// contains invalid ScopeMetric, an error will be returned along with an OTLP
+// ResourceMetric that contains partial OTLP ScopeMetric.
+func ResourceMetric(rm *metricdata.ResourceMetric) (*mpb.ResourceMetric, error) {
+	sms, err := ScopeMetric(rm.ScopeMetric)
+	return &mpb.ResourceMetric{
 		Resource: &rpb.Resource{
 			Attributes: AttrIter(rm.Resource.Iter()),
 		},
-		ScopeMetrics: sms,
-		SchemaUrl:    rm.Resource.SchemaURL(),
+		ScopeMetric: sms,
+		SchemaUrl:   rm.Resource.SchemaURL(),
 	}, err
 }
 
-// ScopeMetrics returns a slice of OTLP ScopeMetrics generated from sms. If
+// ScopeMetric returns a slice of OTLP ScopeMetric generated from sms. If
 // sms contains invalid metric values, an error will be returned along with a
-// slice that contains partial OTLP ScopeMetrics.
-func ScopeMetrics(sms []metricdata.ScopeMetrics) ([]*mpb.ScopeMetrics, error) {
-	errs := &multiErr{datatype: "ScopeMetrics"}
-	out := make([]*mpb.ScopeMetrics, 0, len(sms))
+// slice that contains partial OTLP ScopeMetric.
+func ScopeMetric(sms []metricdata.ScopeMetric) ([]*mpb.ScopeMetric, error) {
+	errs := &multiErr{datatype: "ScopeMetric"}
+	out := make([]*mpb.ScopeMetric, 0, len(sms))
 	for _, sm := range sms {
-		ms, err := Metrics(sm.Metrics)
+		ms, err := Metric(sm.Metric)
 		if err != nil {
 			errs.append(err)
 		}
 
-		out = append(out, &mpb.ScopeMetrics{
+		out = append(out, &mpb.ScopeMetric{
 			Scope: &cpb.InstrumentationScope{
 				Name:    sm.Scope.Name,
 				Version: sm.Scope.Version,
 			},
-			Metrics:   ms,
+			Metric:    ms,
 			SchemaUrl: sm.Scope.SchemaURL,
 		})
 	}
 	return out, errs.errOrNil()
 }
 
-// Metrics returns a slice of OTLP Metric generated from ms. If ms contains
+// Metric returns a slice of OTLP Metric generated from ms. If ms contains
 // invalid metric values, an error will be returned along with a slice that
-// contains partial OTLP Metrics.
-func Metrics(ms []metricdata.Metrics) ([]*mpb.Metric, error) {
-	errs := &multiErr{datatype: "Metrics"}
+// contains partial OTLP Metric.
+func Metric(ms []metricdata.Metric) ([]*mpb.Metric, error) {
+	errs := &multiErr{datatype: "Metric"}
 	out := make([]*mpb.Metric, 0, len(ms))
 	for _, m := range ms {
 		o, err := metric(m)
@@ -85,7 +85,7 @@ func Metrics(ms []metricdata.Metrics) ([]*mpb.Metric, error) {
 	return out, errs.errOrNil()
 }
 
-func metric(m metricdata.Metrics) (*mpb.Metric, error) {
+func metric(m metricdata.Metric) (*mpb.Metric, error) {
 	var err error
 	out := &mpb.Metric{
 		Name:        m.Name,

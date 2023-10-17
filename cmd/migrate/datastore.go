@@ -2,10 +2,10 @@ package migrate
 
 import (
 	"errors"
+
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +17,7 @@ func NewDatastore(conf *config.Config, logger logging.Logger) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 
-			instance, err := datastore.New(&conf.Datastore, logger, timer.New())
+			instance, err := datastore.New(&conf.Datastore, logger)
 			if err != nil {
 				return err
 			}

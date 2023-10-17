@@ -8,13 +8,11 @@ import (
 
 	"github.com/robfig/cron/v3"
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
-	"github.com/scrapnode/kanthor/infrastructure/dlocker"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	usecase "github.com/scrapnode/kanthor/usecases/attempt"
 )
@@ -22,19 +20,15 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	locker dlocker.Factory,
-	timer timer.Timer,
-	metrics metric.Metrics,
+	infra *infrastructure.Infrastructure,
 	uc usecase.Attempt,
 ) services.Service {
 	logger = logger.With("service", "attempt")
 	return &attempt{
-		conf:    conf,
-		logger:  logger,
-		locker:  locker,
-		timer:   timer,
-		metrics: metrics,
-		uc:      uc,
+		conf:   conf,
+		logger: logger,
+		infra:  infra,
+		uc:     uc,
 
 		cron:     cron.New(),
 		debugger: debugging.NewServer(),
@@ -46,12 +40,10 @@ func New(
 }
 
 type attempt struct {
-	conf    *config.Config
-	logger  logging.Logger
-	locker  dlocker.Factory
-	timer   timer.Timer
-	metrics metric.Metrics
-	uc      usecase.Attempt
+	conf   *config.Config
+	logger logging.Logger
+	infra  *infrastructure.Infrastructure
+	uc     usecase.Attempt
 
 	mu          sync.Mutex
 	terminating chan bool
@@ -68,7 +60,7 @@ func (service *attempt) Start(ctx context.Context) error {
 	if err := service.debugger.Start(ctx); err != nil {
 		return err
 	}
-	if err := service.metrics.Connect(ctx); err != nil {
+	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -104,7 +96,7 @@ func (service *attempt) Stop(ctx context.Context) error {
 		service.logger.Error(err)
 	}
 
-	if err := service.metrics.Disconnect(ctx); err != nil {
+	if err := service.infra.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 	}
 
@@ -130,7 +122,7 @@ func (service *attempt) Run(ctx context.Context) error {
 				return err
 			}
 
-			if err := service.metrics.Liveness(); err != nil {
+			if err := service.infra.Liveness(); err != nil {
 				return err
 			}
 			return nil
@@ -159,7 +151,7 @@ func (service *attempt) readiness() error {
 			return err
 		}
 
-		if err := service.metrics.Readiness(); err != nil {
+		if err := service.infra.Readiness(); err != nil {
 			return err
 		}
 		return nil

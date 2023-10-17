@@ -6,11 +6,10 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
-func New(conf *database.Config, logger logging.Logger, timer timer.Timer) Repositories {
-	return NewSql(conf, logger, timer)
+func New(conf *database.Config, logger logging.Logger) Repositories {
+	return NewSql(conf, logger)
 }
 
 type Repositories interface {

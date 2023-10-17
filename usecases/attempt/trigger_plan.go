@@ -14,20 +14,20 @@ import (
 )
 
 type TriggerPlanReq struct {
-	ScanFrom int64
-	ScanTo   int64
+	ScanStart int64
+	ScanEnd   int64
 
-	ChunkTimeout int64
-	ChunkSize    int
+	Timeout   int64
+	RateLimit int
 }
 
 func (req *TriggerPlanReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("scan_from", req.ScanFrom, req.ScanTo),
-		validator.NumberLessThan("scan_to", req.ScanTo, req.ScanFrom),
-		validator.NumberGreaterThan("chunk_timeout", req.ChunkTimeout, 1000),
-		validator.NumberGreaterThan("chunk_size", req.ChunkSize, 1),
+		validator.NumberGreaterThan("scan_start", req.ScanStart, req.ScanEnd),
+		validator.NumberLessThan("scan_end", req.ScanEnd, req.ScanStart),
+		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
+		validator.NumberGreaterThan("rate_limit", req.RateLimit, 1),
 	)
 }
 
@@ -38,7 +38,7 @@ type TriggerPlanRes struct {
 }
 
 func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanRes, error) {
-	apps, cursor, err := uc.applications(ctx, req.ChunkSize)
+	apps, cursor, err := uc.applications(ctx, req.RateLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -47,18 +47,18 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 		return nil, err
 	}
 
-	from := uc.timer.Now().Add(time.Duration(req.ScanFrom) * time.Millisecond)
-	to := uc.timer.Now().Add(time.Duration(req.ScanTo) * time.Millisecond)
+	from := uc.infra.Timer.Now().Add(time.Duration(req.ScanStart) * time.Millisecond)
+	to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
 
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 
 	// timeout duration will be scaled based on how many applications you have
-	duration := time.Duration(req.ChunkTimeout * int64(len(apps)+1))
+	duration := time.Duration(req.Timeout * int64(len(apps)+1))
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
 	defer cancel()
 
-	p := pool.New().WithMaxGoroutines(req.ChunkSize)
+	p := pool.New().WithMaxGoroutines(req.RateLimit)
 	for _, app := range apps {
 		notification := &entities.AttemptNotification{AppId: app.Id, Tier: tiers[app.Id], From: from.UnixMilli(), To: to.UnixMilli()}
 
@@ -100,7 +100,7 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 }
 
 func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Application, string, error) {
-	cursor, err := uc.cache.StringGet(ctx, "kanthor.usecases.attempt.trigger.scan")
+	cursor, err := uc.infra.Cache.StringGet(ctx, "kanthor.usecases.attempt.trigger.scan")
 	if !errors.Is(err, cache.ErrEntryNotFound) {
 		return nil, "", err
 	}
@@ -124,7 +124,7 @@ func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Appli
 		cursor = apps[len(apps)-1].Id
 	}
 
-	err = uc.cache.StringSet(ctx, "kanthor.usecases.attempt.trigger.scan", cursor, time.Hour)
+	err = uc.infra.Cache.StringSet(ctx, "kanthor.usecases.attempt.trigger.scan", cursor, time.Hour)
 	if err != nil {
 		uc.logger.Errorw("unable to set scan cursor to reuse later", "err", err.Error(), "cursor", cursor)
 	}

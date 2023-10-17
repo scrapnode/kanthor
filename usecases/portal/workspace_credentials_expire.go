@@ -38,13 +38,13 @@ func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCreden
 			return nil, err
 		}
 
-		expired := wsc.ExpiredAt > 0 && wsc.ExpiredAt < uc.timer.Now().UnixMilli()
+		expired := wsc.ExpiredAt > 0 && wsc.ExpiredAt < uc.infra.Timer.Now().UnixMilli()
 		if expired {
 			return nil, errors.New("credentials was already expired")
 		}
 
-		wsc.ExpiredAt = uc.timer.Now().Add(time.Millisecond * time.Duration(req.Duration)).UnixMilli()
-		wsc.SetAT(uc.timer.Now())
+		wsc.ExpiredAt = uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(req.Duration)).UnixMilli()
+		wsc.SetAT(uc.infra.Timer.Now())
 		return uc.repos.WorkspaceCredentials().Update(txctx, wsc)
 	})
 	if err != nil {

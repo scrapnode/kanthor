@@ -2,6 +2,7 @@ package metric
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 )
 
-func NewOtel(conf *Config, logger logging.Logger) (Metrics, error) {
+func NewOtel(conf *Config, logger logging.Logger) (Metric, error) {
 	logger = logger.With("monitoring.metrics", "otel")
 	return &otel{conf: conf, logger: logger}, nil
 }
@@ -61,7 +62,7 @@ func (metric *otel) Connect(ctx context.Context) error {
 	}
 
 	// labels/tags/resources that are common to all metrics.
-	kv := []attribute.KeyValue{semconv.ServiceNameKey.String(metric.conf.Otel.Service)}
+	kv := []attribute.KeyValue{}
 	if len(metric.conf.Otel.Labels) > 0 {
 		for k, v := range metric.conf.Otel.Labels {
 			kv = append(kv, attribute.String(k, v))
@@ -97,16 +98,20 @@ func (metric *otel) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (metric *otel) Count(ctx context.Context, name string, value int64) {
-	meter := metric.provider.Meter("github.com/scrapnode/kanthor")
+func (metric *otel) Count(ctx context.Context, service, name string, value int64) {
+	meter := metric.provider.Meter(metric.meter(service))
 	if counter, err := meter.Int64Counter(name); err == nil {
-		counter.Add(context.Background(), value)
+		counter.Add(ctx, value)
 	}
 }
 
-func (metric *otel) Observe(ctx context.Context, name string, value float64) {
-	meter := metric.provider.Meter("github.com/scrapnode/kanthor")
+func (metric *otel) Observe(ctx context.Context, service, name string, value float64) {
+	meter := metric.provider.Meter(metric.meter(service))
 	if histogram, err := meter.Float64Histogram(name); err == nil {
-		histogram.Record(context.Background(), value)
+		histogram.Record(ctx, value)
 	}
+}
+
+func (metric *otel) meter(service string) string {
+	return fmt.Sprintf("kanthorlabs/kanthor/%s", service)
 }

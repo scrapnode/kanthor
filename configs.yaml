@@ -1,29 +1,9 @@
-# shares
-streaming: &streaming
-  uri: nats://127.0.0.1:4222
-  stream:
-    name: default
-    subjects:
-      - kanthor.default.msg.>
-      - kanthor.default.req.>
-      - kanthor.default.res.>
-    replicas: 0
-    limits:
-      msg_bytes: 32000
-      msgs: 1000000
-      bytes: 3200000000
-      # 60*60*24*3 = 3d
-      age: 259200
-
-cache: &cache
-  uri: redis://127.0.0.1:6379/0
-  time_to_live: 900000 # 15 minute
-
+# common 
 logger:
   pretty: true
   level: debug
   with:
-    environment: localhost
+    env: localhost
 
 cryptography:
   kdf: {}
@@ -33,13 +13,26 @@ cryptography:
 idempotency:
   namespace: idempotency
   uri: redis://127.0.0.1:6379/0
-  time_to_live: 300000 # 5 mins
+  time_to_live: 86400000 # 1 day
 
 coordinator:
   engine: nats
   nats:
     uri: nats://127.0.0.1:4222
     subject: kanthor.coordinator
+
+# external services
+metrics:
+  engine: otel
+  otel:
+    endpoint: localhost:4317
+    interval: 15000
+    labels:
+      env: localhost
+
+cache:
+  uri: redis://127.0.0.1:6379/0
+  time_to_live: 900000 # 15 minute
 
 database:
   uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
@@ -51,9 +44,25 @@ datastore:
   migration:
     source: file://./migration/datastore/sql
 
-# services
+streaming: &streaming
+  uri: nats://127.0.0.1:4222
+  stream:
+    name: default
+    subjects:
+      - kanthor.default.msg.>
+      - kanthor.default.req.>
+      - kanthor.default.res.>
+      - kanthor.default.att.>
+    replicas: 0
+    limits:
+      msg_bytes: 32000
+      msgs: 1000000
+      bytes: 3200000000
+      # 60*60*24*3 = 3d
+      age: 259200
+
+# application services
 sdkapi:
-  cache: *cache
   portal_connection:
     account: http://localhost:8280/api/account/me
   gateway:
@@ -68,17 +77,8 @@ sdkapi:
       policy_namespace: sdk
   publisher:
     connection: *streaming
-  metrics:
-    engine: otel
-    otel:
-      endpoint: localhost:4317
-      service: sdkapi
-      interval: 15000
-      labels:
-        env: local
 
 portalapi:
-  cache: *cache
   gateway:
     engine: httpx
     httpx:
@@ -95,17 +95,8 @@ portalapi:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
       policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.portal
       policy_namespace: portal
-  metrics:
-    engine: otel
-    otel:
-      endpoint: localhost:4317
-      service: portalapi
-      interval: 15000
-      labels:
-        env: local
 
 scheduler:
-  cache: *cache
   publisher:
     connection: *streaming
   subscriber:
@@ -117,20 +108,12 @@ scheduler:
     max_ack_pending: 100000
     max_ack_wating_duration: 15000
     max_request_batch: 1000
-  metrics:
-    engine: otel
-    otel:
-      endpoint: localhost:4317
-      service: scheduler
-      interval: 15000
-      labels:
-        env: local
   request:
     schedule:
-      concurrency: 300
+      rate_limit: 300
+      timeout: 5000
 
 dispatcher:
-  cache: *cache
   publisher:
     connection: *streaming
   subscriber:
@@ -146,24 +129,19 @@ dispatcher:
     timeout: 3000
     retry:
       count: 1
-      wait_time: 100
-      wait_time_max: 5000
+      wait_time: 500
   circuit_breaker:
     half_open_max_pass_through_requests: 5
     half_open_trigger_minimum_requests: 10
     half_open_trigger_error_threshold_ratio: 0.1
+    open_state_duration: 1800000
     close_trigger_minimum_requests: 10
     close_trigger_error_threshold_ratio: 0.1
     close_state_clear_interval: 600000
-    open_state_duration: 900000
-  metrics:
-    engine: otel
-    otel:
-      endpoint: localhost:4317
-      service: dispatcher
-      interval: 15000
-      labels:
-        env: local
+  forwarder:
+    send:
+      rate_limit: 300
+      timeout: 5000
 
 storage:
   subscriber:
@@ -175,41 +153,31 @@ storage:
     max_ack_pending: 100000
     max_ack_wating_duration: 15000
     max_request_batch: 1000
-  metrics:
-    engine: otel
-    otel:
-      endpoint: localhost:4317
-      service: storage
-      interval: 15000
-      labels:
-        env: local
+  warehouse:
+    put:
+      rate_limit: 3
+      chunk_size: 500
+      timeout: 5000
 
-attempt:
-  cache: *cache
+attempt_trigger:
   publisher:
     connection: *streaming
+  subscriber:
+    connection: *streaming
+    name: attempt_trigger
+    filter_subject: kanthor.default.att.trigger.>
+    max_retry: 3
+    max_waiting: 100
+    max_ack_pending: 100000
+    max_ack_wating_duration: 15000
+    max_request_batch: 1000
   dlocker:
     uri: redis://127.0.0.1:6379/0
-  metrics:
-    engine: otel
-    otel:
-      endpoint: localhost:4317
-      service: scheduler
-      interval: 15000
-      labels:
-        env: local
-        
   trigger:
-    cron:
-      lock_duration: 900
-      scan_size: 10000
-      publish_size: 300
-    consumer:
-      lock_duration: 900
-      scan_from: -10800
-      scan_to: -1800
-    schedule:
-      concurrency: 300
-    create:
-      concurrency: 300
-      schedule_delay: 900
+    plan:
+      rate_limit: 999999
+      timeout: 5000
+    exec:
+      rate_limit: 3
+      timeout: 5000
+      delay: 1800000

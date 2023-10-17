@@ -2,10 +2,11 @@ package middlewares
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"net/http"
 )
 
 func UseAuth(engine authenticator.Authenticator) gin.HandlerFunc {
@@ -17,9 +18,9 @@ func UseAuth(engine authenticator.Authenticator) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ctx = context.WithValue(ctx, authenticator.CtxAcc, acc)
-		ginctx.Set(gateway.KeyCtx, ctx)
+		ginctx.Set(gateway.KeyContext, ctx)
 		ginctx.Next()
 	}
 }

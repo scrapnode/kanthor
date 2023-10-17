@@ -22,25 +22,25 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-// ResourceMetrics is a collection of ScopeMetrics and the associated Resource
+// ResourceMetric is a collection of ScopeMetric and the associated Resource
 // that created them.
-type ResourceMetrics struct {
+type ResourceMetric struct {
 	// Resource represents the entity that collected the metrics.
 	Resource *resource.Resource
-	// ScopeMetrics are the collection of metrics with unique Scopes.
-	ScopeMetrics []ScopeMetrics
+	// ScopeMetric are the collection of metrics with unique Scopes.
+	ScopeMetric []ScopeMetric
 }
 
-// ScopeMetrics is a collection of Metrics Produces by a Meter.
-type ScopeMetrics struct {
+// ScopeMetric is a collection of Metric Produces by a Meter.
+type ScopeMetric struct {
 	// Scope is the Scope that the Meter was created with.
 	Scope instrumentation.Scope
-	// Metrics are a list of aggregations created by the Meter.
-	Metrics []Metrics
+	// Metric are a list of aggregations created by the Meter.
+	Metric []Metric
 }
 
-// Metrics is a collection of one or more aggregated timeseries from an Instrument.
-type Metrics struct {
+// Metric is a collection of one or more aggregated timeseries from an Instrument.
+type Metric struct {
 	// Name is the name of the Instrument that created this data.
 	Name string
 	// Description is the description of the Instrument, which can be used in documentation.

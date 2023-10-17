@@ -37,9 +37,7 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 
 	key := CacheKeyApp(ws.Id, req.AppId)
-	app, err := cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
-		uc.metrics.Count(ctx, "cache_miss_total", 1)
-
+	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
 		return uc.repos.Application().Get(ctx, ws, req.AppId)
 	})
 	if err != nil {
@@ -59,7 +57,7 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 	msg.Metadata.Merge(req.Metadata)
 
 	msg.GenId()
-	msg.SetTS(uc.timer.Now())
+	msg.SetTS(uc.infra.Timer.Now())
 
 	event, err := transformation.EventFromMessage(msg)
 	if err != nil {

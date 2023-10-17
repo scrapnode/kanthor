@@ -13,7 +13,7 @@ import (
 
 func UseAuthz(authz authorizator.Authorizator, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		wsId := ginctx.Request.Header.Get(authorizator.HeaderWorkspace)
 
 		req := &portaluc.WorkspaceGetReq{Id: wsId}
@@ -46,7 +46,7 @@ func UseAuthz(authz authorizator.Authorizator, uc portaluc.Portal) gin.HandlerFu
 		}
 
 		ctx = context.WithValue(ctx, authorizator.CtxWs, res.Workspace)
-		ginctx.Set(gateway.KeyCtx, ctx)
+		ginctx.Set(gateway.KeyContext, ctx)
 		ginctx.Next()
 	}
 }

@@ -3,8 +3,6 @@ package config
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -12,8 +10,6 @@ import (
 type Scheduler struct {
 	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
 	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
-	Cache      cache.Config               `json:"cache" yaml:"cache"`
-	Metrics    metric.Config              `json:"metrics" yaml:"metrics" mapstructure:"metrics"`
 
 	Request SchedulerRequest `json:"request" yaml:"request" mapstructure:"request"`
 }
@@ -24,12 +20,6 @@ func (conf *Scheduler) Validate() error {
 	}
 	if err := conf.Subscriber.Validate(); err != nil {
 		return fmt.Errorf("config.scheduler.subscriber: %v", err)
-	}
-	if err := conf.Cache.Validate(); err != nil {
-		return fmt.Errorf("config.scheduler.cache: %v", err)
-	}
-	if err := conf.Metrics.Validate(); err != nil {
-		return fmt.Errorf("config.scheduler.metrics: %v", err)
 	}
 	if err := conf.Request.Validate(); err != nil {
 		return fmt.Errorf("config.scheduler.request: %v", err)
@@ -50,14 +40,14 @@ func (conf *SchedulerRequest) Validate() error {
 }
 
 type SchedulerRequestSchedule struct {
-	ChunkSize    int   `json:"chunk_size" yaml:"chunk_size" mapstructure:"chunk_size"`
-	ChunkTimeout int64 `json:"chunk_timeout" yaml:"chunk_timeout" mapstructure:"chunk_timeout"`
+	RateLimit int   `json:"rate_limit" yaml:"rate_limit" mapstructure:"rate_limit"`
+	Timeout   int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 }
 
 func (conf *SchedulerRequestSchedule) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("config.scheduler.request.schedule.chunk_size", conf.ChunkSize, 0),
-		validator.NumberGreaterThanOrEqual("config.scheduler.request.schedule.chunk_timeout", conf.ChunkTimeout, 1000),
+		validator.NumberGreaterThan("config.scheduler.request.schedule.rate_limit", conf.RateLimit, 0),
+		validator.NumberGreaterThanOrEqual("config.scheduler.request.schedule.timeout", conf.Timeout, 1000),
 	)
 }

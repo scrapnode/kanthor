@@ -6,11 +6,9 @@ package ioc
 import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	scheduleruc "github.com/scrapnode/kanthor/usecases/scheduler"
@@ -20,23 +18,19 @@ import (
 func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
 		scheduler.New,
+		infrastructure.New,
 		ResolveSchedulerSubscriberConfig,
 		streaming.NewSubscriber,
-		ResolveSchedulerMetricsConfig,
-		metric.New,
 		InitializeSchedulerUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, metrics metric.Metrics) (scheduleruc.Scheduler, error) {
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (scheduleruc.Scheduler, error) {
 	wire.Build(
 		scheduleruc.New,
-		timer.New,
 		ResolveSchedulerPublisherConfig,
 		streaming.NewPublisher,
-		ResolveSchedulerCacheConfig,
-		cache.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
 	)
@@ -49,12 +43,4 @@ func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherCo
 
 func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
 	return &conf.Scheduler.Subscriber
-}
-
-func ResolveSchedulerCacheConfig(conf *config.Config) *cache.Config {
-	return &conf.Scheduler.Cache
-}
-
-func ResolveSchedulerMetricsConfig(conf *config.Config) *metric.Config {
-	return &conf.Scheduler.Metrics
 }

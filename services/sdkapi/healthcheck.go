@@ -14,7 +14,7 @@ func RegisterHealthcheck(router gin.IRoutes, service *sdkapi) {
 	})
 
 	router.GET("/readiness", func(ginctx *gin.Context) {
-		if err := service.metrics.Readiness(); err != nil {
+		if err := service.infra.Readiness(); err != nil {
 			ginctx.Status(http.StatusInternalServerError)
 			return
 		}
@@ -29,20 +29,10 @@ func RegisterHealthcheck(router gin.IRoutes, service *sdkapi) {
 			return
 		}
 
-		if err := service.idempotency.Readiness(); err != nil {
-			ginctx.Status(http.StatusInternalServerError)
-			return
-		}
-
-		if err := service.coordinator.Readiness(); err != nil {
-			ginctx.Status(http.StatusInternalServerError)
-			return
-		}
-
 		ginctx.String(http.StatusOK, "ready")
 	})
 	router.GET("/liveness", func(ginctx *gin.Context) {
-		if err := service.metrics.Liveness(); err != nil {
+		if err := service.infra.Liveness(); err != nil {
 			ginctx.Status(http.StatusInternalServerError)
 			return
 		}
@@ -53,16 +43,6 @@ func RegisterHealthcheck(router gin.IRoutes, service *sdkapi) {
 		}
 
 		if err := service.authz.Liveness(); err != nil {
-			ginctx.Status(http.StatusInternalServerError)
-			return
-		}
-
-		if err := service.idempotency.Liveness(); err != nil {
-			ginctx.Status(http.StatusInternalServerError)
-			return
-		}
-
-		if err := service.coordinator.Liveness(); err != nil {
 			ginctx.Status(http.StatusInternalServerError)
 			return
 		}

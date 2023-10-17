@@ -29,7 +29,7 @@ func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency) gin.H
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ok, err := engine.Validate(ctx, key)
 		if err != nil {
 			logger.Error(err)

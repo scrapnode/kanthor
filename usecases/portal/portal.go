@@ -5,12 +5,9 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/cryptography"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
 )
 
@@ -24,33 +21,24 @@ type Portal interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	cryptography cryptography.Cryptography,
-	metrics metric.Metrics,
-	timer timer.Timer,
-	cache cache.Cache,
+	infra *infrastructure.Infrastructure,
 	repos repos.Repositories,
 ) Portal {
 	logger = logger.With("usecase", "portal")
 
 	return &portal{
-		conf:         conf,
-		logger:       logger,
-		cryptography: cryptography,
-		metrics:      metrics,
-		timer:        timer,
-		cache:        cache,
-		repos:        repos,
+		conf:   conf,
+		logger: logger,
+		infra:  infra,
+		repos:  repos,
 	}
 }
 
 type portal struct {
-	conf         *config.Config
-	logger       logging.Logger
-	cryptography cryptography.Cryptography
-	metrics      metric.Metrics
-	timer        timer.Timer
-	cache        cache.Cache
-	repos        repos.Repositories
+	conf   *config.Config
+	logger logging.Logger
+	infra  *infrastructure.Infrastructure
+	repos  repos.Repositories
 
 	mu                   sync.RWMutex
 	account              *account
@@ -59,7 +47,7 @@ type portal struct {
 }
 
 func (uc *portal) Readiness() error {
-	if err := uc.cache.Readiness(); err != nil {
+	if err := uc.infra.Readiness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Readiness(); err != nil {
@@ -69,7 +57,7 @@ func (uc *portal) Readiness() error {
 }
 
 func (uc *portal) Liveness() error {
-	if err := uc.cache.Liveness(); err != nil {
+	if err := uc.infra.Liveness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Liveness(); err != nil {
@@ -82,7 +70,7 @@ func (uc *portal) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if err := uc.cache.Connect(ctx); err != nil {
+	if err := uc.infra.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -104,7 +92,7 @@ func (uc *portal) Disconnect(ctx context.Context) error {
 		return err
 	}
 
-	if err := uc.cache.Disconnect(ctx); err != nil {
+	if err := uc.infra.Disconnect(ctx); err != nil {
 		return err
 	}
 
@@ -117,13 +105,10 @@ func (uc *portal) Account() Account {
 
 	if uc.account == nil {
 		uc.account = &account{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			repos:        uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.account
@@ -135,13 +120,10 @@ func (uc *portal) Workspace() Workspace {
 
 	if uc.workspace == nil {
 		uc.workspace = &workspace{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			repos:        uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.workspace
@@ -153,13 +135,10 @@ func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
 
 	if uc.workspaceCredentials == nil {
 		uc.workspaceCredentials = &workspaceCredentials{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			repos:        uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.workspaceCredentials

@@ -3,93 +3,76 @@ package config
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/dlocker"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type Attempt struct {
-	Publisher streaming.PublisherConfig `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
-	DLocker   dlocker.Config            `json:"dlocker" yaml:"dlocker" mapstructure:"dlocker"`
-	Trigger   AttemptTrigger            `json:"trigger" yaml:"trigger" mapstructure:"trigger"`
-	Metrics   metric.Config             `json:"metrics" yaml:"metrics" mapstructure:"metrics"`
+	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
+	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
+	Trigger    AttemptTrigger             `json:"trigger" yaml:"trigger" mapstructure:"trigger"`
 }
 
 func (conf *Attempt) Validate() error {
 	if err := conf.Publisher.Validate(); err != nil {
 		return fmt.Errorf("config.attempt.publisher: %v", err)
 	}
-	if err := conf.DLocker.Validate(); err != nil {
-		return fmt.Errorf("config.attempt.dlocker: %v", err)
+	if err := conf.Publisher.Validate(); err != nil {
+		return fmt.Errorf("config.attempt.subscriber: %v", err)
 	}
 	if err := conf.Trigger.Validate(); err != nil {
 		return fmt.Errorf("config.attempt.trigger: %v", err)
-	}
-	if err := conf.Metrics.Validate(); err != nil {
-		return fmt.Errorf("config.attempt.metrics: %v", err)
 	}
 
 	return nil
 }
 
 type AttemptTrigger struct {
-	Cron     AttemptTriggerCron     `json:"cron" yaml:"cron" mapstructure:"cron"`
-	Consumer AttemptTriggerConsumer `json:"consumer" yaml:"consumer" mapstructure:"consumer"`
+	Plan AttemptTriggerPlan `json:"plan" yaml:"plan" mapstructure:"plan"`
+	Exec AttemptTriggerExec `json:"exec" yaml:"exec" mapstructure:"exec"`
 }
 
 func (conf *AttemptTrigger) Validate() error {
-	if err := conf.Cron.Validate(); err != nil {
-		return fmt.Errorf("config.attempt.trigger.cron: %v", err)
+	if err := conf.Plan.Validate(); err != nil {
+		return fmt.Errorf("config.attempt.trigger.plan: %v", err)
 	}
-	if err := conf.Consumer.Validate(); err != nil {
-		return fmt.Errorf("config.attempt.trigger.consumer: %v", err)
+	if err := conf.Exec.Validate(); err != nil {
+		return fmt.Errorf("config.attempt.trigger.exec: %v", err)
 	}
 	return nil
 }
 
-type AttemptTriggerCron struct {
+type AttemptTriggerPlan struct {
 	LockDuration int64 `json:"lock_duration" yaml:"lock_duration" mapstructure:"lock_duration"`
-	ChunkTimeout int64 `json:"chunk_timeout" yaml:"chunk_timeout" mapstructure:"chunk_timeout"`
-	ChunkSize    int   `json:"chunk_size" yaml:"chunk_size" mapstructure:"chunk_size"`
+	Timeout      int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	RateLimit    int   `json:"rate_limit" yaml:"rate_limit" mapstructure:"rate_limit"`
 
-	ScanFrom int64 `json:"scan_from" yaml:"scan_from" mapstructure:"scan_from"`
-	ScanTo   int64 `json:"scan_to" yaml:"scan_to" mapstructure:"scan_to"`
+	ScanStart int64 `json:"scan_start" yaml:"scan_start" mapstructure:"scan_start"`
+	ScanEnd   int64 `json:"scan_to" yaml:"scan_to" mapstructure:"scan_to"`
 }
 
-func (conf *AttemptTriggerCron) Validate() error {
+func (conf *AttemptTriggerPlan) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("config.attempt.trigger.cron.lock_duration", conf.LockDuration, 15000),
-		validator.NumberGreaterThanOrEqual("config.attempt.trigger.cron.chunk_timeout", conf.ChunkTimeout, 3000),
-		validator.NumberGreaterThan("config.attempt.trigger.cron.chunk_size", conf.ChunkSize, 0),
-		validator.NumberGreaterThan("scan_from", conf.ScanFrom, conf.ScanTo),
-		validator.NumberLessThan("scan_to", conf.ScanTo, conf.ScanFrom),
+		validator.NumberGreaterThanOrEqual("config.attempt.trigger.cron.timeout", conf.Timeout, 3000),
+		validator.NumberGreaterThan("config.attempt.trigger.cron.rate_limit", conf.RateLimit, 0),
+		validator.NumberGreaterThan("scan_start", conf.ScanStart, conf.ScanEnd),
+		validator.NumberLessThan("scan_to", conf.ScanEnd, conf.ScanStart),
 	)
 }
 
-type AttemptTriggerConsumer struct {
-	Delay        int64 `json:"delay" yaml:"delay" mapstructure:"delay"`
-	ChunkTimeout int64 `json:"chunk_timeout" yaml:"chunk_timeout" mapstructure:"chunk_timeout"`
-	ChunkSize    int   `json:"chunk_size" yaml:"chunk_size" mapstructure:"chunk_size"`
-
-	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
+type AttemptTriggerExec struct {
+	Timeout   int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	RateLimit int   `json:"rate_limit" yaml:"rate_limit" mapstructure:"rate_limit"`
+	Delay     int64 `json:"delay" yaml:"delay" mapstructure:"delay"`
 }
 
-func (conf *AttemptTriggerConsumer) Validate() error {
-	err := validator.Validate(
+func (conf *AttemptTriggerExec) Validate() error {
+	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("config.attempt.trigger.cron.chunk_timeout", conf.ChunkTimeout, 3000),
-		validator.NumberGreaterThanOrEqual("config.attempt.trigger.cron.delay", conf.Delay, 3000),
-		validator.NumberGreaterThan("config.attempt.trigger.cron.chunk_size", conf.ChunkSize, 0),
+		validator.NumberGreaterThanOrEqual("config.attempt.trigger.exec.timeout", conf.Timeout, 3000),
+		validator.NumberGreaterThan("config.attempt.trigger.exec.rate_limit", conf.RateLimit, 0),
+		validator.NumberGreaterThanOrEqual("config.attempt.trigger.exec.delay", conf.Delay, 3000),
 	)
-	if err != nil {
-		return err
-	}
-
-	if err := conf.Subscriber.Validate(); err != nil {
-		return fmt.Errorf("config.attempt.trigger.consumer.subscriber: %v", err)
-	}
-
-	return nil
 }

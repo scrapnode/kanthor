@@ -37,7 +37,7 @@ func UseApplicationUpdate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		id := ginctx.Param("app_id")
 		ucreq := &usecase.ApplicationUpdateReq{Id: id, Name: req.Name}
 		if err := ucreq.Validate(); err != nil {

@@ -65,18 +65,18 @@ func getOptionsFromEnv() []GenericOption {
 		envconfig.WithURL("ENDPOINT", func(u *url.URL) {
 			opts = append(opts, withEndpointScheme(u))
 			opts = append(opts, newSplitOption(func(cfg Config) Config {
-				cfg.Metrics.Endpoint = u.Host
+				cfg.Metric.Endpoint = u.Host
 				// For OTLP/HTTP endpoint URLs without a per-signal
 				// configuration, the passed endpoint is used as a base URL
 				// and the signals are sent to these paths relative to that.
-				cfg.Metrics.URLPath = path.Join(u.Path, DefaultMetricsPath)
+				cfg.Metric.URLPath = path.Join(u.Path, DefaultMetricPath)
 				return cfg
 			}, withEndpointForGRPC(u)))
 		}),
 		envconfig.WithURL("METRICS_ENDPOINT", func(u *url.URL) {
 			opts = append(opts, withEndpointScheme(u))
 			opts = append(opts, newSplitOption(func(cfg Config) Config {
-				cfg.Metrics.Endpoint = u.Host
+				cfg.Metric.Endpoint = u.Host
 				// For endpoint URLs for OTLP/HTTP per-signal variables, the
 				// URL MUST be used as-is without any modification. The only
 				// exception is that if an URL contains no path part, the root
@@ -85,7 +85,7 @@ func getOptionsFromEnv() []GenericOption {
 				if path == "" {
 					path = "/"
 				}
-				cfg.Metrics.URLPath = path
+				cfg.Metric.URLPath = path
 				return cfg
 			}, withEndpointForGRPC(u)))
 		}),
@@ -113,7 +113,7 @@ func withEndpointForGRPC(u *url.URL) func(cfg Config) Config {
 	return func(cfg Config) Config {
 		// For OTLP/gRPC endpoints, this is the target to which the
 		// exporter is going to send telemetry.
-		cfg.Metrics.Endpoint = path.Join(u.Host, u.Path)
+		cfg.Metric.Endpoint = path.Join(u.Host, u.Path)
 		return cfg
 	}
 }

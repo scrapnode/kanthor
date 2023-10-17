@@ -5,13 +5,10 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/cryptography"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
 )
 
@@ -27,36 +24,27 @@ type Sdk interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	cryptography cryptography.Cryptography,
-	metrics metric.Metrics,
-	timer timer.Timer,
-	cache cache.Cache,
+	infra *infrastructure.Infrastructure,
 	publisher streaming.Publisher,
 	repos repos.Repositories,
 ) Sdk {
 	logger = logger.With("usecase", "sdk")
 
 	return &sdk{
-		conf:         conf,
-		logger:       logger,
-		cryptography: cryptography,
-		metrics:      metrics,
-		timer:        timer,
-		cache:        cache,
-		publisher:    publisher,
-		repos:        repos,
+		conf:      conf,
+		logger:    logger,
+		infra:     infra,
+		publisher: publisher,
+		repos:     repos,
 	}
 }
 
 type sdk struct {
-	conf         *config.Config
-	logger       logging.Logger
-	cryptography cryptography.Cryptography
-	metrics      metric.Metrics
-	timer        timer.Timer
-	cache        cache.Cache
-	publisher    streaming.Publisher
-	repos        repos.Repositories
+	conf      *config.Config
+	logger    logging.Logger
+	infra     *infrastructure.Infrastructure
+	publisher streaming.Publisher
+	repos     repos.Repositories
 
 	mu                   sync.RWMutex
 	workspaceCredentials *workspaceCredentials
@@ -67,7 +55,7 @@ type sdk struct {
 }
 
 func (uc *sdk) Readiness() error {
-	if err := uc.cache.Readiness(); err != nil {
+	if err := uc.infra.Readiness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Readiness(); err != nil {
@@ -80,7 +68,7 @@ func (uc *sdk) Readiness() error {
 }
 
 func (uc *sdk) Liveness() error {
-	if err := uc.cache.Liveness(); err != nil {
+	if err := uc.infra.Liveness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Liveness(); err != nil {
@@ -96,7 +84,7 @@ func (uc *sdk) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if err := uc.cache.Connect(ctx); err != nil {
+	if err := uc.infra.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -126,7 +114,7 @@ func (uc *sdk) Disconnect(ctx context.Context) error {
 		return err
 	}
 
-	if err := uc.cache.Disconnect(ctx); err != nil {
+	if err := uc.infra.Disconnect(ctx); err != nil {
 		return err
 	}
 
@@ -139,13 +127,10 @@ func (uc *sdk) WorkspaceCredentials() WorkspaceCredentials {
 
 	if uc.workspaceCredentials == nil {
 		uc.workspaceCredentials = &workspaceCredentials{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			repos:        uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.workspaceCredentials
@@ -157,13 +142,10 @@ func (uc *sdk) Application() Application {
 
 	if uc.application == nil {
 		uc.application = &application{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			repos:        uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.application
@@ -175,13 +157,10 @@ func (uc *sdk) Endpoint() Endpoint {
 
 	if uc.endpoint == nil {
 		uc.endpoint = &endpoint{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			repos:        uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.endpoint
@@ -193,13 +172,10 @@ func (uc *sdk) EndpointRule() EndpointRule {
 
 	if uc.endpointRule == nil {
 		uc.endpointRule = &endpointRule{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			repos:        uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.endpointRule
@@ -211,14 +187,11 @@ func (uc *sdk) Message() Message {
 
 	if uc.message == nil {
 		uc.message = &message{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			cryptography: uc.cryptography,
-			metrics:      uc.metrics,
-			timer:        uc.timer,
-			cache:        uc.cache,
-			publisher:    uc.publisher,
-			repos:        uc.repos,
+			conf:      uc.conf,
+			logger:    uc.logger,
+			infra:     uc.infra,
+			publisher: uc.publisher,
+			repos:     uc.repos,
 		}
 	}
 	return uc.message

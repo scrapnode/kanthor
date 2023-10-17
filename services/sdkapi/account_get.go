@@ -27,7 +27,7 @@ type AccountGetRes struct {
 // @Security	BearerAuth
 func UseAccountGet(service *sdkapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
 		var req AccountGetReq

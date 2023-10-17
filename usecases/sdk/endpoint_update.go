@@ -42,7 +42,7 @@ func (uc *endpoint) Update(ctx context.Context, req *EndpointUpdateReq) (*Endpoi
 		}
 
 		ep.Name = req.Name
-		ep.SetAT(uc.timer.Now())
+		ep.SetAT(uc.infra.Timer.Now())
 		return uc.repos.Endpoint().Update(txctx, ep)
 	})
 	if err != nil {

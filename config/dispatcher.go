@@ -3,21 +3,15 @@ package config
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type Dispatcher struct {
-	Publisher      streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
-	Subscriber     streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
-	Sender         sender.Config              `json:"sender" yaml:"sender" mapstructure:"sender"`
-	Cache          cache.Config               `json:"cache" yaml:"cache" mapstructure:"cache"`
-	CircuitBreaker circuitbreaker.Config      `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
-	Metrics        metric.Config              `json:"metrics" yaml:"metrics" mapstructure:"metrics"`
+	Publisher  streaming.PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
+	Subscriber streaming.SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
+	Sender     sender.Config              `json:"sender" yaml:"sender" mapstructure:"sender"`
 
 	Forwarder DispatcherForwarder `json:"forwarder" yaml:"forwarder" mapstructure:"forwarder"`
 }
@@ -31,15 +25,6 @@ func (conf *Dispatcher) Validate() error {
 	}
 	if err := conf.Sender.Validate(); err != nil {
 		return fmt.Errorf("config.dispatcher.sender: %v", err)
-	}
-	if err := conf.Cache.Validate(); err != nil {
-		return fmt.Errorf("config.dispatcher.cache: %v", err)
-	}
-	if err := conf.CircuitBreaker.Validate(); err != nil {
-		return fmt.Errorf("config.dispatcher.circuit_breaker: %v", err)
-	}
-	if err := conf.Metrics.Validate(); err != nil {
-		return fmt.Errorf("config.dispatcher.metrics: %v", err)
 	}
 	if err := conf.Forwarder.Validate(); err != nil {
 		return fmt.Errorf("config.scheduler.forwarder: %v", err)
@@ -60,14 +45,14 @@ func (conf *DispatcherForwarder) Validate() error {
 }
 
 type DispatcherForwarderSend struct {
-	ChunkSize    int   `json:"chunk_size" yaml:"chunk_size" mapstructure:"chunk_size"`
-	ChunkTimeout int64 `json:"chunk_timeout" yaml:"chunk_timeout" mapstructure:"chunk_timeout"`
+	RateLimit int   `json:"rate_limit" yaml:"rate_limit" mapstructure:"rate_limit"`
+	Timeout   int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 }
 
 func (conf *DispatcherForwarderSend) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("config.dispatcher.forwarder.send.chunk_size", conf.ChunkSize, 0),
-		validator.NumberGreaterThanOrEqual("config.dispatcher.forwarder.send.chunk_timeout", conf.ChunkTimeout, 1000),
+		validator.NumberGreaterThan("config.dispatcher.forwarder.send.rate_limit", conf.RateLimit, 0),
+		validator.NumberGreaterThanOrEqual("config.dispatcher.forwarder.send.timeout", conf.Timeout, 1000),
 	)
 }

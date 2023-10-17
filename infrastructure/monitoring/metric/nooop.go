@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
-func NewNoop(conf *Config, logger logging.Logger) (Metrics, error) {
+func NewNoop(conf *Config, logger logging.Logger) (Metric, error) {
 	logger = logger.With("monitoring.metrics", "noop")
 	return &noop{conf: conf, logger: logger}, nil
 }
@@ -30,5 +30,5 @@ func (metric *noop) Connect(ctx context.Context) error {
 func (metric *noop) Disconnect(ctx context.Context) error {
 	return nil
 }
-func (metric *noop) Count(ctx context.Context, name string, value int64)     {}
-func (metric *noop) Observe(ctx context.Context, name string, value float64) {}
+func (metric *noop) Count(ctx context.Context, service, name string, value int64)     {}
+func (metric *noop) Observe(ctx context.Context, service, name string, value float64) {}

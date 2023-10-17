@@ -1515,9 +1515,9 @@ const (
 	// "WriteCapacityUnits": number }'
 	AWSDynamoDBConsumedCapacityKey = attribute.Key("aws.dynamodb.consumed_capacity")
 
-	// AWSDynamoDBItemCollectionMetricsKey is the attribute Key conforming to
+	// AWSDynamoDBItemCollectionMetricKey is the attribute Key conforming to
 	// the "aws.dynamodb.item_collection_metrics" semantic conventions. It
-	// represents the JSON-serialized value of the `ItemCollectionMetrics`
+	// represents the JSON-serialized value of the `ItemCollectionMetric`
 	// response field.
 	//
 	// Type: string
@@ -1528,7 +1528,7 @@ const (
 	// "string" : "AttributeValue" }, "N": "string", "NS": [ "string" ],
 	// "NULL": boolean, "S": "string", "SS": [ "string" ] } },
 	// "SizeEstimateRangeGB": [ number ] } ] }'
-	AWSDynamoDBItemCollectionMetricsKey = attribute.Key("aws.dynamodb.item_collection_metrics")
+	AWSDynamoDBItemCollectionMetricKey = attribute.Key("aws.dynamodb.item_collection_metrics")
 
 	// AWSDynamoDBProvisionedReadCapacityKey is the attribute Key conforming to
 	// the "aws.dynamodb.provisioned_read_capacity" semantic conventions. It
@@ -1627,12 +1627,12 @@ func AWSDynamoDBConsumedCapacity(val ...string) attribute.KeyValue {
 	return AWSDynamoDBConsumedCapacityKey.StringSlice(val)
 }
 
-// AWSDynamoDBItemCollectionMetrics returns an attribute KeyValue conforming
+// AWSDynamoDBItemCollectionMetric returns an attribute KeyValue conforming
 // to the "aws.dynamodb.item_collection_metrics" semantic conventions. It
-// represents the JSON-serialized value of the `ItemCollectionMetrics` response
+// represents the JSON-serialized value of the `ItemCollectionMetric` response
 // field.
-func AWSDynamoDBItemCollectionMetrics(val string) attribute.KeyValue {
-	return AWSDynamoDBItemCollectionMetricsKey.String(val)
+func AWSDynamoDBItemCollectionMetric(val string) attribute.KeyValue {
+	return AWSDynamoDBItemCollectionMetricKey.String(val)
 }
 
 // AWSDynamoDBProvisionedReadCapacity returns an attribute KeyValue

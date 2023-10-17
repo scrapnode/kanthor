@@ -119,7 +119,7 @@ func (p *pipeline) addMultiCallback(c multiCallback) (unregister func()) {
 // produce returns aggregated metrics from a single collection.
 //
 // This method is safe to call concurrently.
-func (p *pipeline) produce(ctx context.Context, rm *metricdata.ResourceMetrics) error {
+func (p *pipeline) produce(ctx context.Context, rm *metricdata.ResourceMetric) error {
 	p.Lock()
 	defer p.Unlock()
 
@@ -131,7 +131,7 @@ func (p *pipeline) produce(ctx context.Context, rm *metricdata.ResourceMetrics) 
 		}
 		if err := ctx.Err(); err != nil {
 			rm.Resource = nil
-			rm.ScopeMetrics = rm.ScopeMetrics[:0]
+			rm.ScopeMetric = rm.ScopeMetric[:0]
 			return err
 		}
 	}
@@ -144,36 +144,36 @@ func (p *pipeline) produce(ctx context.Context, rm *metricdata.ResourceMetrics) 
 		if err := ctx.Err(); err != nil {
 			// This means the context expired before we finished running callbacks.
 			rm.Resource = nil
-			rm.ScopeMetrics = rm.ScopeMetrics[:0]
+			rm.ScopeMetric = rm.ScopeMetric[:0]
 			return err
 		}
 	}
 
 	rm.Resource = p.resource
-	rm.ScopeMetrics = internal.ReuseSlice(rm.ScopeMetrics, len(p.aggregations))
+	rm.ScopeMetric = internal.ReuseSlice(rm.ScopeMetric, len(p.aggregations))
 
 	i := 0
 	for scope, instruments := range p.aggregations {
-		rm.ScopeMetrics[i].Metrics = internal.ReuseSlice(rm.ScopeMetrics[i].Metrics, len(instruments))
+		rm.ScopeMetric[i].Metric = internal.ReuseSlice(rm.ScopeMetric[i].Metric, len(instruments))
 		j := 0
 		for _, inst := range instruments {
-			data := rm.ScopeMetrics[i].Metrics[j].Data
+			data := rm.ScopeMetric[i].Metric[j].Data
 			if n := inst.compAgg(&data); n > 0 {
-				rm.ScopeMetrics[i].Metrics[j].Name = inst.name
-				rm.ScopeMetrics[i].Metrics[j].Description = inst.description
-				rm.ScopeMetrics[i].Metrics[j].Unit = inst.unit
-				rm.ScopeMetrics[i].Metrics[j].Data = data
+				rm.ScopeMetric[i].Metric[j].Name = inst.name
+				rm.ScopeMetric[i].Metric[j].Description = inst.description
+				rm.ScopeMetric[i].Metric[j].Unit = inst.unit
+				rm.ScopeMetric[i].Metric[j].Data = data
 				j++
 			}
 		}
-		rm.ScopeMetrics[i].Metrics = rm.ScopeMetrics[i].Metrics[:j]
-		if len(rm.ScopeMetrics[i].Metrics) > 0 {
-			rm.ScopeMetrics[i].Scope = scope
+		rm.ScopeMetric[i].Metric = rm.ScopeMetric[i].Metric[:j]
+		if len(rm.ScopeMetric[i].Metric) > 0 {
+			rm.ScopeMetric[i].Scope = scope
 			i++
 		}
 	}
 
-	rm.ScopeMetrics = rm.ScopeMetrics[:i]
+	rm.ScopeMetric = rm.ScopeMetric[:i]
 
 	return errs.errorOrNil()
 }

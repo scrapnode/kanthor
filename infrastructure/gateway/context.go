@@ -1,3 +1,3 @@
 package gateway
 
-var KeyCtx = "context"
+var KeyContext = "kanthor/gateway/context"

@@ -7,9 +7,9 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
@@ -21,7 +21,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	subscriber streaming.Subscriber,
-	metrics metric.Metrics,
+	infra *infrastructure.Infrastructure,
 	uc usecase.Dispatcher,
 ) services.Service {
 	logger = logger.With("service", "dispatcher")
@@ -29,7 +29,7 @@ func New(
 		conf:       conf,
 		logger:     logger,
 		subscriber: subscriber,
-		metrics:    metrics,
+		infra:      infra,
 		uc:         uc,
 
 		debugger: debugging.NewServer(),
@@ -44,7 +44,7 @@ type dispatcher struct {
 	conf       *config.Config
 	logger     logging.Logger
 	subscriber streaming.Subscriber
-	metrics    metric.Metrics
+	infra      *infrastructure.Infrastructure
 	uc         usecase.Dispatcher
 
 	mu          sync.Mutex
@@ -62,7 +62,7 @@ func (service *dispatcher) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := service.metrics.Connect(ctx); err != nil {
+	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -87,28 +87,34 @@ func (service *dispatcher) Stop(ctx context.Context) error {
 	defer service.mu.Unlock()
 
 	service.logger.Info("stopped")
+	var returning error
 
 	if err := service.healthcheck.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.subscriber.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.uc.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
-	if err := service.metrics.Disconnect(ctx); err != nil {
+	if err := service.infra.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.debugger.Stop(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
-	return nil
+	return returning
 }
 
 func (service *dispatcher) Run(ctx context.Context) error {
@@ -132,7 +138,7 @@ func (service *dispatcher) Run(ctx context.Context) error {
 				return err
 			}
 
-			if err := service.metrics.Liveness(); err != nil {
+			if err := service.infra.Liveness(); err != nil {
 				return err
 			}
 			return nil
@@ -165,7 +171,7 @@ func (service *dispatcher) readiness() error {
 			return err
 		}
 
-		if err := service.metrics.Readiness(); err != nil {
+		if err := service.infra.Readiness(); err != nil {
 			return err
 		}
 

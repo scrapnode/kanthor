@@ -25,7 +25,7 @@ type ApplicationDeleteRes struct {
 // @Security	BasicAuth
 func UseApplicationDelete(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		id := ginctx.Param("app_id")
 		ucreq := &usecase.ApplicationDeleteReq{Id: id}
 		if err := ucreq.Validate(); err != nil {

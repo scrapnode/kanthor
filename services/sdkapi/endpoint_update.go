@@ -38,7 +38,7 @@ func UseEndpointUpdate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
 		ucreq := &usecase.EndpointUpdateReq{AppId: appId, Id: id, Name: req.Name}

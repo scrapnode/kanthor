@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/usecases/storage/repos"
 )
@@ -19,24 +19,24 @@ type Storage interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	metrics metric.Metrics,
+	infra *infrastructure.Infrastructure,
 	repos repos.Repositories,
 ) Storage {
 	logger = logger.With("usecase", "storage")
 
 	return &storage{
-		conf:    conf,
-		logger:  logger,
-		metrics: metrics,
-		repos:   repos,
+		conf:   conf,
+		logger: logger,
+		infra:  infra,
+		repos:  repos,
 	}
 }
 
 type storage struct {
-	conf    *config.Config
-	logger  logging.Logger
-	metrics metric.Metrics
-	repos   repos.Repositories
+	conf   *config.Config
+	logger logging.Logger
+	infra  *infrastructure.Infrastructure
+	repos  repos.Repositories
 
 	mu       sync.RWMutex
 	warehose *warehose
@@ -87,10 +87,10 @@ func (uc *storage) Warehouse() Warehouse {
 
 	if uc.warehose == nil {
 		uc.warehose = &warehose{
-			conf:    uc.conf,
-			logger:  uc.logger,
-			metrics: uc.metrics,
-			repos:   uc.repos,
+			conf:   uc.conf,
+			logger: uc.logger,
+			infra:  uc.infra,
+			repos:  uc.repos,
 		}
 	}
 	return uc.warehose

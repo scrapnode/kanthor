@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/coordinator"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/spf13/cobra"
@@ -32,14 +32,14 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				return err
 			}
 
-			ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute*2)
+			ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute*5)
 			defer cancel()
 
-			meter, err := metric.NewNoop(nil, logger)
+			infra, err := infrastructure.New(conf, logger)
 			if err != nil {
 				return err
 			}
-			uc, err := ioc.InitializePortalUsecase(conf, logger, meter)
+			uc, err := ioc.InitializePortalUsecase(conf, logger, infra)
 			if err != nil {
 				return err
 			}

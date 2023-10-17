@@ -28,7 +28,7 @@ type WorkspaceCredentialsExpireRes struct {
 func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error) {
 	key := CacheKeyWsAuthenticate(req.User)
 	at := time.UnixMilli(req.ExpiredAt)
-	ok, err := uc.cache.ExpireAt(ctx, key, at)
+	ok, err := uc.infra.Cache.ExpireAt(ctx, key, at)
 	if err != nil {
 		return nil, err
 	}

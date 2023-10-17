@@ -41,7 +41,7 @@ func (uc *endpointRule) Update(ctx context.Context, req *EndpointRuleUpdateReq) 
 		}
 
 		epr.Name = req.Name
-		epr.SetAT(uc.timer.Now())
+		epr.SetAT(uc.infra.Timer.Now())
 		return uc.repos.EndpointRule().Update(txctx, epr)
 	})
 	if err != nil {

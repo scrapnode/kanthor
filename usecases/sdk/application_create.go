@@ -28,7 +28,7 @@ func (uc *application) Create(ctx context.Context, req *ApplicationCreateReq) (*
 
 	doc := &entities.Application{WsId: ws.Id, Name: req.Name}
 	doc.GenId()
-	doc.SetAT(uc.timer.Now())
+	doc.SetAT(uc.infra.Timer.Now())
 
 	app, err := uc.repos.Application().Create(ctx, doc)
 	if err != nil {

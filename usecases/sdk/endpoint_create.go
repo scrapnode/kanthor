@@ -50,7 +50,7 @@ func (uc *endpoint) Create(ctx context.Context, req *EndpointCreateReq) (*Endpoi
 		Uri:       req.Uri,
 	}
 	doc.GenId()
-	doc.SetAT(uc.timer.Now())
+	doc.SetAT(uc.infra.Timer.Now())
 	doc.GenSecretKey()
 
 	ep, err := uc.repos.Endpoint().Create(ctx, doc)

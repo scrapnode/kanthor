@@ -18,90 +18,90 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// MetricsServiceClient is the client API for MetricsService service.
+// MetricServiceClient is the client API for MetricService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type MetricsServiceClient interface {
+type MetricServiceClient interface {
 	// For performance reasons, it is recommended to keep this RPC
 	// alive for the entire life of the application.
-	Export(ctx context.Context, in *ExportMetricsServiceRequest, opts ...grpc.CallOption) (*ExportMetricsServiceResponse, error)
+	Export(ctx context.Context, in *ExportMetricServiceRequest, opts ...grpc.CallOption) (*ExportMetricServiceResponse, error)
 }
 
 type metricsServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewMetricsServiceClient(cc grpc.ClientConnInterface) MetricsServiceClient {
+func NewMetricServiceClient(cc grpc.ClientConnInterface) MetricServiceClient {
 	return &metricsServiceClient{cc}
 }
 
-func (c *metricsServiceClient) Export(ctx context.Context, in *ExportMetricsServiceRequest, opts ...grpc.CallOption) (*ExportMetricsServiceResponse, error) {
-	out := new(ExportMetricsServiceResponse)
-	err := c.cc.Invoke(ctx, "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export", in, out, opts...)
+func (c *metricsServiceClient) Export(ctx context.Context, in *ExportMetricServiceRequest, opts ...grpc.CallOption) (*ExportMetricServiceResponse, error) {
+	out := new(ExportMetricServiceResponse)
+	err := c.cc.Invoke(ctx, "/opentelemetry.proto.collector.metrics.v1.MetricService/Export", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// MetricsServiceServer is the server API for MetricsService service.
-// All implementations must embed UnimplementedMetricsServiceServer
+// MetricServiceServer is the server API for MetricService service.
+// All implementations must embed UnimplementedMetricServiceServer
 // for forward compatibility
-type MetricsServiceServer interface {
+type MetricServiceServer interface {
 	// For performance reasons, it is recommended to keep this RPC
 	// alive for the entire life of the application.
-	Export(context.Context, *ExportMetricsServiceRequest) (*ExportMetricsServiceResponse, error)
-	mustEmbedUnimplementedMetricsServiceServer()
+	Export(context.Context, *ExportMetricServiceRequest) (*ExportMetricServiceResponse, error)
+	mustEmbedUnimplementedMetricServiceServer()
 }
 
-// UnimplementedMetricsServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedMetricsServiceServer struct {
+// UnimplementedMetricServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedMetricServiceServer struct {
 }
 
-func (UnimplementedMetricsServiceServer) Export(context.Context, *ExportMetricsServiceRequest) (*ExportMetricsServiceResponse, error) {
+func (UnimplementedMetricServiceServer) Export(context.Context, *ExportMetricServiceRequest) (*ExportMetricServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Export not implemented")
 }
-func (UnimplementedMetricsServiceServer) mustEmbedUnimplementedMetricsServiceServer() {}
+func (UnimplementedMetricServiceServer) mustEmbedUnimplementedMetricServiceServer() {}
 
-// UnsafeMetricsServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to MetricsServiceServer will
+// UnsafeMetricServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MetricServiceServer will
 // result in compilation errors.
-type UnsafeMetricsServiceServer interface {
-	mustEmbedUnimplementedMetricsServiceServer()
+type UnsafeMetricServiceServer interface {
+	mustEmbedUnimplementedMetricServiceServer()
 }
 
-func RegisterMetricsServiceServer(s grpc.ServiceRegistrar, srv MetricsServiceServer) {
-	s.RegisterService(&MetricsService_ServiceDesc, srv)
+func RegisterMetricServiceServer(s grpc.ServiceRegistrar, srv MetricServiceServer) {
+	s.RegisterService(&MetricService_ServiceDesc, srv)
 }
 
-func _MetricsService_Export_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ExportMetricsServiceRequest)
+func _MetricService_Export_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportMetricServiceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MetricsServiceServer).Export(ctx, in)
+		return srv.(MetricServiceServer).Export(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export",
+		FullMethod: "/opentelemetry.proto.collector.metrics.v1.MetricService/Export",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MetricsServiceServer).Export(ctx, req.(*ExportMetricsServiceRequest))
+		return srv.(MetricServiceServer).Export(ctx, req.(*ExportMetricServiceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// MetricsService_ServiceDesc is the grpc.ServiceDesc for MetricsService service.
+// MetricService_ServiceDesc is the grpc.ServiceDesc for MetricService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var MetricsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "opentelemetry.proto.collector.metrics.v1.MetricsService",
-	HandlerType: (*MetricsServiceServer)(nil),
+var MetricService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "opentelemetry.proto.collector.metrics.v1.MetricService",
+	HandlerType: (*MetricServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Export",
-			Handler:    _MetricsService_Export_Handler,
+			Handler:    _MetricService_Export_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

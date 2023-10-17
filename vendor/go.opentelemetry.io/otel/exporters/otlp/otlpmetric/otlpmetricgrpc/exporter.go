@@ -32,7 +32,7 @@ type Exporter struct {
 	// Ensure synchronous access to the client across all functionality.
 	clientMu sync.Mutex
 	client   interface {
-		UploadMetrics(context.Context, *metricpb.ResourceMetrics) error
+		UploadMetric(context.Context, *metricpb.ResourceMetric) error
 		Shutdown(context.Context) error
 	}
 
@@ -43,14 +43,14 @@ type Exporter struct {
 }
 
 func newExporter(c *client, cfg oconf.Config) (*Exporter, error) {
-	ts := cfg.Metrics.TemporalitySelector
+	ts := cfg.Metric.TemporalitySelector
 	if ts == nil {
 		ts = func(metric.InstrumentKind) metricdata.Temporality {
 			return metricdata.CumulativeTemporality
 		}
 	}
 
-	as := cfg.Metrics.AggregationSelector
+	as := cfg.Metric.AggregationSelector
 	if as == nil {
 		as = metric.DefaultAggregationSelector
 	}
@@ -77,13 +77,13 @@ func (e *Exporter) Aggregation(k metric.InstrumentKind) metric.Aggregation {
 //
 // This method returns an error if called after Shutdown.
 // This method returns an error if the method is canceled by the passed context.
-func (e *Exporter) Export(ctx context.Context, rm *metricdata.ResourceMetrics) error {
+func (e *Exporter) Export(ctx context.Context, rm *metricdata.ResourceMetric) error {
 	defer global.Debug("OTLP/gRPC exporter export", "Data", rm)
 
-	otlpRm, err := transform.ResourceMetrics(rm)
+	otlpRm, err := transform.ResourceMetric(rm)
 	// Best effort upload of transformable metrics.
 	e.clientMu.Lock()
-	upErr := e.client.UploadMetrics(ctx, otlpRm)
+	upErr := e.client.UploadMetric(ctx, otlpRm)
 	e.clientMu.Unlock()
 	if upErr != nil {
 		if err == nil {
@@ -136,7 +136,7 @@ func (c shutdownClient) err(ctx context.Context) error {
 	return errShutdown
 }
 
-func (c shutdownClient) UploadMetrics(ctx context.Context, _ *metricpb.ResourceMetrics) error {
+func (c shutdownClient) UploadMetric(ctx context.Context, _ *metricpb.ResourceMetric) error {
 	return c.err(ctx)
 }
 

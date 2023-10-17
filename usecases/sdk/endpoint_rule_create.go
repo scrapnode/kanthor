@@ -50,7 +50,7 @@ func (uc *endpointRule) Create(ctx context.Context, req *EndpointRuleCreateReq) 
 		ConditionExpression: req.ConditionExpression,
 	}
 	doc.GenId()
-	doc.SetAT(uc.timer.Now())
+	doc.SetAT(uc.infra.Timer.Now())
 
 	epr, err := uc.repos.EndpointRule().Create(ctx, doc)
 	if err != nil {

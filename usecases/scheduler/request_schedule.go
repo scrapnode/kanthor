@@ -18,9 +18,9 @@ import (
 )
 
 type RequestScheduleReq struct {
-	ChunkTimeout int64
-	ChunkSize    int
-	Messages     []entities.Message
+	Timeout   int64
+	RateLimit int
+	Messages  []entities.Message
 }
 
 func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message) error {
@@ -39,8 +39,8 @@ func (req *RequestScheduleReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("messages", req.Messages),
-		validator.NumberGreaterThan("chunk_timeout", req.ChunkTimeout, 1000),
-		validator.NumberGreaterThan("chunk_size", req.ChunkTimeout, 1),
+		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
+		validator.NumberGreaterThan("rate_limit", req.Timeout, 1),
 	)
 	if err != nil {
 		return err
@@ -70,11 +70,13 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 	ko := &safe.Map[error]{}
 
 	// timeout duration will be scaled based on how many requests you have
-	duration := time.Duration(req.ChunkTimeout * int64(len(requests)+1))
+	duration := time.Duration(req.Timeout * int64(len(requests)+1))
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
 	defer cancel()
 
-	p := pool.New().WithMaxGoroutines(req.ChunkSize)
+	// we must limit how many publish action could be performed at the same time
+	// otherwise our system will be lag
+	p := pool.New().WithMaxGoroutines(req.RateLimit)
 	for _, r := range requests {
 		request := r
 		p.Go(func() {
@@ -138,7 +140,7 @@ func (uc *request) arrange(ctx context.Context, messages []entities.Message) []e
 			continue
 		}
 
-		reqs, logs := planner.Requests(&message, &app, uc.timer)
+		reqs, logs := planner.Requests(&message, &app, uc.infra.Timer)
 		if len(logs) > 0 {
 			for _, l := range logs {
 				uc.logger.Warnw(l[0].(string), l[1:]...)
@@ -162,9 +164,7 @@ func (uc *request) applicables(ctx context.Context, appIds []string) map[string]
 		appId := id
 		wg.Go(func() {
 			key := utils.Key("scheduler", appId)
-			app, err := cache.Warp(uc.cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
-				uc.metrics.Count(ctx, "cache_miss_total", 1)
-
+			app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
 				endpoints, err := uc.repos.Endpoint().List(ctx, appId)
 				if err != nil {
 					return nil, err

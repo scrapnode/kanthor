@@ -43,25 +43,25 @@ type client struct {
 	// it is up to the processes that passed the conn to close it.
 	ourConn bool
 	conn    *grpc.ClientConn
-	msc     colmetricpb.MetricsServiceClient
+	msc     colmetricpb.MetricServiceClient
 }
 
 // newClient creates a new gRPC metric client.
 func newClient(ctx context.Context, cfg oconf.Config) (*client, error) {
 	c := &client{
-		exportTimeout: cfg.Metrics.Timeout,
+		exportTimeout: cfg.Metric.Timeout,
 		requestFunc:   cfg.RetryConfig.RequestFunc(retryable),
 		conn:          cfg.GRPCConn,
 	}
 
-	if len(cfg.Metrics.Headers) > 0 {
-		c.metadata = metadata.New(cfg.Metrics.Headers)
+	if len(cfg.Metric.Headers) > 0 {
+		c.metadata = metadata.New(cfg.Metric.Headers)
 	}
 
 	if c.conn == nil {
 		// If the caller did not provide a ClientConn when the client was
 		// created, create one using the configuration they did provide.
-		conn, err := grpc.DialContext(ctx, cfg.Metrics.Endpoint, cfg.DialOptions...)
+		conn, err := grpc.DialContext(ctx, cfg.Metric.Endpoint, cfg.DialOptions...)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +71,7 @@ func newClient(ctx context.Context, cfg oconf.Config) (*client, error) {
 		c.conn = conn
 	}
 
-	c.msc = colmetricpb.NewMetricsServiceClient(c.conn)
+	c.msc = colmetricpb.NewMetricServiceClient(c.conn)
 
 	return c, nil
 }
@@ -103,11 +103,11 @@ func (c *client) Shutdown(ctx context.Context) error {
 	return err
 }
 
-// UploadMetrics sends protoMetrics to connected endpoint.
+// UploadMetric sends protoMetric to connected endpoint.
 //
 // Retryable errors from the server will be handled according to any
 // RetryConfig the client was created with.
-func (c *client) UploadMetrics(ctx context.Context, protoMetrics *metricpb.ResourceMetrics) error {
+func (c *client) UploadMetric(ctx context.Context, protoMetric *metricpb.ResourceMetric) error {
 	// The otlpmetric.Exporter synchronizes access to client methods, and
 	// ensures this is not called after the Exporter is shutdown. Only thing
 	// to do here is send data.
@@ -123,8 +123,8 @@ func (c *client) UploadMetrics(ctx context.Context, protoMetrics *metricpb.Resou
 	defer cancel()
 
 	return c.requestFunc(ctx, func(iCtx context.Context) error {
-		resp, err := c.msc.Export(iCtx, &colmetricpb.ExportMetricsServiceRequest{
-			ResourceMetrics: []*metricpb.ResourceMetrics{protoMetrics},
+		resp, err := c.msc.Export(iCtx, &colmetricpb.ExportMetricServiceRequest{
+			ResourceMetric: []*metricpb.ResourceMetric{protoMetric},
 		})
 		if resp != nil && resp.PartialSuccess != nil {
 			msg := resp.PartialSuccess.GetErrorMessage()

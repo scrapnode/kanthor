@@ -40,9 +40,9 @@ const (
 	// should retry the sending of the payload in case of a
 	// retryable error.
 	DefaultMaxAttempts int = 5
-	// DefaultMetricsPath is a default URL path for endpoint that
+	// DefaultMetricPath is a default URL path for endpoint that
 	// receives metrics.
-	DefaultMetricsPath string = "/v1/metrics"
+	DefaultMetricPath string = "/v1/metrics"
 	// DefaultBackoff is a default base backoff time used in the
 	// exponential backoff strategy.
 	DefaultBackoff time.Duration = 300 * time.Millisecond
@@ -70,7 +70,7 @@ type (
 
 	Config struct {
 		// Signal specific configurations
-		Metrics SignalConfig
+		Metric SignalConfig
 
 		RetryConfig retry.Config
 
@@ -86,9 +86,9 @@ type (
 // any unset setting using the default HTTP config values.
 func NewHTTPConfig(opts ...HTTPOption) Config {
 	cfg := Config{
-		Metrics: SignalConfig{
+		Metric: SignalConfig{
 			Endpoint:    fmt.Sprintf("%s:%d", DefaultCollectorHost, DefaultCollectorHTTPPort),
-			URLPath:     DefaultMetricsPath,
+			URLPath:     DefaultMetricPath,
 			Compression: NoCompression,
 			Timeout:     DefaultTimeout,
 
@@ -101,7 +101,7 @@ func NewHTTPConfig(opts ...HTTPOption) Config {
 	for _, opt := range opts {
 		cfg = opt.ApplyHTTPOption(cfg)
 	}
-	cfg.Metrics.URLPath = cleanPath(cfg.Metrics.URLPath, DefaultMetricsPath)
+	cfg.Metric.URLPath = cleanPath(cfg.Metric.URLPath, DefaultMetricPath)
 	return cfg
 }
 
@@ -124,9 +124,9 @@ func cleanPath(urlPath string, defaultPath string) string {
 func NewGRPCConfig(opts ...GRPCOption) Config {
 	userAgent := "OTel OTLP Exporter Go/" + otlpmetric.Version()
 	cfg := Config{
-		Metrics: SignalConfig{
+		Metric: SignalConfig{
 			Endpoint:    fmt.Sprintf("%s:%d", DefaultCollectorHost, DefaultCollectorGRPCPort),
-			URLPath:     DefaultMetricsPath,
+			URLPath:     DefaultMetricPath,
 			Compression: NoCompression,
 			Timeout:     DefaultTimeout,
 
@@ -145,17 +145,17 @@ func NewGRPCConfig(opts ...GRPCOption) Config {
 		cfg.DialOptions = append(cfg.DialOptions, grpc.WithDefaultServiceConfig(cfg.ServiceConfig))
 	}
 	// Priroritize GRPCCredentials over Insecure (passing both is an error).
-	if cfg.Metrics.GRPCCredentials != nil {
-		cfg.DialOptions = append(cfg.DialOptions, grpc.WithTransportCredentials(cfg.Metrics.GRPCCredentials))
-	} else if cfg.Metrics.Insecure {
+	if cfg.Metric.GRPCCredentials != nil {
+		cfg.DialOptions = append(cfg.DialOptions, grpc.WithTransportCredentials(cfg.Metric.GRPCCredentials))
+	} else if cfg.Metric.Insecure {
 		cfg.DialOptions = append(cfg.DialOptions, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
 		// Default to using the host's root CA.
 		creds := credentials.NewTLS(nil)
-		cfg.Metrics.GRPCCredentials = creds
+		cfg.Metric.GRPCCredentials = creds
 		cfg.DialOptions = append(cfg.DialOptions, grpc.WithTransportCredentials(creds))
 	}
-	if cfg.Metrics.Compression == GzipCompression {
+	if cfg.Metric.Compression == GzipCompression {
 		cfg.DialOptions = append(cfg.DialOptions, grpc.WithDefaultCallOptions(grpc.UseCompressor(gzip.Name)))
 	}
 	if len(cfg.DialOptions) != 0 {
@@ -280,21 +280,21 @@ func NewGRPCOption(fn func(cfg Config) Config) GRPCOption {
 
 func WithEndpoint(endpoint string) GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.Endpoint = endpoint
+		cfg.Metric.Endpoint = endpoint
 		return cfg
 	})
 }
 
 func WithCompression(compression Compression) GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.Compression = compression
+		cfg.Metric.Compression = compression
 		return cfg
 	})
 }
 
 func WithURLPath(urlPath string) GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.URLPath = urlPath
+		cfg.Metric.URLPath = urlPath
 		return cfg
 	})
 }
@@ -308,52 +308,52 @@ func WithRetry(rc retry.Config) GenericOption {
 
 func WithTLSClientConfig(tlsCfg *tls.Config) GenericOption {
 	return newSplitOption(func(cfg Config) Config {
-		cfg.Metrics.TLSCfg = tlsCfg.Clone()
+		cfg.Metric.TLSCfg = tlsCfg.Clone()
 		return cfg
 	}, func(cfg Config) Config {
-		cfg.Metrics.GRPCCredentials = credentials.NewTLS(tlsCfg)
+		cfg.Metric.GRPCCredentials = credentials.NewTLS(tlsCfg)
 		return cfg
 	})
 }
 
 func WithInsecure() GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.Insecure = true
+		cfg.Metric.Insecure = true
 		return cfg
 	})
 }
 
 func WithSecure() GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.Insecure = false
+		cfg.Metric.Insecure = false
 		return cfg
 	})
 }
 
 func WithHeaders(headers map[string]string) GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.Headers = headers
+		cfg.Metric.Headers = headers
 		return cfg
 	})
 }
 
 func WithTimeout(duration time.Duration) GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.Timeout = duration
+		cfg.Metric.Timeout = duration
 		return cfg
 	})
 }
 
 func WithTemporalitySelector(selector metric.TemporalitySelector) GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.TemporalitySelector = selector
+		cfg.Metric.TemporalitySelector = selector
 		return cfg
 	})
 }
 
 func WithAggregationSelector(selector metric.AggregationSelector) GenericOption {
 	return newGenericOption(func(cfg Config) Config {
-		cfg.Metrics.AggregationSelector = selector
+		cfg.Metric.AggregationSelector = selector
 		return cfg
 	})
 }

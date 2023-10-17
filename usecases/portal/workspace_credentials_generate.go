@@ -31,7 +31,7 @@ type WorkspaceCredentialsGenerateRes struct {
 }
 
 func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error) {
-	now := uc.timer.Now()
+	now := uc.infra.Timer.Now()
 	doc := &entities.WorkspaceCredentials{
 		WorkspaceId: req.WorkspaceId,
 		Name:        req.Name,
@@ -41,7 +41,7 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCred
 
 	password := fmt.Sprintf("wsck_%s", utils.RandomString(constants.GlobalPasswordLength))
 	// once we got error, reject entirely request instead of do a partial success request
-	hash, err := uc.cryptography.KDF().StringHash(password)
+	hash, err := uc.infra.Cryptography.KDF().StringHash(password)
 	if err != nil {
 		return nil, err
 	}

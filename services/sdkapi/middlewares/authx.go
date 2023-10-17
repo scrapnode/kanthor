@@ -36,7 +36,7 @@ func UseAuthx(
 	send := sender.Rest(sender.DefaultConfig, logger)
 
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 
 		// portal authentication & authorization
 		if ginctx.Request.Header.Get(HeaderAuthScheme) == AuthSchemeForward {
@@ -80,7 +80,7 @@ func UseAuthx(
 			}
 			ctx = context.WithValue(ctx, authorizator.CtxWs, auth.Workspace)
 
-			ginctx.Set(gateway.KeyCtx, ctx)
+			ginctx.Set(gateway.KeyContext, ctx)
 			ginctx.Next()
 			return
 		}
@@ -108,7 +108,7 @@ func UseAuthx(
 			return
 		}
 
-		ginctx.Set(gateway.KeyCtx, ctx)
+		ginctx.Set(gateway.KeyContext, ctx)
 		ginctx.Next()
 	}
 }

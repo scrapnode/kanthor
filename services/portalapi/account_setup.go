@@ -30,7 +30,7 @@ type AccountSetupRes struct {
 // @Security	BearerAuth
 func UseAccountSetup(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
 		ucreq := &portaluc.AccountSetupReq{AccountId: acc.Sub}

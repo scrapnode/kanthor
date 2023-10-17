@@ -5,13 +5,10 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/dlocker"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/attempt/repos"
 )
 
@@ -23,11 +20,8 @@ type Attempt interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	cache cache.Cache,
-	timer timer.Timer,
-	locker dlocker.Factory,
+	infra *infrastructure.Infrastructure,
 	publisher streaming.Publisher,
-	metrics metric.Metrics,
 	repos repos.Repositories,
 ) Attempt {
 	logger = logger.With("usecase", "attempt")
@@ -35,11 +29,8 @@ func New(
 	return &attempt{
 		conf:      conf,
 		logger:    logger,
-		cache:     cache,
-		timer:     timer,
-		locker:    locker,
+		infra:     infra,
 		publisher: publisher,
-		metrics:   metrics,
 		repos:     repos,
 	}
 }
@@ -47,11 +38,8 @@ func New(
 type attempt struct {
 	conf      *config.Config
 	logger    logging.Logger
-	cache     cache.Cache
-	timer     timer.Timer
-	locker    dlocker.Factory
+	infra     *infrastructure.Infrastructure
 	publisher streaming.Publisher
-	metrics   metric.Metrics
 	repos     repos.Repositories
 
 	mu      sync.RWMutex
@@ -105,11 +93,8 @@ func (uc *attempt) Trigger() Trigger {
 		uc.trigger = &trigger{
 			conf:      uc.conf,
 			logger:    uc.logger,
-			cache:     uc.cache,
-			timer:     uc.timer,
-			locker:    uc.locker,
+			infra:     uc.infra,
 			publisher: uc.publisher,
-			metrics:   uc.metrics,
 			repos:     uc.repos,
 		}
 	}

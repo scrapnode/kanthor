@@ -160,7 +160,7 @@ func WithHeaders(headers map[string]string) Option {
 // This option has no effect if WithGRPCConn is used.
 func WithTLSCredentials(creds credentials.TransportCredentials) Option {
 	return wrappedOption{oconf.NewGRPCOption(func(cfg oconf.Config) oconf.Config {
-		cfg.Metrics.GRPCCredentials = creds
+		cfg.Metric.GRPCCredentials = creds
 		return cfg
 	})}
 }

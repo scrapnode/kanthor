@@ -39,7 +39,7 @@ func UseWorkspaceCredentialsUpdate(logger logging.Logger, uc portaluc.Portal) gi
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 
 		id := ginctx.Param("wsc_id")

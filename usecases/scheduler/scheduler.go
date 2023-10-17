@@ -5,12 +5,10 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
@@ -22,10 +20,8 @@ type Scheduler interface {
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	timer timer.Timer,
+	infra *infrastructure.Infrastructure,
 	publisher streaming.Publisher,
-	cache cache.Cache,
-	metrics metric.Metrics,
 	repos repos.Repositories,
 ) Scheduler {
 	logger = logger.With("usecase", "scheduler")
@@ -33,10 +29,8 @@ func New(
 	return &scheduler{
 		conf:      conf,
 		logger:    logger,
-		timer:     timer,
+		infra:     infra,
 		publisher: publisher,
-		cache:     cache,
-		metrics:   metrics,
 		repos:     repos,
 	}
 }
@@ -44,10 +38,8 @@ func New(
 type scheduler struct {
 	conf      *config.Config
 	logger    logging.Logger
-	timer     timer.Timer
+	infra     *infrastructure.Infrastructure
 	publisher streaming.Publisher
-	cache     cache.Cache
-	metrics   metric.Metrics
 	repos     repos.Repositories
 
 	mu      sync.RWMutex
@@ -55,7 +47,7 @@ type scheduler struct {
 }
 
 func (uc *scheduler) Readiness() error {
-	if err := uc.cache.Readiness(); err != nil {
+	if err := uc.infra.Readiness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Readiness(); err != nil {
@@ -68,7 +60,7 @@ func (uc *scheduler) Readiness() error {
 }
 
 func (uc *scheduler) Liveness() error {
-	if err := uc.cache.Liveness(); err != nil {
+	if err := uc.infra.Liveness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Liveness(); err != nil {
@@ -84,7 +76,7 @@ func (uc *scheduler) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if err := uc.cache.Connect(ctx); err != nil {
+	if err := uc.infra.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -114,7 +106,7 @@ func (uc *scheduler) Disconnect(ctx context.Context) error {
 		return err
 	}
 
-	if err := uc.cache.Disconnect(ctx); err != nil {
+	if err := uc.infra.Disconnect(ctx); err != nil {
 		return err
 	}
 
@@ -129,10 +121,8 @@ func (uc *scheduler) Request() Request {
 		uc.request = &request{
 			conf:      uc.conf,
 			logger:    uc.logger,
-			timer:     uc.timer,
+			infra:     uc.infra,
 			publisher: uc.publisher,
-			cache:     uc.cache,
-			metrics:   uc.metrics,
 			repos:     uc.repos,
 		}
 	}

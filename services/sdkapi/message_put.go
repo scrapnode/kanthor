@@ -49,7 +49,7 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyCtx).(context.Context)
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
 		headers := entities.Header{Header: http.Header{}}
 		if len(req.Headers) > 0 {

@@ -29,9 +29,7 @@ func (uc *application) Get(ctx context.Context, req *ApplicationGetReq) (*Applic
 	ws := ctx.Value(authorizator.CtxWs).(*entities.Workspace)
 
 	key := CacheKeyApp(ws.Id, req.Id)
-	return cache.Warp(uc.cache, ctx, key, time.Hour*24, func() (*ApplicationGetRes, error) {
-		uc.metrics.Count(ctx, "cache_miss_total", 1)
-
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*ApplicationGetRes, error) {
 		app, err := uc.repos.Application().Get(ctx, ws, req.Id)
 		if err != nil {
 			return nil, err

@@ -97,13 +97,13 @@ func (mr *ManualReader) Shutdown(context.Context) error {
 // the SDK and other Producers and stores the result in rm.
 //
 // Collect will return an error if called after shutdown.
-// Collect will return an error if rm is a nil ResourceMetrics.
+// Collect will return an error if rm is a nil ResourceMetric.
 // Collect will return an error if the context's Done channel is closed.
 //
 // This method is safe to call concurrently.
-func (mr *ManualReader) Collect(ctx context.Context, rm *metricdata.ResourceMetrics) error {
+func (mr *ManualReader) Collect(ctx context.Context, rm *metricdata.ResourceMetric) error {
 	if rm == nil {
-		return errors.New("manual reader: *metricdata.ResourceMetrics is nil")
+		return errors.New("manual reader: *metricdata.ResourceMetric is nil")
 	}
 	p := mr.sdkProducer.Load()
 	if p == nil {
@@ -126,11 +126,11 @@ func (mr *ManualReader) Collect(ctx context.Context, rm *metricdata.ResourceMetr
 	}
 	var errs []error
 	for _, producer := range mr.externalProducers.Load().([]Producer) {
-		externalMetrics, err := producer.Produce(ctx)
+		externalMetric, err := producer.Produce(ctx)
 		if err != nil {
 			errs = append(errs, err)
 		}
-		rm.ScopeMetrics = append(rm.ScopeMetrics, externalMetrics...)
+		rm.ScopeMetric = append(rm.ScopeMetric, externalMetric...)
 	}
 
 	global.Debug("ManualReader collection", "Data", rm)

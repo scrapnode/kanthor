@@ -12,10 +12,10 @@ import (
 
 func RegisterTriggerCron(service *attempt) func() {
 	key := "kanthor.services.attempt.trigger"
-	duration := time.Millisecond * time.Duration(service.conf.Attempt.Trigger.Cron.LockDuration)
+	duration := time.Millisecond * time.Duration(service.conf.Attempt.Trigger.Plan.LockDuration)
 
 	return func() {
-		locker := service.locker(key, duration)
+		locker := service.infra.DistributedLockManager(key, duration)
 		ctx := context.Background()
 
 		if err := locker.Lock(ctx); err != nil {
@@ -31,10 +31,10 @@ func RegisterTriggerCron(service *attempt) func() {
 		}()
 
 		ucreq := &usecase.TriggerPlanReq{
-			ScanFrom:     service.conf.Attempt.Trigger.Cron.ScanFrom,
-			ScanTo:       service.conf.Attempt.Trigger.Cron.ScanTo,
-			ChunkTimeout: service.conf.Attempt.Trigger.Cron.ChunkTimeout,
-			ChunkSize:    service.conf.Attempt.Trigger.Cron.ChunkSize,
+			Timeout:   service.conf.Attempt.Trigger.Plan.Timeout,
+			RateLimit: service.conf.Attempt.Trigger.Plan.RateLimit,
+			ScanStart: service.conf.Attempt.Trigger.Plan.ScanStart,
+			ScanEnd:   service.conf.Attempt.Trigger.Plan.ScanEnd,
 		}
 		ucres, err := service.uc.Trigger().Plan(ctx, ucreq)
 		if err != nil {
@@ -52,7 +52,13 @@ func RegisterTriggerCron(service *attempt) func() {
 
 func RegisterTriggerConsumer(service *attempt) streaming.SubHandler {
 	return func(events []*streaming.Event) map[string]error {
-		notifications := []entities.AttemptNotification{}
+		ucreq := &usecase.TriggerExecReq{
+			Timeout:       service.conf.Attempt.Trigger.Exec.Timeout,
+			RateLimit:     service.conf.Attempt.Trigger.Exec.RateLimit,
+			Delay:         service.conf.Attempt.Trigger.Exec.Delay,
+			Notifications: []entities.AttemptNotification{},
+		}
+
 		for _, event := range events {
 			notification, err := transformation.EventToNotification(event)
 			if err != nil {
@@ -62,13 +68,12 @@ func RegisterTriggerConsumer(service *attempt) streaming.SubHandler {
 				continue
 			}
 
-			notifications = append(notifications, *notification)
+			ucreq.Notifications = append(ucreq.Notifications, *notification)
 		}
 
 		ctx := context.Background()
 		retruning := map[string]error{}
 
-		ucreq := &usecase.TriggerExecReq{ChunkSize: 3, Notifications: notifications}
 		ucres, err := service.uc.Trigger().Exec(ctx, ucreq)
 		if err != nil {
 			service.logger.Errorw("unable to consume attempt notifications", "err", err.Error())

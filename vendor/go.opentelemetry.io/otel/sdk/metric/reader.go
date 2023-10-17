@@ -74,7 +74,7 @@ type Reader interface {
 	//
 	// This method needs to be concurrent safe, and the cancelation of the
 	// passed context is expected to be honored.
-	Collect(ctx context.Context, rm *metricdata.ResourceMetrics) error
+	Collect(ctx context.Context, rm *metricdata.ResourceMetric) error
 
 	// Shutdown flushes all metric measurements held in an export pipeline and releases any
 	// held computational resources.
@@ -96,7 +96,7 @@ type sdkProducer interface {
 	// produce returns aggregated metrics from a single collection.
 	//
 	// This method is safe to call concurrently.
-	produce(context.Context, *metricdata.ResourceMetrics) error
+	produce(context.Context, *metricdata.ResourceMetric) error
 }
 
 // Producer produces metrics for a Reader from an external source.
@@ -104,20 +104,20 @@ type Producer interface {
 	// Produce returns aggregated metrics from an external source.
 	//
 	// This method should be safe to call concurrently.
-	Produce(context.Context) ([]metricdata.ScopeMetrics, error)
+	Produce(context.Context) ([]metricdata.ScopeMetric, error)
 }
 
 // produceHolder is used as an atomic.Value to wrap the non-concrete producer
 // type.
 type produceHolder struct {
-	produce func(context.Context, *metricdata.ResourceMetrics) error
+	produce func(context.Context, *metricdata.ResourceMetric) error
 }
 
 // shutdownProducer produces an ErrReaderShutdown error always.
 type shutdownProducer struct{}
 
 // produce returns an ErrReaderShutdown error.
-func (p shutdownProducer) produce(context.Context, *metricdata.ResourceMetrics) error {
+func (p shutdownProducer) produce(context.Context, *metricdata.ResourceMetric) error {
 	return ErrReaderShutdown
 }
 

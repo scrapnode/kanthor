@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/sourcegraph/conc"
+	"github.com/sourcegraph/conc/pool"
 )
 
 type WarehousePutReq struct {
@@ -128,12 +128,13 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	duration := time.Duration(req.ChunkTimeout * int64(count+1))
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
 	defer cancel()
-	var wg conc.WaitGroup
+
+	p := pool.New().WithMaxGoroutines(req.ChunkSize)
 
 	for i := 0; i < len(req.Messages); i += req.ChunkSize {
 		j := i + req.ChunkSize
 		messages := req.Messages[i:j]
-		wg.Go(func() {
+		p.Go(func() {
 			records, err := uc.repos.Message().Create(ctx, messages)
 			if err != nil {
 				for _, message := range req.Messages[i:j] {
@@ -151,7 +152,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	for i := 0; i < len(req.Requests); i += req.ChunkSize {
 		j := i + req.ChunkSize
 		requests := req.Requests[i:j]
-		wg.Go(func() {
+		p.Go(func() {
 			records, err := uc.repos.Request().Create(ctx, requests)
 			if err != nil {
 				for _, request := range req.Requests[i:j] {
@@ -169,7 +170,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	for i := 0; i < len(req.Responses); i += req.ChunkSize {
 		j := i + req.ChunkSize
 		responses := req.Responses[i:j]
-		wg.Go(func() {
+		p.Go(func() {
 			records, err := uc.repos.Response().Create(ctx, responses)
 			if err != nil {
 				for _, response := range req.Responses[i:j] {
@@ -188,7 +189,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	defer close(c)
 
 	go func() {
-		wg.Wait()
+		p.Wait()
 		c <- true
 	}()
 
