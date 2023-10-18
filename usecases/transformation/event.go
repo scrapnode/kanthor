@@ -101,7 +101,7 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 	return event, nil
 }
 
-func EventFromNotification(noti *entities.AttemptNotification) (*streaming.Event, error) {
+func EventFromTrigger(noti *entities.AttemptTrigger) (*streaming.Event, error) {
 	data, err := noti.Marshal()
 	if err != nil {
 		return nil, err
@@ -125,8 +125,8 @@ func EventFromNotification(noti *entities.AttemptNotification) (*streaming.Event
 	return event, nil
 }
 
-func EventToNotification(event *streaming.Event) (*entities.AttemptNotification, error) {
-	var noti entities.AttemptNotification
+func EventToTrigger(event *streaming.Event) (*entities.AttemptTrigger, error) {
+	var noti entities.AttemptTrigger
 	if err := noti.Unmarshal(event.Data); err != nil {
 		return nil, err
 	}

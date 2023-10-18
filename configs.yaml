@@ -11,28 +11,42 @@ cryptography:
     key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
 
 idempotency:
-  namespace: idempotency
+  namespace: kanthor.idempotency
   uri: redis://127.0.0.1:6379/0
   time_to_live: 86400000 # 1 day
 
-coordinator:
-  engine: nats
-  nats:
-    uri: nats://127.0.0.1:4222
-    subject: kanthor.coordinator
+circuit_breaker:
+  half_open_max_pass_through_requests: 5
+  half_open_trigger_minimum_requests: 10
+  half_open_trigger_error_threshold_ratio: 0.1
+  open_state_duration: 1800000
+  close_trigger_minimum_requests: 10
+  close_trigger_error_threshold_ratio: 0.1
+  close_state_clear_interval: 600000
 
-# external services
-metrics:
+distributed_lock_manager:
+  namespace: kanthor.idempotency
+  uri: redis://127.0.0.1:6379/0
+  time_to_live: 3600000 # 1h
+
+authorizator:
+  engine: casbin
+  casbin:
+    model_uri: file://./data/authorizator/casbin_rbac_model.conf
+    policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.authorizator
+    policy_namespace: kanthor_authz
+
+cache:
+  uri: redis://127.0.0.1:6379/0
+  time_to_live: 3600000 # 1h
+
+metric:
   engine: otel
   otel:
     endpoint: localhost:4317
     interval: 15000
     labels:
       env: localhost
-
-cache:
-  uri: redis://127.0.0.1:6379/0
-  time_to_live: 900000 # 15 minute
 
 database:
   uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
@@ -44,6 +58,7 @@ datastore:
   migration:
     source: file://./migration/datastore/sql
 
+# shortcut
 streaming: &streaming
   uri: nats://127.0.0.1:4222
   stream:
@@ -63,18 +78,10 @@ streaming: &streaming
 
 # application services
 sdkapi:
-  portal_connection:
-    account: http://localhost:8280/api/account/me
   gateway:
     engine: httpx
     httpx:
       addr: :8180
-  authorizator:
-    engine: casbin
-    casbin:
-      model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.sdk
-      policy_namespace: sdk
   publisher:
     connection: *streaming
 
@@ -89,13 +96,7 @@ portalapi:
       access_key: kanthor_root_key
       secret_key: kanthor_root_password
       # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
-  authorizator:
-    engine: casbin
-    casbin:
-      model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.services.portal
-      policy_namespace: portal
-
+      
 scheduler:
   publisher:
     connection: *streaming
@@ -130,14 +131,6 @@ dispatcher:
     retry:
       count: 1
       wait_time: 500
-  circuit_breaker:
-    half_open_max_pass_through_requests: 5
-    half_open_trigger_minimum_requests: 10
-    half_open_trigger_error_threshold_ratio: 0.1
-    open_state_duration: 1800000
-    close_trigger_minimum_requests: 10
-    close_trigger_error_threshold_ratio: 0.1
-    close_state_clear_interval: 600000
   forwarder:
     send:
       rate_limit: 300
@@ -159,25 +152,26 @@ storage:
       chunk_size: 500
       timeout: 5000
 
-attempt_trigger:
-  publisher:
-    connection: *streaming
-  subscriber:
-    connection: *streaming
-    name: attempt_trigger
-    filter_subject: kanthor.default.att.trigger.>
-    max_retry: 3
-    max_waiting: 100
-    max_ack_pending: 100000
-    max_ack_wating_duration: 15000
-    max_request_batch: 1000
-  dlocker:
-    uri: redis://127.0.0.1:6379/0
+attempt:
   trigger:
-    plan:
+    publisher:
+      connection: *streaming
+    subscriber:
+      connection: *streaming
+      name: attempt_trigger
+      filter_subject: kanthor.default.att.trigger.>
+      max_retry: 3
+      max_waiting: 100
+      max_ack_pending: 100000
+      max_ack_wating_duration: 15000
+      max_request_batch: 1000
+    planner:
+      schedule: "*/15 * * * *"
       rate_limit: 999999
       timeout: 5000
-    exec:
+      scan_start: -324000 # 1h30m
+      scan_end: -1800000 # 30m
+    executor:
       rate_limit: 3
       timeout: 5000
-      delay: 1800000
+      attempt_delay: 1800000 # 30m

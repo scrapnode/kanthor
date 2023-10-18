@@ -25,8 +25,9 @@ func New(provider configuration.Provider) (*Config, error) {
 }
 
 type Config struct {
-	Version string
-	Logger  logging.Config `json:"logger" yaml:"logger" mapstructure:"logger"`
+	Version     string
+	Development bool           `json:"development" yaml:"development" mapstructure:"development"`
+	Logger      logging.Config `json:"logger" yaml:"logger" mapstructure:"logger"`
 
 	Cryptography           cryptography.Config   `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography"`
 	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
@@ -117,8 +118,8 @@ func (conf *Config) Validate(service string) error {
 			return err
 		}
 	}
-	if service == services.SERVICE_ALL || service == services.SERVICE_ATTEMPT {
-		if err := conf.Attempt.Validate(); err != nil {
+	if service == services.SERVICE_ALL || service == services.SERVICE_ATTEMPT_TRIGGER_PLANNER {
+		if err := conf.Attempt.Trigger.Validate(); err != nil {
 			return err
 		}
 	}

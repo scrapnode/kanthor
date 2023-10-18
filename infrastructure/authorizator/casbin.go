@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	psqlwatcher "github.com/IguteChung/casbin-psql-watcher"
 	gocasbin "github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/jackc/pgerrcode"
@@ -17,12 +16,15 @@ import (
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
 	logger = logger.With("authorizator", "casbin")
-	return &casbin{conf: conf, logger: logger}
+
+	w := &watcher{conf: &conf.Casbin.Watcher, logger: logger.With("casbin.watcher", "nats"), subject: "kanthor.internal.infrastructure.casbin.watcher"}
+	return &casbin{conf: conf, logger: logger, watcher: w}
 }
 
 type casbin struct {
-	conf   *Config
-	logger logging.Logger
+	conf    *Config
+	logger  logging.Logger
+	watcher *watcher
 
 	mu      sync.Mutex
 	adapter *gormadapter.Adapter
@@ -43,6 +45,10 @@ func (authorizator *casbin) Readiness() error {
 		return ErrNotReady
 	}
 
+	if err := authorizator.watcher.Readiness(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -60,12 +66,24 @@ func (authorizator *casbin) Liveness() error {
 		return ErrNotLive
 	}
 
+	if err := authorizator.watcher.Liveness(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (authorizator *casbin) Connect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
+
+	if authorizator.client != nil {
+		return ErrAlreadyConnected
+	}
+
+	if err := authorizator.watcher.Connect(ctx); err != nil {
+		return err
+	}
 
 	modelUrl, err := url.Parse(authorizator.conf.Casbin.ModelUri)
 	if err != nil {
@@ -97,11 +115,13 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	}
 	authorizator.client = client
 
-	watcher, err := psqlwatcher.NewWatcherWithConnString(context.Background(), authorizator.conf.Casbin.PolicyUri, psqlwatcher.Option{})
+	// start watcher
+	err = authorizator.watcher.Run(ctx, func(s string) {
+		if err := authorizator.Refresh(context.Background()); err != nil {
+			authorizator.watcher.logger.Error(err)
+		}
+	})
 	if err != nil {
-		return err
-	}
-	if err := client.SetWatcher(watcher); err != nil {
 		return err
 	}
 
@@ -113,16 +133,30 @@ func (authorizator *casbin) Disconnect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
 
+	if authorizator.client == nil {
+		return ErrNotConnected
+	}
+
+	var returning error
+	if authorizator.watcher != nil {
+		if err := authorizator.watcher.Disconnect(ctx); err != nil {
+			authorizator.logger.Error(err)
+			returning = errors.Join(returning, err)
+		}
+	}
+	authorizator.watcher = nil
+
 	if authorizator.adapter != nil {
 		if err := authorizator.adapter.Close(); err != nil {
 			authorizator.logger.Error(err)
+			returning = errors.Join(returning, err)
 		}
 	}
 	authorizator.adapter = nil
 
 	authorizator.client = nil
 	authorizator.logger.Info("disconnected")
-	return nil
+	return returning
 }
 
 func (authorizator *casbin) Refresh(ctx context.Context) error {

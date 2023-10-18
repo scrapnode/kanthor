@@ -16,7 +16,7 @@ func NewLiveness() *cobra.Command {
 			services.SERVICE_SCHEDULER,
 			services.SERVICE_DISPATCHER,
 			services.SERVICE_STORAGE,
-			services.SERVICE_ATTEMPT,
+			services.SERVICE_ATTEMPT_TRIGGER,
 		},
 		Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {

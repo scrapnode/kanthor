@@ -60,10 +60,10 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 
 	p := pool.New().WithMaxGoroutines(req.RateLimit)
 	for _, app := range apps {
-		notification := &entities.AttemptNotification{AppId: app.Id, Tier: tiers[app.Id], From: from.UnixMilli(), To: to.UnixMilli()}
+		notification := &entities.AttemptTrigger{AppId: app.Id, Tier: tiers[app.Id], From: from.UnixMilli(), To: to.UnixMilli()}
 
 		p.Go(func() {
-			event, err := transformation.EventFromNotification(notification)
+			event, err := transformation.EventFromTrigger(notification)
 			if err != nil {
 				// un-recoverable error
 				uc.logger.Errorw("could not transform notification to event", "notification", notification.String())

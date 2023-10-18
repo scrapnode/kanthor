@@ -19,7 +19,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringOneOf("monitoring.metrics.config.engine", conf.Engine, []string{EngineNoop, EngineOtel}),
+		validator.StringOneOf("metric.config.engine", conf.Engine, []string{EngineNoop, EngineOtel}),
 	)
 	if err != nil {
 		return err
@@ -27,7 +27,7 @@ func (conf *Config) Validate() error {
 
 	if conf.Engine == EngineOtel {
 		if conf.Otel == nil {
-			return errors.New("monitoring.metrics.config.otel: null value")
+			return errors.New("metric.config.otel: null value")
 		}
 		if err := conf.Otel.Validate(); err != nil {
 			return err
@@ -46,7 +46,7 @@ type OtelConfig struct {
 func (conf *OtelConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringHostPort("monitoring.metrics.config.otel.endpoint", conf.Endpoint),
-		validator.NumberGreaterThanOrEqual("monitoring.metrics.config.otel.interval", conf.Interval, 5000),
+		validator.StringHostPort("metric.config.otel.endpoint", conf.Endpoint),
+		validator.NumberGreaterThanOrEqual("metric.config.otel.interval", conf.Interval, 5000),
 	)
 }

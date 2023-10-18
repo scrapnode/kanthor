@@ -19,8 +19,9 @@ func NewRedlock(conf *Config) (Factory, error) {
 	client := goredis.NewClient(opts)
 	rs := redsync.New(wrapper.NewPool(client))
 
-	return func(key string, expiry time.Duration) DLM {
-		key = fmt.Sprintf("readlock/%s", key)
+	return func(key string) DistributedLockManager {
+		key = fmt.Sprintf("%s/%s", conf.Namespace, key)
+		expiry := time.Millisecond * time.Duration(conf.TimeToLive)
 		return &redlock{key: key, mu: rs.NewMutex(key, redsync.WithExpiry(expiry))}
 	}, nil
 }
@@ -42,5 +43,10 @@ func (locker *redlock) Unlock(ctx context.Context) error {
 	if !ok {
 		return fmt.Errorf("dlocker.unlock: unable to unlock because of quorum issue | key:%s", locker.key)
 	}
+
 	return nil
+}
+
+func (locker *redlock) Until() time.Time {
+	return locker.mu.Until()
 }

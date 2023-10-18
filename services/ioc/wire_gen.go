@@ -14,21 +14,69 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/services/attempt/trigger"
 	"github.com/scrapnode/kanthor/services/dispatcher"
 	"github.com/scrapnode/kanthor/services/portalapi"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	"github.com/scrapnode/kanthor/services/sdkapi"
 	"github.com/scrapnode/kanthor/services/storage"
+	"github.com/scrapnode/kanthor/usecases/attempt"
+	"github.com/scrapnode/kanthor/usecases/attempt/repos"
 	dispatcher2 "github.com/scrapnode/kanthor/usecases/dispatcher"
 	"github.com/scrapnode/kanthor/usecases/portal"
-	"github.com/scrapnode/kanthor/usecases/portal/repos"
+	repos2 "github.com/scrapnode/kanthor/usecases/portal/repos"
 	scheduler2 "github.com/scrapnode/kanthor/usecases/scheduler"
-	repos2 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
+	repos3 "github.com/scrapnode/kanthor/usecases/scheduler/repos"
 	"github.com/scrapnode/kanthor/usecases/sdk"
-	repos3 "github.com/scrapnode/kanthor/usecases/sdk/repos"
+	repos4 "github.com/scrapnode/kanthor/usecases/sdk/repos"
 	storage2 "github.com/scrapnode/kanthor/usecases/storage"
-	repos4 "github.com/scrapnode/kanthor/usecases/storage/repos"
+	repos5 "github.com/scrapnode/kanthor/usecases/storage/repos"
 )
+
+// Injectors from wire_attempt_trigger.go:
+
+func InitializeAttemptTriggerPlanner(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	infrastructureInfrastructure, err := infrastructure.New(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	attempt, err := InitializeAttemptUsecase(conf, logger, infrastructureInfrastructure)
+	if err != nil {
+		return nil, err
+	}
+	service := trigger.NewPlanner(conf, logger, infrastructureInfrastructure, attempt)
+	return service, nil
+}
+
+func InitializeAttemptTriggerExecutor(conf *config.Config, logger logging.Logger) (services.Service, error) {
+	subscriberConfig := ResolveAttemptTriggerExcutorSubscriberConfig(conf)
+	subscriber, err := streaming.NewSubscriber(subscriberConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	attempt, err := InitializeAttemptUsecase(conf, logger, infrastructureInfrastructure)
+	if err != nil {
+		return nil, err
+	}
+	service := trigger.NewExecutor(conf, logger, subscriber, infrastructureInfrastructure, attempt)
+	return service, nil
+}
+
+func InitializeAttemptUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (attempt.Attempt, error) {
+	publisherConfig := ResolveAttemptTriggerPublisherConfig(conf)
+	publisher, err := streaming.NewPublisher(publisherConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	datastoreConfig := &conf.Datastore
+	repositories := repos.New(datastoreConfig, logger)
+	attemptAttempt := attempt.New(conf, logger, infra, publisher, repositories)
+	return attemptAttempt, nil
+}
 
 // Injectors from wire_dispatcher.go:
 
@@ -84,7 +132,7 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 
 func InitializePortalUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (portal.Portal, error) {
 	databaseConfig := &conf.Database
-	repositories := repos.New(databaseConfig, logger)
+	repositories := repos2.New(databaseConfig, logger)
 	portalPortal := portal.New(conf, logger, infra, repositories)
 	return portalPortal, nil
 }
@@ -116,7 +164,7 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infr
 		return nil, err
 	}
 	databaseConfig := &conf.Database
-	repositories := repos2.New(databaseConfig, logger)
+	repositories := repos3.New(databaseConfig, logger)
 	schedulerScheduler := scheduler2.New(conf, logger, infra, publisher, repositories)
 	return schedulerScheduler, nil
 }
@@ -143,7 +191,7 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, infra *inf
 		return nil, err
 	}
 	databaseConfig := &conf.Database
-	repositories := repos3.New(databaseConfig, logger)
+	repositories := repos4.New(databaseConfig, logger)
 	sdkSdk := sdk.New(conf, logger, infra, publisher, repositories)
 	return sdkSdk, nil
 }
@@ -170,19 +218,29 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 
 func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (storage2.Storage, error) {
 	datastoreConfig := &conf.Datastore
-	repositories := repos4.New(datastoreConfig, logger)
+	repositories := repos5.New(datastoreConfig, logger)
 	storageStorage := storage2.New(conf, logger, infra, repositories)
 	return storageStorage, nil
 }
 
-// wire_dispatcher.go:
+// wire_attempt_trigger.go:
 
-func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	return &conf.Scheduler.Publisher
+func ResolveAttemptTriggerExcutorSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
+	return &conf.Attempt.Trigger.Executor.Subscriber
 }
+
+func ResolveAttemptTriggerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	return &conf.Attempt.Trigger.Publisher
+}
+
+// wire_dispatcher.go:
 
 func ResolveDispatcherSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
 	return &conf.Dispatcher.Subscriber
+}
+
+func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	return &conf.Scheduler.Publisher
 }
 
 func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *sender.Config {
@@ -197,12 +255,12 @@ func ResolvePortalApiAuthenticatorConfig(conf *config.Config) *authenticator.Con
 
 // wire_scheduler.go:
 
-func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	return &conf.Scheduler.Publisher
-}
-
 func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
 	return &conf.Scheduler.Subscriber
+}
+
+func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	return &conf.Scheduler.Publisher
 }
 
 // wire_sdk_api.go:

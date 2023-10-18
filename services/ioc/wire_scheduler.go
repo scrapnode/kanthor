@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/scheduler"
-	scheduleruc "github.com/scrapnode/kanthor/usecases/scheduler"
+	uc "github.com/scrapnode/kanthor/usecases/scheduler"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
@@ -26,9 +26,9 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	return nil, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (scheduleruc.Scheduler, error) {
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Scheduler, error) {
 	wire.Build(
-		scheduleruc.New,
+		uc.New,
 		ResolveSchedulerPublisherConfig,
 		streaming.NewPublisher,
 		wire.FieldsOf(new(*config.Config), "Database"),
@@ -37,10 +37,10 @@ func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infr
 	return nil, nil
 }
 
-func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	return &conf.Scheduler.Publisher
-}
-
 func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
 	return &conf.Scheduler.Subscriber
+}
+
+func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
+	return &conf.Scheduler.Publisher
 }

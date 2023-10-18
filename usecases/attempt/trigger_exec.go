@@ -20,14 +20,15 @@ import (
 type TriggerExecReq struct {
 	Timeout       int64
 	RateLimit     int
-	Delay         int64
-	Notifications []entities.AttemptNotification
+	AttemptDelay  int64
+	Notifications []entities.AttemptTrigger
 }
 
 func (req *TriggerExecReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("notifications", req.Notifications),
+		validator.NumberGreaterThan("delay", req.AttemptDelay, 1000),
 		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
 		validator.NumberGreaterThan("rate_limit", req.RateLimit, 1),
 	)
@@ -37,7 +38,7 @@ func (req *TriggerExecReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Notifications, func(i int, item *entities.AttemptNotification) error {
+		validator.Array(req.Notifications, func(i int, item *entities.AttemptTrigger) error {
 			prefix := fmt.Sprintf("notifications.[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
@@ -70,7 +71,7 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 	for _, noti := range req.Notifications {
 		notification := noti
 		p.Go(func() {
-			resp, err := uc.consume(ctx, &notification, duration, req.RateLimit, req.Delay)
+			resp, err := uc.consume(ctx, &notification, req.RateLimit, req.AttemptDelay)
 			if err != nil {
 				uc.logger.Errorw("unable to consume attempt notification", "notification", notification.String())
 				return
@@ -101,8 +102,7 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 
 func (uc *trigger) consume(
 	ctx context.Context,
-	notification *entities.AttemptNotification,
-	duration time.Duration,
+	notification *entities.AttemptTrigger,
 	size int,
 	delay int64,
 ) (*TriggerExecRes, error) {
@@ -110,7 +110,7 @@ func (uc *trigger) consume(
 	// the lock duration will be long as much as possible
 	// so we will time the global timeout as as the lock duration
 	// in that duration, we could not consume the same app until the lock is released
-	locker := uc.infra.DistributedLockManager(key, duration)
+	locker := uc.infra.DistributedLockManager(key)
 
 	if err := locker.Lock(ctx); err != nil {
 		uc.logger.Errorw("unable to acquire a lock | key:%s", key)
@@ -293,8 +293,7 @@ func (uc *trigger) schedule(
 	requests := []entities.Request{}
 
 	for i := 0; i < len(msgIds); i += size {
-		// @TODO: out of bound
-		j := i + size
+		j := utils.ChunkNext(i, len(msgIds), size)
 
 		messages, err := uc.repos.Message().ListByIds(ctx, msgIds[i:j])
 		if err != nil {
@@ -370,7 +369,7 @@ func (uc *trigger) create(
 	}
 
 	for i := 0; i < len(attempts); i += size {
-		j := i + size
+		j := utils.ChunkNext(i, len(attempts), size)
 
 		ids, err := uc.repos.Attempt().Create(ctx, attempts[i:j])
 		if err != nil {

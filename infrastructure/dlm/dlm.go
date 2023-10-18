@@ -5,11 +5,12 @@ import (
 	"time"
 )
 
-type Factory func(key string, expiry time.Duration) DLM
+type Factory func(key string) DistributedLockManager
 
-type DLM interface {
+type DistributedLockManager interface {
 	Lock(ctx context.Context) error
 	Unlock(ctx context.Context) error
+	Until() time.Time
 }
 
 func New(conf *Config) (Factory, error) {

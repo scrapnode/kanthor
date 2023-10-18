@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/storage"
-	storageuc "github.com/scrapnode/kanthor/usecases/storage"
+	uc "github.com/scrapnode/kanthor/usecases/storage"
 	"github.com/scrapnode/kanthor/usecases/storage/repos"
 )
 
@@ -26,9 +26,9 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	return nil, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (storageuc.Storage, error) {
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Storage, error) {
 	wire.Build(
-		storageuc.New,
+		uc.New,
 		wire.FieldsOf(new(*config.Config), "Datastore"),
 		repos.New,
 	)

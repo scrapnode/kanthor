@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/portalapi"
-	portaluc "github.com/scrapnode/kanthor/usecases/portal"
+	uc "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
 )
 
@@ -25,9 +25,9 @@ func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.S
 	)
 	return nil, nil
 }
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (portaluc.Portal, error) {
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Portal, error) {
 	wire.Build(
-		portaluc.New,
+		uc.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
 	)

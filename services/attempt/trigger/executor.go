@@ -1,4 +1,4 @@
-package attempt
+package trigger
 
 import (
 	"context"
@@ -6,60 +6,62 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/robfig/cron/v3"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/services"
 	usecase "github.com/scrapnode/kanthor/usecases/attempt"
 )
 
-func New(
+func NewExecutor(
 	conf *config.Config,
 	logger logging.Logger,
+	subscriber streaming.Subscriber,
 	infra *infrastructure.Infrastructure,
 	uc usecase.Attempt,
 ) services.Service {
-	logger = logger.With("service", "attempt")
-	return &attempt{
-		conf:   conf,
-		logger: logger,
-		infra:  infra,
-		uc:     uc,
+	logger = logger.With("service", "attempt.trigger.executor")
+	return &executor{
+		conf:       conf,
+		logger:     logger,
+		subscriber: subscriber,
+		infra:      infra,
+		uc:         uc,
 
-		cron:     cron.New(),
 		debugger: debugging.NewServer(),
 		healthcheck: background.NewServer(
-			healthcheck.DefaultConfig("attempt"),
+			healthcheck.DefaultConfig("attempt.trigger.executor"),
 			logger.With("healthcheck", "background"),
 		),
 	}
 }
 
-type attempt struct {
-	conf   *config.Config
-	logger logging.Logger
-	infra  *infrastructure.Infrastructure
-	uc     usecase.Attempt
+type executor struct {
+	conf       *config.Config
+	logger     logging.Logger
+	subscriber streaming.Subscriber
+	infra      *infrastructure.Infrastructure
+	uc         usecase.Attempt
 
 	mu          sync.Mutex
 	terminating chan bool
 
-	cron        *cron.Cron
 	debugger    debugging.Server
 	healthcheck healthcheck.Server
 }
 
-func (service *attempt) Start(ctx context.Context) error {
+func (service *executor) Start(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
 	if err := service.debugger.Start(ctx); err != nil {
 		return err
 	}
+
 	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
@@ -68,47 +70,57 @@ func (service *attempt) Start(ctx context.Context) error {
 		return err
 	}
 
+	if err := service.subscriber.Connect(ctx); err != nil {
+		return err
+	}
+
 	if err := service.healthcheck.Connect(ctx); err != nil {
 		return err
 	}
 
-	// robfig/cron provide a function cron.Start() but it's just a shortcut of cron.Run()
-	service.cron.AddFunc("", RegisterTriggerCron(service))
 	service.logger.Info("started")
 	return nil
 }
 
-func (service *attempt) Stop(ctx context.Context) error {
+func (service *executor) Stop(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
 	service.logger.Info("stopped")
-
-	cronctx := service.cron.Stop()
-	// wait for all processing jobs completed
-	<-cronctx.Done()
+	var returning error
 
 	if err := service.healthcheck.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
+	}
+
+	if err := service.subscriber.Disconnect(ctx); err != nil {
+		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.uc.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.infra.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
 	if err := service.debugger.Stop(ctx); err != nil {
 		service.logger.Error(err)
+		returning = errors.Join(returning, err)
 	}
 
-	return nil
+	return returning
 }
 
-func (service *attempt) Run(ctx context.Context) error {
-	service.cron.Run()
+func (service *executor) Run(ctx context.Context) error {
+	if err := service.subscriber.Sub(ctx, RegisterConsumer(service)); err != nil {
+		return err
+	}
 
 	if err := service.readiness(); err != nil {
 		return err
@@ -117,6 +129,10 @@ func (service *attempt) Run(ctx context.Context) error {
 	go func() {
 		err := service.healthcheck.Liveness(func() error {
 			service.logger.Debug("checking liveness")
+
+			if err := service.subscriber.Liveness(); err != nil {
+				return err
+			}
 
 			if err := service.uc.Liveness(); err != nil {
 				return err
@@ -143,9 +159,13 @@ func (service *attempt) Run(ctx context.Context) error {
 	return nil
 }
 
-func (service *attempt) readiness() error {
+func (service *executor) readiness() error {
 	return service.healthcheck.Readiness(func() error {
 		service.logger.Debug("checking readiness")
+
+		if err := service.subscriber.Readiness(); err != nil {
+			return err
+		}
 
 		if err := service.uc.Readiness(); err != nil {
 			return err

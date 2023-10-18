@@ -12,7 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/dispatcher"
-	dispatcheruc "github.com/scrapnode/kanthor/usecases/dispatcher"
+	uc "github.com/scrapnode/kanthor/usecases/dispatcher"
 )
 
 func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.Service, error) {
@@ -26,9 +26,9 @@ func InitializeDispatcher(conf *config.Config, logger logging.Logger) (services.
 	return nil, nil
 }
 
-func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (dispatcheruc.Dispatcher, error) {
+func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Dispatcher, error) {
 	wire.Build(
-		dispatcheruc.New,
+		uc.New,
 		ResolveDispatcherPublisherConfig,
 		streaming.NewPublisher,
 		ResolveDispatcherSenderConfig,
@@ -37,13 +37,14 @@ func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, inf
 	return nil, nil
 }
 
+func ResolveDispatcherSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
+	return &conf.Dispatcher.Subscriber
+}
+
 func ResolveDispatcherPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
 	return &conf.Scheduler.Publisher
 }
 
-func ResolveDispatcherSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	return &conf.Dispatcher.Subscriber
-}
 func ResolveDispatcherSenderConfig(conf *config.Config, logger logging.Logger) *sender.Config {
 	return &conf.Dispatcher.Sender
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/safe"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/sourcegraph/conc/pool"
 )
@@ -132,7 +133,8 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	p := pool.New().WithMaxGoroutines(req.ChunkSize)
 
 	for i := 0; i < len(req.Messages); i += req.ChunkSize {
-		j := i + req.ChunkSize
+		j := utils.ChunkNext(i, len(req.Messages), req.ChunkSize)
+
 		messages := req.Messages[i:j]
 		p.Go(func() {
 			records, err := uc.repos.Message().Create(ctx, messages)
@@ -150,7 +152,8 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	}
 
 	for i := 0; i < len(req.Requests); i += req.ChunkSize {
-		j := i + req.ChunkSize
+		j := utils.ChunkNext(i, len(req.Requests), req.ChunkSize)
+
 		requests := req.Requests[i:j]
 		p.Go(func() {
 			records, err := uc.repos.Request().Create(ctx, requests)
@@ -168,7 +171,8 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	}
 
 	for i := 0; i < len(req.Responses); i += req.ChunkSize {
-		j := i + req.ChunkSize
+		j := utils.ChunkNext(i, len(req.Responses), req.ChunkSize)
+
 		responses := req.Responses[i:j]
 		p.Go(func() {
 			records, err := uc.repos.Response().Create(ctx, responses)
