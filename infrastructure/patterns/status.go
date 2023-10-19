@@ -1,7 +1,7 @@
 package patterns
 
 var (
-	StatusInactive = -1
-	StatusNone     = 0
-	StatusActive   = 1
+	StatusDisconnected = -1
+	StatusNone         = 0
+	StatusConnected    = 1
 )

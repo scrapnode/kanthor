@@ -11,3 +11,8 @@ var (
 	Alphanumeric   string = "^[a-zA-Z0-9]+$"
 	rxAlphanumeric        = regexp.MustCompile(Alphanumeric)
 )
+
+var (
+	Topic   string = "^[a-zA-Z0-9]+$"
+	rxTopic        = regexp.MustCompile(Topic)
+)

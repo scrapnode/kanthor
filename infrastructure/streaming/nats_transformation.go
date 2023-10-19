@@ -6,7 +6,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func natsMsgToEvent(msg *nats.Msg) *Event {
+func NatsMsgToEvent(msg *nats.Msg) *Event {
 	event := &Event{
 		Subject:  msg.Subject,
 		AppId:    msg.Header.Get(MetaAppId),
@@ -27,7 +27,7 @@ func natsMsgToEvent(msg *nats.Msg) *Event {
 	return event
 }
 
-func natsMsgFromEvent(subject string, event *Event) *nats.Msg {
+func NatsMsgFromEvent(subject string, event *Event) *nats.Msg {
 	msg := &nats.Msg{
 		Subject: subject,
 		Header: nats.Header{

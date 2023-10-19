@@ -6,26 +6,36 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type ConnectionConfig struct {
-	Uri    string       `json:"uri" yaml:"uri" mapstructure:"uri"`
-	Stream StreamConfig `json:"stream" yaml:"stream" mapstructure:"stream"`
+type Config struct {
+	Uri        string           `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Nats       NatsConfig       `json:"stream" yaml:"stream" mapstructure:"stream"`
+	Publisher  PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
+	Subscriber SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
 }
 
-func (conf *ConnectionConfig) Validate() error {
+func (conf *Config) Validate() error {
 	err := validator.Validate(validator.DefaultConfig, validator.StringUri("streaming.conf.uri", conf.Uri))
 	if err != nil {
 		return err
 	}
 
-	if err := conf.Stream.Validate(); err != nil {
+	if err := conf.Nats.Validate(); err != nil {
+		return err
+	}
+
+	if err := conf.Publisher.Validate(); err != nil {
+		return err
+	}
+
+	if err := conf.Subscriber.Validate(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-type StreamConfig struct {
-	Name     string   `json:"name" yaml:"name" mapstructure:"name"`
+type NatsConfig struct {
+	Name     string
 	Replicas int      `json:"replicas" yaml:"replicas" mapstructure:"replicas"`
 	Subjects []string `json:"subjects" yaml:"subjects" mapstructure:"subjects"`
 	Limits   struct {
@@ -36,18 +46,47 @@ type StreamConfig struct {
 	} `json:"limits" yaml:"limits" mapstructure:"limits"`
 }
 
-func (conf *StreamConfig) Validate() error {
+func (conf *NatsConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("streaming.conf.stream.name", conf.Name),
-		validator.NumberGreaterThanOrEqual("streaming.conf.stream.replicas", conf.Replicas, 0),
-		validator.SliceRequired("streaming.conf.stream.subjects", conf.Subjects),
+		validator.StringRequired("streaming.conf.nats.name", conf.Name),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.replicas", conf.Replicas, 0),
+		validator.SliceRequired("streaming.conf.nats.subjects", conf.Subjects),
 		validator.Array(conf.Subjects, func(i int, item *string) error {
-			return validator.Validate(validator.DefaultConfig, validator.StringRequired(fmt.Sprintf("streaming.conf.stream.subjects[%d]", i), *item))
+			return validator.Validate(validator.DefaultConfig, validator.StringRequired(fmt.Sprintf("streaming.conf.nats.subjects[%d]", i), *item))
 		}),
-		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.msgs", conf.Limits.Msgs, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.msg_bytes", int(conf.Limits.MsgBytes), 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.bytes", int(conf.Limits.Bytes), 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.stream.limits.age", int(conf.Limits.Age), 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msgs", conf.Limits.Msgs, 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msg_bytes", int(conf.Limits.MsgBytes), 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.bytes", int(conf.Limits.Bytes), 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.age", int(conf.Limits.Age), 0),
+	)
+}
+
+type PublisherConfig struct {
+	RoutineConcurrency int   `json:"routine_concurrency" yaml:"routine_concurrency" mapstructure:"routine_concurrency"`
+	RoutinesTimeout    int64 `json:"routines_timeout" yaml:"routines_timeout" mapstructure:"routines_timeout"`
+}
+
+func (conf *PublisherConfig) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThan("streaming.conf.publisher.routine_concurrency", conf.RoutineConcurrency, 0),
+		validator.NumberGreaterThan("streaming.conf.publisher.routines_timeout", conf.RoutinesTimeout, 1000),
+	)
+}
+
+type SubscriberConfig struct {
+	// MaxRetry is how many times we should try to re-deliver message if we get any error
+	MaxRetry           int   `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
+	RoutineConcurrency int   `json:"routine_concurrency" yaml:"routine_concurrency" mapstructure:"routine_concurrency"`
+	RoutinesTimeout    int64 `json:"routines_timeout" yaml:"routines_timeout" mapstructure:"routines_timeout"`
+}
+
+func (conf *SubscriberConfig) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThan("streaming.conf.publisher.routine_concurrency", conf.RoutineConcurrency, 0),
+		validator.NumberGreaterThan("streaming.conf.publisher.routines_timeout", conf.RoutinesTimeout, 1000),
+		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.max_deliver", conf.MaxRetry, 1),
 	)
 }

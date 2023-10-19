@@ -2,7 +2,6 @@ package circuitbreaker
 
 import (
 	"errors"
-	"log"
 	"sync"
 	"time"
 
@@ -49,21 +48,25 @@ func (cb *sonycb) get(cmd string, onError ErrorHandler) *gobreaker.CircuitBreake
 	breaker := gobreaker.NewCircuitBreaker(gobreaker.Settings{
 		Name: cmd,
 		// the maximum number of requests allowed to pass through when the CircuitBreaker is half-open
-		MaxRequests: uint32(cb.conf.HalfOpenMaxPassThroughRequests),
+		MaxRequests: cb.conf.Haft.PassthroughRequests,
 		// the cyclic period of the closed state for CircuitBreaker to clear the internal Counts
-		Interval: time.Millisecond * time.Duration(cb.conf.CloseStateClearInterval),
+		Interval: time.Millisecond * time.Duration(cb.conf.Close.CleanupInterval),
 		// the period of the open state, after which the state of CircuitBreaker becomes half-open
-		Timeout: time.Millisecond * time.Duration(cb.conf.OpenStateDuration),
+		Timeout: time.Millisecond * time.Duration(cb.conf.Open.Duration),
 		// if ReadyToTrip returns true, the CircuitBreaker will be placed into the open state.
 		ReadyToTrip: func(counts gobreaker.Counts) bool {
-			ratio := float64(counts.TotalFailures) / float64(counts.Requests)
+			if counts.ConsecutiveFailures >= cb.conf.Open.Condition.ErrorConsecutive {
+				cb.logger.Warnw("open because of error consecutively", "consecutive", counts.ConsecutiveFailures, "threshold", cb.conf.Open.Condition.ErrorConsecutive)
+				return true
+			}
 
-			consecutiveCondition := int(counts.ConsecutiveFailures) >= cb.conf.CloseTriggerMinimumRequests || int(counts.ConsecutiveFailures) >= cb.conf.HalfOpenTriggerMinimumRequests
-			closeCondition := int(counts.Requests) >= cb.conf.CloseTriggerMinimumRequests && ratio >= cb.conf.CloseTriggerErrorThresholdRatio
-			halfOpenCondition := int(counts.Requests) >= cb.conf.HalfOpenTriggerMinimumRequests && ratio >= cb.conf.HalfOpenTriggerErrorThresholdRatio
+			ratio := float32(counts.TotalFailures) / float32(counts.Requests)
+			if ratio >= cb.conf.Open.Condition.ErrorRatio {
+				cb.logger.Warnw("open because of error ratio", "ratio", ratio, "threshold", cb.conf.Open.Condition.ErrorRatio)
+				return true
+			}
 
-			log.Printf("%d -> consecutive:%t close:%t half:%t", counts.ConsecutiveFailures, consecutiveCondition, closeCondition, halfOpenCondition)
-			return consecutiveCondition || closeCondition || halfOpenCondition
+			return false
 		},
 		OnStateChange: func(name string, from gobreaker.State, to gobreaker.State) {
 			cb.logger.Warnw(ErrStageChange.Error(), "name", name, "from", from.String(), "to", to.String())

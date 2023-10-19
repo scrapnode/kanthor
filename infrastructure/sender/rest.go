@@ -27,7 +27,7 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			}
 			return false
 		})
-	if conf.EnableTrace {
+	if conf.Trace {
 		client = client.EnableTrace()
 	}
 

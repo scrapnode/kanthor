@@ -3,9 +3,9 @@ package sender
 import "github.com/scrapnode/kanthor/pkg/validator"
 
 type Config struct {
-	EnableTrace bool  `json:"enable_trace" yaml:"enable_trace" mapstructure:"enable_trace"`
-	Timeout     int   `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	Retry       Retry `json:"retry" yaml:"retry" mapstructure:"retry"`
+	Trace   bool  `json:"trace" yaml:"trace" mapstructure:"trace"`
+	Timeout int   `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Retry   Retry `json:"retry" yaml:"retry" mapstructure:"retry"`
 }
 
 func (conf *Config) Validate() error {
@@ -31,13 +31,4 @@ func (conf *Retry) Validate() error {
 		validator.NumberGreaterThanOrEqual("sender.retry.count", conf.Count, 0),
 		validator.NumberGreaterThanOrEqual("sender.retry.wait_time", conf.WaitTime, 500),
 	)
-}
-
-var DefaultConfig = &Config{
-	EnableTrace: false,
-	Timeout:     3000,
-	Retry: Retry{
-		Count:    1,
-		WaitTime: 500,
-	},
 }

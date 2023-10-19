@@ -3,8 +3,8 @@ package config
 import (
 	"fmt"
 
+	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/sender"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 

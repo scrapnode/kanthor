@@ -3,7 +3,8 @@ package streaming
 import (
 	"context"
 	"errors"
-	"runtime/debug"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,15 +12,16 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/sourcegraph/conc/pool"
 )
 
-func NewNatsSubscriber(conf *SubscriberConfig, logger logging.Logger) Subscriber {
+func NewNatsSubscriber(conf *Config, logger logging.Logger) Subscriber {
 	logger = logger.With("streaming.subscriber", "nats.pull")
 	return &NatsSubscriber{conf: conf, logger: logger, status: patterns.StatusNone}
 }
 
 type NatsSubscriber struct {
-	conf   *SubscriberConfig
+	conf   *Config
 	logger logging.Logger
 	status int
 
@@ -30,34 +32,21 @@ type NatsSubscriber struct {
 	subscription *nats.Subscription
 }
 
-func (subscriber *NatsSubscriber) Readiness() (err error) {
+func (subscriber *NatsSubscriber) Readiness() error {
 	if subscriber.js == nil {
 		return ErrNotConnected
 	}
 
-	_, err = subscriber.js.ConsumerInfo(subscriber.conf.Connection.Stream.Name, subscriber.conf.Name)
-	return
+	_, err := subscriber.js.StreamInfo(subscriber.conf.Nats.Name)
+	return err
 }
 
-func (subscriber *NatsSubscriber) Liveness() (err error) {
+func (subscriber *NatsSubscriber) Liveness() error {
 	if subscriber.js == nil {
 		return ErrNotConnected
 	}
 
-	// sometime, under high preasure, nats throws a nil pointer error
-	defer func() {
-		if r := recover(); r != nil {
-			subscriber.logger.Errorf("streaming.nats.subscriber.pushing.liveness.recover: %v", r)
-			subscriber.logger.Errorf("streaming.nats.subscriber.pushing.liveness.recover.trace: %s", debug.Stack())
-
-			if rerr, ok := r.(error); ok {
-				err = rerr
-				return
-			}
-		}
-	}()
-
-	_, err = subscriber.js.ConsumerInfo(subscriber.conf.Connection.Stream.Name, subscriber.conf.Name)
+	_, err := subscriber.js.StreamInfo(subscriber.conf.Nats.Name)
 	return err
 }
 
@@ -65,7 +54,7 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
 
-	conn, err := NewNats(subscriber.conf.Connection, subscriber.logger)
+	conn, err := NewNats(subscriber.conf, subscriber.logger)
 	if err != nil {
 		return err
 	}
@@ -77,7 +66,7 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 	}
 	subscriber.js = js
 
-	subscriber.stream, err = NewNatsStream(subscriber.conf.Connection, js)
+	subscriber.stream, err = NewNatsStream(subscriber.conf, js)
 	if err != nil {
 		return err
 	}
@@ -87,14 +76,14 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 		"stream_name", subscriber.stream.Config.Name,
 		"stream_created_at", subscriber.stream.Created.Format(time.RFC3339),
 	)
-	subscriber.status = patterns.StatusActive
+	subscriber.status = patterns.StatusConnected
 	return nil
 }
 
 func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
-	subscriber.status = patterns.StatusInactive
+	subscriber.status = patterns.StatusDisconnected
 
 	if subscriber.subscription.IsValid() {
 		if err := subscriber.subscription.Unsubscribe(); err != nil {
@@ -120,8 +109,10 @@ func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) error {
-	consumer, err := subscriber.consumer(ctx)
+func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler SubHandler) error {
+	// @TODO: validate topic
+
+	consumer, err := subscriber.consumer(ctx, topic)
 	if err != nil {
 		return err
 	}
@@ -148,82 +139,76 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, handler SubHandler) e
 				return
 			}
 
-			msgs, err := subscriber.subscription.Fetch(subscriber.conf.MaxRequestBatch)
+			messages, err := subscriber.subscription.Fetch(subscriber.conf.Subscriber.RoutineConcurrency)
 			if err != nil {
 				// the subscription is no longer available because we closed it programmatically
-				if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusInactive {
+				if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusDisconnected {
 					return
 				}
 
 				if !errors.Is(err, nats.ErrTimeout) {
-					subscriber.logger.Errorw(err.Error(), "timeout", "10000ms")
+					subscriber.logger.Errorw(err.Error(), "timeout", fmt.Sprintf("%dms", subscriber.conf.Subscriber.RoutinesTimeout))
 				}
 				continue
 			}
-			subscriber.logger.Debugw("got messages", "count", len(msgs))
+			subscriber.logger.Debugw("got messages", "request_count", subscriber.conf.Subscriber.RoutineConcurrency, "response_count", len(messages))
 
-			maps := map[string]string{}
-			events := []*Event{}
-			for _, msg := range msgs {
-				event := natsMsgToEvent(msg)
+			events := map[string]*Event{}
+			for _, msg := range messages {
+				event := NatsMsgToEvent(msg)
 				if err := event.Validate(); err != nil {
 					subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
-					if err := msg.Nak(); err != nil {
-						// it's important to log entire event here because we can trace it in log
-						subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
-					}
 					continue
 				}
-
-				maps[msg.Header.Get(MetaId)] = event.Id
-				events = append(events, event)
+				// MetaId is event.Id
+				events[msg.Header.Get(MetaId)] = event
 			}
 
-			errs := handler(events)
+			errors := handler(events)
 
-			for _, msg := range msgs {
-				eventId := maps[msg.Header.Get(MetaId)]
-
-				if err, ok := errs[eventId]; ok && err != nil {
-					if err := msg.Nak(); err != nil {
-						// it's important to log entire event here because we can trace it in log
-						subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
+			p := pool.New().WithMaxGoroutines(subscriber.conf.Subscriber.RoutineConcurrency)
+			for _, msg := range messages {
+				event := events[msg.Header.Get(MetaId)]
+				message := msg
+				p.Go(func() {
+					if err, ok := errors[event.Id]; ok && err != nil {
+						if err := message.Nak(); err != nil {
+							// it's important to log entire event here to trace it in our log system
+							subscriber.logger.Errorw(ErrSubNakFail.Error(), "nats_msg", utils.Stringify(msg))
+						}
+						return
 					}
-					continue
-				}
 
-				if err := msg.Ack(); err != nil {
-					// it's important to log entire event here because we can trace it in log
-					subscriber.logger.Errorw(ErrSubAckFail.Error(), "nats_msg", utils.Stringify(msg))
-				}
+					if err := message.Ack(); err != nil {
+						// it's important to log entire event here to trace it in our log system
+						subscriber.logger.Errorw(ErrSubAckFail.Error(), "nats_msg", utils.Stringify(msg))
+					}
+				})
+
 			}
+			p.Wait()
 		}
 	}()
 
 	subscriber.logger.Infow("subscribed",
-		"max_waiting", subscriber.conf.MaxWaiting,
-		"max_ack_pending", subscriber.conf.MaxAckPending,
-		"max_request_batch", subscriber.conf.MaxRequestBatch,
+		"max_retry", subscriber.conf.Subscriber.MaxRetry,
+		"routine_concurrency", subscriber.conf.Subscriber.RoutineConcurrency,
+		"routines_timeout", subscriber.conf.Subscriber.RoutinesTimeout,
 	)
 	return nil
 }
 
-func (subscriber *NatsSubscriber) consumer(ctx context.Context) (*nats.ConsumerInfo, error) {
+func (subscriber *NatsSubscriber) consumer(ctx context.Context, topic string) (*nats.ConsumerInfo, error) {
 	conf := &nats.ConsumerConfig{
 		// common config
-		Name:          subscriber.conf.Name,
-		FilterSubject: subscriber.conf.FilterSubject,
+		Name:          strings.ReplaceAll(topic, ".", "_"),
+		FilterSubject: fmt.Sprintf("%s.>", topic),
 
 		// advance config
-		MaxDeliver: subscriber.conf.MaxRetry,
-		// if MaxWaiting is 1, and more than one sub.Fetch actions, we will get an error
-		MaxWaiting: subscriber.conf.MaxWaiting,
-		// if MaxAckPending is 1, and we are processing 1 message already
-		// then we are going to request 2, we will only get 1
-		MaxAckPending: subscriber.conf.MaxAckPending,
-		AckWait:       time.Millisecond * time.Duration(subscriber.conf.MaxAckWaitingDuration),
+		MaxDeliver: subscriber.conf.Subscriber.MaxRetry,
+		AckWait:    time.Millisecond * time.Duration(subscriber.conf.Subscriber.RoutinesTimeout),
 		// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
-		MaxRequestBatch: subscriber.conf.MaxRequestBatch,
+		MaxRequestBatch: subscriber.conf.Subscriber.RoutineConcurrency,
 
 		// internal config
 		DeliverPolicy: nats.DeliverAllPolicy,
@@ -231,8 +216,8 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context) (*nats.ConsumerI
 	}
 
 	// verify persistent consumer
-	conf.Durable = subscriber.conf.Name
-	consumer, err := subscriber.js.ConsumerInfo(subscriber.stream.Config.Name, subscriber.conf.Name, nats.Context(ctx))
+	conf.Durable = conf.Name
+	consumer, err := subscriber.js.ConsumerInfo(subscriber.stream.Config.Name, conf.Name, nats.Context(ctx))
 
 	if err == nil {
 		subscriber.js.UpdateConsumer(subscriber.stream.Config.Name, conf, nats.Context(ctx))

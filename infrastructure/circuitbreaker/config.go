@@ -1,28 +1,79 @@
 package circuitbreaker
 
-import (
-	"github.com/scrapnode/kanthor/pkg/validator"
-)
+import "github.com/scrapnode/kanthor/pkg/validator"
 
 type Config struct {
-	HalfOpenMaxPassThroughRequests     int     `json:"half_open_max_pass_through_requests" yaml:"half_open_max_pass_through_requests" mapstructure:"half_open_max_pass_through_requests"`
-	HalfOpenTriggerMinimumRequests     int     `json:"half_open_trigger_minimum_requests" yaml:"half_open_trigger_minimum_requests" mapstructure:"half_open_trigger_minimum_requests"`
-	HalfOpenTriggerErrorThresholdRatio float64 `json:"half_open_trigger_error_threshold_ratio" yaml:"half_open_trigger_error_threshold_ratio" mapstructure:"half_open_trigger_error_threshold_ratio"`
-	CloseTriggerMinimumRequests        int     `json:"close_trigger_minimum_requests" yaml:"close_trigger_minimum_requests" mapstructure:"close_trigger_minimum_requests"`
-	CloseTriggerErrorThresholdRatio    float64 `json:"close_trigger_error_threshold_ratio" yaml:"close_trigger_error_threshold_ratio" mapstructure:"close_trigger_error_threshold_ratio"`
-	CloseStateClearInterval            int     `json:"close_state_clear_interval" yaml:"close_state_clear_interval" mapstructure:"close_state_clear_interval"`
-	OpenStateDuration                  int     `json:"open_state_duration" yaml:"open_state_duration" mapstructure:"open_state_duration"`
+	Close Close `json:"close" yaml:"close" mapstructure:"close"`
+	Haft  Haft  `json:"haft" yaml:"haft" mapstructure:"haft"`
+	Open  Open  `json:"open" yaml:"open" mapstructure:"open"`
 }
 
 func (conf *Config) Validate() error {
+	if err := conf.Close.Validate(); err != nil {
+		return err
+	}
+	if err := conf.Haft.Validate(); err != nil {
+		return err
+	}
+	if err := conf.Open.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+type Close struct {
+	CleanupInterval int `json:"cleanup_interval" yaml:"cleanup_interval" mapstructure:"cleanup_interval"`
+}
+
+func (conf *Close) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("circuitbreaker.conf.half_open_max_pass_through_requests", conf.HalfOpenMaxPassThroughRequests, 1),
-		validator.NumberGreaterThanOrEqual("circuitbreaker.conf.half_open_trigger_minimum_requests", conf.HalfOpenTriggerMinimumRequests, 1),
-		validator.NumberInRange("circuitbreaker.conf.half_open_trigger_minimum_requests", conf.HalfOpenTriggerErrorThresholdRatio, float64(0), float64(1)),
-		validator.NumberGreaterThanOrEqual("circuitbreaker.conf.close_trigger_minimum_requests", conf.HalfOpenTriggerMinimumRequests, 1),
-		validator.NumberInRange("circuitbreaker.conf.close_trigger_error_threshold_ratio", conf.CloseTriggerErrorThresholdRatio, float64(0), float64(1)),
-		validator.NumberGreaterThanOrEqual("circuitbreaker.conf.close_state_clear_interval", conf.CloseStateClearInterval, 0),
-		validator.NumberGreaterThanOrEqual("circuitbreaker.conf.open_state_duration", conf.OpenStateDuration, 0),
+		validator.NumberGreaterThan("circuit_breaker.close.cleanup_interval", conf.CleanupInterval, 1000),
+	)
+}
+
+type Haft struct {
+	PassthroughRequests uint32 `json:"passthrough_requests" yaml:"passthrough_requests" mapstructure:"passthrough_requests"`
+}
+
+func (conf *Haft) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThan("circuit_breaker.haft.passthrough_requests", conf.PassthroughRequests, 1000),
+	)
+}
+
+type Open struct {
+	Duration  int64         `json:"duration" yaml:"duration" mapstructure:"duration"`
+	Condition OpenCondition `json:"condition" yaml:"condition" mapstructure:"condition"`
+}
+
+func (conf *Open) Validate() error {
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThan("circuit_breaker.open.duration", conf.Duration, 1000),
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := conf.Condition.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type OpenCondition struct {
+	ErrorConsecutive uint32  `json:"error_consecutive" yaml:"error_consecutive" mapstructure:"error_consecutive"`
+	ErrorRatio       float32 `json:"error_ratio" yaml:"error_ratio" mapstructure:"error_ratio"`
+}
+
+func (conf *OpenCondition) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThan("circuit_breaker.open.conidtion.error_consecutive", conf.ErrorConsecutive, 1),
+		validator.NumberGreaterThan("circuit_breaker.open.conidtion.error_ratio", conf.ErrorRatio, 0.0),
+		validator.NumberLessThan("circuit_breaker.open.conidtion.error_ratio", conf.ErrorRatio, 1.0),
 	)
 }

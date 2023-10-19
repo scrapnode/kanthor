@@ -2,21 +2,22 @@ package streaming
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/pkg/safe"
+	"github.com/sourcegraph/conc/pool"
 )
 
-func NewNatsPublisher(conf *PublisherConfig, logger logging.Logger) Publisher {
+func NewNatsPublisher(conf *Config, logger logging.Logger) Publisher {
 	logger = logger.With("streaming.publisher", "nats")
 	return &NatsPublisher{conf: conf, logger: logger}
 }
 
 type NatsPublisher struct {
-	conf   *PublisherConfig
+	conf   *Config
 	logger logging.Logger
 
 	mu   sync.Mutex
@@ -29,7 +30,7 @@ func (publisher *NatsPublisher) Readiness() error {
 		return ErrNotConnected
 	}
 
-	_, err := publisher.js.StreamInfo(publisher.conf.Connection.Stream.Name)
+	_, err := publisher.js.StreamInfo(publisher.conf.Nats.Name)
 	return err
 }
 
@@ -38,7 +39,7 @@ func (publisher *NatsPublisher) Liveness() error {
 		return ErrNotConnected
 	}
 
-	_, err := publisher.js.StreamInfo(publisher.conf.Connection.Stream.Name)
+	_, err := publisher.js.StreamInfo(publisher.conf.Nats.Name)
 	return err
 }
 
@@ -46,7 +47,7 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 	publisher.mu.Lock()
 	defer publisher.mu.Unlock()
 
-	conn, err := NewNats(publisher.conf.Connection, publisher.logger)
+	conn, err := NewNats(publisher.conf, publisher.logger)
 	if err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func (publisher *NatsPublisher) Connect(ctx context.Context) error {
 	}
 	publisher.js = js
 
-	stream, err := NewNatsStream(publisher.conf.Connection, js)
+	stream, err := NewNatsStream(publisher.conf, js)
 	if err != nil {
 		return err
 	}
@@ -90,17 +91,31 @@ func (publisher *NatsPublisher) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (publisher *NatsPublisher) Pub(ctx context.Context, event *Event) error {
-	if err := event.Validate(); err != nil {
-		return err
-	}
+func (publisher *NatsPublisher) Pub(ctx context.Context, events []Event) map[string]error {
+	returning := safe.Map[error]{}
 
-	msg := natsMsgFromEvent(event.Subject, event)
-	ack, err := publisher.js.PublishMsg(msg, nats.Context(ctx), nats.MsgId(event.Id))
-	if err != nil {
-		return fmt.Errorf("streaming.publisher.nats: %w", err)
-	}
+	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(publisher.conf.Publisher.RoutinesTimeout))
+	defer cancel()
 
-	publisher.logger.Debugw("published message", "msg_seq", ack.Sequence)
-	return nil
+	p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RoutineConcurrency)
+	for _, event := range events {
+		if err := event.Validate(); err != nil {
+			returning.Set(event.Id, err)
+			continue
+		}
+
+		msg := NatsMsgFromEvent(event.Subject, &event)
+		p.Go(func() {
+			ack, err := publisher.js.PublishMsg(msg, nats.Context(ctx), nats.MsgId(event.Id))
+			if err != nil {
+				returning.Set(event.Id, err)
+				return
+			}
+
+			publisher.logger.Debugw("published message", "msg_seq", ack.Sequence)
+		})
+	}
+	p.Wait()
+
+	return returning.Data()
 }

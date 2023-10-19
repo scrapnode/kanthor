@@ -35,7 +35,7 @@ func (w *watcher) Connect(ctx context.Context) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	conn, err := streaming.NewNats(streaming.ConnectionConfig{Uri: w.conf.Uri}, w.logger)
+	conn, err := streaming.NewNats(&streaming.Config{Uri: w.conf.Uri}, w.logger)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,5 @@
-# common 
+tier: default
+
 logger:
   pretty: true
   level: debug
@@ -10,22 +11,31 @@ cryptography:
   symmetric:
     key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
 
+sender:
+  trace: true
+  timeout: 10000 # 10s
+  retry:
+    count: 1
+    wait_time: 5000 # 5s
+    
 idempotency:
   namespace: kanthor.idempotency
   uri: redis://127.0.0.1:6379/0
   time_to_live: 86400000 # 1 day
 
 circuit_breaker:
-  half_open_max_pass_through_requests: 5
-  half_open_trigger_minimum_requests: 10
-  half_open_trigger_error_threshold_ratio: 0.1
-  open_state_duration: 1800000
-  close_trigger_minimum_requests: 10
-  close_trigger_error_threshold_ratio: 0.1
-  close_state_clear_interval: 600000
+  close:
+    cleanup_interval: 600000 # 10m
+  half:
+    passthrough_requests: 10
+  open:
+    duration: 1800000 # 30m
+    conditions:
+      error_consecutive: 10
+      error_ratio: 0.5
 
 distributed_lock_manager:
-  namespace: kanthor.idempotency
+  namespace: kanthor.dlm
   uri: redis://127.0.0.1:6379/0
   time_to_live: 3600000 # 1h
 
@@ -37,6 +47,7 @@ authorizator:
     policy_namespace: kanthor_authz
 
 cache:
+  namespace: kanthor.cache
   uri: redis://127.0.0.1:6379/0
   time_to_live: 3600000 # 1h
 
@@ -58,16 +69,9 @@ datastore:
   migration:
     source: file://./migration/datastore/sql
 
-# shortcut
-streaming: &streaming
+stream:
   uri: nats://127.0.0.1:4222
-  stream:
-    name: default
-    subjects:
-      - kanthor.default.msg.>
-      - kanthor.default.req.>
-      - kanthor.default.res.>
-      - kanthor.default.att.>
+  nats:
     replicas: 0
     limits:
       msg_bytes: 32000
@@ -75,6 +79,13 @@ streaming: &streaming
       bytes: 3200000000
       # 60*60*24*3 = 3d
       age: 259200
+  publisher:
+    routine_concurrency: 1000
+    routines_timeout: 60000 # 60s
+  subscriber:
+    max_retry: 1
+    routine_concurrency: 1000
+    routines_timeout: 60000 # 60s
 
 # application services
 sdkapi:
@@ -82,8 +93,6 @@ sdkapi:
     engine: httpx
     httpx:
       addr: :8180
-  publisher:
-    connection: *streaming
 
 portalapi:
   gateway:
@@ -98,12 +107,8 @@ portalapi:
       # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
       
 scheduler:
-  publisher:
-    connection: *streaming
   subscriber:
-    connection: *streaming
     name: scheduler
-    filter_subject: kanthor.default.msg.>
     max_retry: 3
     max_waiting: 100
     max_ack_pending: 100000
@@ -111,36 +116,25 @@ scheduler:
     max_request_batch: 1000
   request:
     schedule:
-      rate_limit: 300
-      timeout: 5000
+      routine_concurrency: 500
+      routines_timeout: 60000
 
 dispatcher:
-  publisher:
-    connection: *streaming
   subscriber:
-    connection: *streaming
     name: dispatcher
-    filter_subject: kanthor.default.req.>
     max_retry: 3
     max_waiting: 100
     max_ack_pending: 100000
     max_ack_wating_duration: 15000
     max_request_batch: 1000
-  sender:
-    timeout: 3000
-    retry:
-      count: 1
-      wait_time: 500
   forwarder:
     send:
-      rate_limit: 300
-      timeout: 5000
+      routine_concurrency: 300
+      routines_timeout: 60000
 
 storage:
   subscriber:
-    connection: *streaming
     name: storage
-    filter_subject: kanthor.default.>
     max_retry: 3
     max_waiting: 100
     max_ack_pending: 100000
@@ -148,18 +142,13 @@ storage:
     max_request_batch: 1000
   warehouse:
     put:
-      rate_limit: 3
-      chunk_size: 500
-      timeout: 5000
+      routine_concurrency: 3
+      routines_timeout: 60000
 
 attempt:
   trigger:
-    publisher:
-      connection: *streaming
     subscriber:
-      connection: *streaming
       name: attempt_trigger
-      filter_subject: kanthor.default.att.trigger.>
       max_retry: 3
       max_waiting: 100
       max_ack_pending: 100000
@@ -167,11 +156,11 @@ attempt:
       max_request_batch: 1000
     planner:
       schedule: "*/15 * * * *"
-      rate_limit: 999999
-      timeout: 5000
+      routines_timeout: 60000
+      scan_size: 999999
       scan_start: -324000 # 1h30m
       scan_end: -1800000 # 30m
     executor:
-      rate_limit: 3
-      timeout: 5000
+      routine_concurrency: 3
+      routines_timeout: 60000
       attempt_delay: 1800000 # 30m

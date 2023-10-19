@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func NumberLessThan[T int | int32 | int64 | float32 | float64](prop string, value T, target T) Fn {
+func NumberLessThan[T int | int32 | int64 | uint | uint32 | uint64 | float32 | float64](prop string, value T, target T) Fn {
 	return func() error {
 		if value >= target {
 			return fmt.Errorf("%s (%v) must less than %v", prop, value, target)
@@ -13,7 +13,7 @@ func NumberLessThan[T int | int32 | int64 | float32 | float64](prop string, valu
 	}
 }
 
-func NumberLessThanOrEqual[T int | int32 | int64 | float32 | float64](prop string, value T, target T) Fn {
+func NumberLessThanOrEqual[T int | int32 | int64 | uint | uint32 | uint64 | float32 | float64](prop string, value T, target T) Fn {
 	return func() error {
 		if value > target {
 			return fmt.Errorf("%s (%v) must less than or equal to %v", prop, value, target)
@@ -22,7 +22,7 @@ func NumberLessThanOrEqual[T int | int32 | int64 | float32 | float64](prop strin
 	}
 }
 
-func NumberGreaterThan[T int | int32 | int64 | float32 | float64](prop string, value T, target T) Fn {
+func NumberGreaterThan[T int | int32 | int64 | uint | uint32 | uint64 | float32 | float64](prop string, value T, target T) Fn {
 	return func() error {
 		if value <= target {
 			return fmt.Errorf("%s (%v) must greater than %v", prop, value, target)
@@ -31,7 +31,7 @@ func NumberGreaterThan[T int | int32 | int64 | float32 | float64](prop string, v
 	}
 }
 
-func NumberGreaterThanOrEqual[T int | int32 | int64 | float32 | float64](prop string, value T, target T) Fn {
+func NumberGreaterThanOrEqual[T int | int32 | int64 | uint | uint32 | uint64 | float32 | float64](prop string, value T, target T) Fn {
 	return func() error {
 		if value < target {
 			return fmt.Errorf("%s (%v) must greater than or equal to %v", prop, value, target)
@@ -40,7 +40,7 @@ func NumberGreaterThanOrEqual[T int | int32 | int64 | float32 | float64](prop st
 	}
 }
 
-func NumberInRange[T int | int32 | int64 | float32 | float64](prop string, value T, min, max T) Fn {
+func NumberInRange[T int | int32 | int64 | uint | uint32 | uint64 | float32 | float64](prop string, value T, min, max T) Fn {
 	return func() error {
 		if value < min {
 			return fmt.Errorf("%s (%v) must greater than or equal to %v", prop, value, min)

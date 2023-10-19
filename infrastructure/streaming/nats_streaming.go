@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
-func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
+func NewNats(conf *Config, logger logging.Logger) (*nats.Conn, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -43,8 +43,8 @@ func NewNats(conf ConnectionConfig, logger logging.Logger) (*nats.Conn, error) {
 	return nats.Connect(conf.Uri, opts...)
 }
 
-func NewNatsStream(conf ConnectionConfig, js nats.JetStreamContext) (*nats.StreamInfo, error) {
-	_, err := js.StreamInfo(conf.Stream.Name)
+func NewNatsStream(conf *Config, js nats.JetStreamContext) (*nats.StreamInfo, error) {
+	_, err := js.StreamInfo(conf.Nats.Name)
 	// only accept ErrStreamNotFound
 	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
 		return nil, err
@@ -53,15 +53,15 @@ func NewNatsStream(conf ConnectionConfig, js nats.JetStreamContext) (*nats.Strea
 	// prepare configurations
 	sconf := &nats.StreamConfig{
 		// non-editable
-		Name:    conf.Stream.Name,
+		Name:    conf.Nats.Name,
 		Storage: nats.FileStorage,
 		// editable
-		Replicas:   conf.Stream.Replicas,
-		Subjects:   conf.Stream.Subjects,
-		MaxMsgs:    conf.Stream.Limits.Msgs,
-		MaxMsgSize: conf.Stream.Limits.MsgBytes,
-		MaxBytes:   conf.Stream.Limits.Bytes,
-		MaxAge:     time.Duration(conf.Stream.Limits.Age) * time.Second,
+		Replicas:   conf.Nats.Replicas,
+		Subjects:   conf.Nats.Subjects,
+		MaxMsgs:    conf.Nats.Limits.Msgs,
+		MaxMsgSize: conf.Nats.Limits.MsgBytes,
+		MaxBytes:   conf.Nats.Limits.Bytes,
+		MaxAge:     time.Duration(conf.Nats.Limits.Age) * time.Second,
 		// hardcode
 		Retention: nats.LimitsPolicy,
 		Discard:   nats.DiscardOld,
