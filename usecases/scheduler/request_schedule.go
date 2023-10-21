@@ -8,19 +8,19 @@ import (
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/planner"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc"
-	"github.com/sourcegraph/conc/pool"
 )
 
 type RequestScheduleReq struct {
-	Timeout   int64
-	RateLimit int
-	Messages  []entities.Message
+	Timeout int64
+
+	Messages []entities.Message
 }
 
 func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message) error {
@@ -30,7 +30,7 @@ func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message)
 		validator.StringRequired(prefix+".tier", message.Tier),
 		validator.StringStartsWith(prefix+".app_id", message.AppId, entities.IdNsApp),
 		validator.StringRequired(prefix+".type", message.Type),
-		validator.MapNotNil[string, string](prefix+".metadata", message.Metadata),
+		validator.MapRequired[string, string](prefix+".metadata", message.Metadata),
 		validator.SliceRequired(prefix+".body", message.Body),
 	)
 }
@@ -40,7 +40,6 @@ func (req *RequestScheduleReq) Validate() error {
 		validator.DefaultConfig,
 		validator.SliceRequired("messages", req.Messages),
 		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
-		validator.NumberGreaterThan("rate_limit", req.Timeout, 1),
 	)
 	if err != nil {
 		return err
@@ -61,53 +60,64 @@ type RequestScheduleRes struct {
 }
 
 func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*RequestScheduleRes, error) {
-	requests := uc.arrange(ctx, req.Messages)
-	if len(requests) == 0 {
-		return &RequestScheduleRes{Success: []string{}, Error: map[string]error{}}, nil
-	}
-
-	ok := &safe.Map[string]{}
-	ko := &safe.Map[error]{}
-
-	// timeout duration will be scaled based on how many requests you have
-	duration := time.Duration(req.Timeout * int64(len(requests)+1))
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
 	defer cancel()
 
-	// we must limit how many publish action could be performed at the same time
-	// otherwise our system will be lag
-	p := pool.New().WithMaxGoroutines(req.RateLimit)
-	for _, r := range requests {
-		request := r
-		p.Go(func() {
+	ok := &safe.Map[[]string]{}
+	// ko must be map of message id and their error
+	// so we can retry it if schedule requests of message got any error
+	ko := &safe.Map[error]{}
+
+	errc := make(chan error)
+	defer close(errc)
+
+	go func() {
+		requests := uc.arrange(ctx, req.Messages)
+		if len(requests) == 0 {
+			errc <- nil
+			return
+		}
+
+		maps := map[string]string{}
+		events := map[string]*streaming.Event{}
+		for _, request := range requests {
+			key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
 			event, err := transformation.EventFromRequest(&request)
 			if err != nil {
 				// un-recoverable error
 				uc.logger.Errorw("could not transform request to event", "request", request.String())
-				return
+				continue
+			}
+			events[key] = event
+			maps[key] = request.MsgId
+		}
+
+		errs := uc.publisher.Pub(ctx, events)
+		for key := range events {
+			// map key back to message id
+			// to let system retry the message if any error was happen
+			msgId := maps[key]
+
+			if err, ok := errs[key]; ok {
+				ko.Set(msgId, err)
+				continue
 			}
 
-			if err := uc.publisher.Pub(ctx, event); err != nil {
-				ko.Set(request.MsgId, err)
-				return
+			if _, exist := ko.Get(msgId); !exist {
+				ids, has := ok.Get(msgId)
+				if !has {
+					ids = []string{}
+				}
+				ok.Set(msgId, append(ids, msgId))
 			}
+		}
 
-			key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
-			ok.Set(key, request.MsgId)
-		})
-	}
-
-	c := make(chan bool)
-	defer close(c)
-
-	go func() {
-		p.Wait()
-		c <- true
+		errc <- nil
 	}()
 
 	select {
-	case <-c:
-		return &RequestScheduleRes{Success: ok.Keys(), Error: ko.Data()}, nil
+	case err := <-errc:
+		return &RequestScheduleRes{Success: ok.Keys(), Error: ko.Data()}, err
 	case <-timeout.Done():
 		// context deadline exceeded, should set that error to remain messages
 		for _, message := range req.Messages {

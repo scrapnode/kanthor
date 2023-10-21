@@ -3,7 +3,6 @@ package cache
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -89,7 +88,7 @@ func (cache *redis) Disconnect(ctx context.Context) error {
 }
 
 func (cache *redis) Get(ctx context.Context, key string) ([]byte, error) {
-	entry, err := cache.client.Get(ctx, cache.key(key)).Bytes()
+	entry, err := cache.client.Get(ctx, Key(key)).Bytes()
 	// convert error type to detect later
 	if errors.Is(err, goredis.Nil) {
 		return nil, ErrEntryNotFound
@@ -99,11 +98,11 @@ func (cache *redis) Get(ctx context.Context, key string) ([]byte, error) {
 }
 
 func (cache *redis) Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error {
-	return cache.client.Set(ctx, cache.key(key), entry, ttl).Err()
+	return cache.client.Set(ctx, Key(key), entry, ttl).Err()
 }
 
 func (cache *redis) StringGet(ctx context.Context, key string) (string, error) {
-	bytes, err := cache.Get(ctx, cache.key(key))
+	bytes, err := cache.Get(ctx, Key(key))
 	if err != nil {
 		return "", err
 	}
@@ -111,22 +110,18 @@ func (cache *redis) StringGet(ctx context.Context, key string) (string, error) {
 }
 
 func (cache *redis) StringSet(ctx context.Context, key string, entry string, ttl time.Duration) error {
-	return cache.Set(ctx, cache.key(key), []byte(entry), ttl)
+	return cache.Set(ctx, Key(key), []byte(entry), ttl)
 }
 
 func (cache *redis) Exist(ctx context.Context, key string) bool {
-	entry, err := cache.client.Exists(ctx, cache.key(key)).Result()
+	entry, err := cache.client.Exists(ctx, Key(key)).Result()
 	return err == nil && entry > 0
 }
 
 func (cache *redis) Del(ctx context.Context, key string) error {
-	return cache.client.Del(ctx, cache.key(key)).Err()
+	return cache.client.Del(ctx, Key(key)).Err()
 }
 
 func (cache *redis) ExpireAt(ctx context.Context, key string, at time.Time) (bool, error) {
-	return cache.client.ExpireAt(ctx, cache.key(key), at).Result()
-}
-
-func (cache *redis) key(k string) string {
-	return fmt.Sprintf("%s/%s", cache.conf.Namespace, k)
+	return cache.client.ExpireAt(ctx, Key(key), at).Result()
 }

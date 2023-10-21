@@ -66,7 +66,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 	}
 
 	service.server = &http.Server{
-		Addr:    service.conf.SdkApi.Gateway.Httpx.Addr,
+		Addr:    service.conf.SdkApi.Gateway.Addr,
 		Handler: service.router(),
 	}
 
@@ -93,7 +93,7 @@ func (service *sdkapi) router() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.Use(ginmw.UseStartup())
-		api.Use(ginmw.UseMetric(services.SERVICE_SDK_API, service.infra.Metric))
+		api.Use(ginmw.UseMetric(config.SERVICE_SDK_API, service.infra.Metric))
 		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(middlewares.UseAuth(service.infra.Authorizator, service.uc))
 		api.Use(ginmw.UseAuthz(service.infra.Authorizator))
@@ -141,7 +141,7 @@ func (service *sdkapi) Run(ctx context.Context) error {
 		}
 	}()
 
-	service.logger.Infow("running", "addr", service.conf.SdkApi.Gateway.Httpx.Addr)
+	service.logger.Infow("running", "addr", service.conf.SdkApi.Gateway.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		service.logger.Error(err)
 	}

@@ -12,7 +12,7 @@ import (
 func NewConsumer(service *dispatcher) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events []*streaming.Event) map[string]error {
+	return func(events map[string]*streaming.Event) map[string]error {
 		// create a map of events & requests so we can generate error map later
 		maps := map[string]string{}
 
@@ -40,9 +40,8 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 		ctx := context.Background()
 
 		ucreq := &usecase.ForwarderSendReq{
-			Timeout:   service.conf.Dispatcher.Forwarder.Send.Timeout,
-			RateLimit: service.conf.Dispatcher.Forwarder.Send.RateLimit,
-			Requests:  requests,
+			Concurrency: service.conf.Dispatcher.Forwarder.Send.Concurrency,
+			Requests:    requests,
 		}
 		// we alreay validated messages of request, don't need to validate again
 		ucres, err := service.uc.Forwarder().Send(ctx, ucreq)

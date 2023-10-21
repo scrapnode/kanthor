@@ -43,8 +43,8 @@ func NewNats(conf *Config, logger logging.Logger) (*nats.Conn, error) {
 	return nats.Connect(conf.Uri, opts...)
 }
 
-func NewNatsStream(conf *Config, js nats.JetStreamContext) (*nats.StreamInfo, error) {
-	_, err := js.StreamInfo(conf.Nats.Name)
+func NewNatsStream(name string, conf *NatsConfig, js nats.JetStreamContext) (*nats.StreamInfo, error) {
+	_, err := js.StreamInfo(name)
 	// only accept ErrStreamNotFound
 	if err != nil && !errors.Is(err, nats.ErrStreamNotFound) {
 		return nil, err
@@ -53,15 +53,15 @@ func NewNatsStream(conf *Config, js nats.JetStreamContext) (*nats.StreamInfo, er
 	// prepare configurations
 	sconf := &nats.StreamConfig{
 		// non-editable
-		Name:    conf.Nats.Name,
+		Name:    name,
 		Storage: nats.FileStorage,
 		// editable
-		Replicas:   conf.Nats.Replicas,
-		Subjects:   conf.Nats.Subjects,
-		MaxMsgs:    conf.Nats.Limits.Msgs,
-		MaxMsgSize: conf.Nats.Limits.MsgBytes,
-		MaxBytes:   conf.Nats.Limits.Bytes,
-		MaxAge:     time.Duration(conf.Nats.Limits.Age) * time.Second,
+		Replicas:   conf.Replicas,
+		Subjects:   conf.Subjects,
+		MaxMsgs:    conf.Limits.Msgs,
+		MaxMsgSize: conf.Limits.MsgBytes,
+		MaxBytes:   conf.Limits.Bytes,
+		MaxAge:     time.Duration(conf.Limits.Age) * time.Second,
 		// hardcode
 		Retention: nats.LimitsPolicy,
 		Discard:   nats.DiscardOld,

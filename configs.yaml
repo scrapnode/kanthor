@@ -1,5 +1,3 @@
-tier: default
-
 logger:
   pretty: true
   level: debug
@@ -18,11 +16,6 @@ sender:
     count: 1
     wait_time: 5000 # 5s
     
-idempotency:
-  namespace: kanthor.idempotency
-  uri: redis://127.0.0.1:6379/0
-  time_to_live: 86400000 # 1 day
-
 circuit_breaker:
   close:
     cleanup_interval: 600000 # 10m
@@ -34,8 +27,15 @@ circuit_breaker:
       error_consecutive: 10
       error_ratio: 0.5
 
+idempotency:
+  uri: redis://127.0.0.1:6379/0
+  time_to_live: 86400000 # 1 day
+
 distributed_lock_manager:
-  namespace: kanthor.dlm
+  uri: redis://127.0.0.1:6379/0
+  time_to_live: 3600000 # 1h
+
+cache:
   uri: redis://127.0.0.1:6379/0
   time_to_live: 3600000 # 1h
 
@@ -44,12 +44,8 @@ authorizator:
   casbin:
     model_uri: file://./data/authorizator/casbin_rbac_model.conf
     policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.authorizator
-    policy_namespace: kanthor_authz
-
-cache:
-  namespace: kanthor.cache
-  uri: redis://127.0.0.1:6379/0
-  time_to_live: 3600000 # 1h
+    watcher: 
+      uri: nats://127.0.0.1:4222
 
 metric:
   engine: otel
@@ -70,6 +66,7 @@ datastore:
     source: file://./migration/datastore/sql
 
 stream:
+  name: main
   uri: nats://127.0.0.1:4222
   nats:
     replicas: 0
@@ -80,25 +77,22 @@ stream:
       # 60*60*24*3 = 3d
       age: 259200
   publisher:
-    routine_concurrency: 1000
-    routines_timeout: 60000 # 60s
+    timeout: 30000 # 30s
+    rate_limit: 300
   subscriber:
     max_retry: 1
-    routine_concurrency: 1000
-    routines_timeout: 60000 # 60s
+    timeout: 60000 # 60s
+    concurrency: 1000
 
 # application services
 sdkapi:
   gateway:
-    engine: httpx
-    httpx:
-      addr: :8180
+    addr: :8180
+  # the sdkapi has internal authenticator
 
 portalapi:
   gateway:
-    engine: httpx
-    httpx:
-      addr: :8280
+    addr: :8280
   authenticator:
     engine: ask
     ask:
@@ -107,60 +101,30 @@ portalapi:
       # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
       
 scheduler:
-  subscriber:
-    name: scheduler
-    max_retry: 3
-    max_waiting: 100
-    max_ack_pending: 100000
-    max_ack_wating_duration: 15000
-    max_request_batch: 1000
   request:
     schedule:
-      routine_concurrency: 500
-      routines_timeout: 60000
+      timeout: 60000 # 60s
 
 dispatcher:
-  subscriber:
-    name: dispatcher
-    max_retry: 3
-    max_waiting: 100
-    max_ack_pending: 100000
-    max_ack_wating_duration: 15000
-    max_request_batch: 1000
   forwarder:
     send:
-      routine_concurrency: 300
-      routines_timeout: 60000
+      concurrency: 300
 
 storage:
-  subscriber:
-    name: storage
-    max_retry: 3
-    max_waiting: 100
-    max_ack_pending: 100000
-    max_ack_wating_duration: 15000
-    max_request_batch: 1000
   warehouse:
     put:
-      routine_concurrency: 3
-      routines_timeout: 60000
+      timeout: 60000 # 60s
+      size: 1000
 
 attempt:
   trigger:
-    subscriber:
-      name: attempt_trigger
-      max_retry: 3
-      max_waiting: 100
-      max_ack_pending: 100000
-      max_ack_wating_duration: 15000
-      max_request_batch: 1000
     planner:
       schedule: "*/15 * * * *"
-      routines_timeout: 60000
-      scan_size: 999999
+      timeout: 600000 # 60s
+      size: 10000
       scan_start: -324000 # 1h30m
       scan_end: -1800000 # 30m
     executor:
-      routine_concurrency: 3
-      routines_timeout: 60000
+      timeout: 60000 # 60s
+      size: 1
       attempt_delay: 1800000 # 30m

@@ -3,11 +3,18 @@ package idempotency
 import (
 	"context"
 	"fmt"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"net/url"
 	"strings"
+
+	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/namespace"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
+
+type Idempotency interface {
+	patterns.Connectable
+	Validate(ctx context.Context, key string) (bool, error)
+}
 
 func New(conf *Config, logger logging.Logger) (Idempotency, error) {
 	uri, err := url.Parse(conf.Uri)
@@ -24,7 +31,6 @@ func New(conf *Config, logger logging.Logger) (Idempotency, error) {
 
 }
 
-type Idempotency interface {
-	patterns.Connectable
-	Validate(ctx context.Context, key string) (bool, error)
+func Key(key string) string {
+	return namespace.Key(fmt.Sprintf("idempotency/%s", key))
 }

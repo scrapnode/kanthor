@@ -7,7 +7,6 @@ import (
 
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
 func NewRedis(conf *Config, logger logging.Logger) Idempotency {
@@ -86,7 +85,7 @@ func (idempotency *redis) Disconnect(ctx context.Context) error {
 }
 
 func (idempotency *redis) Validate(ctx context.Context, key string) (bool, error) {
-	key = utils.Key(idempotency.conf.Namespace, key)
+	key = Key(key)
 
 	var incr *goredis.IntCmd
 	_, err := idempotency.client.Pipelined(ctx, func(pipe goredis.Pipeliner) error {

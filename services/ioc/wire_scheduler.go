@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/scheduler"
 	uc "github.com/scrapnode/kanthor/usecases/scheduler"
@@ -19,8 +18,6 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	wire.Build(
 		scheduler.New,
 		infrastructure.New,
-		ResolveSchedulerSubscriberConfig,
-		streaming.NewSubscriber,
 		InitializeSchedulerUsecase,
 	)
 	return nil, nil
@@ -29,18 +26,8 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Scheduler, error) {
 	wire.Build(
 		uc.New,
-		ResolveSchedulerPublisherConfig,
-		streaming.NewPublisher,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
 	)
 	return nil, nil
-}
-
-func ResolveSchedulerSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	return &conf.Scheduler.Subscriber
-}
-
-func ResolveSchedulerPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	return &conf.Scheduler.Publisher
 }

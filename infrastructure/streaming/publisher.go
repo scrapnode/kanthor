@@ -13,5 +13,5 @@ func NewPublisher(conf *Config, logger logging.Logger) (Publisher, error) {
 
 type Publisher interface {
 	patterns.Connectable
-	Pub(ctx context.Context, events []Event) map[string]error
+	Pub(ctx context.Context, events map[string]*Event) map[string]error
 }

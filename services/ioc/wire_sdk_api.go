@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi"
 	uc "github.com/scrapnode/kanthor/usecases/sdk"
@@ -29,12 +28,6 @@ func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, infra *inf
 		uc.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
-		ResolveSdkApiPublisherConfig,
-		streaming.NewPublisher,
 	)
 	return nil, nil
-}
-
-func ResolveSdkApiPublisherConfig(conf *config.Config) *streaming.PublisherConfig {
-	return &conf.SdkApi.Publisher
 }

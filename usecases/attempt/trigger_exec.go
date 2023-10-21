@@ -8,29 +8,31 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/planner"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/attempt/repos"
 	"github.com/scrapnode/kanthor/usecases/transformation"
-	"github.com/sourcegraph/conc/pool"
+	"github.com/sourcegraph/conc"
 )
 
 type TriggerExecReq struct {
-	Timeout       int64
-	RateLimit     int
-	AttemptDelay  int64
-	Notifications []entities.AttemptTrigger
+	Size    int
+	Timeout int64
+
+	AttemptDelay int64
+	Triggers     map[string]*entities.AttemptTrigger
 }
 
 func (req *TriggerExecReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.SliceRequired("notifications", req.Notifications),
-		validator.NumberGreaterThan("delay", req.AttemptDelay, 1000),
-		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
-		validator.NumberGreaterThan("rate_limit", req.RateLimit, 1),
+		validator.NumberGreaterThan("size", req.Size, 1),
+		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
+		validator.NumberGreaterThan("attempt_delay", req.AttemptDelay, 60000),
+		validator.MapRequired("triggers", req.Triggers),
 	)
 	if err != nil {
 		return err
@@ -38,14 +40,14 @@ func (req *TriggerExecReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Notifications, func(i int, item *entities.AttemptTrigger) error {
-			prefix := fmt.Sprintf("notifications.[%d]", i)
+		validator.Map(req.Triggers, func(key string, item *entities.AttemptTrigger) error {
+			prefix := fmt.Sprintf("triggers.%s", key)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringStartsWith(prefix+".app.id", req.Notifications[i].AppId, entities.IdNsApp),
-				validator.StringRequired(prefix+".tier", req.Notifications[i].Tier),
-				validator.NumberGreaterThan(prefix+".from", req.Notifications[i].From, 0),
-				validator.NumberGreaterThan(prefix+".to", int(req.Notifications[i].To), 0),
+				validator.StringStartsWith(prefix+".app.id", req.Triggers[key].AppId, entities.IdNsApp),
+				validator.StringRequired(prefix+".tier", req.Triggers[key].Tier),
+				validator.NumberGreaterThan(prefix+".from", req.Triggers[key].From, 0),
+				validator.NumberGreaterThan(prefix+".to", int(req.Triggers[key].To), 0),
 			)
 		}),
 	)
@@ -60,20 +62,17 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 
-	// timeout duration will be scaled based on how many notifications you have
-	duration := time.Duration(req.Timeout * int64(len(req.Notifications)+1))
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
+	// timeout duration will be scaled based on how many triggers you have
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
 	defer cancel()
 
-	// we must limit how many publish action could be performed at the same time
-	// otherwise our system will be lag
-	p := pool.New().WithMaxGoroutines(req.RateLimit)
-	for _, noti := range req.Notifications {
-		notification := noti
-		p.Go(func() {
-			resp, err := uc.consume(ctx, &notification, req.RateLimit, req.AttemptDelay)
+	var wg conc.WaitGroup
+	for _, item := range req.Triggers {
+		trigger := item
+		wg.Go(func() {
+			resp, err := uc.consume(ctx, trigger, req.Size, req.AttemptDelay)
 			if err != nil {
-				uc.logger.Errorw("unable to consume attempt notification", "notification", notification.String())
+				uc.logger.Errorw("unable to consume attempt trigger", "trigger", trigger.String())
 				return
 			}
 
@@ -86,7 +85,7 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 	defer close(c)
 
 	go func() {
-		p.Wait()
+		wg.Wait()
 		c <- true
 	}()
 
@@ -318,31 +317,27 @@ func (uc *trigger) schedule(
 		return
 	}
 
-	// we must limit how many publish action could be performed at the same time
-	// otherwise our system will be lag
-	p := pool.New().WithMaxGoroutines(size)
-	for _, r := range requests {
-		request := r
-		p.Go(func() {
-			key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
-
-			event, err := transformation.EventFromRequest(&request)
-			if err != nil {
-				// un-recoverable error
-				uc.logger.Errorw("could not transform request to event", "request", request.String())
-				return
-			}
-
-			if err := uc.publisher.Pub(ctx, event); err != nil {
-				ko.Set(request.Id, err)
-				return
-			}
-
-			ok.Append(key)
-		})
-
+	events := map[string]*streaming.Event{}
+	for _, request := range requests {
+		key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
+		event, err := transformation.EventFromRequest(&request)
+		if err != nil {
+			// un-recoverable error
+			uc.logger.Errorw("could not transform request to event", "request", request.String())
+			continue
+		}
+		events[key] = event
 	}
-	p.Wait()
+
+	errs := uc.publisher.Pub(ctx, events)
+	for key := range events {
+		if err, ok := errs[key]; ok {
+			ko.Set(key, err)
+			continue
+		}
+
+		ok.Append(key)
+	}
 }
 
 // create attempts

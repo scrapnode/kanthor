@@ -2,10 +2,12 @@ package configuration
 
 import (
 	"fmt"
-	"github.com/scrapnode/kanthor/pkg/utils"
-	"github.com/spf13/viper"
 	"path"
 	"strings"
+
+	"github.com/scrapnode/kanthor/infrastructure/namespace"
+	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/spf13/viper"
 )
 
 var FileLookingDirs = []string{"$KANTHOR_HOME/", "$HOME/.kanthor/", "./"}
@@ -38,7 +40,7 @@ func NewFile(dirs []string) (Provider, error) {
 	}
 
 	instance.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
-	instance.SetEnvPrefix("KANTHOR")
+	instance.SetEnvPrefix(namespace.Namespace())
 	instance.AutomaticEnv()
 
 	return &file{viper: instance, sources: sources}, nil

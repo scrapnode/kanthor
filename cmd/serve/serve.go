@@ -11,23 +11,14 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/services"
 	"github.com/spf13/cobra"
 )
 
 func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 	command := &cobra.Command{
-		Use: "serve",
-		ValidArgs: []string{
-			services.SERVICE_PORTAL_API,
-			services.SERVICE_SDK_API,
-			services.SERVICE_SCHEDULER,
-			services.SERVICE_DISPATCHER,
-			services.SERVICE_STORAGE,
-			services.SERVICE_ATTEMPT_TRIGGER_PLANNER,
-			services.SERVICE_ATTEMPT_TRIGGER_EXECUTOR,
-		},
-		Args: cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
+		Use:       "serve",
+		ValidArgs: config.SERVICES,
+		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]
 			verbose, _ := cmd.Flags().GetBool("verbose")

@@ -1,7 +1,9 @@
 package transformation
 
 import (
+	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
@@ -43,9 +45,9 @@ func EventFromMessage(msg *entities.Message) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		streaming.Namespace,
+		namespace.Namespace(),
 		msg.Tier,
-		streaming.TopicMsg,
+		constants.TopicMessage,
 		event.AppId,
 		event.Type,
 	)
@@ -67,9 +69,9 @@ func EventFromRequest(req *entities.Request) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		streaming.Namespace,
+		namespace.Namespace(),
 		req.Tier,
-		streaming.TopicReq,
+		constants.TopicRequest,
 		event.AppId,
 		event.Type,
 	)
@@ -91,9 +93,9 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		streaming.Namespace,
+		namespace.Namespace(),
 		res.Tier,
-		streaming.TopicRes,
+		constants.TopicResponse,
 		event.AppId,
 		event.Type,
 	)
@@ -101,23 +103,23 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 	return event, nil
 }
 
-func EventFromTrigger(noti *entities.AttemptTrigger) (*streaming.Event, error) {
-	data, err := noti.Marshal()
+func EventFromTrigger(trigger *entities.AttemptTrigger) (*streaming.Event, error) {
+	data, err := trigger.Marshal()
 	if err != nil {
 		return nil, err
 	}
 
 	event := &streaming.Event{
-		AppId:    noti.AppId,
-		Type:     "internal.attempt.trigger.notification",
-		Id:       noti.AppId,
+		AppId:    trigger.AppId,
+		Type:     constants.TypeInternal,
+		Id:       trigger.AppId,
 		Data:     data,
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		streaming.Namespace,
-		noti.Tier,
-		streaming.TopicApp,
+		namespace.Namespace(),
+		trigger.Tier,
+		constants.TopicTrigger,
 		event.AppId,
 		event.Type,
 	)

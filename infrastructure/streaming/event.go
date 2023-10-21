@@ -33,7 +33,7 @@ func (e *Event) Validate() error {
 		validator.StringRequired("type", e.Type),
 		validator.StringRequired("id", e.Id),
 		validator.SliceRequired("data", e.Data),
-		validator.MapNotNil("metadata", e.Metadata),
+		validator.MapRequired("metadata", e.Metadata),
 	)
 }
 

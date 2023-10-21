@@ -78,9 +78,9 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &MessagePutRes{ucres.Msg.Id}
+		res := &MessagePutRes{ucres.Message.Id}
 
-		logger.Debugw("put message", "msg_id", ucres.Msg.Id)
+		logger.Debugw("put message", "msg_id", ucres.Message.Id)
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

@@ -12,7 +12,7 @@ import (
 func NewConsumer(service *scheduler) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events []*streaming.Event) map[string]error {
+	return func(events map[string]*streaming.Event) map[string]error {
 		// create a map of events & messages so we can generate error map later
 		maps := map[string]string{}
 
@@ -40,9 +40,8 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 		ctx := context.Background()
 
 		ucreq := &usecase.RequestScheduleReq{
-			RateLimit: service.conf.Scheduler.Request.Schedule.RateLimit,
-			Timeout:   service.conf.Scheduler.Request.Schedule.Timeout,
-			Messages:  messages,
+			Timeout:  service.conf.Scheduler.Request.Schedule.Timeout,
+			Messages: messages,
 		}
 		// we alreay validated messages of request, don't need to validate again
 		ucres, err := service.uc.Request().Schedule(ctx, ucreq)

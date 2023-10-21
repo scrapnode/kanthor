@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/storage"
 	uc "github.com/scrapnode/kanthor/usecases/storage"
@@ -19,8 +18,6 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	wire.Build(
 		storage.New,
 		infrastructure.New,
-		ResolveStorageSubscriberConfig,
-		streaming.NewSubscriber,
 		InitializeStorageUsecase,
 	)
 	return nil, nil
@@ -33,8 +30,4 @@ func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra 
 		repos.New,
 	)
 	return nil, nil
-}
-
-func ResolveStorageSubscriberConfig(conf *config.Config) *streaming.SubscriberConfig {
-	return &conf.Storage.Subscriber
 }

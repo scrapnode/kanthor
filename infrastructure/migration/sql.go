@@ -2,12 +2,12 @@ package migration
 
 import (
 	"errors"
-	"github.com/golang-migrate/migrate/v4"
 	"io/fs"
+
+	"github.com/golang-migrate/migrate/v4"
 )
 
 func NewSql(runner *migrate.Migrate) Migrator {
-
 	return &sql{runner: runner}
 }
 

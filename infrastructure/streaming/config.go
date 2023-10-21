@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Name       string           `json:"name" yaml:"name" mapstructure:"name"`
 	Uri        string           `json:"uri" yaml:"uri" mapstructure:"uri"`
 	Nats       NatsConfig       `json:"stream" yaml:"stream" mapstructure:"stream"`
 	Publisher  PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
@@ -14,7 +15,11 @@ type Config struct {
 }
 
 func (conf *Config) Validate() error {
-	err := validator.Validate(validator.DefaultConfig, validator.StringUri("streaming.conf.uri", conf.Uri))
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringRequired("streaming.conf.name", conf.Name),
+		validator.StringUri("streaming.conf.uri", conf.Uri),
+	)
 	if err != nil {
 		return err
 	}
@@ -35,7 +40,6 @@ func (conf *Config) Validate() error {
 }
 
 type NatsConfig struct {
-	Name     string
 	Replicas int      `json:"replicas" yaml:"replicas" mapstructure:"replicas"`
 	Subjects []string `json:"subjects" yaml:"subjects" mapstructure:"subjects"`
 	Limits   struct {
@@ -49,7 +53,6 @@ type NatsConfig struct {
 func (conf *NatsConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("streaming.conf.nats.name", conf.Name),
 		validator.NumberGreaterThanOrEqual("streaming.conf.nats.replicas", conf.Replicas, 0),
 		validator.SliceRequired("streaming.conf.nats.subjects", conf.Subjects),
 		validator.Array(conf.Subjects, func(i int, item *string) error {
@@ -63,30 +66,30 @@ func (conf *NatsConfig) Validate() error {
 }
 
 type PublisherConfig struct {
-	RoutineConcurrency int   `json:"routine_concurrency" yaml:"routine_concurrency" mapstructure:"routine_concurrency"`
-	RoutinesTimeout    int64 `json:"routines_timeout" yaml:"routines_timeout" mapstructure:"routines_timeout"`
+	Timeout   int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	RateLimit int   `json:"rate_limit" yaml:"rate_limit" mapstructure:"rate_limit"`
 }
 
 func (conf *PublisherConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("streaming.conf.publisher.routine_concurrency", conf.RoutineConcurrency, 0),
-		validator.NumberGreaterThan("streaming.conf.publisher.routines_timeout", conf.RoutinesTimeout, 1000),
+		validator.NumberGreaterThan("streaming.conf.publisher.timeout", conf.Timeout, 1000),
+		validator.NumberGreaterThan("streaming.conf.publisher.rate_limit", conf.RateLimit, 0),
 	)
 }
 
 type SubscriberConfig struct {
 	// MaxRetry is how many times we should try to re-deliver message if we get any error
-	MaxRetry           int   `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
-	RoutineConcurrency int   `json:"routine_concurrency" yaml:"routine_concurrency" mapstructure:"routine_concurrency"`
-	RoutinesTimeout    int64 `json:"routines_timeout" yaml:"routines_timeout" mapstructure:"routines_timeout"`
+	MaxRetry    int   `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
+	Timeout     int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Concurrency int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
 }
 
 func (conf *SubscriberConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("streaming.conf.publisher.routine_concurrency", conf.RoutineConcurrency, 0),
-		validator.NumberGreaterThan("streaming.conf.publisher.routines_timeout", conf.RoutinesTimeout, 1000),
+		validator.NumberGreaterThan("streaming.conf.publisher.concurrency", conf.Concurrency, 0),
+		validator.NumberGreaterThan("streaming.conf.publisher.timeout", conf.Timeout, 1000),
 		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.max_deliver", conf.MaxRetry, 1),
 	)
 }

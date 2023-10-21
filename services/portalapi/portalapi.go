@@ -69,7 +69,7 @@ func (service *portalapi) Start(ctx context.Context) error {
 	}
 
 	service.server = &http.Server{
-		Addr:    service.conf.PortalApi.Gateway.Httpx.Addr,
+		Addr:    service.conf.PortalApi.Gateway.Addr,
 		Handler: service.router(),
 	}
 
@@ -96,7 +96,7 @@ func (service *portalapi) router() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.Use(ginmw.UseStartup())
-		api.Use(ginmw.UseMetric(services.SERVICE_PORTAL_API, service.infra.Metric))
+		api.Use(ginmw.UseMetric(config.SERVICE_PORTAL_API, service.infra.Metric))
 		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
 		api.Use(middlewares.UseAuth(service.auth, service.uc))
@@ -141,7 +141,7 @@ func (service *portalapi) Run(ctx context.Context) error {
 		}
 	}()
 
-	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Httpx.Addr)
+	service.logger.Infow("running", "addr", service.conf.PortalApi.Gateway.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}

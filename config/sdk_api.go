@@ -4,12 +4,10 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
 type SdkApi struct {
-	Gateway   gateway.Config            `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
-	Publisher streaming.PublisherConfig `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
+	Gateway gateway.Config `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
 }
 
 func (conf *SdkApi) Validate() error {

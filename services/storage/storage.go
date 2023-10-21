@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
@@ -26,6 +27,7 @@ func New(
 ) services.Service {
 	logger = logger.With("service", "storage")
 	return &storage{
+		consumer:   "storage",
 		conf:       conf,
 		logger:     logger,
 		subscriber: subscriber,
@@ -41,6 +43,8 @@ func New(
 }
 
 type storage struct {
+	consumer string
+
 	conf       *config.Config
 	logger     logging.Logger
 	subscriber streaming.Subscriber
@@ -117,7 +121,7 @@ func (service *storage) Stop(ctx context.Context) error {
 }
 
 func (service *storage) Run(ctx context.Context) error {
-	if err := service.subscriber.Sub(ctx, NewConsumer(service)); err != nil {
+	if err := service.subscriber.Sub(ctx, service.consumer, constants.TopicPublic, NewConsumer(service)); err != nil {
 		return err
 	}
 

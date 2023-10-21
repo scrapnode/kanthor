@@ -6,6 +6,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 )
@@ -33,7 +34,8 @@ func (req *MessagePutReq) Validate() error {
 }
 
 type MessagePutRes struct {
-	Msg *entities.Message
+	EventId string `json:"event_id"`
+	Message *entities.Message
 }
 
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
@@ -65,10 +67,12 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 		return nil, err
 	}
 
-	if err := uc.publisher.Pub(ctx, event); err != nil {
-		return nil, err
+	events := map[string]*streaming.Event{}
+	events[event.Id] = event
+	if errs := uc.publisher.Pub(ctx, events); len(errs) > 0 {
+		return nil, errs[event.Id]
 	}
 
-	res := &MessagePutRes{Msg: msg}
+	res := &MessagePutRes{Message: msg}
 	return res, nil
 }

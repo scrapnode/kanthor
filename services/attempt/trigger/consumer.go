@@ -10,16 +10,16 @@ import (
 )
 
 func RegisterConsumer(service *executor) streaming.SubHandler {
-	return func(events []*streaming.Event) map[string]error {
+	return func(events map[string]*streaming.Event) map[string]error {
 		ucreq := &usecase.TriggerExecReq{
-			Timeout:       service.conf.Attempt.Trigger.Executor.Timeout,
-			RateLimit:     service.conf.Attempt.Trigger.Executor.RateLimit,
-			AttemptDelay:  service.conf.Attempt.Trigger.Executor.AttemptDelay,
-			Notifications: []entities.AttemptTrigger{},
+			Size:         service.conf.Attempt.Trigger.Executor.Size,
+			Timeout:      service.conf.Attempt.Trigger.Executor.Timeout,
+			AttemptDelay: service.conf.Attempt.Trigger.Executor.AttemptDelay,
+			Triggers:     map[string]*entities.AttemptTrigger{},
 		}
 
 		for _, event := range events {
-			notification, err := transformation.EventToTrigger(event)
+			trigger, err := transformation.EventToTrigger(event)
 			if err != nil {
 				service.logger.Errorw("unable to transform event to attempt notification", "err", err.Error(), "event", event.String())
 				// unable to parse message from event is considered as un-retriable error
@@ -27,7 +27,7 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 				continue
 			}
 
-			ucreq.Notifications = append(ucreq.Notifications, *notification)
+			ucreq.Triggers[trigger.AppId] = trigger
 		}
 
 		ctx := context.Background()

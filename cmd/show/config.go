@@ -7,7 +7,6 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
-	"github.com/scrapnode/kanthor/services"
 	"gopkg.in/yaml.v3"
 )
 
@@ -34,7 +33,7 @@ func Config(conf *config.Config, sources []configuration.Source, verbose, valida
 	}
 
 	if validating {
-		return conf.Validate(services.SERVICE_ALL)
+		return conf.Validate(config.SERVICE_ALL)
 	}
 
 	return nil

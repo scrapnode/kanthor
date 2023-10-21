@@ -8,8 +8,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/pkg/sender"
 )
 
 type Dispatcher interface {

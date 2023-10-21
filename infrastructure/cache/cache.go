@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
@@ -31,6 +32,10 @@ func New(conf *Config, logger logging.Logger) (Cache, error) {
 	}
 
 	return nil, fmt.Errorf("cache: unknown engine")
+}
+
+func Key(key string) string {
+	return namespace.Key(fmt.Sprintf("cache/%s", key))
 }
 
 type Cache interface {

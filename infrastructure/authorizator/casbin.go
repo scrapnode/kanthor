@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/namespace"
 )
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
@@ -95,7 +96,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 		return err
 	}
 	databaseName := strings.ReplaceAll(policyUrl.Path, "/", "")
-	tableName := authorizator.conf.Casbin.PolicyNamespace
+	tableName := namespace.NameWithoutTier("authz")
 
 	adapter, err := gormadapter.NewAdapter(policyUrl.Scheme, authorizator.conf.Casbin.PolicyUri, databaseName, tableName, true)
 	if err != nil {

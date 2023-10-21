@@ -14,8 +14,8 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/scrapnode/kanthor/services"
 )
 
 // @TODO: mapstructure with env
@@ -26,30 +26,34 @@ func New(provider configuration.Provider) (*Config, error) {
 
 type Config struct {
 	Version     string
-	Development bool           `json:"development" yaml:"development" mapstructure:"development"`
-	Logger      logging.Config `json:"logger" yaml:"logger" mapstructure:"logger"`
+	Development bool `json:"development" yaml:"development" mapstructure:"development"`
 
-	Cryptography           cryptography.Config   `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography"`
-	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
-	CircuitBreaker         circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
-	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
-	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
-	Cache                  cache.Config          `json:"cache" yaml:"cache" mapstructure:"cache"`
-	Metric                 metric.Config         `json:"metric" yaml:"metric" mapstructure:"metric"`
+	Logger                 logging.Config        `json:"logger" yaml:"logger"`
+	Cryptography           cryptography.Config   `json:"cryptography" yaml:"cryptography"`
+	Sender                 sender.Config         `json:"sender" yaml:"sender"`
+	CircuitBreaker         circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker"`
+	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency"`
+	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager"`
+	Cache                  cache.Config          `json:"cache" yaml:"cache"`
+	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator"`
+	Metric                 metric.Config         `json:"metric" yaml:"metric"`
 
-	Database  database.Config  `json:"database" yaml:"database" mapstructure:"database"`
-	Datastore datastore.Config `json:"datastore" yaml:"datastore" mapstructure:"datastore"`
+	Database  database.Config  `json:"database" yaml:"database"`
+	Datastore datastore.Config `json:"datastore" yaml:"datastore"`
 
-	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi" mapstructure:"sdkapi"`
-	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
-	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
-	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
-	Storage    Storage    `json:"storage" yaml:"storage" mapstructure:"storage"`
-	Attempt    Attempt    `json:"attempt" yaml:"attempt" mapstructure:"attempt"`
+	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi"`
+	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi"`
+	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler"`
+	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher"`
+	Storage    Storage    `json:"storage" yaml:"storage"`
+	Attempt    Attempt    `json:"attempt" yaml:"attempt"`
 }
 
 func (conf *Config) Validate(service string) error {
-	err := validator.Validate(validator.DefaultConfig, validator.StringRequired("config.version", conf.Version))
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringRequired("config.version", conf.Version),
+	)
 	if err != nil {
 		return err
 	}
@@ -61,20 +65,23 @@ func (conf *Config) Validate(service string) error {
 	if err := conf.Cryptography.Validate(); err != nil {
 		return fmt.Errorf("config.cryptography: %v", err)
 	}
-	if err := conf.Idempotency.Validate(); err != nil {
-		return fmt.Errorf("config.idempotency: %v", err)
+	if err := conf.Sender.Validate(); err != nil {
+		return fmt.Errorf("config.sender: %v", err)
 	}
 	if err := conf.CircuitBreaker.Validate(); err != nil {
 		return fmt.Errorf("config.circuit_breaker: %v", err)
 	}
+	if err := conf.Idempotency.Validate(); err != nil {
+		return fmt.Errorf("config.idempotency: %v", err)
+	}
 	if err := conf.DistributedLockManager.Validate(); err != nil {
 		return fmt.Errorf("config.distributed_lock_manager: %v", err)
 	}
-	if err := conf.Authorizator.Validate(); err != nil {
-		return fmt.Errorf("config.authorizator: %v", err)
-	}
 	if err := conf.Cache.Validate(); err != nil {
 		return fmt.Errorf("config.cache: %v", err)
+	}
+	if err := conf.Authorizator.Validate(); err != nil {
+		return fmt.Errorf("config.authorizator: %v", err)
 	}
 	if err := conf.Metric.Validate(); err != nil {
 		return fmt.Errorf("config.metric: %v", err)
@@ -89,36 +96,39 @@ func (conf *Config) Validate(service string) error {
 	}
 
 	// services
-	if !services.IsValidServiceName(service) {
+	if !IsValidServiceName(service) {
 		return fmt.Errorf("config: unknown service [%s]", service)
 	}
 
-	if service == services.SERVICE_ALL || service == services.SERVICE_SDK_API {
+	if service == SERVICE_ALL || service == SERVICE_SDK_API {
 		if err := conf.SdkApi.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.SERVICE_ALL || service == services.SERVICE_PORTAL_API {
+	if service == SERVICE_ALL || service == SERVICE_PORTAL_API {
 		if err := conf.PortalApi.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.SERVICE_ALL || service == services.SERVICE_SCHEDULER {
+	if service == SERVICE_ALL || service == SERVICE_SCHEDULER {
 		if err := conf.Scheduler.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.SERVICE_ALL || service == services.SERVICE_DISPATCHER {
+	if service == SERVICE_ALL || service == SERVICE_DISPATCHER {
 		if err := conf.Dispatcher.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.SERVICE_ALL || service == services.SERVICE_STORAGE {
+	if service == SERVICE_ALL || service == SERVICE_STORAGE {
 		if err := conf.Storage.Validate(); err != nil {
 			return err
 		}
 	}
-	if service == services.SERVICE_ALL || service == services.SERVICE_ATTEMPT_TRIGGER_PLANNER {
+
+	attempt := service == SERVICE_ATTEMPT_TRIGGER_PLANNER ||
+		service == SERVICE_ATTEMPT_TRIGGER_EXECUTOR
+	if service == SERVICE_ALL || attempt {
 		if err := conf.Attempt.Trigger.Validate(); err != nil {
 			return err
 		}

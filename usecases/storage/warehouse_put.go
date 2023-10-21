@@ -13,21 +13,18 @@ import (
 )
 
 type WarehousePutReq struct {
-	ChunkTimeout int64
-	ChunkSize    int
-	Messages     []entities.Message
-	Requests     []entities.Request
-	Responses    []entities.Response
+	Timeout   int64
+	Size      int
+	Messages  []entities.Message
+	Requests  []entities.Request
+	Responses []entities.Response
 }
 
 func (req *WarehousePutReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.SliceRequired("messages", req.Messages),
-		validator.SliceRequired("requests", req.Requests),
-		validator.SliceRequired("responses", req.Responses),
-		validator.NumberGreaterThan("chunk_timeout", req.ChunkTimeout, 1000),
-		validator.NumberGreaterThan("chunk_size", req.ChunkTimeout, 1),
+		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
+		validator.NumberGreaterThan("size", req.Size, 0),
 	)
 	if err != nil {
 		return err
@@ -125,15 +122,13 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 	ok := safe.Map[string]{}
 	ko := safe.Map[error]{}
 
-	// timeout duration will be scaled based on how many requests you have
-	duration := time.Duration(req.ChunkTimeout * int64(count+1))
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
 	defer cancel()
 
-	p := pool.New().WithMaxGoroutines(req.ChunkSize)
-
-	for i := 0; i < len(req.Messages); i += req.ChunkSize {
-		j := utils.ChunkNext(i, len(req.Messages), req.ChunkSize)
+	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
+	p := pool.New().WithMaxGoroutines(1)
+	for i := 0; i < len(req.Messages); i += req.Size {
+		j := utils.ChunkNext(i, len(req.Messages), req.Size)
 
 		messages := req.Messages[i:j]
 		p.Go(func() {
@@ -151,8 +146,8 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 		})
 	}
 
-	for i := 0; i < len(req.Requests); i += req.ChunkSize {
-		j := utils.ChunkNext(i, len(req.Requests), req.ChunkSize)
+	for i := 0; i < len(req.Requests); i += req.Size {
+		j := utils.ChunkNext(i, len(req.Requests), req.Size)
 
 		requests := req.Requests[i:j]
 		p.Go(func() {
@@ -170,8 +165,8 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 		})
 	}
 
-	for i := 0; i < len(req.Responses); i += req.ChunkSize {
-		j := utils.ChunkNext(i, len(req.Responses), req.ChunkSize)
+	for i := 0; i < len(req.Responses); i += req.Size {
+		j := utils.ChunkNext(i, len(req.Responses), req.Size)
 
 		responses := req.Responses[i:j]
 		p.Go(func() {

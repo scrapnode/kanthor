@@ -20,7 +20,7 @@ func NewRedlock(conf *Config) (Factory, error) {
 	rs := redsync.New(wrapper.NewPool(client))
 
 	return func(key string) DistributedLockManager {
-		key = fmt.Sprintf("%s/%s", conf.Namespace, key)
+		key = Key(key)
 		expiry := time.Millisecond * time.Duration(conf.TimeToLive)
 		return &redlock{key: key, mu: rs.NewMutex(key, redsync.WithExpiry(expiry))}
 	}, nil

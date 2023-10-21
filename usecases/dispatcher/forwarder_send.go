@@ -5,23 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/safe"
-	"github.com/scrapnode/kanthor/pkg/sender"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/usecases/transformation"
-	"github.com/sourcegraph/conc"
 	"github.com/sourcegraph/conc/pool"
 )
 
 type ForwarderSendReq struct {
-	Timeout   int64
-	RateLimit int
-	Requests  []entities.Request
+	Concurrency int
+	Requests    []entities.Request
 }
 
 func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) error {
@@ -33,7 +30,7 @@ func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) erro
 		validator.StringRequired("request.tier", item.Tier),
 		validator.StringStartsWith("request.app_id", item.AppId, entities.IdNsApp),
 		validator.StringRequired("request.type", item.Type),
-		validator.MapNotNil[string, string]("request.metadata", item.Metadata),
+		validator.MapRequired[string, string]("request.metadata", item.Metadata),
 		validator.SliceRequired("request.body", item.Body),
 		validator.StringUri("request.uri", item.Uri),
 		validator.StringRequired("request.method", item.Method),
@@ -44,8 +41,7 @@ func (req *ForwarderSendReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.SliceRequired("requests", req.Requests),
-		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
-		validator.NumberGreaterThan("date_limit", req.RateLimit, 1),
+		validator.NumberGreaterThan("concurrency", req.Concurrency, 1),
 	)
 	if err != nil {
 		return err
@@ -66,91 +62,60 @@ type ForwarderSendRes struct {
 }
 
 func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*ForwarderSendRes, error) {
-	responses := []entities.Response{}
+	responses := safe.Slice[*entities.Response]{}
 
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
-	var wg conc.WaitGroup
+	p := pool.New().WithMaxGoroutines(req.Concurrency)
 	for _, r := range req.Requests {
 		request := r
-		wg.Go(func() {
-			response := uc.send(ctx, &request)
-			responses = append(responses, *response)
-		})
-	}
-
-	ok := &safe.Map[string]{}
-	ko := &safe.Map[error]{}
-
-	// but publishing need implementing the global timeout
-	// timeout duration will be scaled based on how many responses you have
-	duration := time.Duration(req.Timeout * int64(len(responses)+1))
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*duration)
-	defer cancel()
-
-	// we must limit how many publish action could be performed at the same time
-	// otherwise our system will be lag
-	p := pool.New().WithMaxGoroutines(req.RateLimit)
-	for _, rs := range responses {
-		response := rs
 		p.Go(func() {
-
-			event, err := transformation.EventFromResponse(&response)
-			if err != nil {
-				// un-recoverable error
-				uc.logger.Errorw("could not transform response to event", "response", response.String())
-			}
-
-			if err := uc.publisher.Pub(ctx, event); err != nil {
-				ko.Set(response.ReqId, err)
-				return
-			}
-
-			key := utils.Key(response.AppId, response.MsgId, response.EpId, response.ReqId, response.Id)
-			ok.Set(key, response.ReqId)
+			response := uc.send(ctx, &request)
+			responses.Append(response)
 		})
 	}
+	p.Wait()
 
-	c := make(chan bool)
-	defer close(c)
-
-	go func() {
-		p.Wait()
-		c <- true
-	}()
-
-	select {
-	case <-c:
-		return &ForwarderSendRes{Success: ok.Keys(), Error: ko.Data()}, nil
-	case <-timeout.Done():
-		// context deadline exceeded, should set that error to remain requests
-		for _, request := range req.Requests {
-			if _, success := ok.Get(request.Id); success {
-				// already success, should not retry it
-				continue
-			}
-
-			// no error, should add context deadline error
-			if _, has := ko.Get(request.Id); !has {
-				ko.Set(request.Id, ctx.Err())
-			}
+	events := map[string]*streaming.Event{}
+	kv := responses.Data()
+	for _, response := range kv {
+		event, err := transformation.EventFromResponse(response)
+		if err != nil {
+			// un-recoverable error
+			uc.logger.Errorw("could not transform response to event", "response", response.String())
+			continue
 		}
-		return &ForwarderSendRes{Success: ok.Keys(), Error: ko.Data()}, nil
+
+		events[response.ReqId] = event
 	}
+
+	ok := []string{}
+	ko := map[string]error{}
+
+	errs := uc.publisher.Pub(ctx, events)
+	for reqId := range events {
+		if err, ok := errs[reqId]; ok {
+			ko[reqId] = err
+			continue
+		}
+		ok = append(ok, reqId)
+	}
+
+	return &ForwarderSendRes{Success: ok, Error: ko}, nil
 }
 
 func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entities.Response {
-	req := &sender.Request{
-		Method:  request.Method,
-		Headers: request.Headers.Header,
-		Uri:     request.Uri,
-		Body:    request.Body,
-	}
-
 	res, err := circuitbreaker.Do[sender.Response](
 		uc.infra.CircuitBreaker,
 		request.EpId,
 		func() (interface{}, error) {
+			req := &sender.Request{
+				Method:  request.Method,
+				Headers: request.Headers.Header,
+				Uri:     request.Uri,
+				Body:    request.Body,
+			}
+
 			res, err := uc.dispatch(ctx, req)
 			if err != nil {
 				return nil, err

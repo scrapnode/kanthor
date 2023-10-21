@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	usecase "github.com/scrapnode/kanthor/usecases/storage"
 	"github.com/scrapnode/kanthor/usecases/transformation"
@@ -13,7 +15,7 @@ import (
 func NewConsumer(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events []*streaming.Event) map[string]error {
+	return func(events map[string]*streaming.Event) map[string]error {
 		retruning := map[string]error{}
 		ctx := context.Background()
 
@@ -21,17 +23,17 @@ func NewConsumer(service *storage) streaming.SubHandler {
 		maps := map[string]string{}
 
 		ucreq := &usecase.WarehousePutReq{
-			ChunkTimeout: 60000,
-			ChunkSize:    1000,
-			Messages:     []entities.Message{},
-			Requests:     []entities.Request{},
-			Responses:    []entities.Response{},
+			Timeout:   service.conf.Storage.Warehouse.Put.Timeout,
+			Size:      service.conf.Storage.Warehouse.Put.Size,
+			Messages:  []entities.Message{},
+			Requests:  []entities.Request{},
+			Responses: []entities.Response{},
 		}
 
-		for i, event := range events {
-			prefix := fmt.Sprintf("event[%d]", i)
+		for id, event := range events {
+			prefix := fmt.Sprintf("event[%s]", id)
 
-			if event.Is(streaming.Namespace, streaming.TopicMsg) {
+			if event.Is(namespace.Namespace(), constants.TopicMessage) {
 				message, err := transformation.EventToMessage(event)
 				if err != nil {
 					// un-recoverable error
@@ -48,7 +50,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				ucreq.Messages = append(ucreq.Messages, *message)
 			}
 
-			if event.Is(streaming.Namespace, streaming.TopicReq) {
+			if event.Is(namespace.Namespace(), constants.TopicRequest) {
 				request, err := transformation.EventToRequest(event)
 				if err != nil {
 					// un-recoverable error
@@ -65,7 +67,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				ucreq.Requests = append(ucreq.Requests, *request)
 			}
 
-			if event.Is(streaming.Namespace, streaming.TopicRes) {
+			if event.Is(namespace.Namespace(), constants.TopicResponse) {
 				response, err := transformation.EventToResponse(event)
 				if err != nil {
 					// un-recoverable error

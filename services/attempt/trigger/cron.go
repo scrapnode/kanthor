@@ -26,20 +26,16 @@ func RegisterCron(service *planner) func() {
 
 		ucreq := &usecase.TriggerPlanReq{
 			Timeout:   service.conf.Attempt.Trigger.Planner.Timeout,
-			RateLimit: service.conf.Attempt.Trigger.Planner.RateLimit,
+			Size:      service.conf.Attempt.Trigger.Planner.Size,
 			ScanStart: service.conf.Attempt.Trigger.Planner.ScanStart,
 			ScanEnd:   service.conf.Attempt.Trigger.Planner.ScanEnd,
 		}
 		ucres, err := service.uc.Trigger().Plan(ctx, ucreq)
 		if err != nil {
-			service.logger.Errorw("unable to initiate attempt notification", "err", err.Error())
+			service.logger.Errorw("unable to plan attempt trigger", "err", err.Error())
 			return
 		}
 
-		if len(ucres.Error) > 0 {
-			for key, err := range ucres.Error {
-				service.logger.Errorw("initiate attempt notification got err", "key", key, "err", err.Error())
-			}
-		}
+		service.logger.Infow("planned attempt triggers", "count", len(ucres.Success))
 	}
 }

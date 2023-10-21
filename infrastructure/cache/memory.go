@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -65,7 +64,7 @@ func (cache *memory) Disconnect(ctx context.Context) error {
 }
 
 func (cache *memory) Get(ctx context.Context, key string) ([]byte, error) {
-	entry, found := cache.client.Get(cache.key(key))
+	entry, found := cache.client.Get(Key(key))
 	if !found {
 		return nil, ErrEntryNotFound
 	}
@@ -74,12 +73,12 @@ func (cache *memory) Get(ctx context.Context, key string) ([]byte, error) {
 }
 
 func (cache *memory) Set(ctx context.Context, key string, entry []byte, ttl time.Duration) error {
-	cache.client.Set(cache.key(key), entry, ttl)
+	cache.client.Set(Key(key), entry, ttl)
 	return nil
 }
 
 func (cache *memory) StringGet(ctx context.Context, key string) (string, error) {
-	bytes, err := cache.Get(ctx, cache.key(key))
+	bytes, err := cache.Get(ctx, Key(key))
 	if err != nil {
 		return "", err
 	}
@@ -87,23 +86,19 @@ func (cache *memory) StringGet(ctx context.Context, key string) (string, error) 
 }
 
 func (cache *memory) StringSet(ctx context.Context, key string, entry string, ttl time.Duration) error {
-	return cache.Set(ctx, cache.key(key), []byte(entry), ttl)
+	return cache.Set(ctx, Key(key), []byte(entry), ttl)
 }
 
 func (cache *memory) Exist(ctx context.Context, key string) bool {
-	_, found := cache.client.Get(cache.key(key))
+	_, found := cache.client.Get(Key(key))
 	return found
 }
 
 func (cache *memory) Del(ctx context.Context, key string) error {
-	cache.client.Delete(cache.key(key))
+	cache.client.Delete(Key(key))
 	return nil
 }
 func (cache *memory) ExpireAt(ctx context.Context, key string, at time.Time) (bool, error) {
 	// no effect
 	return false, nil
-}
-
-func (cache *memory) key(k string) string {
-	return fmt.Sprintf("%s/%s", cache.conf.Namespace, k)
 }

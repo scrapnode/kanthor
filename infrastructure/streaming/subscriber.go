@@ -13,7 +13,7 @@ func NewSubscriber(conf *Config, logger logging.Logger) (Subscriber, error) {
 
 type Subscriber interface {
 	patterns.Connectable
-	Sub(ctx context.Context, topic string, handler SubHandler) error
+	Sub(ctx context.Context, name, topic string, handler SubHandler) error
 }
 
 type SubHandler func(events map[string]*Event) map[string]error
