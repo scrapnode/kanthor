@@ -29,26 +29,26 @@ type Config struct {
 	Version     string
 	Development bool `json:"development" yaml:"development" mapstructure:"development"`
 
-	Logger                 logging.Config        `json:"logger" yaml:"logger"`
-	Cryptography           cryptography.Config   `json:"cryptography" yaml:"cryptography"`
-	Sender                 sender.Config         `json:"sender" yaml:"sender"`
-	CircuitBreaker         circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker"`
-	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency"`
-	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager"`
-	Cache                  cache.Config          `json:"cache" yaml:"cache"`
-	Streaming              streaming.Config      `json:"streaming" yaml:"streaming"`
-	Metric                 metric.Config         `json:"metric" yaml:"metric"`
-	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator"`
+	Logger                 logging.Config        `json:"logger" yaml:"logger" mapstructure:"logger"`
+	Cryptography           cryptography.Config   `json:"cryptography" yaml:"cryptography" mapstructure:"cryptography"`
+	Sender                 sender.Config         `json:"sender" yaml:"sender" mapstructure:"sender"`
+	CircuitBreaker         circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
+	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
+	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
+	Cache                  cache.Config          `json:"cache" yaml:"cache" mapstructure:"cache"`
+	Stream                 streaming.Config      `json:"stream" yaml:"stream" mapstructure:"stream"`
+	Metric                 metric.Config         `json:"metric" yaml:"metric" mapstructure:"metric"`
+	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
 
-	Database  database.Config  `json:"database" yaml:"database"`
-	Datastore datastore.Config `json:"datastore" yaml:"datastore"`
+	Database  database.Config  `json:"database" yaml:"database" mapstructure:"database"`
+	Datastore datastore.Config `json:"datastore" yaml:"datastore" mapstructure:"datastore"`
 
-	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi"`
-	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi"`
-	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler"`
-	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher"`
-	Storage    Storage    `json:"storage" yaml:"storage"`
-	Attempt    Attempt    `json:"attempt" yaml:"attempt"`
+	SdkApi     SdkApi     `json:"sdkapi" yaml:"sdkapi" mapstructure:"sdkapi"`
+	PortalApi  PortalApi  `json:"portalapi" yaml:"portalapi" mapstructure:"portalapi"`
+	Scheduler  Scheduler  `json:"scheduler" yaml:"scheduler" mapstructure:"scheduler"`
+	Dispatcher Dispatcher `json:"dispatcher" yaml:"dispatcher" mapstructure:"dispatcher"`
+	Storage    Storage    `json:"storage" yaml:"storage" mapstructure:"storage"`
+	Attempt    Attempt    `json:"attempt" yaml:"attempt" mapstructure:"attempt"`
 }
 
 func (conf *Config) Validate(service string) error {
@@ -82,8 +82,8 @@ func (conf *Config) Validate(service string) error {
 	if err := conf.Cache.Validate(); err != nil {
 		return fmt.Errorf("config.cache: %v", err)
 	}
-	if err := conf.Streaming.Validate(); err != nil {
-		return fmt.Errorf("config.cache: %v", err)
+	if err := conf.Stream.Validate(); err != nil {
+		return fmt.Errorf("config.stream: %v", err)
 	}
 	if err := conf.Metric.Validate(); err != nil {
 		return fmt.Errorf("config.metric: %v", err)

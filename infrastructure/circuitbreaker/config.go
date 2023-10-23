@@ -4,7 +4,7 @@ import "github.com/scrapnode/kanthor/pkg/validator"
 
 type Config struct {
 	Close Close `json:"close" yaml:"close" mapstructure:"close"`
-	Haft  Haft  `json:"haft" yaml:"haft" mapstructure:"haft"`
+	Half  Half  `json:"half" yaml:"half" mapstructure:"half"`
 	Open  Open  `json:"open" yaml:"open" mapstructure:"open"`
 }
 
@@ -12,7 +12,7 @@ func (conf *Config) Validate() error {
 	if err := conf.Close.Validate(); err != nil {
 		return err
 	}
-	if err := conf.Haft.Validate(); err != nil {
+	if err := conf.Half.Validate(); err != nil {
 		return err
 	}
 	if err := conf.Open.Validate(); err != nil {
@@ -32,20 +32,20 @@ func (conf *Close) Validate() error {
 	)
 }
 
-type Haft struct {
+type Half struct {
 	PassthroughRequests uint32 `json:"passthrough_requests" yaml:"passthrough_requests" mapstructure:"passthrough_requests"`
 }
 
-func (conf *Haft) Validate() error {
+func (conf *Half) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("circuit_breaker.haft.passthrough_requests", conf.PassthroughRequests, 1000),
+		validator.NumberGreaterThan("circuit_breaker.half.passthrough_requests", conf.PassthroughRequests, 0),
 	)
 }
 
 type Open struct {
-	Duration  int64         `json:"duration" yaml:"duration" mapstructure:"duration"`
-	Condition OpenCondition `json:"condition" yaml:"condition" mapstructure:"condition"`
+	Duration   int64          `json:"duration" yaml:"duration" mapstructure:"duration"`
+	Conditions OpenConditions `json:"conditions" yaml:"conditions" mapstructure:"conditions"`
 }
 
 func (conf *Open) Validate() error {
@@ -57,19 +57,19 @@ func (conf *Open) Validate() error {
 		return err
 	}
 
-	if err := conf.Condition.Validate(); err != nil {
+	if err := conf.Conditions.Validate(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-type OpenCondition struct {
+type OpenConditions struct {
 	ErrorConsecutive uint32  `json:"error_consecutive" yaml:"error_consecutive" mapstructure:"error_consecutive"`
 	ErrorRatio       float32 `json:"error_ratio" yaml:"error_ratio" mapstructure:"error_ratio"`
 }
 
-func (conf *OpenCondition) Validate() error {
+func (conf *OpenConditions) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThan("circuit_breaker.open.conidtion.error_consecutive", conf.ErrorConsecutive, 1),

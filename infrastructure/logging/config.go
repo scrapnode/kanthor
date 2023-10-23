@@ -5,8 +5,8 @@ import (
 )
 
 type Config struct {
-	Pretty bool              `json:"pretty" yaml:"pretty" mapstructure:"logger_pretty"`
-	Level  string            `json:"level" yaml:"level" mapstructure:"logger_level"`
+	Pretty bool              `json:"pretty" yaml:"pretty" mapstructure:"pretty"`
+	Level  string            `json:"level" yaml:"level" mapstructure:"level"`
 	With   map[string]string `json:"with" yaml:"with"`
 }
 

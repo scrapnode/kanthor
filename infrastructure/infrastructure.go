@@ -52,7 +52,7 @@ func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err := streaming.New(&conf.Streaming, logger)
+	s, err := streaming.New(&conf.Stream, logger)
 	if err != nil {
 		return nil, err
 	}

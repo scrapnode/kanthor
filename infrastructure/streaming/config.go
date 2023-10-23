@@ -2,6 +2,8 @@ package streaming
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -24,8 +26,15 @@ func (conf *Config) Validate() error {
 		return err
 	}
 
-	if err := conf.Nats.Validate(); err != nil {
-		return err
+	uri, err := url.Parse(conf.Uri)
+	if err != nil {
+		return fmt.Errorf("streaming.conf.uri: unable to parse uri | %s", err.Error())
+	}
+
+	if strings.HasPrefix(uri.Scheme, "nats") {
+		if err := conf.Nats.Validate(); err != nil {
+			return err
+		}
 	}
 
 	if err := conf.Publisher.Validate(); err != nil {
@@ -40,8 +49,7 @@ func (conf *Config) Validate() error {
 }
 
 type NatsConfig struct {
-	Replicas int      `json:"replicas" yaml:"replicas" mapstructure:"replicas"`
-	Subjects []string `json:"subjects" yaml:"subjects" mapstructure:"subjects"`
+	Replicas int `json:"replicas" yaml:"replicas" mapstructure:"replicas"`
 	Limits   struct {
 		Msgs     int64 `json:"msgs" yaml:"msgs" mapstructure:"msgs"`
 		MsgBytes int32 `json:"msg_bytes" yaml:"msg_bytes" mapstructure:"msg_bytes"`
@@ -54,10 +62,6 @@ func (conf *NatsConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("streaming.conf.nats.replicas", conf.Replicas, 0),
-		validator.SliceRequired("streaming.conf.nats.subjects", conf.Subjects),
-		validator.Array(conf.Subjects, func(i int, item *string) error {
-			return validator.Validate(validator.DefaultConfig, validator.StringRequired(fmt.Sprintf("streaming.conf.nats.subjects[%d]", i), *item))
-		}),
 		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msgs", conf.Limits.Msgs, 0),
 		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msg_bytes", int(conf.Limits.MsgBytes), 0),
 		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.bytes", int(conf.Limits.Bytes), 0),

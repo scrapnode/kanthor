@@ -19,7 +19,7 @@ func (conf *Attempt) Validate() error {
 }
 
 type AttemptTrigger struct {
-	Planner  AttemptTriggerPlanner  `json:"planer" yaml:"planer" mapstructure:"planer"`
+	Planner  AttemptTriggerPlanner  `json:"planner" yaml:"planner" mapstructure:"planner"`
 	Executor AttemptTriggerExecutor `json:"executor" yaml:"executor" mapstructure:"executor"`
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/cmd/show"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/spf13/cobra"
 )
@@ -38,12 +39,23 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err := service.Start(ctx); err != nil {
 				return err
 			}
+			debug := debugging.NewServer()
+			if err := debug.Start(ctx); err != nil {
+				return err
+			}
 
 			go func() {
 				if err := service.Run(ctx); err != nil {
 					logger.Error(err)
 				}
 				stop()
+			}()
+
+			go func() {
+				if err := debug.Run(ctx); err != nil {
+					logger.Error(err)
+				}
+				// don't let debugger error teardown your service
 			}()
 
 			// listen for the interrupt signal.
@@ -54,6 +66,9 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			defer cancel()
 			go func() {
 				if err := service.Stop(ctx); err != nil {
+					logger.Error(err)
+				}
+				if err := debug.Stop(ctx); err != nil {
 					logger.Error(err)
 				}
 				cancel()

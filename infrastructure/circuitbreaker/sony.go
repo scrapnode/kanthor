@@ -48,21 +48,21 @@ func (cb *sonycb) get(cmd string, onError ErrorHandler) *gobreaker.CircuitBreake
 	breaker := gobreaker.NewCircuitBreaker(gobreaker.Settings{
 		Name: cmd,
 		// the maximum number of requests allowed to pass through when the CircuitBreaker is half-open
-		MaxRequests: cb.conf.Haft.PassthroughRequests,
+		MaxRequests: cb.conf.Half.PassthroughRequests,
 		// the cyclic period of the closed state for CircuitBreaker to clear the internal Counts
 		Interval: time.Millisecond * time.Duration(cb.conf.Close.CleanupInterval),
 		// the period of the open state, after which the state of CircuitBreaker becomes half-open
 		Timeout: time.Millisecond * time.Duration(cb.conf.Open.Duration),
 		// if ReadyToTrip returns true, the CircuitBreaker will be placed into the open state.
 		ReadyToTrip: func(counts gobreaker.Counts) bool {
-			if counts.ConsecutiveFailures >= cb.conf.Open.Condition.ErrorConsecutive {
-				cb.logger.Warnw("open because of error consecutively", "consecutive", counts.ConsecutiveFailures, "threshold", cb.conf.Open.Condition.ErrorConsecutive)
+			if counts.ConsecutiveFailures >= cb.conf.Open.Conditions.ErrorConsecutive {
+				cb.logger.Warnw("open because of error consecutively", "consecutive", counts.ConsecutiveFailures, "threshold", cb.conf.Open.Conditions.ErrorConsecutive)
 				return true
 			}
 
 			ratio := float32(counts.TotalFailures) / float32(counts.Requests)
-			if ratio >= cb.conf.Open.Condition.ErrorRatio {
-				cb.logger.Warnw("open because of error ratio", "ratio", ratio, "threshold", cb.conf.Open.Condition.ErrorRatio)
+			if ratio >= cb.conf.Open.Conditions.ErrorRatio {
+				cb.logger.Warnw("open because of error ratio", "ratio", ratio, "threshold", cb.conf.Open.Conditions.ErrorRatio)
 				return true
 			}
 
