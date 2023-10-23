@@ -3,10 +3,10 @@ package streaming
 import (
 	"strings"
 
-	"github.com/nats-io/nats.go"
+	natscore "github.com/nats-io/nats.go"
 )
 
-func NatsMsgToEvent(msg *nats.Msg) *Event {
+func NatsMsgToEvent(msg *natscore.Msg) *Event {
 	event := &Event{
 		Subject:  msg.Subject,
 		AppId:    msg.Header.Get(MetaAppId),
@@ -27,10 +27,10 @@ func NatsMsgToEvent(msg *nats.Msg) *Event {
 	return event
 }
 
-func NatsMsgFromEvent(subject string, event *Event) *nats.Msg {
-	msg := &nats.Msg{
+func NatsMsgFromEvent(subject string, event *Event) *natscore.Msg {
+	msg := &natscore.Msg{
 		Subject: subject,
-		Header: nats.Header{
+		Header: natscore.Header{
 			MetaAppId: []string{event.AppId},
 			MetaType:  []string{event.Type},
 			MetaId:    []string{event.Id},

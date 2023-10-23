@@ -2,10 +2,12 @@ package authorizator
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
@@ -18,15 +20,24 @@ type watcher struct {
 	conn         *nats.Conn
 	subscription *nats.Subscription
 
-	mu sync.Mutex
+	mu     sync.Mutex
+	status int
 }
 
 func (w *watcher) Readiness() error {
+	if w.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	_, err := w.conn.RTT()
 	return err
 }
 
 func (w *watcher) Liveness() error {
+	if w.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	_, err := w.conn.RTT()
 	return err
 }
@@ -35,12 +46,17 @@ func (w *watcher) Connect(ctx context.Context) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	conn, err := streaming.NewNats(&streaming.Config{Uri: w.conf.Uri}, w.logger)
+	if w.status == patterns.StatusConnected {
+		return ErrWatcherAlreadyConnected
+	}
+
+	conn, err := streaming.NewNatsConn(w.conf.Uri, w.logger)
 	if err != nil {
 		return err
 	}
 	w.conn = conn
 
+	w.status = patterns.StatusConnected
 	w.logger.Info("connected")
 	return nil
 }
@@ -49,25 +65,26 @@ func (w *watcher) Disconnect(ctx context.Context) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
+	if w.status != patterns.StatusConnected {
+		return ErrWatcherNotConnected
+	}
+	w.status = patterns.StatusDisconnected
+	w.logger.Info("disconnected")
+
+	var returning error
 	if w.subscription.IsValid() {
 		if err := w.subscription.Unsubscribe(); err != nil {
-			return err
+			returning = errors.Join(returning, err)
 		}
 	}
 	w.subscription = nil
 
-	if !w.conn.IsDraining() {
-		if err := w.conn.Drain(); err != nil {
-			w.logger.Error(err)
-		}
-	}
 	if !w.conn.IsClosed() {
 		w.conn.Close()
 	}
 	w.conn = nil
 
-	w.logger.Info("disconnected")
-	return nil
+	return returning
 }
 
 func (w *watcher) Run(ctx context.Context, callback func(string)) error {

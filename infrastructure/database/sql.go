@@ -10,6 +10,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	postgresdevier "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -26,12 +27,14 @@ type sql struct {
 	conf   *Config
 	logger logging.Logger
 
-	mu     sync.Mutex
 	client *gorm.DB
+
+	mu     sync.Mutex
+	status int
 }
 
 func (db *sql) Readiness() error {
-	if db.client == nil {
+	if db.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -48,7 +51,7 @@ func (db *sql) Readiness() error {
 }
 
 func (db *sql) Liveness() error {
-	if db.client == nil {
+	if db.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -68,7 +71,7 @@ func (db *sql) Connect(ctx context.Context) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
-	if db.client != nil {
+	if db.status == patterns.StatusConnected {
 		return ErrAlreadyConnected
 	}
 
@@ -81,6 +84,7 @@ func (db *sql) Connect(ctx context.Context) error {
 	}
 	db.client = client
 
+	db.status = patterns.StatusConnected
 	db.logger.Info("connected")
 	return nil
 }
@@ -89,20 +93,23 @@ func (db *sql) Disconnect(ctx context.Context) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
-	if db.client == nil {
-		conn, err := db.client.DB()
-		if err != nil {
-			return err
-		}
+	if db.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	db.status = patterns.StatusDisconnected
+	db.logger.Info("disconnected")
 
+	var returning error
+	if conn, err := db.client.DB(); err == nil {
 		if err := conn.Close(); err != nil {
-			return err
+			returning = errors.Join(returning, err)
 		}
+	} else {
+		returning = errors.Join(returning, err)
 	}
 	db.client = nil
 
-	db.logger.Info("disconnected")
-	return nil
+	return returning
 }
 
 func (db *sql) Client() any {

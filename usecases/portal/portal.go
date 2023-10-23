@@ -40,13 +40,19 @@ type portal struct {
 	infra  *infrastructure.Infrastructure
 	repos  repos.Repositories
 
-	mu                   sync.RWMutex
 	account              *account
 	workspace            *workspace
 	workspaceCredentials *workspaceCredentials
+
+	mu     sync.Mutex
+	status int
 }
 
 func (uc *portal) Readiness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.infra.Readiness(); err != nil {
 		return err
 	}
@@ -57,6 +63,10 @@ func (uc *portal) Readiness() error {
 }
 
 func (uc *portal) Liveness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.infra.Liveness(); err != nil {
 		return err
 	}
@@ -70,6 +80,10 @@ func (uc *portal) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
+	if uc.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
+
 	if err := uc.infra.Connect(ctx); err != nil {
 		return err
 	}
@@ -78,6 +92,7 @@ func (uc *portal) Connect(ctx context.Context) error {
 		return err
 	}
 
+	uc.status = patterns.StatusConnected
 	uc.logger.Info("connected")
 	return nil
 }
@@ -86,6 +101,10 @@ func (uc *portal) Disconnect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	uc.status = patterns.StatusDisconnected
 	uc.logger.Info("disconnected")
 
 	if err := uc.repos.Disconnect(ctx); err != nil {

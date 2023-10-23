@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nats-io/nats.go"
+	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -15,38 +15,38 @@ import (
 	"github.com/sourcegraph/conc"
 )
 
-func NewNatsSubscriber(conf *Config, logger logging.Logger) Subscriber {
-	logger = logger.With("streaming.subscriber", "nats.pull")
-	return &NatsSubscriber{stream: namespace.Name(conf.Name), conf: conf, logger: logger, status: patterns.StatusNone}
-}
-
 type NatsSubscriber struct {
-	stream string
+	name   string
 	conf   *Config
 	logger logging.Logger
-	status int
 
-	mu           sync.Mutex
-	conn         *nats.Conn
-	js           nats.JetStreamContext
-	subscription *nats.Subscription
+	conn         *natscore.Conn
+	js           natscore.JetStreamContext
+	subscription *natscore.Subscription
+
+	mu     sync.Mutex
+	status int
+}
+
+func (subscriber *NatsSubscriber) Name() string {
+	return subscriber.name
 }
 
 func (subscriber *NatsSubscriber) Readiness() error {
-	if subscriber.js == nil {
+	if subscriber.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
-	_, err := subscriber.js.StreamInfo(subscriber.stream)
+	_, err := subscriber.js.StreamInfo(subscriber.conf.Name)
 	return err
 }
 
 func (subscriber *NatsSubscriber) Liveness() error {
-	if subscriber.js == nil {
+	if subscriber.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
-	_, err := subscriber.js.StreamInfo(subscriber.stream)
+	_, err := subscriber.js.StreamInfo(subscriber.conf.Name)
 	return err
 }
 
@@ -54,28 +54,12 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
 
-	conn, err := NewNats(subscriber.conf, subscriber.logger)
-	if err != nil {
-		return err
-	}
-	subscriber.conn = conn
-
-	js, err := conn.JetStream(nats.Domain(namespace.Namespace()))
-	if err != nil {
-		return err
-	}
-	subscriber.js = js
-
-	stream, err := NewNatsStream(subscriber.stream, &subscriber.conf.Nats, js)
-	if err != nil {
-		return err
+	if subscriber.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
 	}
 
-	subscriber.logger.Infow(
-		"connected",
-		"stream_name", stream,
-		"stream_created_at", stream.Created.Format(time.RFC3339),
-	)
+	subscriber.logger.Info("connected")
+
 	subscriber.status = patterns.StatusConnected
 	return nil
 }
@@ -83,34 +67,27 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
-	subscriber.status = patterns.StatusDisconnected
 
+	if subscriber.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	subscriber.status = patterns.StatusDisconnected
+	subscriber.logger.Info("disconnected")
+
+	var retruning error
 	if subscriber.subscription.IsValid() {
 		if err := subscriber.subscription.Unsubscribe(); err != nil {
-			return err
+			retruning = errors.Join(retruning, err)
 		}
 	}
-	subscriber.subscription = nil
 
-	if !subscriber.conn.IsDraining() {
-		if err := subscriber.conn.Drain(); err != nil {
-			subscriber.logger.Error(err)
-		}
-	}
-	if !subscriber.conn.IsClosed() {
-		subscriber.conn.Close()
-	}
-	subscriber.conn = nil
-
-	subscriber.js = nil
-
-	subscriber.logger.Info("disconnected")
-	return nil
+	return retruning
 }
 
-func (subscriber *NatsSubscriber) Sub(ctx context.Context, name, topic string, handler SubHandler) error {
+func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler SubHandler) error {
+	// @TODO: validate topic
 	topic = namespace.Subject(topic)
-	consumer, err := subscriber.consumer(ctx, name, topic)
+	consumer, err := subscriber.consumer(ctx, subscriber.name, topic)
 	if err != nil {
 		return err
 	}
@@ -124,7 +101,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, name, topic string, h
 	subscriber.subscription, err = subscriber.js.PullSubscribe(
 		consumer.Config.FilterSubject,
 		consumer.Config.Name,
-		nats.Bind(subscriber.stream, consumer.Config.Name),
+		natscore.Bind(subscriber.conf.Name, consumer.Config.Name),
 	)
 	if err != nil {
 		return err
@@ -133,18 +110,20 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, name, topic string, h
 	go func() {
 		for {
 			if !subscriber.subscription.IsValid() {
-				subscriber.logger.Warnw("subscription is no more valid")
+				if subscriber.status == patterns.StatusConnected {
+					subscriber.logger.Error("subscription is no more valid")
+				}
 				return
 			}
 
 			messages, err := subscriber.subscription.Fetch(subscriber.conf.Subscriber.Concurrency)
 			if err != nil {
 				// the subscription is no longer available because we closed it programmatically
-				if errors.Is(err, nats.ErrBadSubscription) && subscriber.status == patterns.StatusDisconnected {
+				if errors.Is(err, natscore.ErrBadSubscription) && subscriber.status == patterns.StatusDisconnected {
 					return
 				}
 
-				if !errors.Is(err, nats.ErrTimeout) {
+				if !errors.Is(err, natscore.ErrTimeout) {
 					subscriber.logger.Errorw(err.Error(), "timeout", fmt.Sprintf("%dms", subscriber.conf.Subscriber.Timeout))
 				}
 				continue
@@ -196,8 +175,8 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, name, topic string, h
 	return nil
 }
 
-func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic string) (*nats.ConsumerInfo, error) {
-	conf := &nats.ConsumerConfig{
+func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic string) (*natscore.ConsumerInfo, error) {
+	conf := &natscore.ConsumerConfig{
 		// common config
 		Name:          name,
 		FilterSubject: fmt.Sprintf("%s.>", topic),
@@ -210,22 +189,22 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic stri
 		MaxRequestBatch: subscriber.conf.Subscriber.Concurrency,
 
 		// internal config
-		DeliverPolicy: nats.DeliverAllPolicy,
-		AckPolicy:     nats.AckExplicitPolicy,
+		DeliverPolicy: natscore.DeliverAllPolicy,
+		AckPolicy:     natscore.AckExplicitPolicy,
 	}
 
 	// verify persistent consumer
 	conf.Durable = conf.Name
-	consumer, err := subscriber.js.ConsumerInfo(subscriber.stream, conf.Name, nats.Context(ctx))
+	consumer, err := subscriber.js.ConsumerInfo(subscriber.conf.Name, conf.Name, natscore.Context(ctx))
 
 	if err == nil {
-		subscriber.js.UpdateConsumer(subscriber.stream, conf, nats.Context(ctx))
+		subscriber.js.UpdateConsumer(subscriber.conf.Name, conf, natscore.Context(ctx))
 		return consumer, nil
 	}
 
 	// not found, create a new one
-	if errors.Is(err, nats.ErrConsumerNotFound) {
-		return subscriber.js.AddConsumer(subscriber.stream, conf, nats.Context(ctx))
+	if errors.Is(err, natscore.ErrConsumerNotFound) {
+		return subscriber.js.AddConsumer(subscriber.conf.Name, conf, natscore.Context(ctx))
 	}
 
 	// otherwise return the error

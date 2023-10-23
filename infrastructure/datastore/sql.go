@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -9,6 +10,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/migration"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	postgresdevier "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -22,17 +24,19 @@ type sql struct {
 	conf   *Config
 	logger logging.Logger
 
-	mu     sync.Mutex
 	client *gorm.DB
+
+	mu     sync.Mutex
+	status int
 }
 
-func (db *sql) Readiness() error {
-	if db.client == nil {
+func (ds *sql) Readiness() error {
+	if ds.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
 	var ok int
-	tx := db.client.Raw("SELECT 1").Scan(&ok)
+	tx := ds.client.Raw("SELECT 1").Scan(&ok)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -43,13 +47,13 @@ func (db *sql) Readiness() error {
 	return nil
 }
 
-func (db *sql) Liveness() error {
-	if db.client == nil {
+func (ds *sql) Liveness() error {
+	if ds.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
 	var ok int
-	tx := db.client.Raw("SELECT 1").Scan(&ok)
+	tx := ds.client.Raw("SELECT 1").Scan(&ok)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -60,57 +64,61 @@ func (db *sql) Liveness() error {
 	return nil
 }
 
-func (db *sql) Connect(ctx context.Context) error {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+func (ds *sql) Connect(ctx context.Context) error {
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
 
-	if db.client != nil {
+	if ds.status == patterns.StatusConnected {
 		return ErrAlreadyConnected
 	}
 
-	dialector := postgresdevier.Open(db.conf.Uri)
+	dialector := postgresdevier.Open(ds.conf.Uri)
 	client, err := gorm.Open(dialector, &gorm.Config{
 		// GORM perform write (create/update/delete) operations run inside a transaction to ensure data consistency,
 		// you can disable it during initialization if it is not required,
 		// you will gain about 30%+ performance improvement after that
 		SkipDefaultTransaction: true,
-		Logger:                 NewSqlLogger(db.logger),
+		Logger:                 NewSqlLogger(ds.logger),
 	})
 	if err != nil {
 		return err
 	}
-	db.client = client
+	ds.client = client
 
-	db.logger.Info("connected")
+	ds.status = patterns.StatusConnected
+	ds.logger.Info("connected")
 	return nil
 }
 
-func (db *sql) Disconnect(ctx context.Context) error {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+func (ds *sql) Disconnect(ctx context.Context) error {
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
 
-	if db.client != nil {
-		conn, err := db.client.DB()
-		if err != nil {
-			return err
-		}
-
-		if err := conn.Close(); err != nil {
-			return err
-		}
+	if ds.status != patterns.StatusConnected {
+		return ErrNotConnected
 	}
-	db.client = nil
+	ds.status = patterns.StatusDisconnected
+	ds.logger.Info("disconnected")
 
-	db.logger.Info("disconnected")
-	return nil
+	var returning error
+	if conn, err := ds.client.DB(); err == nil {
+		if err := conn.Close(); err != nil {
+			returning = errors.Join(returning, err)
+		}
+	} else {
+		returning = errors.Join(returning, err)
+	}
+	ds.client = nil
+
+	return returning
 }
 
-func (db *sql) Client() any {
-	return db.client
+func (ds *sql) Client() any {
+	return ds.client
 }
 
-func (db *sql) Migrator() (migration.Migrator, error) {
-	instance, err := db.client.DB()
+func (ds *sql) Migrator() (migration.Migrator, error) {
+	instance, err := ds.client.DB()
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +132,7 @@ func (db *sql) Migrator() (migration.Migrator, error) {
 		return nil, err
 	}
 
-	runner, err := migrate.NewWithDatabaseInstance(db.conf.Migration.Source, "", driver)
+	runner, err := migrate.NewWithDatabaseInstance(ds.conf.Migration.Source, "", driver)
 	if err != nil {
 		return nil, err
 	}

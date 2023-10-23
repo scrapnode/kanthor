@@ -116,7 +116,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 				Body:    request.Body,
 			}
 
-			res, err := uc.dispatch(ctx, req)
+			res, err := uc.infra.Send(ctx, req)
 			if err != nil {
 				return nil, err
 			}

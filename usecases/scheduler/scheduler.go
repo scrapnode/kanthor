@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/usecases/scheduler/repos"
 )
 
@@ -21,60 +20,67 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	publisher streaming.Publisher,
 	repos repos.Repositories,
 ) Scheduler {
 	logger = logger.With("usecase", "scheduler")
 
 	return &scheduler{
-		conf:      conf,
-		logger:    logger,
-		infra:     infra,
-		publisher: publisher,
-		repos:     repos,
+		conf:   conf,
+		logger: logger,
+		infra:  infra,
+		repos:  repos,
 	}
 }
 
 type scheduler struct {
-	conf      *config.Config
-	logger    logging.Logger
-	infra     *infrastructure.Infrastructure
-	publisher streaming.Publisher
-	repos     repos.Repositories
+	conf   *config.Config
+	logger logging.Logger
+	infra  *infrastructure.Infrastructure
+	repos  repos.Repositories
 
-	mu      sync.RWMutex
 	request *request
+
+	mu     sync.Mutex
+	status int
 }
 
 func (uc *scheduler) Readiness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.infra.Readiness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Readiness(); err != nil {
 		return err
 	}
-	if err := uc.publisher.Readiness(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
 func (uc *scheduler) Liveness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.infra.Liveness(); err != nil {
 		return err
 	}
 	if err := uc.repos.Liveness(); err != nil {
 		return err
 	}
-	if err := uc.publisher.Liveness(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
 func (uc *scheduler) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
+
+	if uc.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
 
 	if err := uc.infra.Connect(ctx); err != nil {
 		return err
@@ -84,10 +90,7 @@ func (uc *scheduler) Connect(ctx context.Context) error {
 		return err
 	}
 
-	if err := uc.publisher.Connect(ctx); err != nil {
-		return err
-	}
-
+	uc.status = patterns.StatusConnected
 	uc.logger.Info("connected")
 	return nil
 }
@@ -96,11 +99,11 @@ func (uc *scheduler) Disconnect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	uc.logger.Info("disconnected")
-
-	if err := uc.publisher.Disconnect(ctx); err != nil {
-		return err
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
 	}
+	uc.status = patterns.StatusDisconnected
+	uc.logger.Info("disconnected")
 
 	if err := uc.repos.Disconnect(ctx); err != nil {
 		return err
@@ -122,7 +125,7 @@ func (uc *scheduler) Request() Request {
 			conf:      uc.conf,
 			logger:    uc.logger,
 			infra:     uc.infra,
-			publisher: uc.publisher,
+			publisher: uc.infra.Stream.Publisher("scheduler_request"),
 			repos:     uc.repos,
 		}
 	}

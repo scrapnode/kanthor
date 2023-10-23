@@ -38,11 +38,17 @@ type storage struct {
 	infra  *infrastructure.Infrastructure
 	repos  repos.Repositories
 
-	mu       sync.RWMutex
 	warehose *warehose
+
+	mu     sync.Mutex
+	status int
 }
 
 func (uc *storage) Readiness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.repos.Readiness(); err != nil {
 		return err
 	}
@@ -50,6 +56,10 @@ func (uc *storage) Readiness() error {
 }
 
 func (uc *storage) Liveness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.repos.Liveness(); err != nil {
 		return err
 	}
@@ -60,10 +70,15 @@ func (uc *storage) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
+	if uc.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
+
 	if err := uc.repos.Connect(ctx); err != nil {
 		return err
 	}
 
+	uc.status = patterns.StatusConnected
 	uc.logger.Info("connected")
 	return nil
 }
@@ -72,6 +87,10 @@ func (uc *storage) Disconnect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	uc.status = patterns.StatusDisconnected
 	uc.logger.Info("disconnected")
 
 	if err := uc.repos.Disconnect(ctx); err != nil {

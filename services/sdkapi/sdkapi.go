@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi/docs"
 	"github.com/scrapnode/kanthor/services/sdkapi/middlewares"
@@ -33,8 +33,6 @@ func New(
 		logger: logger,
 		infra:  infra,
 		uc:     uc,
-
-		debugger: debugging.NewServer(),
 	}
 }
 
@@ -44,17 +42,18 @@ type sdkapi struct {
 	infra  *infrastructure.Infrastructure
 	uc     usecase.Sdk
 
-	mu       sync.Mutex
-	debugger debugging.Server
-	server   *http.Server
+	server *http.Server
+
+	mu     sync.Mutex
+	status int
 }
 
 func (service *sdkapi) Start(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
-	if err := service.debugger.Start(ctx); err != nil {
-		return err
+	if service.status == patterns.StatusStarted {
+		return ErrAlreadyStarted
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -70,6 +69,7 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		Handler: service.router(),
 	}
 
+	service.status = patterns.StatusStarted
 	service.logger.Info("started")
 	return nil
 }
@@ -113,9 +113,13 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
+	if service.status != patterns.StatusStarted {
+		return ErrNotStarted
+	}
+	service.status = patterns.StatusStopped
 	service.logger.Info("stopped")
-	var returning error
 
+	var returning error
 	if err := service.server.Shutdown(ctx); err != nil {
 		service.logger.Error(err)
 		returning = errors.Join(returning, err)
@@ -135,12 +139,6 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 }
 
 func (service *sdkapi) Run(ctx context.Context) error {
-	go func() {
-		if err := service.debugger.Run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			service.logger.Error(err)
-		}
-	}()
-
 	service.logger.Infow("running", "addr", service.conf.SdkApi.Gateway.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		service.logger.Error(err)

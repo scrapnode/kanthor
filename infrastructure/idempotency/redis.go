@@ -7,6 +7,7 @@ import (
 
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
 func NewRedis(conf *Config, logger logging.Logger) Idempotency {
@@ -18,12 +19,14 @@ type redis struct {
 	conf   *Config
 	logger logging.Logger
 
-	mu     sync.Mutex
 	client *goredis.Client
+
+	mu     sync.Mutex
+	status int
 }
 
 func (idempotency *redis) Readiness() error {
-	if idempotency.client == nil {
+	if idempotency.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -33,7 +36,7 @@ func (idempotency *redis) Readiness() error {
 }
 
 func (idempotency *redis) Liveness() error {
-	if idempotency.client == nil {
+	if idempotency.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -46,7 +49,7 @@ func (idempotency *redis) Connect(ctx context.Context) error {
 	idempotency.mu.Lock()
 	defer idempotency.mu.Unlock()
 
-	if idempotency.client != nil {
+	if idempotency.status == patterns.StatusConnected {
 		return ErrAlreadyConnected
 	}
 
@@ -54,9 +57,10 @@ func (idempotency *redis) Connect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
-	idempotency.logger.Info("connected")
 	idempotency.client = client
+
+	idempotency.status = patterns.StatusConnected
+	idempotency.logger.Info("connected")
 	return nil
 }
 
@@ -73,6 +77,12 @@ func (idempotency *redis) Disconnect(ctx context.Context) error {
 	idempotency.mu.Lock()
 	defer idempotency.mu.Unlock()
 
+	if idempotency.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	idempotency.status = patterns.StatusDisconnected
+	idempotency.logger.Info("disconnected")
+
 	if idempotency.client != nil {
 		if err := idempotency.client.Close(); err != nil {
 			return err
@@ -80,7 +90,6 @@ func (idempotency *redis) Disconnect(ctx context.Context) error {
 	}
 	idempotency.client = nil
 
-	idempotency.logger.Info("disconnected")
 	return nil
 }
 

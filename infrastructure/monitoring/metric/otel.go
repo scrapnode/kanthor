@@ -2,11 +2,13 @@ package metric
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -24,16 +26,25 @@ type otel struct {
 	logger   logging.Logger
 	provider *sdkmetric.MeterProvider
 
-	mu sync.Mutex
+	mu     sync.Mutex
+	status int
 }
 
 // we don't need to take care about readiness & liveness for monitoring
 // if they are failed, we will receive alerts from external system
 func (metric *otel) Readiness() error {
+	if metric.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return nil
 }
 
 func (metric *otel) Liveness() error {
+	if metric.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	return nil
 }
 
@@ -41,7 +52,7 @@ func (metric *otel) Connect(ctx context.Context) error {
 	metric.mu.Lock()
 	defer metric.mu.Unlock()
 
-	if metric.provider != nil {
+	if metric.status == patterns.StatusConnected {
 		return ErrAlreadyConnected
 	}
 
@@ -87,15 +98,18 @@ func (metric *otel) Disconnect(ctx context.Context) error {
 	metric.mu.Lock()
 	defer metric.mu.Unlock()
 
+	if metric.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	metric.status = patterns.StatusDisconnected
 	metric.logger.Info("disconnected")
 
-	if metric.provider != nil {
-		if err := metric.provider.Shutdown(ctx); err != nil {
-			metric.logger.Error(err)
-		}
+	var returning error
+	if err := metric.provider.Shutdown(ctx); err != nil {
+		returning = errors.Join(returning, err)
 	}
 
-	return nil
+	return returning
 }
 
 func (metric *otel) Count(ctx context.Context, service, name string, value int64) {

@@ -17,7 +17,6 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.4.7
 	github.com/lib/pq v1.10.2
 	github.com/nats-io/nats.go v1.26.0
-	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/samber/lo v1.38.1

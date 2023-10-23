@@ -8,6 +8,7 @@ import (
 
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
 func NewRedis(conf *Config, logger logging.Logger) Cache {
@@ -19,12 +20,14 @@ type redis struct {
 	conf   *Config
 	logger logging.Logger
 
-	mu     sync.Mutex
 	client *goredis.Client
+
+	mu     sync.Mutex
+	status int
 }
 
 func (cache *redis) Readiness() error {
-	if cache.client == nil {
+	if cache.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -34,7 +37,7 @@ func (cache *redis) Readiness() error {
 }
 
 func (cache *redis) Liveness() error {
-	if cache.client == nil {
+	if cache.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -47,7 +50,7 @@ func (cache *redis) Connect(ctx context.Context) error {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 
-	if cache.client != nil {
+	if cache.status == patterns.StatusConnected {
 		return ErrAlreadyConnected
 	}
 
@@ -55,9 +58,10 @@ func (cache *redis) Connect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
-	cache.logger.Info("connected")
 	cache.client = client
+
+	cache.status = patterns.StatusConnected
+	cache.logger.Info("connected")
 	return nil
 }
 
@@ -74,17 +78,19 @@ func (cache *redis) Disconnect(ctx context.Context) error {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 
-	if cache.client == nil {
+	if cache.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
+	cache.status = patterns.StatusDisconnected
+	cache.logger.Info("disconnected")
 
+	var returning error
 	if err := cache.client.Close(); err != nil {
-		return err
+		returning = errors.Join(returning, err)
 	}
 	cache.client = nil
 
-	cache.logger.Info("disconnected")
-	return nil
+	return returning
 }
 
 func (cache *redis) Get(ctx context.Context, key string) ([]byte, error) {

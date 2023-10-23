@@ -27,10 +27,6 @@ func New(conf *Config, logger logging.Logger) (Cache, error) {
 		return NewRedis(conf, logger), nil
 	}
 
-	if strings.HasPrefix(uri.Scheme, "memory") {
-		return NewMemory(conf, logger), nil
-	}
-
 	return nil, fmt.Errorf("cache: unknown engine")
 }
 

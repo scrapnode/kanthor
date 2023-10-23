@@ -15,6 +15,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -35,8 +36,9 @@ type Config struct {
 	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency"`
 	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager"`
 	Cache                  cache.Config          `json:"cache" yaml:"cache"`
-	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator"`
+	Streaming              streaming.Config      `json:"streaming" yaml:"streaming"`
 	Metric                 metric.Config         `json:"metric" yaml:"metric"`
+	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator"`
 
 	Database  database.Config  `json:"database" yaml:"database"`
 	Datastore datastore.Config `json:"datastore" yaml:"datastore"`
@@ -80,11 +82,14 @@ func (conf *Config) Validate(service string) error {
 	if err := conf.Cache.Validate(); err != nil {
 		return fmt.Errorf("config.cache: %v", err)
 	}
-	if err := conf.Authorizator.Validate(); err != nil {
-		return fmt.Errorf("config.authorizator: %v", err)
+	if err := conf.Streaming.Validate(); err != nil {
+		return fmt.Errorf("config.cache: %v", err)
 	}
 	if err := conf.Metric.Validate(); err != nil {
 		return fmt.Errorf("config.metric: %v", err)
+	}
+	if err := conf.Authorizator.Validate(); err != nil {
+		return fmt.Errorf("config.authorizator: %v", err)
 	}
 
 	// data

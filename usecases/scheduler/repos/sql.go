@@ -6,6 +6,7 @@ import (
 
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"gorm.io/gorm"
 )
 
@@ -20,13 +21,19 @@ type sql struct {
 	logger logging.Logger
 	db     database.Database
 
-	mu          sync.RWMutex
 	client      *gorm.DB
 	application *SqlApplication
 	endpoint    *SqlEndpoint
+
+	mu     sync.Mutex
+	status int
 }
 
 func (repo *sql) Readiness() error {
+	if repo.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := repo.db.Readiness(); err != nil {
 		return err
 	}
@@ -34,6 +41,10 @@ func (repo *sql) Readiness() error {
 }
 
 func (repo *sql) Liveness() error {
+	if repo.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := repo.db.Liveness(); err != nil {
 		return err
 	}
@@ -44,11 +55,16 @@ func (repo *sql) Connect(ctx context.Context) error {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 
+	if repo.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
+
 	if err := repo.db.Connect(ctx); err != nil {
 		return err
 	}
-
 	repo.client = repo.db.Client().(*gorm.DB)
+
+	repo.status = patterns.StatusConnected
 	repo.logger.Info("connected")
 	return nil
 }
@@ -57,6 +73,10 @@ func (repo *sql) Disconnect(ctx context.Context) error {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 
+	if repo.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+	repo.status = patterns.StatusDisconnected
 	repo.logger.Info("disconnected")
 
 	if err := repo.db.Disconnect(ctx); err != nil {

@@ -3,14 +3,13 @@ package scheduler
 import (
 	"context"
 	"errors"
-	"net/http"
 	"sync"
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/debugging"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
@@ -21,21 +20,17 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	subscriber streaming.Subscriber,
 	infra *infrastructure.Infrastructure,
 	uc usecase.Scheduler,
 ) services.Service {
 	logger = logger.With("service", "scheduler")
 	return &scheduler{
-		consumer: "scheduler",
-
 		conf:       conf,
 		logger:     logger,
-		subscriber: subscriber,
+		subscriber: infra.Stream.Subscriber("scheduler"),
 		infra:      infra,
 		uc:         uc,
 
-		debugger: debugging.NewServer(),
 		healthcheck: background.NewServer(
 			healthcheck.DefaultConfig("scheduler"),
 			logger.With("healthcheck", "background"),
@@ -44,27 +39,25 @@ func New(
 }
 
 type scheduler struct {
-	consumer string
-
 	conf       *config.Config
 	logger     logging.Logger
 	subscriber streaming.Subscriber
 	infra      *infrastructure.Infrastructure
 	uc         usecase.Scheduler
 
-	mu          sync.Mutex
-	terminating chan bool
-
-	debugger    debugging.Server
 	healthcheck healthcheck.Server
+
+	mu      sync.Mutex
+	status  int
+	stopped chan bool
 }
 
 func (service *scheduler) Start(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
-	if err := service.debugger.Start(ctx); err != nil {
-		return err
+	if service.status == patterns.StatusStarted {
+		return ErrAlreadyStarted
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -83,6 +76,7 @@ func (service *scheduler) Start(ctx context.Context) error {
 		return err
 	}
 
+	service.status = patterns.StatusStarted
 	service.logger.Info("started")
 	return nil
 }
@@ -91,9 +85,13 @@ func (service *scheduler) Stop(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
+	if service.status != patterns.StatusStarted {
+		return ErrNotStarted
+	}
+	service.status = patterns.StatusStopped
 	service.logger.Info("stopped")
-	var returning error
 
+	var returning error
 	if err := service.healthcheck.Disconnect(ctx); err != nil {
 		service.logger.Error(err)
 		returning = errors.Join(returning, err)
@@ -114,16 +112,12 @@ func (service *scheduler) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
-	if err := service.debugger.Stop(ctx); err != nil {
-		service.logger.Error(err)
-		returning = errors.Join(returning, err)
-	}
-
+	service.stopped <- true
 	return returning
 }
 
 func (service *scheduler) Run(ctx context.Context) error {
-	if err := service.subscriber.Sub(ctx, service.consumer, constants.TopicMessage, NewConsumer(service)); err != nil {
+	if err := service.subscriber.Sub(ctx, constants.TopicMessage, NewConsumer(service)); err != nil {
 		return err
 	}
 
@@ -153,14 +147,8 @@ func (service *scheduler) Run(ctx context.Context) error {
 		}
 	}()
 
-	go func() {
-		if err := service.debugger.Run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			service.logger.Error(err)
-		}
-	}()
-
 	service.logger.Info("running")
-	<-service.terminating
+	<-service.stopped
 	return nil
 }
 

@@ -13,12 +13,18 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
+	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
 func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
 	t := timer.New()
 	crypt, err := cryptography.New(&conf.Cryptography)
+	if err != nil {
+		return nil, err
+	}
+	send, err := sender.New(&conf.Sender, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -46,6 +52,10 @@ func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
+	s, err := streaming.New(&conf.Streaming, logger)
+	if err != nil {
+		return nil, err
+	}
 
 	infra := &Infrastructure{
 		conf:   conf,
@@ -53,12 +63,14 @@ func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
 
 		Timer:                  t,
 		Cryptography:           crypt,
+		Send:                   send,
 		Idempotency:            idemp,
 		CircuitBreaker:         cb,
 		Authorizator:           authz,
 		DistributedLockManager: lock,
-		Metric:                 m,
+		Stream:                 s,
 		Cache:                  c,
+		Metric:                 m,
 	}
 	return infra, nil
 }
@@ -69,10 +81,12 @@ type Infrastructure struct {
 
 	Timer                  timer.Timer
 	Cryptography           cryptography.Cryptography
+	Send                   sender.Send
 	Idempotency            idempotency.Idempotency
 	CircuitBreaker         circuitbreaker.CircuitBreaker
 	DistributedLockManager dlm.Factory
 	Authorizator           authorizator.Authorizator
+	Stream                 streaming.Stream
 	Cache                  cache.Cache
 	Metric                 metric.Metric
 }
@@ -82,6 +96,9 @@ func (infra *Infrastructure) Connect(ctx context.Context) error {
 		return err
 	}
 	if err := infra.Authorizator.Connect(ctx); err != nil {
+		return err
+	}
+	if err := infra.Stream.Connect(ctx); err != nil {
 		return err
 	}
 	if err := infra.Cache.Connect(ctx); err != nil {
@@ -107,6 +124,10 @@ func (infra *Infrastructure) Disconnect(ctx context.Context) error {
 		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
+	if err := infra.Stream.Disconnect(ctx); err != nil {
+		infra.logger.Error(err)
+		returning = errors.Join(returning, err)
+	}
 	if err := infra.Cache.Disconnect(ctx); err != nil {
 		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
@@ -126,6 +147,9 @@ func (infra *Infrastructure) Readiness() error {
 	if err := infra.Authorizator.Readiness(); err != nil {
 		return err
 	}
+	if err := infra.Stream.Readiness(); err != nil {
+		return err
+	}
 	if err := infra.Cache.Readiness(); err != nil {
 		return err
 	}
@@ -142,10 +166,13 @@ func (infra *Infrastructure) Liveness() error {
 	if err := infra.Authorizator.Liveness(); err != nil {
 		return err
 	}
-	if err := infra.Metric.Liveness(); err != nil {
+	if err := infra.Stream.Liveness(); err != nil {
 		return err
 	}
 	if err := infra.Cache.Liveness(); err != nil {
+		return err
+	}
+	if err := infra.Metric.Liveness(); err != nil {
 		return err
 	}
 	return nil

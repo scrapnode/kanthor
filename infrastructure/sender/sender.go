@@ -10,7 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 )
 
-func New(conf *Config, logger logging.Logger) Send {
+func New(conf *Config, logger logging.Logger) (Send, error) {
 	rest := Rest(conf, logger)
 
 	return func(ctx context.Context, req *Request) (*Response, error) {
@@ -25,7 +25,7 @@ func New(conf *Config, logger logging.Logger) Send {
 		}
 
 		return nil, fmt.Errorf("sender: unsupported scheme [%s]", uri.Scheme)
-	}
+	}, nil
 }
 
 type Sender func(conf *Config) Send

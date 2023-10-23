@@ -77,7 +77,7 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 		}
 
 		var perr error
-		errs := uc.publisher.Pub(ctx, events)
+		errs := uc.infra.Stream.Publisher("attempt_trigger_plan").Pub(ctx, events)
 		for key := range events {
 			if err, ok := errs[key]; ok {
 				perr = errors.Join(perr, err)

@@ -1,7 +1,9 @@
 package patterns
 
 var (
-	StatusDisconnected = -1
-	StatusNone         = 0
-	StatusConnected    = 1
+	StatusDisconnected = -100
+	StatusConnected    = 100
+
+	StatusStarted = -200
+	StatusStopped = 200
 )

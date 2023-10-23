@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/namespace"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
@@ -27,13 +28,15 @@ type casbin struct {
 	logger  logging.Logger
 	watcher *watcher
 
-	mu      sync.Mutex
 	adapter *gormadapter.Adapter
 	client  *gocasbin.Enforcer
+
+	mu     sync.Mutex
+	status int
 }
 
 func (authorizator *casbin) Readiness() error {
-	if authorizator.adapter == nil {
+	if authorizator.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -54,7 +57,7 @@ func (authorizator *casbin) Readiness() error {
 }
 
 func (authorizator *casbin) Liveness() error {
-	if authorizator.adapter == nil {
+	if authorizator.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
 
@@ -78,7 +81,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
 
-	if authorizator.client != nil {
+	if authorizator.status == patterns.StatusConnected {
 		return ErrAlreadyConnected
 	}
 
@@ -126,6 +129,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 		return err
 	}
 
+	authorizator.status = patterns.StatusConnected
 	authorizator.logger.Info("connected")
 	return nil
 }
@@ -134,29 +138,25 @@ func (authorizator *casbin) Disconnect(ctx context.Context) error {
 	authorizator.mu.Lock()
 	defer authorizator.mu.Unlock()
 
-	if authorizator.client == nil {
+	if authorizator.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
+	authorizator.status = patterns.StatusDisconnected
+	authorizator.logger.Info("disconnected")
 
 	var returning error
-	if authorizator.watcher != nil {
-		if err := authorizator.watcher.Disconnect(ctx); err != nil {
-			authorizator.logger.Error(err)
-			returning = errors.Join(returning, err)
-		}
+	if err := authorizator.watcher.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
 	}
 	authorizator.watcher = nil
 
-	if authorizator.adapter != nil {
-		if err := authorizator.adapter.Close(); err != nil {
-			authorizator.logger.Error(err)
-			returning = errors.Join(returning, err)
-		}
+	if err := authorizator.adapter.Close(); err != nil {
+		returning = errors.Join(returning, err)
 	}
 	authorizator.adapter = nil
 
 	authorizator.client = nil
-	authorizator.logger.Info("disconnected")
+
 	return returning
 }
 

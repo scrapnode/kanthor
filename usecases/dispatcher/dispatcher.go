@@ -8,8 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/infrastructure/sender"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 )
 
 type Dispatcher interface {
@@ -21,48 +19,48 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	publisher streaming.Publisher,
-	dispatch sender.Send,
 ) Dispatcher {
 	logger = logger.With("usecase", "dispatcher")
 
 	return &dispatcher{
-		conf:      conf,
-		logger:    logger,
-		infra:     infra,
-		publisher: publisher,
-		dispatch:  dispatch,
+		conf:   conf,
+		logger: logger,
+		infra:  infra,
 	}
 }
 
 type dispatcher struct {
-	conf      *config.Config
-	logger    logging.Logger
-	infra     *infrastructure.Infrastructure
-	dispatch  sender.Send
-	publisher streaming.Publisher
+	conf   *config.Config
+	logger logging.Logger
+	infra  *infrastructure.Infrastructure
 
-	mu        sync.RWMutex
 	forwarder *forwarder
+
+	mu     sync.Mutex
+	status int
 }
 
 func (uc *dispatcher) Readiness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.infra.Readiness(); err != nil {
 		return err
 	}
-	if err := uc.publisher.Readiness(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
 func (uc *dispatcher) Liveness() error {
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
+	}
+
 	if err := uc.infra.Liveness(); err != nil {
 		return err
 	}
-	if err := uc.publisher.Liveness(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
@@ -70,14 +68,15 @@ func (uc *dispatcher) Connect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
+	if uc.status == patterns.StatusConnected {
+		return ErrAlreadyConnected
+	}
+
 	if err := uc.infra.Connect(ctx); err != nil {
 		return err
 	}
 
-	if err := uc.publisher.Connect(ctx); err != nil {
-		return err
-	}
-
+	uc.status = patterns.StatusConnected
 	uc.logger.Info("connected")
 	return nil
 }
@@ -86,11 +85,11 @@ func (uc *dispatcher) Disconnect(ctx context.Context) error {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	uc.logger.Info("disconnected")
-
-	if err := uc.publisher.Disconnect(ctx); err != nil {
-		return err
+	if uc.status != patterns.StatusConnected {
+		return ErrNotConnected
 	}
+	uc.status = patterns.StatusDisconnected
+	uc.logger.Info("disconnected")
 
 	if err := uc.infra.Disconnect(ctx); err != nil {
 		return err
@@ -108,8 +107,7 @@ func (uc *dispatcher) Forwarder() Forwarder {
 			conf:      uc.conf,
 			logger:    uc.logger,
 			infra:     uc.infra,
-			publisher: uc.publisher,
-			dispatch:  uc.dispatch,
+			publisher: uc.infra.Stream.Publisher("dispatcher_fowarder"),
 		}
 	}
 	return uc.forwarder

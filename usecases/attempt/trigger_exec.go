@@ -329,7 +329,7 @@ func (uc *trigger) schedule(
 		events[key] = event
 	}
 
-	errs := uc.publisher.Pub(ctx, events)
+	errs := uc.infra.Stream.Publisher("attempt_trigger_exec").Pub(ctx, events)
 	for key := range events {
 		if err, ok := errs[key]; ok {
 			ko.Set(key, err)
