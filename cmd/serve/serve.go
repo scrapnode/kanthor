@@ -49,14 +49,12 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 				if err := service.Run(ctx); err != nil {
 					logger.Error(err)
 				}
-				stop()
 			}()
 
 			go func() {
 				if err := debug.Run(ctx); err != nil {
 					logger.Error(err)
 				}
-				// don't let debugger error teardown your service
 			}()
 
 			// listen for the interrupt signal.

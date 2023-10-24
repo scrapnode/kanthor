@@ -34,6 +34,12 @@ type sql struct {
 }
 
 func (repo *sql) Readiness() error {
+	if repo.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if repo.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if repo.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -45,6 +51,12 @@ func (repo *sql) Readiness() error {
 }
 
 func (repo *sql) Liveness() error {
+	if repo.status == patterns.StatusDisconnected {
+		return nil
+	}
+	if repo.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if repo.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}

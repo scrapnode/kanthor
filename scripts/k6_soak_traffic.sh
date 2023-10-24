@@ -23,6 +23,6 @@ docker compose -f docker-compose.yaml up -d sdkapi portalapi scheduler dispatche
 echo "#2 sleep 5s"
 sleep 5
 
-go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --generate-credentials --output="$API_CREDS_PATH/sdkapi.json"
+go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --output="$API_CREDS_PATH/sdkapi.json"
 
 K6_VUS=$K6_VUS K6_START_DURATION=$K6_START_DURATION K6_MID_DURATION=$K6_MID_DURATION K6_END_DURATION=$K6_END_DURATION API_CREDS_PATH=$API_CREDS_PATH API_ENDPOINT=$API_ENDPOINT k6 run scripts/k6/stability.js

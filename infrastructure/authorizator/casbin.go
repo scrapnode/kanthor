@@ -36,6 +36,9 @@ type casbin struct {
 }
 
 func (authorizator *casbin) Readiness() error {
+	if authorizator.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if authorizator.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -57,6 +60,9 @@ func (authorizator *casbin) Readiness() error {
 }
 
 func (authorizator *casbin) Liveness() error {
+	if authorizator.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if authorizator.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}

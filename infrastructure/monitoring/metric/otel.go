@@ -33,6 +33,9 @@ type otel struct {
 // we don't need to take care about readiness & liveness for monitoring
 // if they are failed, we will receive alerts from external system
 func (metric *otel) Readiness() error {
+	if metric.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if metric.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -41,6 +44,9 @@ func (metric *otel) Readiness() error {
 }
 
 func (metric *otel) Liveness() error {
+	if metric.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if metric.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}

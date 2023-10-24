@@ -25,6 +25,9 @@ type watcher struct {
 }
 
 func (w *watcher) Readiness() error {
+	if w.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if w.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -34,6 +37,9 @@ func (w *watcher) Readiness() error {
 }
 
 func (w *watcher) Liveness() error {
+	if w.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if w.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}

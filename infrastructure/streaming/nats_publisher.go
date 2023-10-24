@@ -14,8 +14,8 @@ type NatsPublisher struct {
 	name   string
 	conf   *Config
 	logger logging.Logger
-	conn   *natscore.Conn
-	js     natscore.JetStreamContext
+
+	nats *nats
 }
 
 func (publisher *NatsPublisher) Name() string {
@@ -37,7 +37,7 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 
 		msg := NatsMsgFromEvent(event.Subject, event)
 		p.Go(func() {
-			ack, err := publisher.js.PublishMsg(msg, natscore.Context(ctx), natscore.MsgId(event.Id))
+			ack, err := publisher.nats.js.PublishMsg(msg, natscore.Context(ctx), natscore.MsgId(event.Id))
 			if err != nil {
 				returning.Set(key, err)
 				return

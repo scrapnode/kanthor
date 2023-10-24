@@ -27,6 +27,9 @@ type redis struct {
 }
 
 func (cache *redis) Readiness() error {
+	if cache.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if cache.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -37,6 +40,9 @@ func (cache *redis) Readiness() error {
 }
 
 func (cache *redis) Liveness() error {
+	if cache.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if cache.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}

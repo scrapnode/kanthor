@@ -47,9 +47,8 @@ type storage struct {
 
 	healthcheck healthcheck.Server
 
-	mu      sync.Mutex
-	status  int
-	stopped chan bool
+	mu     sync.Mutex
+	status int
 }
 
 func (service *storage) Start(ctx context.Context) error {
@@ -60,7 +59,7 @@ func (service *storage) Start(ctx context.Context) error {
 		return ErrAlreadyStarted
 	}
 
-	if err := service.infra.Metric.Connect(ctx); err != nil {
+	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -100,7 +99,6 @@ func (service *storage) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
-	service.stopped <- true
 	return returning
 }
 
@@ -133,8 +131,13 @@ func (service *storage) Run(ctx context.Context) error {
 	}()
 
 	service.logger.Info("running")
-	<-service.stopped
-	return nil
+	forever := make(chan bool)
+	select {
+	case <-forever:
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
 }
 
 func (service *storage) readiness() error {

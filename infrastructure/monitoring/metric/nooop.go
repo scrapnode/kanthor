@@ -27,8 +27,11 @@ func (metric *noop) Liveness() error {
 func (metric *noop) Connect(ctx context.Context) error {
 	return nil
 }
+
 func (metric *noop) Disconnect(ctx context.Context) error {
 	return nil
 }
-func (metric *noop) Count(ctx context.Context, service, name string, value int64)     {}
+
+func (metric *noop) Count(ctx context.Context, service, name string, value int64) {}
+
 func (metric *noop) Observe(ctx context.Context, service, name string, value float64) {}

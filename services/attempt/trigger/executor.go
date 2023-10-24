@@ -47,9 +47,8 @@ type executor struct {
 
 	healthcheck healthcheck.Server
 
-	mu      sync.Mutex
-	status  int
-	stopped chan bool
+	mu     sync.Mutex
+	status int
 }
 
 func (service *executor) Start(ctx context.Context) error {
@@ -100,7 +99,6 @@ func (service *executor) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
-	service.stopped <- true
 	return returning
 }
 
@@ -133,8 +131,13 @@ func (service *executor) Run(ctx context.Context) error {
 	}()
 
 	service.logger.Info("running")
-	<-service.stopped
-	return nil
+	forever := make(chan bool)
+	select {
+	case <-forever:
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
 }
 
 func (service *executor) readiness() error {

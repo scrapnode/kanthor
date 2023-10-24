@@ -65,6 +65,9 @@ type nats struct {
 }
 
 func (streaming *nats) Readiness() error {
+	if streaming.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if streaming.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -74,6 +77,9 @@ func (streaming *nats) Readiness() error {
 }
 
 func (streaming *nats) Liveness() error {
+	if streaming.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if streaming.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -165,12 +171,8 @@ func (streaming *nats) Disconnect(ctx context.Context) error {
 	if len(streaming.publishers) > 0 {
 		streaming.publishers = nil
 	}
+
 	if len(streaming.subscribers) > 0 {
-		for _, subscriber := range streaming.subscribers {
-			if err := subscriber.Disconnect(ctx); err != nil {
-				retruning = errors.Join(retruning, err)
-			}
-		}
 		streaming.subscribers = nil
 	}
 
@@ -195,6 +197,10 @@ func (streaming *nats) Publisher(name string) Publisher {
 	streaming.mu.Lock()
 	defer streaming.mu.Unlock()
 
+	if streaming.publishers == nil {
+		streaming.publishers = map[string]Publisher{}
+	}
+
 	if pub, exist := streaming.publishers[name]; exist {
 		return pub
 	}
@@ -203,8 +209,7 @@ func (streaming *nats) Publisher(name string) Publisher {
 		name:   name,
 		conf:   streaming.conf,
 		logger: streaming.logger.With("streaming.publisher", name),
-		conn:   streaming.conn,
-		js:     streaming.js,
+		nats:   streaming,
 	}
 	streaming.publishers[name] = publisher
 
@@ -217,6 +222,10 @@ func (streaming *nats) Subscriber(name string) Subscriber {
 	streaming.mu.Lock()
 	defer streaming.mu.Unlock()
 
+	if streaming.subscribers == nil {
+		streaming.subscribers = map[string]Subscriber{}
+	}
+
 	if sub, exist := streaming.subscribers[name]; exist {
 		return sub
 	}
@@ -225,8 +234,7 @@ func (streaming *nats) Subscriber(name string) Subscriber {
 		name:   name,
 		conf:   streaming.conf,
 		logger: streaming.logger.With("streaming.subscriber", name),
-		conn:   streaming.conn,
-		js:     streaming.js,
+		nats:   streaming,
 	}
 	streaming.subscribers[name] = subscriber
 

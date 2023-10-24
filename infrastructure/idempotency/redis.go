@@ -26,6 +26,9 @@ type redis struct {
 }
 
 func (idempotency *redis) Readiness() error {
+	if idempotency.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if idempotency.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}
@@ -36,6 +39,9 @@ func (idempotency *redis) Readiness() error {
 }
 
 func (idempotency *redis) Liveness() error {
+	if idempotency.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if idempotency.status != patterns.StatusConnected {
 		return ErrNotConnected
 	}

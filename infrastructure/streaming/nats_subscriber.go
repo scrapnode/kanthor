@@ -20,8 +20,7 @@ type NatsSubscriber struct {
 	conf   *Config
 	logger logging.Logger
 
-	conn         *natscore.Conn
-	js           natscore.JetStreamContext
+	nats         *nats
 	subscription *natscore.Subscription
 
 	mu     sync.Mutex
@@ -33,20 +32,26 @@ func (subscriber *NatsSubscriber) Name() string {
 }
 
 func (subscriber *NatsSubscriber) Readiness() error {
+	if subscriber.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if subscriber.status != patterns.StatusConnected {
-		return ErrNotConnected
+		return ErrSubNotConnected
 	}
 
-	_, err := subscriber.js.StreamInfo(subscriber.conf.Name)
+	_, err := subscriber.nats.js.StreamInfo(subscriber.conf.Name)
 	return err
 }
 
 func (subscriber *NatsSubscriber) Liveness() error {
+	if subscriber.status == patterns.StatusDisconnected {
+		return nil
+	}
 	if subscriber.status != patterns.StatusConnected {
-		return ErrNotConnected
+		return ErrSubNotConnected
 	}
 
-	_, err := subscriber.js.StreamInfo(subscriber.conf.Name)
+	_, err := subscriber.nats.js.StreamInfo(subscriber.conf.Name)
 	return err
 }
 
@@ -55,7 +60,7 @@ func (subscriber *NatsSubscriber) Connect(ctx context.Context) error {
 	defer subscriber.mu.Unlock()
 
 	if subscriber.status == patterns.StatusConnected {
-		return ErrAlreadyConnected
+		return ErrSubAlreadyConnected
 	}
 
 	subscriber.logger.Info("connected")
@@ -69,7 +74,7 @@ func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 	defer subscriber.mu.Unlock()
 
 	if subscriber.status != patterns.StatusConnected {
-		return ErrNotConnected
+		return ErrSubNotConnected
 	}
 	subscriber.status = patterns.StatusDisconnected
 	subscriber.logger.Info("disconnected")
@@ -98,7 +103,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 		"consumer_created_at", consumer.Created.Format(time.RFC3339),
 	)
 
-	subscriber.subscription, err = subscriber.js.PullSubscribe(
+	subscriber.subscription, err = subscriber.nats.js.PullSubscribe(
 		consumer.Config.FilterSubject,
 		consumer.Config.Name,
 		natscore.Bind(subscriber.conf.Name, consumer.Config.Name),
@@ -195,16 +200,16 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic stri
 
 	// verify persistent consumer
 	conf.Durable = conf.Name
-	consumer, err := subscriber.js.ConsumerInfo(subscriber.conf.Name, conf.Name, natscore.Context(ctx))
+	consumer, err := subscriber.nats.js.ConsumerInfo(subscriber.conf.Name, conf.Name, natscore.Context(ctx))
 
 	if err == nil {
-		subscriber.js.UpdateConsumer(subscriber.conf.Name, conf, natscore.Context(ctx))
+		subscriber.nats.js.UpdateConsumer(subscriber.conf.Name, conf, natscore.Context(ctx))
 		return consumer, nil
 	}
 
 	// not found, create a new one
 	if errors.Is(err, natscore.ErrConsumerNotFound) {
-		return subscriber.js.AddConsumer(subscriber.conf.Name, conf, natscore.Context(ctx))
+		return subscriber.nats.js.AddConsumer(subscriber.conf.Name, conf, natscore.Context(ctx))
 	}
 
 	// otherwise return the error

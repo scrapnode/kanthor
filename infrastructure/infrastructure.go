@@ -91,6 +91,44 @@ type Infrastructure struct {
 	Metric                 metric.Metric
 }
 
+func (infra *Infrastructure) Readiness() error {
+	if err := infra.Idempotency.Readiness(); err != nil {
+		return err
+	}
+	if err := infra.Authorizator.Readiness(); err != nil {
+		return err
+	}
+	if err := infra.Stream.Readiness(); err != nil {
+		return err
+	}
+	if err := infra.Cache.Readiness(); err != nil {
+		return err
+	}
+	if err := infra.Metric.Readiness(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (infra *Infrastructure) Liveness() error {
+	if err := infra.Idempotency.Liveness(); err != nil {
+		return err
+	}
+	if err := infra.Authorizator.Liveness(); err != nil {
+		return err
+	}
+	if err := infra.Stream.Liveness(); err != nil {
+		return err
+	}
+	if err := infra.Cache.Liveness(); err != nil {
+		return err
+	}
+	if err := infra.Metric.Liveness(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (infra *Infrastructure) Connect(ctx context.Context) error {
 	if err := infra.Idempotency.Connect(ctx); err != nil {
 		return err
@@ -133,42 +171,4 @@ func (infra *Infrastructure) Disconnect(ctx context.Context) error {
 	}
 
 	return returning
-}
-
-func (infra *Infrastructure) Readiness() error {
-	if err := infra.Idempotency.Readiness(); err != nil {
-		return err
-	}
-	if err := infra.Authorizator.Readiness(); err != nil {
-		return err
-	}
-	if err := infra.Stream.Readiness(); err != nil {
-		return err
-	}
-	if err := infra.Cache.Readiness(); err != nil {
-		return err
-	}
-	if err := infra.Metric.Readiness(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (infra *Infrastructure) Liveness() error {
-	if err := infra.Idempotency.Liveness(); err != nil {
-		return err
-	}
-	if err := infra.Authorizator.Liveness(); err != nil {
-		return err
-	}
-	if err := infra.Stream.Liveness(); err != nil {
-		return err
-	}
-	if err := infra.Cache.Liveness(); err != nil {
-		return err
-	}
-	if err := infra.Metric.Liveness(); err != nil {
-		return err
-	}
-	return nil
 }
