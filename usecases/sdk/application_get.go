@@ -17,7 +17,7 @@ type ApplicationGetReq struct {
 func (req *ApplicationGetReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringStartsWith("id", req.Id, entities.IdNsApp),
 	)
 }

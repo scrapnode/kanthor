@@ -30,8 +30,8 @@ var RequestMapping = map[string]func(doc entities.Request) any{
 }
 var RequestMappingCols = lo.Keys(RequestMapping)
 
-func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]entities.Entity, error) {
-	records := []entities.Entity{}
+func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]entities.TSEntity, error) {
+	records := []entities.TSEntity{}
 
 	if len(docs) == 0 {
 		return records, nil
@@ -40,7 +40,7 @@ func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]e
 	names := []string{}
 	values := map[string]interface{}{}
 	for k, doc := range docs {
-		record := entities.Entity{}
+		record := entities.TSEntity{}
 		record.Id = doc.Id
 		record.Timestamp = doc.Timestamp
 		records = append(records, record)

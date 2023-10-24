@@ -6,6 +6,7 @@ import (
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/ioc"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
@@ -34,8 +35,15 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			uc, err := ioc.InitializePortalUsecase(conf, logger, infra)
+			db, err := database.New(&conf.Database, logger)
 			if err != nil {
+				return err
+			}
+			uc, err := ioc.InitializePortalUsecase(conf, logger, infra, db)
+			if err != nil {
+				return err
+			}
+			if err := db.Connect(ctx); err != nil {
 				return err
 			}
 			if err := infra.Connect(ctx); err != nil {
@@ -43,10 +51,12 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			}
 
 			defer func() {
+				if err := db.Disconnect(ctx); err != nil {
+					logger.Error(err)
+				}
 				if err := infra.Disconnect(ctx); err != nil {
 					logger.Error(err)
 				}
-
 			}()
 
 			out := &output{json: map[string]any{}}

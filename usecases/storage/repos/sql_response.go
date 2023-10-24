@@ -32,8 +32,8 @@ var ResponseMapping = map[string]func(doc entities.Response) any{
 }
 var ResponseMappingCols = lo.Keys(ResponseMapping)
 
-func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([]entities.Entity, error) {
-	records := []entities.Entity{}
+func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([]entities.TSEntity, error) {
+	records := []entities.TSEntity{}
 
 	if len(docs) == 0 {
 		return records, nil
@@ -42,7 +42,7 @@ func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([
 	names := []string{}
 	values := map[string]interface{}{}
 	for k, doc := range docs {
-		record := entities.Entity{}
+		record := entities.TSEntity{}
 		record.Id = doc.Id
 		record.Timestamp = doc.Timestamp
 		records = append(records, record)

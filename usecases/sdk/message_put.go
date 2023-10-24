@@ -25,7 +25,7 @@ type MessagePutReq struct {
 func (req *MessagePutReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringRequired("workspace_tier", req.WorkspaceTier),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("type", req.Type),

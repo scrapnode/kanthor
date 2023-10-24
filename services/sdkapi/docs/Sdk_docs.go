@@ -846,9 +846,6 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -879,9 +876,6 @@ const docTemplateSdk = `{
                 },
                 "secret_key": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -921,9 +915,6 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "priority": {
-                    "type": "integer"
-                },
-                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -980,9 +971,6 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1004,9 +992,6 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1027,9 +1012,6 @@ const docTemplateSdk = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1076,9 +1058,6 @@ const docTemplateSdk = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1140,9 +1119,6 @@ const docTemplateSdk = `{
                 "secret_key": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1175,9 +1151,6 @@ const docTemplateSdk = `{
                 "secret_key": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1209,9 +1182,6 @@ const docTemplateSdk = `{
                 },
                 "secret_key": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1292,9 +1262,6 @@ const docTemplateSdk = `{
                 "priority": {
                     "type": "integer"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -1331,9 +1298,6 @@ const docTemplateSdk = `{
                 "priority": {
                     "type": "integer"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -1368,9 +1332,6 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "priority": {
-                    "type": "integer"
-                },
-                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1434,9 +1395,6 @@ const docTemplateSdk = `{
                 "priority": {
                     "type": "integer"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -1475,9 +1433,6 @@ const docTemplateSdk = `{
                 },
                 "secret_key": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"

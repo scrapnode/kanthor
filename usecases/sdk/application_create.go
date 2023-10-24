@@ -15,7 +15,7 @@ type ApplicationCreateReq struct {
 func (req *ApplicationCreateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringRequired("name", req.Name),
 	)
 }

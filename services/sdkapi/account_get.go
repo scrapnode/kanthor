@@ -11,7 +11,7 @@ import (
 )
 
 type AccountGetReq struct {
-	WorkspcaeId string `form:"workspace_id" binding:"required,startswith=ws_"`
+	WorkspcaeId string `form:"ws_id" binding:"required,startswith=ws_"`
 }
 
 type AccountGetRes struct {

@@ -85,7 +85,7 @@ func (sql *SqlEndpoint) GetOfWorkspace(ctx context.Context, ws *entities.Workspa
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
 		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), doc.TableName())).
-		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."workspace_id" AND "%s" = ? `, ws.TableName(), ws.TableName(), app.TableName(), app.TableName()), ws.Id).
+		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."ws_id" AND "%s" = ? `, ws.TableName(), ws.TableName(), app.TableName(), app.TableName()), ws.Id).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 

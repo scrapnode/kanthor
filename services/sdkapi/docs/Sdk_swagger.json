@@ -839,9 +839,6 @@
                 "name": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -872,9 +869,6 @@
                 },
                 "secret_key": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -914,9 +908,6 @@
                     "type": "string"
                 },
                 "priority": {
-                    "type": "integer"
-                },
-                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -973,9 +964,6 @@
                 "name": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -997,9 +985,6 @@
                 "name": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1020,9 +1005,6 @@
                 },
                 "name": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1069,9 +1051,6 @@
                 },
                 "name": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1133,9 +1112,6 @@
                 "secret_key": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1168,9 +1144,6 @@
                 "secret_key": {
                     "type": "string"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 },
@@ -1202,9 +1175,6 @@
                 },
                 "secret_key": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"
@@ -1285,9 +1255,6 @@
                 "priority": {
                     "type": "integer"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -1324,9 +1291,6 @@
                 "priority": {
                     "type": "integer"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -1361,9 +1325,6 @@
                     "type": "string"
                 },
                 "priority": {
-                    "type": "integer"
-                },
-                "timestamp": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -1427,9 +1388,6 @@
                 "priority": {
                     "type": "integer"
                 },
-                "timestamp": {
-                    "type": "integer"
-                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -1468,9 +1426,6 @@
                 },
                 "secret_key": {
                     "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "integer"

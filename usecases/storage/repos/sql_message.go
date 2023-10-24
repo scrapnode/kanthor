@@ -26,8 +26,8 @@ var MessageMapping = map[string]func(doc entities.Message) any{
 }
 var MessageMappingCols = lo.Keys(MessageMapping)
 
-func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]entities.Entity, error) {
-	records := []entities.Entity{}
+func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]entities.TSEntity, error) {
+	records := []entities.TSEntity{}
 
 	if len(docs) == 0 {
 		return records, nil
@@ -36,7 +36,7 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]e
 	names := []string{}
 	values := map[string]interface{}{}
 	for k, doc := range docs {
-		record := entities.Entity{}
+		record := entities.TSEntity{}
 		record.Id = doc.Id
 		record.Timestamp = doc.Timestamp
 		records = append(records, record)

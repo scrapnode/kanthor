@@ -458,7 +458,7 @@
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -479,7 +479,7 @@
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -589,7 +589,7 @@
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -638,7 +638,7 @@
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }

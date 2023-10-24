@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -25,16 +26,18 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	infra *infrastructure.Infrastructure,
 	auth authenticator.Authenticator,
+	infra *infrastructure.Infrastructure,
+	db database.Database,
 	uc usecase.Portal,
 ) services.Service {
 	logger = logger.With("service", "portalapi")
 	return &portalapi{
 		conf:   conf,
 		logger: logger,
-		infra:  infra,
 		auth:   auth,
+		infra:  infra,
+		db:     db,
 		uc:     uc,
 	}
 }
@@ -42,8 +45,9 @@ func New(
 type portalapi struct {
 	conf   *config.Config
 	logger logging.Logger
-	infra  *infrastructure.Infrastructure
 	auth   authenticator.Authenticator
+	infra  *infrastructure.Infrastructure
+	db     database.Database
 	uc     usecase.Portal
 
 	server *http.Server
@@ -58,6 +62,10 @@ func (service *portalapi) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.db.Connect(ctx); err != nil {
+		return err
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -122,6 +130,10 @@ func (service *portalapi) Stop(ctx context.Context) error {
 	}
 
 	if err := service.infra.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
+	if err := service.db.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/attempt/trigger"
@@ -89,26 +90,30 @@ func InitializeDispatcherUsecase(conf *config.Config, logger logging.Logger, inf
 // Injectors from wire_portal_api.go:
 
 func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
-	infrastructureInfrastructure, err := infrastructure.New(conf, logger)
-	if err != nil {
-		return nil, err
-	}
 	authenticatorConfig := ResolvePortalApiAuthenticatorConfig(conf)
 	authenticatorAuthenticator, err := authenticator.New(authenticatorConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	portal, err := InitializePortalUsecase(conf, logger, infrastructureInfrastructure)
+	infrastructureInfrastructure, err := infrastructure.New(conf, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := portalapi.New(conf, logger, infrastructureInfrastructure, authenticatorAuthenticator, portal)
+	databaseConfig := &conf.Database
+	databaseDatabase, err := database.New(databaseConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+	portal, err := InitializePortalUsecase(conf, logger, infrastructureInfrastructure, databaseDatabase)
+	if err != nil {
+		return nil, err
+	}
+	service := portalapi.New(conf, logger, authenticatorAuthenticator, infrastructureInfrastructure, databaseDatabase, portal)
 	return service, nil
 }
 
-func InitializePortalUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (portal.Portal, error) {
-	databaseConfig := &conf.Database
-	repositories := repos2.New(databaseConfig, logger)
+func InitializePortalUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, db database.Database) (portal.Portal, error) {
+	repositories := repos2.New(logger, db)
 	portalPortal := portal.New(conf, logger, infra, repositories)
 	return portalPortal, nil
 }
@@ -142,17 +147,21 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	if err != nil {
 		return nil, err
 	}
-	sdk, err := InitializeSdkUsecase(conf, logger, infrastructureInfrastructure)
+	databaseConfig := &conf.Database
+	databaseDatabase, err := database.New(databaseConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := sdkapi.New(conf, logger, infrastructureInfrastructure, sdk)
+	sdk, err := InitializeSdkUsecase(conf, logger, infrastructureInfrastructure, databaseDatabase)
+	if err != nil {
+		return nil, err
+	}
+	service := sdkapi.New(conf, logger, infrastructureInfrastructure, databaseDatabase, sdk)
 	return service, nil
 }
 
-func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (sdk.Sdk, error) {
-	databaseConfig := &conf.Database
-	repositories := repos4.New(databaseConfig, logger)
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, db database.Database) (sdk.Sdk, error) {
+	repositories := repos4.New(logger, db)
 	sdkSdk := sdk.New(conf, logger, infra, repositories)
 	return sdkSdk, nil
 }

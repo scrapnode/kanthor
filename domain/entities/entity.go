@@ -5,13 +5,18 @@ import (
 )
 
 type Entity struct {
+	Id string `json:"id"`
+}
+
+// TSEntity is time series entity
+type TSEntity struct {
 	Id        string `json:"id"`
 	Timestamp int64  `json:"timestamp"`
 }
 
-func (e *Entity) SetTS(now time.Time) {
-	if e.Timestamp == 0 {
-		e.Timestamp = now.UnixMilli()
+func (entity *TSEntity) SetTS(now time.Time) {
+	if entity.Timestamp == 0 {
+		entity.Timestamp = now.UnixMilli()
 	}
 }
 
@@ -23,9 +28,9 @@ type AuditTime struct {
 	UpdatedAt int64 `json:"updated_at" gorm:"autoUpdateTime:false"`
 }
 
-func (at *AuditTime) SetAT(now time.Time) {
-	if at.CreatedAt == 0 {
-		at.CreatedAt = now.UnixMilli()
+func (entity *AuditTime) SetAT(now time.Time) {
+	if entity.CreatedAt == 0 {
+		entity.CreatedAt = now.UnixMilli()
 	}
-	at.UpdatedAt = now.UnixMilli()
+	entity.UpdatedAt = now.UnixMilli()
 }

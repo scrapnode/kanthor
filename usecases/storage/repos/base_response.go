@@ -7,5 +7,5 @@ import (
 )
 
 type Response interface {
-	Create(ctx context.Context, docs []entities.Response) ([]entities.Entity, error)
+	Create(ctx context.Context, docs []entities.Response) ([]entities.TSEntity, error)
 }

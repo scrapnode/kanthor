@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/sdkapi"
@@ -18,15 +19,16 @@ func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Serv
 	wire.Build(
 		sdkapi.New,
 		infrastructure.New,
+		wire.FieldsOf(new(*config.Config), "Database"),
+		database.New,
 		InitializeSdkUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Sdk, error) {
+func InitializeSdkUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, db database.Database) (uc.Sdk, error) {
 	wire.Build(
 		uc.New,
-		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
 	)
 	return nil, nil

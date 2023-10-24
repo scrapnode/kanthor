@@ -16,7 +16,7 @@ type WorkspaceCredentialsListReq struct {
 func (req *WorkspaceCredentialsListReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
 		validator.PointerNotNil("list", req.ListReq),
 	)
 }

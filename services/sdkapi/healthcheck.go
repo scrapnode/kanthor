@@ -19,10 +19,20 @@ func RegisterHealthcheck(router gin.IRoutes, service *sdkapi) {
 			return
 		}
 
+		if err := service.db.Readiness(); err != nil {
+			ginctx.Status(http.StatusInternalServerError)
+			return
+		}
+
 		ginctx.String(http.StatusOK, "ready")
 	})
 	router.GET("/liveness", func(ginctx *gin.Context) {
 		if err := service.infra.Liveness(); err != nil {
+			ginctx.Status(http.StatusInternalServerError)
+			return
+		}
+
+		if err := service.db.Liveness(); err != nil {
 			ginctx.Status(http.StatusInternalServerError)
 			return
 		}

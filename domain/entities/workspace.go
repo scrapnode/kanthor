@@ -23,7 +23,7 @@ type WorkspaceCredentials struct {
 	Entity
 	AuditTime
 
-	WorkspaceId string `json:"workspace_id"`
+	WorkspaceId string `json:"ws_id"`
 	Name        string `json:"name"`
 	Hash        string `json:"hash,omitempty"`
 	ExpiredAt   int64  `json:"expired_at"`

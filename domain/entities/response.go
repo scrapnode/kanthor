@@ -5,7 +5,8 @@ import (
 )
 
 type Response struct {
-	Entity
+	TSEntity
+
 	MsgId string `json:"msg_id"`
 	EpId  string `json:"ep_id"`
 	ReqId string `json:"req_id"`

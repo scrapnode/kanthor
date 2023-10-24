@@ -11,7 +11,7 @@ func UseWsId(wsId string, target schema.Tabler) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		ws := &entities.Workspace{}
 		join := fmt.Sprintf(
-			`JOIN "%s" ON "%s"."id" = "%s"."workspace_id" AND "%s"."workspace_id" = ?`,
+			`JOIN "%s" ON "%s"."id" = "%s"."ws_id" AND "%s"."ws_id" = ?`,
 			ws.TableName(),
 			ws.TableName(),
 			target.TableName(),

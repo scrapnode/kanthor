@@ -3,9 +3,12 @@ package repos
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/database"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +17,7 @@ type SqlWorkspace struct {
 }
 
 func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error) {
+	log.Println(utils.Stringify(doc))
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	if tx := transaction.Create(doc); tx.Error != nil {
 		return nil, tx.Error

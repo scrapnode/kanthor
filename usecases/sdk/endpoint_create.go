@@ -21,7 +21,7 @@ type EndpointCreateReq struct {
 func (req *EndpointCreateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("workspace_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("name", req.Name),
 		validator.StringRequired("secret_key", req.SecretKey),

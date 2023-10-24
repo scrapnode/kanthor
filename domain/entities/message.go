@@ -5,7 +5,7 @@ import (
 )
 
 type Message struct {
-	Entity
+	TSEntity
 
 	Tier     string   `json:"tier"`
 	AppId    string   `json:"app_id"`

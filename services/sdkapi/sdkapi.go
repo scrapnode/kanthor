@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
@@ -25,6 +26,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
+	db database.Database,
 	uc usecase.Sdk,
 ) services.Service {
 	logger = logger.With("service", "sdkapi")
@@ -32,6 +34,7 @@ func New(
 		conf:   conf,
 		logger: logger,
 		infra:  infra,
+		db:     db,
 		uc:     uc,
 	}
 }
@@ -40,6 +43,7 @@ type sdkapi struct {
 	conf   *config.Config
 	logger logging.Logger
 	infra  *infrastructure.Infrastructure
+	db     database.Database
 	uc     usecase.Sdk
 
 	server *http.Server
@@ -54,6 +58,10 @@ func (service *sdkapi) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.db.Connect(ctx); err != nil {
+		return err
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -121,6 +129,10 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 	}
 
 	if err := service.infra.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
+	if err := service.db.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
 

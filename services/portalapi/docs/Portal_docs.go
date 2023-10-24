@@ -465,7 +465,7 @@ const docTemplatePortal = `{
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -486,7 +486,7 @@ const docTemplatePortal = `{
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -596,7 +596,7 @@ const docTemplatePortal = `{
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }
@@ -645,7 +645,7 @@ const docTemplatePortal = `{
                 "updated_at": {
                     "type": "integer"
                 },
-                "workspace_id": {
+                "ws_id": {
                     "type": "string"
                 }
             }

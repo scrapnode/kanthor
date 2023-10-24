@@ -26,7 +26,7 @@ func (req *WorkspaceSetupReq) Validate() error {
 				validator.StringStartsWith(prefix+".id", item.Id, entities.IdNsApp),
 				validator.NumberGreaterThan(prefix+".created_at", item.CreatedAt, 0),
 				validator.NumberGreaterThan(prefix+".updated_at", item.UpdatedAt, 0),
-				validator.StringStartsWith(prefix+".workspace_id", item.WsId, entities.IdNsWs),
+				validator.StringStartsWith(prefix+".ws_id", item.WsId, entities.IdNsWs),
 				validator.StringRequired(prefix+".name", item.Name),
 			)
 		}),

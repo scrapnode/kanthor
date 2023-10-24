@@ -7,5 +7,5 @@ import (
 )
 
 type Request interface {
-	Create(ctx context.Context, docs []entities.Request) ([]entities.Entity, error)
+	Create(ctx context.Context, docs []entities.Request) ([]entities.TSEntity, error)
 }

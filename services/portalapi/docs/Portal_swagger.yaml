@@ -56,7 +56,7 @@ definitions:
         type: string
       updated_at:
         type: integer
-      workspace_id:
+      ws_id:
         type: string
     type: object
   entities.WorkspaceTier:
@@ -73,7 +73,7 @@ definitions:
         type: string
       updated_at:
         type: integer
-      workspace_id:
+      ws_id:
         type: string
     type: object
   gateway.Error:
@@ -147,7 +147,7 @@ definitions:
         type: string
       updated_at:
         type: integer
-      workspace_id:
+      ws_id:
         type: string
     type: object
   portalapi.WorkspaceCredentialsListRes:
@@ -182,7 +182,7 @@ definitions:
         type: string
       updated_at:
         type: integer
-      workspace_id:
+      ws_id:
         type: string
     type: object
   portalapi.WorkspaceGetRes:
