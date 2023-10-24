@@ -89,6 +89,7 @@ func (metric *otel) Connect(ctx context.Context) error {
 		),
 	)
 
+	metric.status = patterns.StatusConnected
 	metric.logger.Info("connected")
 	metric.provider = provider
 	return nil

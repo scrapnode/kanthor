@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace
     name        VARCHAR(256) NOT NULL,
     tier        VARCHAR(256) NOT NULL
 );
-CREATE UNIQUE INDEX IF NOT EXISTS  kanthor_ws_owner_unique ON kanthor_workspace(owner_id DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS  kanthor_ws_owner_ref ON kanthor_workspace(owner_id DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_workspace_credentials
 (
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS kanthor_workspace_credentials
 
     FOREIGN KEY (ws_id) REFERENCES kanthor_workspace (id) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS kanthor_wsc_ws_ref ON kanthor_workspace_tier(ws_id DESC);
+CREATE INDEX IF NOT EXISTS kanthor_wsc_ws_ref ON kanthor_workspace_credentials(ws_id DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_application
 (
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS kanthor_application
 
     FOREIGN KEY (ws_id) REFERENCES kanthor_workspace (id) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS kanthor_app_ws_ref ON kanthor_workspace_tier(ws_id DESC);
+CREATE INDEX IF NOT EXISTS kanthor_app_ws_ref ON kanthor_application(ws_id DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_endpoint
 (

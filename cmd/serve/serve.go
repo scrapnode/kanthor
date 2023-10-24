@@ -2,6 +2,7 @@ package serve
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -62,20 +63,27 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			<-ctx.Done()
 
 			// wait a little to stop our service
+			errc := make(chan error)
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			go func() {
+				var returning error
 				if err := service.Stop(ctx); err != nil {
-					logger.Error(err)
+					returning = errors.Join(returning, err)
 				}
 				if err := debug.Stop(ctx); err != nil {
-					logger.Error(err)
+					returning = errors.Join(returning, err)
 				}
-				cancel()
-			}()
-			<-ctx.Done()
 
-			return nil
+				errc <- returning
+			}()
+
+			select {
+			case err := <-errc:
+				return err
+			case <-ctx.Done():
+				return ctx.Err()
+			}
 		},
 	}
 

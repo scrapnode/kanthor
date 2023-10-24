@@ -62,8 +62,6 @@ CREATE TABLE IF NOT EXISTS kanthor_attempt (
     scheduled_at BIGINT NOT NULL DEFAULT 0,
     
     completed_at BIGINT NOT NULL DEFAULT 0
-)
-CREATE INDEX IF NOT EXISTS kanthor_att_scan ON kanthor_attempt (req_id DESC, id DESC);
-
+);
 
 COMMIT;

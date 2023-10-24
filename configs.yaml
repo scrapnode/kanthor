@@ -1,3 +1,9 @@
+# refs
+redis_uri: &redis_uri redis://127.0.0.1:6379/0
+postgres_uri: &postgres_uri postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30
+nats_uri: &nats_uri nats://127.0.0.1:4222
+
+# configurations
 logger:
   pretty: true
   level: debug
@@ -28,46 +34,41 @@ circuit_breaker:
       error_ratio: 0.5
 
 idempotency:
-  uri: redis://127.0.0.1:6379/0
+  uri: *redis_uri
   time_to_live: 86400000 # 1 day
 
 distributed_lock_manager:
-  uri: redis://127.0.0.1:6379/0
+  uri: *redis_uri
   time_to_live: 3600000 # 1h
 
 cache:
-  uri: redis://127.0.0.1:6379/0
+  uri: *redis_uri
   time_to_live: 3600000 # 1h
 
 authorizator:
   engine: casbin
   casbin:
     model_uri: file://./data/authorizator/casbin_rbac_model.conf
-    policy_uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.authorizator
+    policy_uri: *postgres_uri
     watcher: 
-      uri: nats://127.0.0.1:4222
+      uri: *nats_uri
 
 metric:
-  engine: otel
-  otel:
-    endpoint: localhost:4317
-    interval: 15000
-    labels:
-      env: localhost
+  engine: noop
 
 database:
-  uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.database
+  uri: *postgres_uri
   migration:
     source: file://./migration/database/sql
 
 datastore:
-  uri: postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&application_name=kanthor.datastore
+  uri: *postgres_uri
   migration:
     source: file://./migration/datastore/sql
 
 stream:
   name: main
-  uri: nats://127.0.0.1:4222
+  uri: *nats_uri
   nats:
     replicas: 0
     limits:

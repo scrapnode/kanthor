@@ -64,10 +64,6 @@ func (service *executor) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := service.uc.Connect(ctx); err != nil {
-		return err
-	}
-
 	if err := service.subscriber.Connect(ctx); err != nil {
 		return err
 	}
@@ -93,22 +89,14 @@ func (service *executor) Stop(ctx context.Context) error {
 
 	var returning error
 	if err := service.healthcheck.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 
 	if err := service.subscriber.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
-		returning = errors.Join(returning, err)
-	}
-
-	if err := service.uc.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 
 	if err := service.infra.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 
@@ -133,13 +121,10 @@ func (service *executor) Run(ctx context.Context) error {
 				return err
 			}
 
-			if err := service.uc.Liveness(); err != nil {
-				return err
-			}
-
 			if err := service.infra.Liveness(); err != nil {
 				return err
 			}
+
 			return nil
 		})
 		if err != nil {
@@ -160,13 +145,10 @@ func (service *executor) readiness() error {
 			return err
 		}
 
-		if err := service.uc.Readiness(); err != nil {
-			return err
-		}
-
 		if err := service.infra.Readiness(); err != nil {
 			return err
 		}
+
 		return nil
 	})
 }

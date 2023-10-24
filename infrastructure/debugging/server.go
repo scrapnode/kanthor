@@ -62,5 +62,8 @@ func (server *server) Stop(ctx context.Context) error {
 }
 
 func (server *server) Run(ctx context.Context) error {
-	return server.instance.ListenAndServe()
+	if err := server.instance.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return err
+	}
+	return nil
 }

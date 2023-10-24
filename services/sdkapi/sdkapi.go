@@ -60,10 +60,6 @@ func (service *sdkapi) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := service.uc.Connect(ctx); err != nil {
-		return err
-	}
-
 	service.server = &http.Server{
 		Addr:    service.conf.SdkApi.Gateway.Addr,
 		Handler: service.router(),
@@ -121,17 +117,10 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 
 	var returning error
 	if err := service.server.Shutdown(ctx); err != nil {
-		service.logger.Error(err)
-		returning = errors.Join(returning, err)
-	}
-
-	if err := service.uc.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 
 	if err := service.infra.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 
@@ -141,7 +130,7 @@ func (service *sdkapi) Stop(ctx context.Context) error {
 func (service *sdkapi) Run(ctx context.Context) error {
 	service.logger.Infow("running", "addr", service.conf.SdkApi.Gateway.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		service.logger.Error(err)
+		return err
 	}
 
 	return nil

@@ -64,10 +64,6 @@ func (service *portalapi) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := service.uc.Connect(ctx); err != nil {
-		return err
-	}
-
 	service.server = &http.Server{
 		Addr:    service.conf.PortalApi.Gateway.Addr,
 		Handler: service.router(),
@@ -122,17 +118,10 @@ func (service *portalapi) Stop(ctx context.Context) error {
 
 	var returning error
 	if err := service.server.Shutdown(ctx); err != nil {
-		service.logger.Error(err)
-		returning = errors.Join(returning, err)
-	}
-
-	if err := service.uc.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 
 	if err := service.infra.Disconnect(ctx); err != nil {
-		service.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 

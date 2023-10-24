@@ -41,15 +41,8 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			if err := infra.Connect(ctx); err != nil {
 				return err
 			}
-			if err := uc.Connect(ctx); err != nil {
-				return err
-			}
 
 			defer func() {
-				if err := uc.Disconnect(ctx); err != nil {
-					logger.Error(err)
-				}
-
 				if err := infra.Disconnect(ctx); err != nil {
 					logger.Error(err)
 				}

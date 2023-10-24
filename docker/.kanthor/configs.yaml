@@ -1,12 +1,75 @@
-# shares
-streaming: &streaming
-  uri: nats://streaming:4222
-  stream:
-    name: default
-    subjects:
-      - kanthor.default.msg.>
-      - kanthor.default.req.>
-      - kanthor.default.res.>
+# refs
+redis_uri: &redis_uri redis://cache:6379/0
+postgres_uri: &postgres_uri postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30
+nats_uri: &nats_uri nats://streaming:4222
+
+# configurations
+logger:
+  pretty: true
+  level: debug
+  with:
+    env: localhost
+
+cryptography:
+  kdf: {}
+  symmetric:
+    key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
+
+sender:
+  trace: true
+  timeout: 10000 # 10s
+  retry:
+    count: 1
+    wait_time: 5000 # 5s
+    
+circuit_breaker:
+  close:
+    cleanup_interval: 600000 # 10m
+  half:
+    passthrough_requests: 10
+  open:
+    duration: 1800000 # 30m
+    conditions:
+      error_consecutive: 10
+      error_ratio: 0.5
+
+idempotency:
+  uri: *redis_uri
+  time_to_live: 86400000 # 1 day
+
+distributed_lock_manager:
+  uri: *redis_uri
+  time_to_live: 3600000 # 1h
+
+cache:
+  uri: *redis_uri
+  time_to_live: 3600000 # 1h
+
+authorizator:
+  engine: casbin
+  casbin:
+    model_uri: file://./data/authorizator/casbin_rbac_model.conf
+    policy_uri: *postgres_uri
+    watcher: 
+      uri: *nats_uri
+
+metric:
+  engine: noop
+
+database:
+  uri: *postgres_uri
+  migration:
+    source: file://./migration/database/sql
+
+datastore:
+  uri: *postgres_uri
+  migration:
+    source: file://./migration/datastore/sql
+
+stream:
+  name: main
+  uri: *nats_uri
+  nats:
     replicas: 0
     limits:
       msg_bytes: 32000
@@ -14,172 +77,55 @@ streaming: &streaming
       bytes: 3200000000
       # 60*60*24*3 = 3d
       age: 259200
-
-cache: &cache
-  uri: redis://cache:6379/0
-  time_to_live: 900000 # 15 minute
-
-logger:
-  pretty: true
-  level: info
-  with:
-    environment: localhost
-
-bucket:
-  layout: "20060102"
-
-cryptography:
-  kdf: {}
-  symmetric:
-    key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
-
-idempotency:
-  namespace: idempotency
-  uri: redis://cache:6379/0
-  time_to_live: 300000 # 5 mins
-
-coordinator:
-  engine: nats
-  nats:
-    uri: nats://streaming:4222
-    subject: kanthor.coordinator
-
-database:
-  uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.database
-  migration:
-    source: file://./migration/database/sql
-
-datastore:
-  uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.datastore
-  migration:
-    source: file://./migration/datastore/sql
-
-# services
-sdkapi:
-  cache: *cache
-  portal_connection:
-    account: http://portalapi:8280/api/account/me
-  gateway:
-    engine: httpx
-    httpx:
-      addr: :8180
-  authorizator:
-    engine: casbin
-    casbin:
-      model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.services.sdk
-      policy_namespace: sdk
   publisher:
-    connection: *streaming
-  metrics:
-    engine: otel
-    otel:
-      endpoint: collector:4317
-      service: sdkapi
-      interval: 15000
-      labels:
-        env: local
+    timeout: 30000 # 30s
+    rate_limit: 300
+  subscriber:
+    max_retry: 1
+    timeout: 60000 # 60s
+    concurrency: 1000
+
+# application services
+sdkapi:
+  gateway:
+    addr: :8180
+  # the sdkapi has internal authenticator
 
 portalapi:
-  cache: *cache
   gateway:
-    engine: httpx
-    httpx:
-      addr: :8280
+    addr: :8280
   authenticator:
     engine: ask
     ask:
       access_key: kanthor_root_key
       secret_key: kanthor_root_password
       # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
-  authorizator:
-    engine: casbin
-    casbin:
-      model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&application_name=kanthor.services.portal
-      policy_namespace: portal
-  metrics:
-    engine: otel
-    otel:
-      endpoint: collector:4317
-      service: portalapi
-      interval: 15000
-      labels:
-        env: local
-
+      
 scheduler:
-  cache: *cache
-  publisher:
-    connection: *streaming
-  subscriber:
-    connection: *streaming
-    name: schedule
-    filter_subject: kanthor.default.msg.>
-    max_retry: 3
-    max_waiting: 100
-    max_ack_pending: 100000
-    max_ack_wating_duration: 15000
-    max_request_batch: 1000
-  metrics:
-    engine: otel
-    otel:
-      endpoint: collector:4317
-      service: scheduler
-      interval: 15000
-      labels:
-        env: local
+  request:
+    schedule:
+      timeout: 60000 # 60s
 
 dispatcher:
-  cache: *cache
-  publisher:
-    connection: *streaming
-  subscriber:
-    connection: *streaming
-    name: dispatcher
-    filter_subject: kanthor.default.req.>
-    max_retry: 3
-    max_waiting: 100
-    max_ack_pending: 100000
-    max_ack_wating_duration: 15000
-    max_request_batch: 1000
-  sender:
-    timeout: 3000
-    retry:
-      count: 1
-      wait_time: 100
-      wait_time_max: 5000
-  circuit_breaker:
-    half_open_max_pass_through_requests: 5
-    half_open_trigger_minimum_requests: 10
-    half_open_trigger_error_threshold_ratio: 0.1
-    close_trigger_minimum_requests: 10
-    close_trigger_error_threshold_ratio: 0.1
-    close_state_clear_interval: 600000
-    open_state_duration: 900000
-  metrics:
-    engine: otel
-    otel:
-      endpoint: collector:4317
-      service: dispatcher
-      interval: 15000
-      labels:
-        env: local
+  forwarder:
+    send:
+      concurrency: 300
 
 storage:
-  subscriber:
-    connection: *streaming
-    name: storage
-    filter_subject: kanthor.default.>
-    max_waiting: 100
-    max_retry: 3
-    max_ack_pending: 100000
-    max_ack_wating_duration: 15000
-    max_request_batch: 1000
-  metrics:
-    engine: otel
-    otel:
-      endpoint: collector:4317
-      service: storage
-      interval: 15000
-      labels:
-        env: local
+  warehouse:
+    put:
+      timeout: 60000 # 60s
+      size: 1000
+
+attempt:
+  trigger:
+    planner:
+      schedule: "*/15 * * * *"
+      timeout: 600000 # 60s
+      size: 10000
+      scan_start: -324000 # 1h30m
+      scan_end: -1800000 # 30m
+    executor:
+      timeout: 60000 # 60s
+      size: 1
+      attempt_delay: 1800000 # 30m

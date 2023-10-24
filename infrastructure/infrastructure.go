@@ -117,23 +117,18 @@ func (infra *Infrastructure) Disconnect(ctx context.Context) error {
 	var returning error
 
 	if err := infra.Idempotency.Disconnect(ctx); err != nil {
-		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 	if err := infra.Authorizator.Disconnect(ctx); err != nil {
-		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 	if err := infra.Stream.Disconnect(ctx); err != nil {
-		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 	if err := infra.Cache.Disconnect(ctx); err != nil {
-		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 	if err := infra.Metric.Disconnect(ctx); err != nil {
-		infra.logger.Error(err)
 		returning = errors.Join(returning, err)
 	}
 
