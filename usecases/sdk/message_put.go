@@ -12,7 +12,7 @@ import (
 )
 
 type MessagePutReq struct {
-	WorkspaceId   string
+	WsId          string
 	WorkspaceTier string
 	AppId         string
 	Type          string
@@ -25,7 +25,7 @@ type MessagePutReq struct {
 func (req *MessagePutReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringRequired("workspace_tier", req.WorkspaceTier),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("type", req.Type),
@@ -39,9 +39,9 @@ type MessagePutRes struct {
 }
 
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
-	key := CacheKeyApp(req.WorkspaceId, req.AppId)
+	key := CacheKeyApp(req.WsId, req.AppId)
 	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
-		return uc.repos.Application().Get(ctx, req.WorkspaceId, req.AppId)
+		return uc.repos.Application().Get(ctx, req.WsId, req.AppId)
 	})
 	if err != nil {
 		return nil, err

@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/services/permissions"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
 
@@ -31,14 +31,11 @@ type WorkspaceCredentialsCreateRes struct {
 // @Failure		default						{object}	gateway.Error
 // @Security	BearerAuth
 // @Security	WsId
-func UseWorkspaceCredentialsCreate(
-	logger logging.Logger,
-	uc portaluc.Portal,
-) gin.HandlerFunc {
+func UseWorkspaceCredentialsCreate(service *portalapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
@@ -46,16 +43,28 @@ func UseWorkspaceCredentialsCreate(
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
-		ucreq := &portaluc.WorkspaceCredentialsGenerateReq{WorkspaceId: ws.Id, Name: req.Name, ExpiredAt: req.ExpiredAt}
+		ucreq := &portaluc.WorkspaceCredentialsGenerateReq{
+			WsId:        ws.Id,
+			Name:        req.Name,
+			ExpiredAt:   req.ExpiredAt,
+			Role:        permissions.SdkOwner,
+			Permissions: permissions.SdkOwnerPermissions,
+		}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.WorkspaceCredentials().Generate(ctx, ucreq)
+		ucres, err := service.uc.WorkspaceCredentials().Generate(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			return
+		}
+
+		if err := service.infra.Authorizator.Refresh(ctx); err != nil {
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

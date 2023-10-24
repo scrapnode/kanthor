@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -27,19 +26,19 @@ type ApplicationListRes struct {
 // @Success		200					{object}	ApplicationListRes
 // @Failure		default				{object}	gateway.Error
 // @Security	BasicAuth
-func UseApplicationList(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseApplicationList(service *sdkapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ucreq := &usecase.ApplicationListReq{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.Application().List(ctx, ucreq)
+		ucres, err := service.uc.Application().List(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

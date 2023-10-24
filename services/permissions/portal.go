@@ -1,12 +1,12 @@
-package portalapi
+package permissions
 
 import "github.com/scrapnode/kanthor/infrastructure/authorizator"
 
 var (
-	RoleOwner = "portal.owner"
+	PortalOwner = "portal.owner"
 )
 
-var PermissionOwner = []authorizator.Permission{
+var PortalOwnerPermissions = []authorizator.Permission{
 	{Object: "/api/workspace/me", Action: "GET"},
 	{Object: "/api/workspace/me", Action: "PUT"},
 

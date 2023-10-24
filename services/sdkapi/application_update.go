@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -28,11 +27,11 @@ type ApplicationUpdateRes struct {
 // @Success		200						{object}	ApplicationUpdateRes
 // @Failure		default					{object}	gateway.Error
 // @Security	BasicAuth
-func UseApplicationUpdate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseApplicationUpdate(service *sdkapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req ApplicationUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
@@ -41,14 +40,14 @@ func UseApplicationUpdate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc
 		id := ginctx.Param("app_id")
 		ucreq := &usecase.ApplicationUpdateReq{Id: id, Name: req.Name}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.Application().Update(ctx, ucreq)
+		ucres, err := service.uc.Application().Update(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

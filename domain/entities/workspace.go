@@ -23,10 +23,10 @@ type WorkspaceCredentials struct {
 	Entity
 	AuditTime
 
-	WorkspaceId string `json:"ws_id"`
-	Name        string `json:"name"`
-	Hash        string `json:"hash,omitempty"`
-	ExpiredAt   int64  `json:"expired_at"`
+	WsId      string `json:"ws_id"`
+	Name      string `json:"name"`
+	Hash      string `json:"hash,omitempty"`
+	ExpiredAt int64  `json:"expired_at"`
 }
 
 func (entity *WorkspaceCredentials) TableName() string {

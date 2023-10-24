@@ -32,20 +32,18 @@ func UseAuth(
 
 		// authenticate sdk
 		credentials := ginctx.Request.Header.Get(authenticator.HeaderAuth)
-		ctx, err := sdkauth(uc, ctx, credentials)
+		ctx, err := auth(uc, ctx, credentials)
 		if err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unable to verify your credentials"})
 			return
 		}
-
-		// @TODO: authenticate portal
 
 		ginctx.Set(gateway.KeyContext, ctx)
 		ginctx.Next()
 	}
 }
 
-func sdkauth(
+func auth(
 	uc sdkuc.Sdk,
 	ctx context.Context,
 	credentials string,

@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
@@ -28,19 +27,19 @@ type WorkspaceCredentialsListRes struct {
 // @Failure		default						{object}	gateway.Error
 // @Security	BearerAuth
 // @Security	WsId
-func UseWorkspaceCredentialsList(logger logging.Logger, uc usecase.Portal) gin.HandlerFunc {
+func UseWorkspaceCredentialsList(service *portalapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ucreq := &usecase.WorkspaceCredentialsListReq{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.WorkspaceCredentials().List(ctx, ucreq)
+		ucres, err := service.uc.WorkspaceCredentials().List(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

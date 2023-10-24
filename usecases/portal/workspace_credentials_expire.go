@@ -10,17 +10,17 @@ import (
 )
 
 type WorkspaceCredentialsExpireReq struct {
-	WorkspaceId string
-	Id          string
-	Duration    int64
+	WsId     string
+	Id       string
+	Duration int64
 }
 
 func (req *WorkspaceCredentialsExpireReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", req.Id, entities.IdNsWsc),
-		validator.NumberGreaterThanOrEqual[int64]("duration", req.Duration, 0),
+		validator.NumberGreaterThanOrEqual("duration", req.Duration, 0),
 	)
 }
 
@@ -31,7 +31,7 @@ type WorkspaceCredentialsExpireRes struct {
 
 func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error) {
 	wsc, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, req.WorkspaceId, req.Id)
+		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}

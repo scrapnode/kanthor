@@ -22,8 +22,16 @@ func UseAuthz(authz authorizator.Authorizator) gin.HandlerFunc {
 		}
 
 		// starting authorize process
-		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
-		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
+		acc, has := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
+		if !has {
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "unknown account"})
+			return
+		}
+		ws, has := ctx.Value(gateway.CtxWs).(*entities.Workspace)
+		if !has {
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "unknown workspace"})
+			return
+		}
 
 		obj := ginctx.FullPath() // form of /application/:app_id
 		act := ginctx.Request.Method

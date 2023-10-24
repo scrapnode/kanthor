@@ -8,14 +8,14 @@ import (
 )
 
 type ApplicationCreateReq struct {
-	WorkspaceId string
-	Name        string
+	WsId string
+	Name string
 }
 
 func (req *ApplicationCreateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringRequired("name", req.Name),
 	)
 }
@@ -25,7 +25,7 @@ type ApplicationCreateRes struct {
 }
 
 func (uc *application) Create(ctx context.Context, req *ApplicationCreateReq) (*ApplicationCreateRes, error) {
-	doc := &entities.Application{WsId: req.WorkspaceId, Name: req.Name}
+	doc := &entities.Application{WsId: req.WsId, Name: req.Name}
 	doc.GenId()
 	doc.SetAT(uc.infra.Timer.Now())
 

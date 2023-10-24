@@ -9,9 +9,9 @@ import (
 )
 
 type EndpointCreateReq struct {
-	WorkspaceId string
-	AppId       string
-	Name        string
+	WsId  string
+	AppId string
+	Name  string
 
 	SecretKey string
 	Uri       string
@@ -21,7 +21,7 @@ type EndpointCreateReq struct {
 func (req *EndpointCreateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("name", req.Name),
 		validator.StringRequired("secret_key", req.SecretKey),
@@ -36,7 +36,7 @@ type EndpointCreateRes struct {
 }
 
 func (uc *endpoint) Create(ctx context.Context, req *EndpointCreateReq) (*EndpointCreateRes, error) {
-	app, err := uc.repos.Application().Get(ctx, req.WorkspaceId, req.AppId)
+	app, err := uc.repos.Application().Get(ctx, req.WsId, req.AppId)
 	if err != nil {
 		return nil, err
 	}

@@ -8,13 +8,16 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/services/permissions"
 	usecase "github.com/scrapnode/kanthor/usecases/portal"
 )
 
 func creds(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, out *output) error {
 	ucreq := &usecase.WorkspaceCredentialsGenerateReq{
-		WorkspaceId: ws.Id,
+		WsId:        ws.Id,
 		Name:        fmt.Sprintf("setup at %s", time.Now().UTC().Format(time.RFC3339)),
+		Role:        permissions.SdkOwner,
+		Permissions: permissions.SdkOwnerPermissions,
 	}
 	if err := ucreq.Validate(); err != nil {
 		return err

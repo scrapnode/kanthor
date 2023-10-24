@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -24,21 +23,21 @@ type EndpointDeleteRes struct {
 // @Success		200										{object}	EndpointDeleteRes
 // @Failure		default									{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointDelete(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointDelete(service *sdkapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
 		ucreq := &usecase.EndpointDeleteReq{AppId: appId, Id: id}
 		if err := ucreq.Validate(); err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.Endpoint().Delete(ctx, ucreq)
+		ucres, err := service.uc.Endpoint().Delete(ctx, ucreq)
 		if err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

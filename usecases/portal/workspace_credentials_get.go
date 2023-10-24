@@ -8,14 +8,14 @@ import (
 )
 
 type WorkspaceCredentialsGetReq struct {
-	WorkspaceId string
-	Id          string
+	WsId string
+	Id   string
 }
 
 func (req *WorkspaceCredentialsGetReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", req.Id, entities.IdNsWsc),
 	)
 }
@@ -26,7 +26,7 @@ type WorkspaceCredentialsGetRes struct {
 
 func (uc *workspaceCredentials) Get(ctx context.Context, req *WorkspaceCredentialsGetReq) (*WorkspaceCredentialsGetRes, error) {
 	// we don't need to use cache here because the usage is too low
-	wsc, err := uc.repos.WorkspaceCredentials().Get(ctx, req.WorkspaceId, req.Id)
+	wsc, err := uc.repos.WorkspaceCredentials().Get(ctx, req.WsId, req.Id)
 	if err != nil {
 		return nil, err
 	}

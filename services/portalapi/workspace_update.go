@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
@@ -28,11 +27,11 @@ type WorkspaceUpdateRes struct {
 // @Failure		default					{object}	gateway.Error
 // @Security	BearerAuth
 // @Security	WsId
-func UseWorkspaceUpdate(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc {
+func UseWorkspaceUpdate(service *portalapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
@@ -42,14 +41,14 @@ func UseWorkspaceUpdate(logger logging.Logger, uc portaluc.Portal) gin.HandlerFu
 
 		ucreq := &portaluc.WorkspaceUpdateReq{Id: ws.Id, Name: req.Name}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.Workspace().Update(ctx, ucreq)
+		ucres, err := service.uc.Workspace().Update(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

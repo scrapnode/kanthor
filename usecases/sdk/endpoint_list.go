@@ -9,15 +9,15 @@ import (
 )
 
 type EndpointListReq struct {
-	WorkspaceId string
-	AppId       string
+	WsId  string
+	AppId string
 	*structure.ListReq
 }
 
 func (req *EndpointListReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.PointerNotNil("list", req.ListReq),
 	)
@@ -28,7 +28,7 @@ type EndpointListRes struct {
 }
 
 func (uc *endpoint) List(ctx context.Context, req *EndpointListReq) (*EndpointListRes, error) {
-	app, err := uc.repos.Application().Get(ctx, req.WorkspaceId, req.AppId)
+	app, err := uc.repos.Application().Get(ctx, req.WsId, req.AppId)
 	if err != nil {
 		return nil, err
 	}

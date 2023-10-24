@@ -8,15 +8,15 @@ import (
 )
 
 type ApplicationUpdateReq struct {
-	WorkspaceId string
-	Id          string
-	Name        string
+	WsId string
+	Id   string
+	Name string
 }
 
 func (req *ApplicationUpdateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", req.Id, entities.IdNsApp),
 		validator.StringRequired("name", req.Name),
 	)
@@ -28,7 +28,7 @@ type ApplicationUpdateRes struct {
 
 func (uc *application) Update(ctx context.Context, req *ApplicationUpdateReq) (*ApplicationUpdateRes, error) {
 	app, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repos.Application().Get(txctx, req.WorkspaceId, req.Id)
+		app, err := uc.repos.Application().Get(txctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}

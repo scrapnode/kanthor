@@ -9,14 +9,14 @@ import (
 )
 
 type ApplicationListReq struct {
-	WorkspaceId string
+	WsId string
 	*structure.ListReq
 }
 
 func (req *ApplicationListReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.PointerNotNil("list", req.ListReq),
 	)
 }
@@ -28,7 +28,7 @@ type ApplicationListRes struct {
 func (uc *application) List(ctx context.Context, req *ApplicationListReq) (*ApplicationListRes, error) {
 	listing, err := uc.repos.Application().List(
 		ctx,
-		req.WorkspaceId,
+		req.WsId,
 		structure.WithListCursor(req.Cursor),
 		structure.WithListSearch(req.Search),
 		structure.WithListLimit(req.Limit),

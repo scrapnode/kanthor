@@ -127,8 +127,11 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 
 	// start watcher
 	err = authorizator.watcher.Run(ctx, func(s string) {
-		if err := authorizator.Refresh(context.Background()); err != nil {
-			authorizator.watcher.logger.Error(err)
+		if err := authorizator.client.LoadModel(); err != nil {
+			authorizator.logger.Error(authorizator)
+		}
+		if err := authorizator.client.LoadPolicy(); err != nil {
+			authorizator.logger.Error(authorizator)
 		}
 	})
 	if err != nil {
@@ -173,7 +176,9 @@ func (authorizator *casbin) Refresh(ctx context.Context) error {
 	if err := authorizator.client.LoadPolicy(); err != nil {
 		return err
 	}
-	return nil
+
+	authorizator.logger.Infow("refreshed", "nodeid", authorizator.watcher.nodeid, "subject", authorizator.watcher.subject)
+	return authorizator.watcher.Update()
 }
 
 func (authorizator *casbin) Enforce(tenant, sub, obj, act string) (bool, error) {

@@ -8,14 +8,14 @@ import (
 )
 
 type ApplicationDeleteReq struct {
-	WorkspaceId string
-	Id          string
+	WsId string
+	Id   string
 }
 
 func (req *ApplicationDeleteReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", req.Id, entities.IdNsApp),
 	)
 }
@@ -26,7 +26,7 @@ type ApplicationDeleteRes struct {
 
 func (uc *application) Delete(ctx context.Context, req *ApplicationDeleteReq) (*ApplicationDeleteRes, error) {
 	app, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repos.Application().Get(txctx, req.WorkspaceId, req.Id)
+		app, err := uc.repos.Application().Get(txctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}

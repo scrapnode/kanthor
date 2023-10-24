@@ -96,7 +96,7 @@ func (service *sdkapi) router() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		api.Use(ginmw.UseStartup())
+		api.Use(ginmw.UseStartup(&service.conf.SdkApi.Gateway))
 		api.Use(ginmw.UseMetric(config.SERVICE_SDK_API, service.infra.Metric))
 		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(middlewares.UseAuth(service.infra.Authorizator, service.uc))

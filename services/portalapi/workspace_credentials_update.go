@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
@@ -29,11 +28,11 @@ type WorkspaceCredentialsUpdateRes struct {
 // @Failure		default								{object}	gateway.Error
 // @Security	BearerAuth
 // @Security	WsId
-func UseWorkspaceCredentialsUpdate(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc {
+func UseWorkspaceCredentialsUpdate(service *portalapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsUpdateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
@@ -43,19 +42,19 @@ func UseWorkspaceCredentialsUpdate(logger logging.Logger, uc portaluc.Portal) gi
 
 		id := ginctx.Param("wsc_id")
 		ucreq := &portaluc.WorkspaceCredentialsUpdateReq{
-			WorkspaceId: ws.Id,
-			Id:          id,
-			Name:        req.Name,
+			WsId: ws.Id,
+			Id:   id,
+			Name: req.Name,
 		}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.WorkspaceCredentials().Update(ctx, ucreq)
+		ucres, err := service.uc.WorkspaceCredentials().Update(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

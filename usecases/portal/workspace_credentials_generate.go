@@ -6,22 +6,28 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type WorkspaceCredentialsGenerateReq struct {
-	WorkspaceId string
-	Name        string
-	ExpiredAt   int64
+	WsId      string
+	Name      string
+	ExpiredAt int64
+
+	Role        string
+	Permissions []authorizator.Permission
 }
 
 func (req *WorkspaceCredentialsGenerateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringRequired("name", req.Name),
-		validator.NumberGreaterThanOrEqual[int64]("expired_at", req.ExpiredAt, 0),
+		validator.NumberGreaterThanOrEqual("expired_at", req.ExpiredAt, 0),
+		validator.StringRequired("role", req.Role),
+		validator.SliceRequired("permissions", req.Permissions),
 	)
 }
 
@@ -33,8 +39,8 @@ type WorkspaceCredentialsGenerateRes struct {
 func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error) {
 	now := uc.infra.Timer.Now()
 	doc := &entities.WorkspaceCredentials{
-		WorkspaceId: req.WorkspaceId,
-		Name:        req.Name,
+		WsId: req.WsId,
+		Name: req.Name,
 	}
 	doc.GenId()
 	doc.SetAT(now)
@@ -45,11 +51,17 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCred
 	if err != nil {
 		return nil, err
 	}
-
 	doc.Hash = hash
 
 	credentials, err := uc.repos.WorkspaceCredentials().Create(ctx, doc)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := uc.infra.Authorizator.Grant(credentials.WsId, credentials.Id, req.Role, req.Permissions); err != nil {
+		return nil, err
+	}
+	if err := uc.infra.Authorizator.Refresh(ctx); err != nil {
 		return nil, err
 	}
 

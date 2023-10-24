@@ -100,7 +100,7 @@ func (service *portalapi) router() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		api.Use(ginmw.UseStartup())
+		api.Use(ginmw.UseStartup(&service.conf.PortalApi.Gateway))
 		api.Use(ginmw.UseMetric(config.SERVICE_PORTAL_API, service.infra.Metric))
 		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))

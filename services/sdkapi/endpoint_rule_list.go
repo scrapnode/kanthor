@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/structure"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -28,7 +27,7 @@ type EndpointRuleListRes struct {
 // @Success		200						{object}	EndpointRuleListRes
 // @Failure		default					{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointRuleList(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleList(service *sdkapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		epId := ginctx.Param("ep_id")
@@ -38,14 +37,14 @@ func UseEndpointRuleList(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc 
 			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
 		}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.EndpointRule().List(ctx, ucreq)
+		ucres, err := service.uc.EndpointRule().List(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

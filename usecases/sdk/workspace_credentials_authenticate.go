@@ -49,7 +49,7 @@ func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *Workspace
 			return nil, err
 		}
 
-		ws, err := uc.repos.Workspace().Get(ctx, credentials.WorkspaceId)
+		ws, err := uc.repos.Workspace().Get(ctx, credentials.WsId)
 		if err != nil {
 			return res, nil
 		}

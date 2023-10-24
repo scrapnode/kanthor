@@ -1,12 +1,12 @@
-package sdkapi
+package permissions
 
 import "github.com/scrapnode/kanthor/infrastructure/authorizator"
 
 var (
-	RoleOwner = "sdk.owner"
+	SdkOwner = "sdk.owner"
 )
 
-var PermissionOwner = []authorizator.Permission{
+var SdkOwnerPermissions = []authorizator.Permission{
 	{Object: "/api/account/me", Action: "GET"},
 
 	{Object: "/api/application", Action: "POST"},

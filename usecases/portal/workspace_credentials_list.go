@@ -9,14 +9,14 @@ import (
 )
 
 type WorkspaceCredentialsListReq struct {
-	WorkspaceId string
+	WsId string
 	*structure.ListReq
 }
 
 func (req *WorkspaceCredentialsListReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.PointerNotNil("list", req.ListReq),
 	)
 }
@@ -27,7 +27,7 @@ type WorkspaceCredentialsListRes struct {
 
 func (uc *workspaceCredentials) List(ctx context.Context, req *WorkspaceCredentialsListReq) (*WorkspaceCredentialsListRes, error) {
 	listing, err := uc.repos.WorkspaceCredentials().List(
-		ctx, req.WorkspaceId,
+		ctx, req.WsId,
 		structure.WithListCursor(req.Cursor),
 		structure.WithListSearch(req.Search),
 		structure.WithListLimit(req.Limit),

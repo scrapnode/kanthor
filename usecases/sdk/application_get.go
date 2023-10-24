@@ -10,14 +10,14 @@ import (
 )
 
 type ApplicationGetReq struct {
-	WorkspaceId string
-	Id          string
+	WsId string
+	Id   string
 }
 
 func (req *ApplicationGetReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", req.Id, entities.IdNsApp),
 	)
 }
@@ -27,9 +27,9 @@ type ApplicationGetRes struct {
 }
 
 func (uc *application) Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error) {
-	key := CacheKeyApp(req.WorkspaceId, req.Id)
+	key := CacheKeyApp(req.WsId, req.Id)
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*ApplicationGetRes, error) {
-		app, err := uc.repos.Application().Get(ctx, req.WorkspaceId, req.Id)
+		app, err := uc.repos.Application().Get(ctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}

@@ -8,5 +8,5 @@ import (
 func RegisterWorkspaceRoutes(router gin.IRoutes, service *portalapi) {
 	router = router.Use(ginmw.UseAuthz(service.infra.Authorizator))
 	router.GET("/me", UseWorkspaceGet())
-	router.PUT("/me", UseWorkspaceUpdate(service.logger, service.uc))
+	router.PUT("/me", UseWorkspaceUpdate(service))
 }

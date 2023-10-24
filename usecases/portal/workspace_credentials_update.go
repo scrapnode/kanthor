@@ -8,15 +8,15 @@ import (
 )
 
 type WorkspaceCredentialsUpdateReq struct {
-	WorkspaceId string
-	Id          string
-	Name        string
+	WsId string
+	Id   string
+	Name string
 }
 
 func (req *WorkspaceCredentialsUpdateReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WorkspaceId, entities.IdNsWs),
+		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", req.Id, entities.IdNsWsc),
 		validator.StringRequired("name", req.Name),
 	)
@@ -28,7 +28,7 @@ type WorkspaceCredentialsUpdateRes struct {
 
 func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCredentialsUpdateReq) (*WorkspaceCredentialsUpdateRes, error) {
 	doc, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, req.WorkspaceId, req.Id)
+		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}

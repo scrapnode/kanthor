@@ -5,10 +5,10 @@ import (
 )
 
 func RegisterEndpointRoutes(router gin.IRoutes, service *sdkapi) {
-	router.POST("", UseEndpointCreate(service.logger, service.uc))
-	router.PUT("/:ep_id", UseEndpointUpdate(service.logger, service.uc))
-	router.DELETE("/:ep_id", UseEndpointDelete(service.logger, service.uc))
+	router.POST("", UseEndpointCreate(service))
+	router.PUT("/:ep_id", UseEndpointUpdate(service))
+	router.DELETE("/:ep_id", UseEndpointDelete(service))
 
-	router.GET("", UseEndpointList(service.logger, service.uc))
-	router.GET("/:ep_id", UseEndpointGet(service.logger, service.uc))
+	router.GET("", UseEndpointList(service))
+	router.GET("/:ep_id", UseEndpointGet(service))
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
@@ -28,21 +27,21 @@ type AccountSetupRes struct {
 // @Success		200					{object}	AccountSetupRes
 // @Failure		default				{object}	gateway.Error
 // @Security	BearerAuth
-func UseAccountSetup(logger logging.Logger, uc portaluc.Portal) gin.HandlerFunc {
+func UseAccountSetup(service *portalapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
 		ucreq := &portaluc.AccountSetupReq{AccountId: acc.Sub}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.Account().Setup(ctx, ucreq)
+		ucres, err := service.uc.Account().Setup(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

@@ -114,3 +114,7 @@ func (w *watcher) Run(ctx context.Context, callback func(string)) error {
 	w.subscription = subscription
 	return nil
 }
+
+func (w *watcher) Update() error {
+	return w.conn.Publish(w.subject, []byte(w.nodeid))
+}

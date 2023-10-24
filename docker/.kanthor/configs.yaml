@@ -89,11 +89,13 @@ stream:
 sdkapi:
   gateway:
     addr: :8180
+    timeout: 60000
   # the sdkapi has internal authenticator
 
 portalapi:
   gateway:
     addr: :8280
+    timeout: 60000
   authenticator:
     engine: ask
     ask:

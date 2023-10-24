@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	usecase "github.com/scrapnode/kanthor/usecases/sdk"
 )
@@ -33,11 +32,11 @@ type EndpointRuleCreateRes struct {
 // @Success		201						{object}	EndpointRuleCreateRes
 // @Failure		default					{object}	gateway.Error
 // @Security	BasicAuth
-func UseEndpointRuleCreate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseEndpointRuleCreate(service *sdkapi) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointRuleCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
 			return
 		}
@@ -54,14 +53,14 @@ func UseEndpointRuleCreate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFun
 			ConditionExpression: req.ConditionExpression,
 		}
 		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.EndpointRule().Create(ctx, ucreq)
+		ucres, err := service.uc.EndpointRule().Create(ctx, ucreq)
 		if err != nil {
-			logger.Error(err)
+			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}

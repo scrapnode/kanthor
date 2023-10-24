@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	"github.com/scrapnode/kanthor/usecases/portal"
 	portaluc "github.com/scrapnode/kanthor/usecases/portal"
 )
 
@@ -16,7 +15,7 @@ var (
 	HeaderWorkspace = "kanthor-ws-id"
 )
 
-func UseAuth(engine authenticator.Authenticator, uc portal.Portal) gin.HandlerFunc {
+func UseAuth(engine authenticator.Authenticator, uc portaluc.Portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 
@@ -34,6 +33,7 @@ func UseAuth(engine authenticator.Authenticator, uc portal.Portal) gin.HandlerFu
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
+		ctx = context.WithValue(ctx, gateway.CtxWs, ws)
 
 		// authorize ownership
 		isOwner := acc.Sub == ws.OwnerId
@@ -44,7 +44,7 @@ func UseAuth(engine authenticator.Authenticator, uc portal.Portal) gin.HandlerFu
 	}
 }
 
-func workspace(uc portal.Portal, ctx context.Context, id string) (*entities.Workspace, error) {
+func workspace(uc portaluc.Portal, ctx context.Context, id string) (*entities.Workspace, error) {
 	req := &portaluc.WorkspaceGetReq{Id: id}
 	if err := req.Validate(); err != nil {
 		return nil, err
