@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/database"
+	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -34,7 +34,7 @@ func (uc *account) Setup(ctx context.Context, req *AccountSetupReq) (*AccountSet
 				return nil, err
 			}
 
-			ws = &entities.Workspace{OwnerId: req.AccountId, Name: constants.WorkspaceName}
+			ws = &entities.Workspace{OwnerId: req.AccountId, Name: namespace.WorkspaceName(), Tier: namespace.Tier()}
 			ws.GenId()
 			ws.SetAT(uc.infra.Timer.Now())
 			if _, err := uc.repos.Workspace().Create(ctx, ws); err != nil {

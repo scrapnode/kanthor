@@ -49,7 +49,6 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
 		headers := entities.Header{Header: http.Header{}}
 		if len(req.Headers) > 0 {
@@ -57,7 +56,12 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 				headers.Set(k, v)
 			}
 		}
+
+		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 		ucreq := &usecase.MessagePutReq{
+			WsId:     ws.Id,
+			Tier:     ws.Tier,
 			AppId:    appId,
 			Type:     req.Type,
 			Body:     body,

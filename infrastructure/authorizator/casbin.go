@@ -14,12 +14,18 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/pkg/suid"
 )
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
 	logger = logger.With("authorizator", "casbin")
 
-	w := &watcher{conf: &conf.Casbin.Watcher, logger: logger.With("casbin.watcher", "nats"), subject: "kanthor.internal.infrastructure.casbin.watcher"}
+	w := &watcher{
+		conf:    &conf.Casbin.Watcher,
+		logger:  logger.With("casbin.watcher", "nats"),
+		subject: namespace.SubjectInternal("infrastructure.casbin.watcher"),
+		nodeid:  suid.New("casbin.watcher"),
+	}
 	return &casbin{conf: conf, logger: logger, watcher: w}
 }
 
@@ -126,7 +132,9 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 	authorizator.client = client
 
 	// start watcher
-	err = authorizator.watcher.Run(ctx, func(s string) {
+	err = authorizator.watcher.Run(ctx, func(source string) {
+		authorizator.logger.Infow("reloading", "source", source)
+
 		if err := authorizator.client.LoadModel(); err != nil {
 			authorizator.logger.Error(authorizator)
 		}
@@ -177,7 +185,6 @@ func (authorizator *casbin) Refresh(ctx context.Context) error {
 		return err
 	}
 
-	authorizator.logger.Infow("refreshed", "nodeid", authorizator.watcher.nodeid, "subject", authorizator.watcher.subject)
 	return authorizator.watcher.Update()
 }
 

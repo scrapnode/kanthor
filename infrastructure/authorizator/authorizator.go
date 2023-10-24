@@ -8,8 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-var Namespace = "kanthor_authz"
-
 func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 	if conf.Engine == EngineCasbin {
 		return NewCasbin(conf, logger), nil

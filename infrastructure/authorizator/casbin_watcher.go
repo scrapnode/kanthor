@@ -99,22 +99,24 @@ func (w *watcher) Run(ctx context.Context, callback func(string)) error {
 
 	subscription, err := w.conn.Subscribe(w.subject, func(msg *nats.Msg) {
 		nodeid := string(msg.Data)
-		// ignore published node
+		// ignore original node
 		if nodeid == w.nodeid {
+			w.logger.Debugw("ignore original node", "nodeid", nodeid)
 			return
 		}
 
-		w.logger.Debugw("receive changes", "nodeid", nodeid)
+		w.logger.Debugw("received changes", "nodeid", nodeid)
 		callback(nodeid)
 	})
 	if err != nil {
 		return err
 	}
-
+	w.logger.Debugw("running", "nodeid", w.nodeid)
 	w.subscription = subscription
 	return nil
 }
 
 func (w *watcher) Update() error {
+	w.logger.Infow("publish changes", "subject", w.subject, "nodeid", w.nodeid)
 	return w.conn.Publish(w.subject, []byte(w.nodeid))
 }

@@ -12,10 +12,10 @@ import (
 )
 
 type MessagePutReq struct {
-	WsId          string
-	WorkspaceTier string
-	AppId         string
-	Type          string
+	WsId  string
+	Tier  string
+	AppId string
+	Type  string
 
 	Body     []byte
 	Headers  entities.Header
@@ -26,7 +26,7 @@ func (req *MessagePutReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringRequired("workspace_tier", req.WorkspaceTier),
+		validator.StringRequired("tier", req.Tier),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("type", req.Type),
 		validator.SliceRequired("body", req.Body),
@@ -48,7 +48,7 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 	}
 
 	msg := &entities.Message{
-		Tier:     req.WorkspaceTier,
+		Tier:     req.Tier,
 		AppId:    app.Id,
 		Type:     req.Type,
 		Body:     req.Body,

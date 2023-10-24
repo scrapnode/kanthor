@@ -2,11 +2,19 @@ package validator
 
 import "fmt"
 
-// StructNotNil is a predeclared identifier representing the zero value for a pointer, channel, func, interface, map, or slice type.
-func MapRequired[K comparable, V any](prop string, value map[K]V) Fn {
+func MapNotNil[K comparable, V any](prop string, value map[K]V) Fn {
 	return func() error {
 		if value == nil {
 			return fmt.Errorf("%s must not be nil", prop)
+		}
+		return nil
+	}
+}
+
+func MapRequired[K comparable, V any](prop string, value map[K]V) Fn {
+	return func() error {
+		if err := MapNotNil(prop, value)(); err != nil {
+			return err
 		}
 		if len(value) == 0 {
 			return fmt.Errorf("%s contains no item", prop)

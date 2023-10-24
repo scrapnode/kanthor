@@ -30,7 +30,7 @@ func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) erro
 		validator.StringRequired("request.tier", item.Tier),
 		validator.StringStartsWith("request.app_id", item.AppId, entities.IdNsApp),
 		validator.StringRequired("request.type", item.Type),
-		validator.MapRequired[string, string]("request.metadata", item.Metadata),
+		validator.MapNotNil[string, string]("request.metadata", item.Metadata),
 		validator.SliceRequired("request.body", item.Body),
 		validator.StringUri("request.uri", item.Uri),
 		validator.StringRequired("request.method", item.Method),
