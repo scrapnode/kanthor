@@ -52,7 +52,7 @@ func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]s
 	tableName := fmt.Sprintf(`"%s"`, (&entities.Attempt{}).TableName())
 	columns := fmt.Sprintf(`"%s"`, strings.Join(AttemptMappingCols, `","`))
 	statement := fmt.Sprintf(
-		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(id) DO NOTHING;",
+		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(req_id) DO NOTHING;",
 		tableName,
 		columns,
 		strings.Join(names, ","),

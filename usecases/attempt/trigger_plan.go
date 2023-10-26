@@ -102,7 +102,8 @@ var key = "kanthor.usecases.attempt.trigger.scan"
 
 func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Application, error) {
 	cursor, err := uc.infra.Cache.StringGet(ctx, key)
-	if !errors.Is(err, cache.ErrEntryNotFound) {
+	// only accept entry not found error
+	if err != nil && !errors.Is(err, cache.ErrEntryNotFound) {
 		return nil, err
 	}
 
@@ -113,6 +114,7 @@ func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Appli
 
 	nomore := len(apps) == 0 && cursor != ""
 	if nomore {
+		uc.logger.Warnw("no more applications to scan", "cursor", cursor)
 		// no more app, reset cursor
 		uc.infra.Cache.Del(ctx, key)
 		return []entities.Application{}, nil

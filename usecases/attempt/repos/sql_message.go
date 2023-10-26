@@ -18,10 +18,11 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
 
+	// @TODO: use chunk to fetch
 	selects := []string{"app_id", "id", "tier", "timestamp"}
 	var records []Msg
 	tx := sql.client.
-		Model(&entities.Message{}).
+		Table((&entities.Message{}).TableName()).
 		Where("app_id = ?", appId).
 		Where("id > ?", low).
 		Where("id < ?", high).

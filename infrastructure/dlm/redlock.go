@@ -22,13 +22,19 @@ func NewRedlock(conf *Config) (Factory, error) {
 	return func(key string) DistributedLockManager {
 		key = Key(key)
 		expiry := time.Millisecond * time.Duration(conf.TimeToLive)
-		return &redlock{key: key, mu: rs.NewMutex(key, redsync.WithExpiry(expiry))}
+		return &redlock{
+			key:  key,
+			conf: conf,
+			mu:   rs.NewMutex(key, redsync.WithExpiry(expiry)),
+		}
 	}, nil
 }
 
 type redlock struct {
 	key string
-	mu  *redsync.Mutex
+
+	conf *Config
+	mu   *redsync.Mutex
 }
 
 func (locker *redlock) Lock(ctx context.Context) error {
@@ -47,6 +53,6 @@ func (locker *redlock) Unlock(ctx context.Context) error {
 	return nil
 }
 
-func (locker *redlock) Until() time.Time {
-	return locker.mu.Until()
+func (locker *redlock) TimeToLive() time.Duration {
+	return time.Millisecond * time.Duration(locker.conf.TimeToLive)
 }

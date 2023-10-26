@@ -13,7 +13,7 @@ type Factory func(key string) DistributedLockManager
 type DistributedLockManager interface {
 	Lock(ctx context.Context) error
 	Unlock(ctx context.Context) error
-	Until() time.Time
+	TimeToLive() time.Duration
 }
 
 func New(conf *Config) (Factory, error) {

@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/attempt/trigger"
@@ -18,6 +19,8 @@ func InitializeAttemptTriggerPlanner(conf *config.Config, logger logging.Logger)
 	wire.Build(
 		trigger.NewPlanner,
 		infrastructure.New,
+		wire.FieldsOf(new(*config.Config), "Datastore"),
+		datastore.New,
 		InitializeAttemptUsecase,
 	)
 	return nil, nil
@@ -27,15 +30,16 @@ func InitializeAttemptTriggerExecutor(conf *config.Config, logger logging.Logger
 	wire.Build(
 		trigger.NewExecutor,
 		infrastructure.New,
+		wire.FieldsOf(new(*config.Config), "Datastore"),
+		datastore.New,
 		InitializeAttemptUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeAttemptUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Attempt, error) {
+func InitializeAttemptUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, ds datastore.Datastore) (uc.Attempt, error) {
 	wire.Build(
 		uc.New,
-		wire.FieldsOf(new(*config.Config), "Datastore"),
 		repos.New,
 	)
 	return nil, nil

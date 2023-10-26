@@ -72,7 +72,7 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 		wg.Go(func() {
 			resp, err := uc.consume(ctx, trigger, req.Size, req.AttemptDelay)
 			if err != nil {
-				uc.logger.Errorw("unable to consume attempt trigger", "trigger", trigger.String())
+				uc.logger.Errorw("unable to consume attempt trigger", "trigger", trigger.String(), "err", err.Error())
 				return
 			}
 
@@ -101,35 +101,35 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 
 func (uc *trigger) consume(
 	ctx context.Context,
-	notification *entities.AttemptTrigger,
+	trigger *entities.AttemptTrigger,
 	size int,
 	delay int64,
 ) (*TriggerExecRes, error) {
-	key := fmt.Sprintf("kanthor.services.attempt.trigger.consumer/%s", notification.AppId)
+	key := fmt.Sprintf("kanthor.services.attempt.trigger.consumer/%s", trigger.AppId)
 	// the lock duration will be long as much as possible
 	// so we will time the global timeout as as the lock duration
 	// in that duration, we could not consume the same app until the lock is released
 	locker := uc.infra.DistributedLockManager(key)
 
 	if err := locker.Lock(ctx); err != nil {
-		uc.logger.Errorw("unable to acquire a lock | key:%s", key)
+		uc.logger.Errorw("unable to acquire a lock", "key", key)
 		// if we could not acquire the lock, don't need to retry so don't set error here
 		return nil, err
 	}
 	defer func() {
 		if err := locker.Unlock(ctx); err != nil {
-			uc.logger.Errorw("unable to release a lock | key:%s", key)
+			uc.logger.Errorw("unable to release a lock", "key", key)
 		}
 	}()
 
-	applicable, err := uc.applicable(ctx, notification.AppId)
+	applicable, err := uc.applicable(ctx, trigger.AppId)
 	if err != nil {
 		return nil, err
 	}
 
-	from := time.UnixMilli(notification.From)
-	to := time.UnixMilli(notification.To)
-	msgIds, requests, err := uc.examine(ctx, notification.AppId, applicable, from, to)
+	from := time.UnixMilli(trigger.From)
+	to := time.UnixMilli(trigger.To)
+	msgIds, requests, err := uc.examine(ctx, trigger.AppId, applicable, from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (uc *trigger) examine(
 
 func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (map[string]repos.Msg, []string, error) {
 	cursor, err := uc.infra.Cache.StringGet(ctx, "kanthor.usecases.attempt.message.scan")
-	if !errors.Is(err, cache.ErrEntryNotFound) {
+	if err != nil && !errors.Is(err, cache.ErrEntryNotFound) {
 		return nil, nil, err
 	}
 

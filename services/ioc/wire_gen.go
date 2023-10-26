@@ -40,11 +40,16 @@ func InitializeAttemptTriggerPlanner(conf *config.Config, logger logging.Logger)
 	if err != nil {
 		return nil, err
 	}
-	attempt, err := InitializeAttemptUsecase(conf, logger, infrastructureInfrastructure)
+	datastoreConfig := &conf.Datastore
+	datastoreDatastore, err := datastore.New(datastoreConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := trigger.NewPlanner(conf, logger, infrastructureInfrastructure, attempt)
+	attempt, err := InitializeAttemptUsecase(conf, logger, infrastructureInfrastructure, datastoreDatastore)
+	if err != nil {
+		return nil, err
+	}
+	service := trigger.NewPlanner(conf, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
 	return service, nil
 }
 
@@ -53,17 +58,21 @@ func InitializeAttemptTriggerExecutor(conf *config.Config, logger logging.Logger
 	if err != nil {
 		return nil, err
 	}
-	attempt, err := InitializeAttemptUsecase(conf, logger, infrastructureInfrastructure)
+	datastoreConfig := &conf.Datastore
+	datastoreDatastore, err := datastore.New(datastoreConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := trigger.NewExecutor(conf, logger, infrastructureInfrastructure, attempt)
+	attempt, err := InitializeAttemptUsecase(conf, logger, infrastructureInfrastructure, datastoreDatastore)
+	if err != nil {
+		return nil, err
+	}
+	service := trigger.NewExecutor(conf, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
 	return service, nil
 }
 
-func InitializeAttemptUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (attempt.Attempt, error) {
-	datastoreConfig := &conf.Datastore
-	repositories := repos.New(datastoreConfig, logger)
+func InitializeAttemptUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, ds datastore.Datastore) (attempt.Attempt, error) {
+	repositories := repos.New(logger, ds)
 	attemptAttempt := attempt.New(conf, logger, infra, repositories)
 	return attemptAttempt, nil
 }

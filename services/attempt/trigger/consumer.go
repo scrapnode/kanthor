@@ -21,7 +21,7 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 		for _, event := range events {
 			trigger, err := transformation.EventToTrigger(event)
 			if err != nil {
-				service.logger.Errorw("unable to transform event to attempt notification", "err", err.Error(), "event", event.String())
+				service.logger.Errorw("unable to transform event to attempt trigger", "err", err.Error(), "event", event.String())
 				// unable to parse message from event is considered as un-retriable error
 				// ignore the error, and we need to check it manually with log
 				continue
@@ -35,17 +35,17 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 
 		ucres, err := service.uc.Trigger().Exec(ctx, ucreq)
 		if err != nil {
-			service.logger.Errorw("unable to consume attempt notifications", "err", err.Error())
-			// basically we will not try to retry an attempt notification
+			service.logger.Errorw("unable to consume attempt trigger", "err", err.Error())
+			// basically we will not try to retry an attempt trigger
 			// because it could be retry later by cronjob
 			return retruning
 		}
 
 		if len(ucres.Error) > 0 {
-			// basically we will not try to retry an attempt notification
+			// basically we will not try to retry an attempt trigger
 			// because it could be retry later by cronjob
 			for key, err := range ucres.Error {
-				service.logger.Errorw("consume attempt notification got some errors", "key", key, "err", err.Error())
+				service.logger.Errorw("consume attempt trigger got some errors", "key", key, "err", err.Error())
 			}
 		}
 

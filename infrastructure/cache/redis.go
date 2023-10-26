@@ -114,7 +114,7 @@ func (cache *redis) Set(ctx context.Context, key string, entry []byte, ttl time.
 }
 
 func (cache *redis) StringGet(ctx context.Context, key string) (string, error) {
-	bytes, err := cache.Get(ctx, Key(key))
+	bytes, err := cache.Get(ctx, key)
 	if err != nil {
 		return "", err
 	}
@@ -122,7 +122,7 @@ func (cache *redis) StringGet(ctx context.Context, key string) (string, error) {
 }
 
 func (cache *redis) StringSet(ctx context.Context, key string, entry string, ttl time.Duration) error {
-	return cache.Set(ctx, Key(key), []byte(entry), ttl)
+	return cache.Set(ctx, key, []byte(entry), ttl)
 }
 
 func (cache *redis) Exist(ctx context.Context, key string) bool {

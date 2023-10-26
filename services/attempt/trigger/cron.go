@@ -11,16 +11,16 @@ func RegisterCron(service *planner) func() {
 
 	return func() {
 		locker := service.infra.DistributedLockManager(key)
-		ctx, cancel := context.WithDeadline(context.Background(), locker.Until())
+		ctx, cancel := context.WithTimeout(context.Background(), locker.TimeToLive())
 		defer cancel()
 
 		if err := locker.Lock(ctx); err != nil {
-			service.logger.Errorw("unable to acquire a lock", "key", key)
+			service.logger.Errorw("unable to acquire a lock", "key", key, "err", err.Error())
 			return
 		}
 		defer func() {
 			if err := locker.Unlock(ctx); err != nil {
-				service.logger.Errorw("unable to release a lock", "key", key)
+				service.logger.Errorw("unable to release a lock", "key", key, "err", err.Error())
 			}
 		}()
 

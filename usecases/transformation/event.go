@@ -1,6 +1,8 @@
 package transformation
 
 import (
+	"fmt"
+
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/namespace"
@@ -112,7 +114,7 @@ func EventFromTrigger(trigger *entities.AttemptTrigger) (*streaming.Event, error
 	event := &streaming.Event{
 		AppId:    trigger.AppId,
 		Type:     constants.TypeInternal,
-		Id:       trigger.AppId,
+		Id:       fmt.Sprintf("%s/%d/%d", trigger.AppId, trigger.From, trigger.To),
 		Data:     data,
 		Metadata: map[string]string{},
 	}

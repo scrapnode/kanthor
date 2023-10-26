@@ -8,6 +8,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
@@ -20,6 +21,7 @@ func NewPlanner(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
+	ds datastore.Datastore,
 	uc usecase.Attempt,
 ) services.Service {
 	logger = logger.With("service", "attempt.trigger.planner")
@@ -27,6 +29,7 @@ func NewPlanner(
 		conf:   conf,
 		logger: logger,
 		infra:  infra,
+		ds:     ds,
 		uc:     uc,
 
 		cron: cron.New(),
@@ -41,6 +44,7 @@ type planner struct {
 	conf   *config.Config
 	logger logging.Logger
 	infra  *infrastructure.Infrastructure
+	ds     datastore.Datastore
 	uc     usecase.Attempt
 
 	cron        *cron.Cron
@@ -56,6 +60,10 @@ func (service *planner) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrPlannerAlreadyStarted
+	}
+
+	if err := service.ds.Connect(ctx); err != nil {
+		return err
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -94,6 +102,10 @@ func (service *planner) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
+	if err := service.ds.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
 	return returning
 }
 
@@ -102,11 +114,13 @@ func (service *planner) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	service.cron.Run()
+
 	// on dev environment, should run the job immediately after we starting the service
 	if service.conf.Development {
+		service.logger.Debug("starting immediately because of development env")
 		service.cron.Entry(id).Job.Run()
 	}
+	service.cron.Run()
 
 	if err := service.readiness(); err != nil {
 		return err
@@ -117,6 +131,10 @@ func (service *planner) Run(ctx context.Context) error {
 			service.logger.Debug("checking liveness")
 
 			if err := service.infra.Liveness(); err != nil {
+				return err
+			}
+
+			if err := service.ds.Liveness(); err != nil {
 				return err
 			}
 
@@ -142,6 +160,10 @@ func (service *planner) readiness() error {
 		service.logger.Debug("checking readiness")
 
 		if err := service.infra.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.ds.Readiness(); err != nil {
 			return err
 		}
 

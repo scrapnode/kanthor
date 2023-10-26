@@ -30,6 +30,10 @@ type server struct {
 }
 
 func (server *server) Start(ctx context.Context) error {
+	if !server.enable {
+		return nil
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -58,10 +62,18 @@ func (server *server) Start(ctx context.Context) error {
 }
 
 func (server *server) Stop(ctx context.Context) error {
+	if !server.enable {
+		return nil
+	}
+
 	return server.instance.Shutdown(ctx)
 }
 
 func (server *server) Run(ctx context.Context) error {
+	if !server.enable {
+		return nil
+	}
+
 	if err := server.instance.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}

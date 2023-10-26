@@ -4,6 +4,8 @@ postgres_uri: &postgres_uri postgres://postgres:changemenow@127.0.0.1/postgres?c
 nats_uri: &nats_uri nats://127.0.0.1:4222
 
 # configurations
+development: true
+
 logger:
   pretty: true
   level: debug
@@ -125,9 +127,9 @@ attempt:
       schedule: "*/15 * * * *"
       timeout: 600000 # 60s
       size: 10000
-      scan_start: -324000 # 1h30m
-      scan_end: -1800000 # 30m
+      scan_start: -7200000 # 1h30m
+      scan_end: -60000 # 30m
     executor:
       timeout: 60000 # 60s
-      size: 1
+      size: 500
       attempt_delay: 1800000 # 30m

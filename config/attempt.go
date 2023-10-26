@@ -48,8 +48,8 @@ func (conf *AttemptTriggerPlanner) Validate() error {
 		validator.StringRequired("config.attempt.trigger.planner.schedule", conf.Schedule),
 		validator.NumberGreaterThanOrEqual("config.attempt.trigger.planner.timeout", conf.Timeout, 1000),
 		validator.NumberGreaterThan("config.attempt.trigger.planner.size", conf.Size, 0),
-		validator.NumberGreaterThan("config.attempt.trigger.planner.scan_start", conf.ScanStart, conf.ScanEnd),
-		validator.NumberLessThan("config.attempt.trigger.planner.scan_end", conf.ScanEnd, conf.ScanStart),
+		validator.NumberLessThan("config.attempt.trigger.planner.scan_end", conf.ScanEnd, 0),
+		validator.NumberLessThan("config.attempt.trigger.planner.scan_start", conf.ScanStart, conf.ScanEnd),
 	)
 }
 
