@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/storage"
@@ -18,15 +19,16 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	wire.Build(
 		storage.New,
 		infrastructure.New,
+		wire.FieldsOf(new(*config.Config), "Datastore"),
+		datastore.New,
 		InitializeStorageUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Storage, error) {
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, ds datastore.Datastore) (uc.Storage, error) {
 	wire.Build(
 		uc.New,
-		wire.FieldsOf(new(*config.Config), "Datastore"),
 		repos.New,
 	)
 	return nil, nil

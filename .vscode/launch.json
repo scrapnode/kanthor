@@ -11,6 +11,9 @@
       "mode": "auto",
       "program": "${workspaceRoot}",
       "showLog": true,
+      "env": {
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6061"
+      },
       "args": ["serve", "sdkapi"],
       "preLaunchTask": "make"
     },
@@ -21,6 +24,9 @@
       "mode": "auto",
       "program": "${workspaceRoot}",
       "showLog": true,
+      "env": {
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6062"
+      },
       "args": ["serve", "portalapi"],
       "preLaunchTask": "make"
     },
@@ -31,6 +37,9 @@
       "mode": "auto",
       "program": "${workspaceRoot}",
       "showLog": true,
+      "env": {
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6063"
+      },
       "args": ["serve", "scheduler"],
       "preLaunchTask": "make"
     },
@@ -41,6 +50,9 @@
       "mode": "auto",
       "program": "${workspaceRoot}",
       "showLog": true,
+      "env": {
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6064"
+      },
       "args": ["serve", "dispatcher"],
       "preLaunchTask": "make"
     },
@@ -51,6 +63,9 @@
       "mode": "auto",
       "program": "${workspaceRoot}",
       "showLog": true,
+      "env": {
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6065"
+      },
       "args": ["serve", "storage"],
       "preLaunchTask": "make"
     }

@@ -8,6 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -21,6 +22,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
+	db database.Database,
 	uc usecase.Scheduler,
 ) services.Service {
 	logger = logger.With("service", "scheduler")
@@ -29,6 +31,7 @@ func New(
 		logger:     logger,
 		subscriber: infra.Stream.Subscriber("scheduler"),
 		infra:      infra,
+		db:         db,
 		uc:         uc,
 
 		healthcheck: background.NewServer(
@@ -43,6 +46,7 @@ type scheduler struct {
 	logger     logging.Logger
 	subscriber streaming.Subscriber
 	infra      *infrastructure.Infrastructure
+	db         database.Database
 	uc         usecase.Scheduler
 
 	healthcheck healthcheck.Server
@@ -57,6 +61,10 @@ func (service *scheduler) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.db.Connect(ctx); err != nil {
+		return err
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -99,6 +107,10 @@ func (service *scheduler) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
+	if err := service.db.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
 	return returning
 }
 
@@ -122,6 +134,11 @@ func (service *scheduler) Run(ctx context.Context) error {
 			if err := service.infra.Liveness(); err != nil {
 				return err
 			}
+
+			if err := service.db.Liveness(); err != nil {
+				return err
+			}
+
 			return nil
 		})
 		if err != nil {
@@ -148,6 +165,10 @@ func (service *scheduler) readiness() error {
 		}
 
 		if err := service.infra.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.db.Readiness(); err != nil {
 			return err
 		}
 

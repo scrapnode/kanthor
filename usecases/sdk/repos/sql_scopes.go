@@ -2,6 +2,7 @@ package repos
 
 import (
 	"fmt"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -41,7 +42,7 @@ func UseEpId(epId string, target schema.Tabler) func(db *gorm.DB) *gorm.DB {
 		ep := &entities.Endpoint{}
 
 		join := fmt.Sprintf(
-			`JOIN "%s" ON "%s"."id" = "%s"."endpoint_id" AND "%s"."endpoint_id" = ?`,
+			`JOIN "%s" ON "%s"."id" = "%s"."ep_id" AND "%s"."ep_id" = ?`,
 			ep.TableName(),
 			ep.TableName(),
 			target.TableName(),

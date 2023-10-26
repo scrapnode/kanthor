@@ -3,15 +3,13 @@ package repos
 import (
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
 )
 
-func New(conf *datastore.Config, logger logging.Logger) Repositories {
-	return NewSql(conf, logger)
+func New(logger logging.Logger, ds datastore.Datastore) Repositories {
+	return NewSql(logger, ds)
 }
 
 type Repositories interface {
-	patterns.Connectable
 	Message() Message
 	Request() Request
 	Response() Response

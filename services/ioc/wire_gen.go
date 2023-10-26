@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/database"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/attempt/trigger"
@@ -125,17 +126,21 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	if err != nil {
 		return nil, err
 	}
-	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger, infrastructureInfrastructure)
+	databaseConfig := &conf.Database
+	databaseDatabase, err := database.New(databaseConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := scheduler.New(conf, logger, infrastructureInfrastructure, schedulerScheduler)
+	schedulerScheduler, err := InitializeSchedulerUsecase(conf, logger, infrastructureInfrastructure, databaseDatabase)
+	if err != nil {
+		return nil, err
+	}
+	service := scheduler.New(conf, logger, infrastructureInfrastructure, databaseDatabase, schedulerScheduler)
 	return service, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (scheduler2.Scheduler, error) {
-	databaseConfig := &conf.Database
-	repositories := repos3.New(databaseConfig, logger)
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, db database.Database) (scheduler2.Scheduler, error) {
+	repositories := repos3.New(logger, db)
 	schedulerScheduler := scheduler2.New(conf, logger, infra, repositories)
 	return schedulerScheduler, nil
 }
@@ -173,17 +178,21 @@ func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Ser
 	if err != nil {
 		return nil, err
 	}
-	storageStorage, err := InitializeStorageUsecase(conf, logger, infrastructureInfrastructure)
+	datastoreConfig := &conf.Datastore
+	datastoreDatastore, err := datastore.New(datastoreConfig, logger)
 	if err != nil {
 		return nil, err
 	}
-	service := storage.New(conf, logger, infrastructureInfrastructure, storageStorage)
+	storageStorage, err := InitializeStorageUsecase(conf, logger, infrastructureInfrastructure, datastoreDatastore)
+	if err != nil {
+		return nil, err
+	}
+	service := storage.New(conf, logger, infrastructureInfrastructure, datastoreDatastore, storageStorage)
 	return service, nil
 }
 
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (storage2.Storage, error) {
-	datastoreConfig := &conf.Datastore
-	repositories := repos5.New(datastoreConfig, logger)
+func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, ds datastore.Datastore) (storage2.Storage, error) {
+	repositories := repos5.New(logger, ds)
 	storageStorage := storage2.New(conf, logger, infra, repositories)
 	return storageStorage, nil
 }

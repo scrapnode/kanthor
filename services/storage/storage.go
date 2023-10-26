@@ -8,6 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -21,6 +22,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
+	ds datastore.Datastore,
 	uc usecase.Storage,
 ) services.Service {
 	logger = logger.With("service", "storage")
@@ -29,6 +31,7 @@ func New(
 		logger:     logger,
 		subscriber: infra.Stream.Subscriber("storage"),
 		infra:      infra,
+		ds:         ds,
 		uc:         uc,
 
 		healthcheck: background.NewServer(
@@ -43,6 +46,7 @@ type storage struct {
 	logger     logging.Logger
 	subscriber streaming.Subscriber
 	infra      *infrastructure.Infrastructure
+	ds         datastore.Datastore
 	uc         usecase.Storage
 
 	healthcheck healthcheck.Server
@@ -57,6 +61,10 @@ func (service *storage) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.ds.Connect(ctx); err != nil {
+		return err
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -99,6 +107,10 @@ func (service *storage) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
+	if err := service.ds.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
 	return returning
 }
 
@@ -120,6 +132,10 @@ func (service *storage) Run(ctx context.Context) error {
 			}
 
 			if err := service.infra.Liveness(); err != nil {
+				return err
+			}
+
+			if err := service.ds.Liveness(); err != nil {
 				return err
 			}
 
@@ -149,6 +165,10 @@ func (service *storage) readiness() error {
 		}
 
 		if err := service.infra.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.ds.Readiness(); err != nil {
 			return err
 		}
 

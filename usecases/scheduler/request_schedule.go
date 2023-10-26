@@ -199,6 +199,7 @@ func (uc *request) applicables(ctx context.Context, appIds []string) map[string]
 			apps.Set(appId, *app)
 		})
 	}
+	wg.Wait()
 
 	return apps.Data()
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/scheduler"
@@ -18,15 +19,16 @@ func InitializeScheduler(conf *config.Config, logger logging.Logger) (services.S
 	wire.Build(
 		scheduler.New,
 		infrastructure.New,
+		wire.FieldsOf(new(*config.Config), "Database"),
+		database.New,
 		InitializeSchedulerUsecase,
 	)
 	return nil, nil
 }
 
-func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure) (uc.Scheduler, error) {
+func InitializeSchedulerUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, db database.Database) (uc.Scheduler, error) {
 	wire.Build(
 		uc.New,
-		wire.FieldsOf(new(*config.Config), "Database"),
 		repos.New,
 	)
 	return nil, nil

@@ -34,7 +34,7 @@ func UseAuth(
 		credentials := ginctx.Request.Header.Get(authenticator.HeaderAuth)
 		ctx, err := auth(uc, ctx, credentials)
 		if err != nil {
-			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unable to verify your credentials"})
+			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
