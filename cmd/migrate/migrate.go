@@ -1,18 +1,18 @@
 package migrate
 
 import (
-	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/spf13/cobra"
 )
 
-func New(conf *config.Config, logger logging.Logger) *cobra.Command {
+func New(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
-		Use: "migrate",
+		Use:   "migrate",
+		Short: "migrate data",
 	}
 
-	command.AddCommand(NewDatabase(conf, logger))
-	command.AddCommand(NewDatastore(conf, logger))
+	command.AddCommand(NewDatabase(provider))
+	command.AddCommand(NewDatastore(provider))
 
 	return command
 }

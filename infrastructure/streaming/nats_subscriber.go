@@ -10,8 +10,8 @@ import (
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/namespace"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/sourcegraph/conc"
 )
 
@@ -91,7 +91,7 @@ func (subscriber *NatsSubscriber) Disconnect(ctx context.Context) error {
 
 func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler SubHandler) error {
 	// @TODO: validate topic
-	topic = namespace.Subject(topic)
+	topic = project.Subject(topic)
 	consumer, err := subscriber.consumer(ctx, subscriber.name, topic)
 	if err != nil {
 		return err

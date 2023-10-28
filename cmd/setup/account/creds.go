@@ -9,7 +9,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/services/permissions"
-	usecase "github.com/scrapnode/kanthor/usecases/portal"
+	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
 func creds(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, out *output) error {

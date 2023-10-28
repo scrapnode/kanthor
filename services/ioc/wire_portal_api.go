@@ -11,16 +11,16 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/portalapi"
+	"github.com/scrapnode/kanthor/services/portal"
 	uc "github.com/scrapnode/kanthor/usecases/portal"
 	"github.com/scrapnode/kanthor/usecases/portal/repos"
 )
 
-func InitializePortalApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializePortal(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
-		portalapi.New,
+		portal.New,
 		infrastructure.New,
-		ResolvePortalApiAuthenticatorConfig,
+		ResolvePortalAuthenticatorConfig,
 		authenticator.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		database.New,
@@ -36,6 +36,6 @@ func InitializePortalUsecase(conf *config.Config, logger logging.Logger, infra *
 	return nil, nil
 }
 
-func ResolvePortalApiAuthenticatorConfig(conf *config.Config) *authenticator.Config {
-	return &conf.PortalApi.Authenticator
+func ResolvePortalAuthenticatorConfig(conf *config.Config) *authenticator.Config {
+	return &conf.Portal.Authenticator
 }

@@ -3,13 +3,12 @@ package migrate
 import (
 	"errors"
 
-	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/infrastructure/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/spf13/cobra"
 )
 
-func NewDatastore(conf *config.Config, logger logging.Logger) *cobra.Command {
+func NewDatastore(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "datastore",
 		ValidArgs: []string{"up", "down"},

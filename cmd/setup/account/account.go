@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services/ioc"
-	usecase "github.com/scrapnode/kanthor/usecases/portal"
+	"github.com/scrapnode/kanthor/services/portal/usecase"
 	"github.com/spf13/cobra"
 )
 

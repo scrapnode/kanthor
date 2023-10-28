@@ -6,7 +6,7 @@ import {
   randomString,
 } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
 
-const sdkapi = JSON.parse(open(`${__ENV.API_CREDS_PATH}/sdkapi.json`));
+const sdk = JSON.parse(open(`${__ENV.API_CREDS_PATH}/sdk.json`));
 
 // init context: define k6 options
 export const options = {
@@ -20,10 +20,10 @@ export const options = {
 
 export default () => {
   const authorization = b64encode(
-    `${sdkapi.credentials.username}:${sdkapi.credentials.password}`
+    `${sdk.credentials.username}:${sdk.credentials.password}`
   );
 
-  const url = `${__ENV.API_ENDPOINT}/api/application/${sdkapi.applications[0]}/message`;
+  const url = `${__ENV.API_ENDPOINT}/api/application/${sdk.applications[0]}/message`;
   const payload = JSON.stringify({
     type: "testing.traffic.stability",
     body: { 

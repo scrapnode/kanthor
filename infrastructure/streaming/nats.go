@@ -10,7 +10,7 @@ import (
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/namespace"
+	"github.com/scrapnode/kanthor/project"
 )
 
 func NewNats(conf *Config, logger logging.Logger) (Stream, error) {
@@ -136,8 +136,8 @@ func (streaming *nats) stream() (*natscore.StreamInfo, error) {
 		Storage: natscore.MemoryStorage,
 		// editable
 		Replicas: streaming.conf.Nats.Replicas,
-		// namespace.Subject(">") "We accept all subjects that belong to the configured namespace and tier
-		Subjects:   []string{namespace.Subject(">")},
+		// project.Subject(">") "We accept all subjects that belong to the configured project and tier
+		Subjects:   []string{project.Subject(">")},
 		MaxMsgs:    streaming.conf.Nats.Limits.Msgs,
 		MaxMsgSize: streaming.conf.Nats.Limits.MsgBytes,
 		MaxBytes:   streaming.conf.Nats.Limits.Bytes,

@@ -1,15 +1,15 @@
 package entities
 
-import "github.com/scrapnode/kanthor/namespace"
+import "github.com/scrapnode/kanthor/project"
 
 var (
-	TableWs  = namespace.NameWithoutTier("workspace")
-	TableWsc = namespace.NameWithoutTier("workspace_credentials")
-	TableApp = namespace.NameWithoutTier("application")
-	TableEp  = namespace.NameWithoutTier("endpoint")
-	TableEpr = namespace.NameWithoutTier("endpoint_rule")
-	TableMsg = namespace.NameWithoutTier("message")
-	TableReq = namespace.NameWithoutTier("request")
-	TableRes = namespace.NameWithoutTier("response")
-	TableAtt = namespace.NameWithoutTier("attempt")
+	TableWs  = project.NameWithoutTier("workspace")
+	TableWsc = project.NameWithoutTier("workspace_credentials")
+	TableApp = project.NameWithoutTier("application")
+	TableEp  = project.NameWithoutTier("endpoint")
+	TableEpr = project.NameWithoutTier("endpoint_rule")
+	TableMsg = project.NameWithoutTier("message")
+	TableReq = project.NameWithoutTier("request")
+	TableRes = project.NameWithoutTier("response")
+	TableAtt = project.NameWithoutTier("attempt")
 )

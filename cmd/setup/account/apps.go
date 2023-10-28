@@ -10,7 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/data/interchange"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/safe"
-	usecase "github.com/scrapnode/kanthor/usecases/portal"
+	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
 func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file string, out *output) error {

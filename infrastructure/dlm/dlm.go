@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scrapnode/kanthor/namespace"
+	"github.com/scrapnode/kanthor/project"
 )
 
 type Factory func(key string) DistributedLockManager
@@ -21,5 +21,5 @@ func New(conf *Config) (Factory, error) {
 }
 
 func Key(key string) string {
-	return namespace.Key(fmt.Sprintf("dlm/%s", key))
+	return project.Key(fmt.Sprintf("dlm/%s", key))
 }

@@ -10,14 +10,14 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/sdkapi"
+	"github.com/scrapnode/kanthor/services/sdk"
 	uc "github.com/scrapnode/kanthor/usecases/sdk"
 	"github.com/scrapnode/kanthor/usecases/sdk/repos"
 )
 
-func InitializeSdkApi(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeSdk(conf *config.Config, logger logging.Logger) (services.Service, error) {
 	wire.Build(
-		sdkapi.New,
+		sdk.New,
 		infrastructure.New,
 		wire.FieldsOf(new(*config.Config), "Database"),
 		database.New,

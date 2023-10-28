@@ -1,11 +1,14 @@
 #!/bin/sh
 set -e
 
-CHECKSUM_NEW=$(find services -type f -name '*.go' -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d  ' ' -f1)
-CHECKSUM_OLD=$(cat services/ioc/checksum)
+SERVICES_FOLDER=services
+SERVICES_FILE_CHECKSUM="$SERVICES_FOLDER/checksum"
+
+CHECKSUM_NEW=$(find $SERVICES_FOLDER -type f -name '*.go' -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d  ' ' -f1)
+CHECKSUM_OLD=$(cat $SERVICES_FILE_CHECKSUM)
 if [ "$CHECKSUM_NEW" != "$CHECKSUM_OLD" ];
 then
   echo "generating services ioc ...";
-  go generate services/ioc/generate.go;
-  find services -type f -name '*.go' -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d  ' ' -f1 > services/ioc/checksum;
+  go generate $SERVICES_FOLDER/ioc/generate.go;
+  find $SERVICES_FOLDER -type f -name '*.go' -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d  ' ' -f1 > $SERVICES_FILE_CHECKSUM;
 fi

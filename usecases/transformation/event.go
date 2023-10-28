@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/namespace"
+	"github.com/scrapnode/kanthor/project"
 )
 
 func EventToMessage(event *streaming.Event) (*entities.Message, error) {
@@ -47,7 +47,7 @@ func EventFromMessage(msg *entities.Message) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		namespace.Namespace(),
+		project.Namespace(),
 		msg.Tier,
 		constants.TopicMessage,
 		event.AppId,
@@ -71,7 +71,7 @@ func EventFromRequest(req *entities.Request) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		namespace.Namespace(),
+		project.Namespace(),
 		req.Tier,
 		constants.TopicRequest,
 		event.AppId,
@@ -95,7 +95,7 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		namespace.Namespace(),
+		project.Namespace(),
 		res.Tier,
 		constants.TopicResponse,
 		event.AppId,
@@ -119,7 +119,7 @@ func EventFromTrigger(trigger *entities.AttemptTrigger) (*streaming.Event, error
 		Metadata: map[string]string{},
 	}
 	event.Subject = streaming.Subject(
-		namespace.Namespace(),
+		project.Namespace(),
 		trigger.Tier,
 		constants.TopicTrigger,
 		event.AppId,

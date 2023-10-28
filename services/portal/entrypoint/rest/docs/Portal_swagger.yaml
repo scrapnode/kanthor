@@ -1,0 +1,475 @@
+basePath: /api
+consumes:
+- application/json
+definitions:
+  authenticator.Account:
+    properties:
+      aud:
+        type: string
+      email:
+        type: string
+      iss:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      picture:
+        type: string
+      sub:
+        type: string
+    required:
+    - sub
+    type: object
+  entities.Workspace:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  entities.WorkspaceCredentials:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      expired_at:
+        type: integer
+      hash:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  entities.WorkspaceTier:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  gateway.Error:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+    type: object
+  portal.AccountGetRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
+    type: object
+  portal.AccountSetupReq:
+    type: object
+  portal.AccountSetupRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
+      workspace:
+        $ref: '#/definitions/entities.Workspace'
+      workspace_tier:
+        $ref: '#/definitions/entities.WorkspaceTier'
+    type: object
+  portal.WorkspaceCredentialsCreateReq:
+    properties:
+      expired_at:
+        type: integer
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  portal.WorkspaceCredentialsCreateRes:
+    properties:
+      id:
+        type: string
+      password:
+        type: string
+      user:
+        type: string
+    type: object
+  portal.WorkspaceCredentialsExpireReq:
+    properties:
+      duration:
+        type: integer
+    type: object
+  portal.WorkspaceCredentialsExpireRes:
+    properties:
+      expired_at:
+        type: integer
+      id:
+        type: string
+    type: object
+  portal.WorkspaceCredentialsGetRes:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      expired_at:
+        type: integer
+      hash:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  portal.WorkspaceCredentialsListRes:
+    properties:
+      cursor:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/entities.WorkspaceCredentials'
+        type: array
+    type: object
+  portal.WorkspaceCredentialsUpdateReq:
+    properties:
+      name:
+        type: string
+    type: object
+  portal.WorkspaceCredentialsUpdateRes:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      expired_at:
+        type: integer
+      hash:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  portal.WorkspaceGetRes:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      tier:
+        $ref: '#/definitions/entities.WorkspaceTier'
+      updated_at:
+        type: integer
+    type: object
+  portal.WorkspaceUpdateReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  portal.WorkspaceUpdateRes:
+    properties:
+      created_at:
+        description: |-
+          I didn't find a way to disable automatic fields modify yet
+          so, I use a tag to disable this feature here
+          but, we should keep our entities stateless if we can
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+info:
+  contact:
+    email: support@kanthorlabs.com
+    name: Kanthor Support
+    url: http://kanthorlabs.com/support
+  description: Portal API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://kanthorlabs.com/terms/
+  title: Kanthor Portal API
+  version: "1.0"
+paths:
+  /account/me:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.AccountGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      tags:
+      - account
+    put:
+      parameters:
+      - description: setup options
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/portal.AccountSetupReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.AccountSetupRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      tags:
+      - account
+  /workspace/me:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.WorkspaceGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+    put:
+      parameters:
+      - description: credentials properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/portal.WorkspaceUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.WorkspaceUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+  /workspace/me/credentials:
+    get:
+      parameters:
+      - description: current query cursor
+        in: query
+        maxLength: 32
+        minLength: 29
+        name: _cursor
+        type: string
+      - description: search keyword
+        in: query
+        maxLength: 32
+        minLength: 2
+        name: _q
+        type: string
+      - description: limit returning records
+        in: query
+        maximum: 30
+        minimum: 5
+        name: _limit
+        type: integer
+      - collectionFormat: csv
+        description: only return records with selected ids
+        in: query
+        items:
+          type: string
+        name: _id
+        type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.WorkspaceCredentialsListRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+    post:
+      parameters:
+      - description: credentials properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/portal.WorkspaceCredentialsCreateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.WorkspaceCredentialsCreateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+  /workspace/me/credentials/{wsc_id}:
+    get:
+      parameters:
+      - description: credentials id
+        in: path
+        name: wsc_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.WorkspaceCredentialsGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+    put:
+      parameters:
+      - description: credentials id
+        in: path
+        name: wsc_id
+        required: true
+        type: string
+      - description: credentials properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/portal.WorkspaceCredentialsUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.WorkspaceCredentialsUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+  /workspace/me/credentials/{wsc_id}/expiration:
+    put:
+      parameters:
+      - description: credentials id
+        in: path
+        name: wsc_id
+        required: true
+        type: string
+      - description: credentials properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/portal.WorkspaceCredentialsExpireReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/portal.WorkspaceCredentialsExpireRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      - WsId: []
+      tags:
+      - workspace
+produces:
+- application/json
+securityDefinitions:
+  BearerAuth:
+    description: '[Bearer <JWT token>] or [Basic base64(key:secret)]'
+    in: header
+    name: Authorization
+    type: apiKey
+  WsId:
+    description: The selected workspace id you are working with
+    in: header
+    name: kanthor-ws-id
+    type: apiKey
+swagger: "2.0"

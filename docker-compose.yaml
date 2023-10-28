@@ -78,7 +78,7 @@ services:
       - datastore
       - up
 
-  sdkapi:
+  sdk:
     depends_on:
       streaming:
         condition: service_started
@@ -88,7 +88,7 @@ services:
         condition: service_healthy
       migration-database:
         condition: service_started
-    container_name: kanthor-services-sdkapi
+    container_name: kanthor-services-sdk
     image: kanthorlabs/kanthor:latest
     restart: unless-stopped
     networks:
@@ -100,9 +100,9 @@ services:
     command:
       - kanthor
       - serve
-      - sdkapi
+      - sdk
 
-  portalapi:
+  portal:
     depends_on:
       streaming:
         condition: service_started
@@ -112,7 +112,7 @@ services:
         condition: service_healthy
       migration-database:
         condition: service_started
-    container_name: kanthor-services-portalapi
+    container_name: kanthor-services-portal
     image: kanthorlabs/kanthor:latest
     restart: unless-stopped
     networks:
@@ -124,7 +124,7 @@ services:
     command:
       - kanthor
       - serve
-      - portalapi
+      - portal
 
   scheduler:
     depends_on:

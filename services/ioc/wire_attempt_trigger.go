@@ -9,13 +9,13 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/datastore"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/services/attempt/repos"
 	"github.com/scrapnode/kanthor/services/attempt/trigger"
-	uc "github.com/scrapnode/kanthor/usecases/attempt"
-	"github.com/scrapnode/kanthor/usecases/attempt/repos"
+	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
 
-func InitializeAttemptTriggerPlanner(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeAttemptTriggerPlanner(conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
 	wire.Build(
 		trigger.NewPlanner,
 		infrastructure.New,
@@ -26,7 +26,7 @@ func InitializeAttemptTriggerPlanner(conf *config.Config, logger logging.Logger)
 	return nil, nil
 }
 
-func InitializeAttemptTriggerExecutor(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func InitializeAttemptTriggerExecutor(conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
 	wire.Build(
 		trigger.NewExecutor,
 		infrastructure.New,
@@ -39,7 +39,7 @@ func InitializeAttemptTriggerExecutor(conf *config.Config, logger logging.Logger
 
 func InitializeAttemptUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, ds datastore.Datastore) (uc.Attempt, error) {
 	wire.Build(
-		uc.New,
+		usecase.New,
 		repos.New,
 	)
 	return nil, nil

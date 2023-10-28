@@ -6,5 +6,8 @@ var (
 	TopicRequest  = "public.request"
 	TopicResponse = "public.response"
 	TopicTrigger  = "private.trigger"
-	TypeInternal  = "internal"
+)
+
+var (
+	TypeInternal = "internal"
 )

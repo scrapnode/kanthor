@@ -3,60 +3,11 @@ redis_uri: &redis_uri redis://127.0.0.1:6379/0
 postgres_uri: &postgres_uri postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30
 nats_uri: &nats_uri nats://127.0.0.1:4222
 
-# configurations
-development: true
-
 logger:
   pretty: true
   level: debug
   with:
     env: localhost
-
-cryptography:
-  kdf: {}
-  symmetric:
-    key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
-
-sender:
-  trace: true
-  timeout: 10000 # 10s
-  retry:
-    count: 1
-    wait_time: 5000 # 5s
-    
-circuit_breaker:
-  close:
-    cleanup_interval: 600000 # 10m
-  half:
-    passthrough_requests: 10
-  open:
-    duration: 1800000 # 30m
-    conditions:
-      error_consecutive: 10
-      error_ratio: 0.5
-
-idempotency:
-  uri: *redis_uri
-  time_to_live: 86400000 # 1 day
-
-distributed_lock_manager:
-  uri: *redis_uri
-  time_to_live: 3600000 # 1h
-
-cache:
-  uri: *redis_uri
-  time_to_live: 3600000 # 1h
-
-authorizator:
-  engine: casbin
-  casbin:
-    model_uri: file://./data/authorizator/casbin_rbac_model.conf
-    policy_uri: *postgres_uri
-    watcher: 
-      uri: *nats_uri
-
-metric:
-  engine: noop
 
 database:
   uri: *postgres_uri
@@ -67,34 +18,82 @@ datastore:
   uri: *postgres_uri
   migration:
     source: file://./migration/datastore/sql
+ 
+# infrastructure
+infrastructure:
+  cryptography:
+    kdf: {}
+    symmetric:
+      key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
 
-stream:
-  name: main
-  uri: *nats_uri
-  nats:
-    replicas: 0
-    limits:
-      msg_bytes: 32000
-      msgs: 1000000
-      bytes: 3200000000
-      # 60*60*24*3 = 3d
-      age: 259200
-  publisher:
-    timeout: 30000 # 30s
-    rate_limit: 300
-  subscriber:
+  sender:
+    trace: true
+    timeout: 10000 # 10s
+    retry:
+      count: 1
+      wait_time: 5000 # 5s
+      
+  circuit_breaker:
+    close:
+      cleanup_interval: 600000 # 10m
+    half:
+      passthrough_requests: 10
+    open:
+      duration: 1800000 # 30m
+      conditions:
+        error_consecutive: 10
+        error_ratio: 0.5
+
+  idempotency:
+    uri: *redis_uri
+    time_to_live: 86400000 # 1 day
+
+  distributed_lock_manager:
+    uri: *redis_uri
+    time_to_live: 3600000 # 1h
+
+  cache:
+    uri: *redis_uri
+    time_to_live: 3600000 # 1h
+
+  authorizator:
+    engine: casbin
+    casbin:
+      model_uri: file://./data/authorizator/casbin_rbac_model.conf
+      policy_uri: *postgres_uri
+      watcher: 
+        uri: *nats_uri
+
+  metric:
+    engine: noop
+
+  stream:
+    name: main
+    uri: *nats_uri
+    nats:
+      replicas: 0
+      limits:
+        msg_bytes: 32000
+        msgs: 1000000
+        bytes: 3200000000
+        # 60*60*24*3 = 3d
+        age: 259200
+    publisher:
+      timeout: 30000 # 30s
+      rate_limit: 300
+    subscriber:
     max_retry: 1
     timeout: 60000 # 60s
     concurrency: 1000
 
-# application services
-sdkapi:
+# services
+sdk:
   gateway:
     addr: :8180
     timeout: 60000
-  # the sdkapi has internal authenticator
+  # the sdk has internal authenticator
 
-portalapi:
+portal:
   gateway:
     addr: :8280
     timeout: 60000

@@ -5,16 +5,16 @@ import (
 
 	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/services/ioc"
 )
 
-func Service(name string, conf *config.Config, logger logging.Logger) (services.Service, error) {
-	if name == config.SERVICE_PORTAL_API {
-		return ioc.InitializePortalApi(conf, logger)
+func Service(name string, conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
+	if name == config.SERVICE_PORTAL {
+		return ioc.InitializePortal(conf, logger)
 	}
-	if name == config.SERVICE_SDK_API {
-		return ioc.InitializeSdkApi(conf, logger)
+	if name == config.SERVICE_SDK {
+		return ioc.InitializeSdk(conf, logger)
 	}
 	if name == config.SERVICE_SCHEDULER {
 		return ioc.InitializeScheduler(conf, logger)

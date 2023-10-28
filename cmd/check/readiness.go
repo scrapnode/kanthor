@@ -3,16 +3,16 @@ package check
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/config"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
+	"github.com/scrapnode/kanthor/services"
 	"github.com/spf13/cobra"
 )
 
 func NewReadiness() *cobra.Command {
 	command := &cobra.Command{
 		Use:       "readiness",
-		ValidArgs: config.SERVICES,
+		ValidArgs: services.SERVICES,
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceName := args[0]

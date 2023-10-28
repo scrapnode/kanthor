@@ -17,7 +17,7 @@ COPY --from=build /app/.kanthor/kanthor /usr/bin/kanthor
 
 # debugging
 EXPOSE 6060
-# sdkapi
+# sdk
 EXPOSE 8180
-# portalapi
+# portal
 EXPOSE 8280

@@ -5,8 +5,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/scrapnode/kanthor/namespace"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/spf13/viper"
 )
 
@@ -40,7 +40,7 @@ func NewFile(dirs []string) (Provider, error) {
 	}
 
 	instance.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
-	instance.SetEnvPrefix(namespace.Namespace())
+	instance.SetEnvPrefix(project.Namespace())
 	instance.AutomaticEnv()
 
 	return &file{viper: instance, sources: sources}, nil

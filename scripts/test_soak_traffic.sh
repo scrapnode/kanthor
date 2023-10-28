@@ -18,11 +18,11 @@ sleep 5
 go run main.go migrate database up && go run main.go migrate datastore up
 
 docker compose -f docker-compose.debugging.yaml up -d
-docker compose -f docker-compose.yaml up -d sdkapi portalapi scheduler dispatcher storage
+docker compose -f docker-compose.yaml up -d sdk portal scheduler dispatcher storage
 
 echo "#2 sleep 5s"
 sleep 5
 
-go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --output="$API_CREDS_PATH/sdkapi.json"
+go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --output="$API_CREDS_PATH/sdk.json"
 
 K6_VUS=$K6_VUS K6_START_DURATION=$K6_START_DURATION K6_MID_DURATION=$K6_MID_DURATION K6_END_DURATION=$K6_END_DURATION API_CREDS_PATH=$API_CREDS_PATH API_ENDPOINT=$API_ENDPOINT k6 run scripts/k6/stability.js

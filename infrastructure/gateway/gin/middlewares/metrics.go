@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 )
 
-func UseMetric(service string, metrics metric.Metric) gin.HandlerFunc {
+func UseMetric(metrics metric.Metric, service string) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		start := time.Now()
 

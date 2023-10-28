@@ -8,7 +8,7 @@ import (
 
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/namespace"
+	"github.com/scrapnode/kanthor/project"
 )
 
 type Idempotency interface {
@@ -32,5 +32,5 @@ func New(conf *Config, logger logging.Logger) (Idempotency, error) {
 }
 
 func Key(key string) string {
-	return namespace.Key(fmt.Sprintf("idempotency/%s", key))
+	return project.Key(fmt.Sprintf("idempotency/%s", key))
 }

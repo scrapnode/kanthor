@@ -13,8 +13,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/namespace"
 	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/project"
 )
 
 func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
@@ -23,7 +23,7 @@ func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
 	w := &watcher{
 		conf:    &conf.Casbin.Watcher,
 		logger:  logger.With("casbin.watcher", "nats"),
-		subject: namespace.SubjectInternal("infrastructure.casbin.watcher"),
+		subject: project.SubjectInternal("infrastructure.casbin.watcher"),
 		nodeid:  suid.New("casbin.watcher"),
 	}
 	return &casbin{conf: conf, logger: logger, watcher: w}
@@ -111,7 +111,7 @@ func (authorizator *casbin) Connect(ctx context.Context) error {
 		return err
 	}
 	databaseName := strings.ReplaceAll(policyUrl.Path, "/", "")
-	tableName := namespace.NameWithoutTier("authz")
+	tableName := project.NameWithoutTier("authz")
 
 	adapter, err := gormadapter.NewAdapter(policyUrl.Scheme, authorizator.conf.Casbin.PolicyUri, databaseName, tableName, true)
 	if err != nil {

@@ -6,11 +6,11 @@ export API_ENDPOINT=${API_ENDPOINT:-"http://localhost:8180"}
 
 docker compose -f docker-compose.debugging.yaml up -d
 
-go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --output="$API_CREDS_PATH/sdkapi.json"
+go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --output="$API_CREDS_PATH/sdk.json"
 
-export TEST_APP_ID=$(cat $API_CREDS_PATH/sdkapi.json | jq -r '.applications[0]')
-export TEST_USERNAME=$(cat $API_CREDS_PATH/sdkapi.json | jq -r '.credentials.username')
-export TEST_PASSWORD=$(cat $API_CREDS_PATH/sdkapi.json | jq -r '.credentials.password')
+export TEST_APP_ID=$(cat $API_CREDS_PATH/sdk.json | jq -r '.applications[0]')
+export TEST_USERNAME=$(cat $API_CREDS_PATH/sdk.json | jq -r '.credentials.username')
+export TEST_PASSWORD=$(cat $API_CREDS_PATH/sdk.json | jq -r '.credentials.password')
 export AUTH_TOKEN=$(echo -n "$TEST_USERNAME:$TEST_PASSWORD" | base64 -w 0)
 export REQUEST_ID=$(uuidgen)
 

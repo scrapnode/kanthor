@@ -9,7 +9,7 @@ import (
 
 	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/namespace"
+	"github.com/scrapnode/kanthor/project"
 )
 
 func New(conf *Config, logger logging.Logger) (Cache, error) {
@@ -31,7 +31,7 @@ func New(conf *Config, logger logging.Logger) (Cache, error) {
 }
 
 func Key(key string) string {
-	return namespace.Key(fmt.Sprintf("cache/%s", key))
+	return project.Key(fmt.Sprintf("cache/%s", key))
 }
 
 type Cache interface {
