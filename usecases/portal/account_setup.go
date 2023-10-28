@@ -6,7 +6,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/database"
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
+	"github.com/scrapnode/kanthor/namespace"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 

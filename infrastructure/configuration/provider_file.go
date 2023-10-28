@@ -5,7 +5,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
+	"github.com/scrapnode/kanthor/namespace"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/spf13/viper"
 )

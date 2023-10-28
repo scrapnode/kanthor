@@ -12,11 +12,11 @@ type Message struct {
 	Type     string   `json:"type"`
 	Metadata Metadata `json:"metadata"`
 	Headers  Header   `json:"headers"`
-	Body     []byte   `json:"body"`
+	Body     string   `json:"body"`
 }
 
 func (entity *Message) TableName() string {
-	return "kanthor_message"
+	return TableMsg
 }
 
 func (entity *Message) GenId() {

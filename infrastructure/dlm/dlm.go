@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
+	"github.com/scrapnode/kanthor/namespace"
 )
 
 type Factory func(key string) DistributedLockManager

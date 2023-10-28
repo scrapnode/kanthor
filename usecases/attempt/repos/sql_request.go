@@ -26,7 +26,7 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string, 
 	selects := []string{"app_id", "msg_id", "ep_id", "id", "tier"}
 	var records []Req
 	tx := sql.client.
-		Table((&entities.Request{}).TableName()).
+		Table(entities.TableReq).
 		Where("app_id = ?", appId).
 		Where("msg_id IN ?", msgIds).
 		Where("id > ?", low).

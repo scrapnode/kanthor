@@ -31,7 +31,7 @@ func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) erro
 		validator.StringStartsWith("request.app_id", item.AppId, entities.IdNsApp),
 		validator.StringRequired("request.type", item.Type),
 		validator.MapNotNil[string, string]("request.metadata", item.Metadata),
-		validator.SliceRequired("request.body", item.Body),
+		validator.StringRequired("request.body", item.Body),
 		validator.StringUri("request.uri", item.Uri),
 		validator.StringRequired("request.method", item.Method),
 	)
@@ -111,9 +111,9 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 		func() (interface{}, error) {
 			req := &sender.Request{
 				Method:  request.Method,
-				Headers: request.Headers.Header,
+				Headers: request.Headers.ToHTTP(),
 				Uri:     request.Uri,
-				Body:    request.Body,
+				Body:    []byte(request.Body),
 			}
 
 			res, err := uc.infra.Send(ctx, req)
@@ -141,7 +141,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 		Tier:     request.Tier,
 		AppId:    request.AppId,
 		Type:     request.Type,
-		Headers:  entities.NewHeader(),
+		Headers:  entities.Header{},
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data
@@ -160,8 +160,8 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	if res != nil {
 		response.Status = res.Status
 		response.Uri = res.Uri
-		response.Headers.Merge(entities.Header{Header: res.Headers})
-		response.Body = res.Body
+		response.Headers.FromHTTP(res.Headers)
+		response.Body = string(res.Body)
 	}
 
 	return response

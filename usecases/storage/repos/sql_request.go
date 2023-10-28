@@ -7,6 +7,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -22,9 +23,9 @@ var RequestMapping = map[string]func(doc entities.Request) any{
 	"tier":      func(doc entities.Request) any { return doc.Tier },
 	"app_id":    func(doc entities.Request) any { return doc.AppId },
 	"type":      func(doc entities.Request) any { return doc.Type },
-	"metadata":  func(doc entities.Request) any { return doc.Metadata.String() },
-	"headers":   func(doc entities.Request) any { return doc.Headers.String() },
-	"body":      func(doc entities.Request) any { return string(doc.Body) },
+	"metadata":  func(doc entities.Request) any { return utils.Stringify(doc.Metadata) },
+	"headers":   func(doc entities.Request) any { return utils.Stringify(doc.Headers) },
+	"body":      func(doc entities.Request) any { return doc.Body },
 	"uri":       func(doc entities.Request) any { return doc.Uri },
 	"method":    func(doc entities.Request) any { return doc.Method },
 }
@@ -56,7 +57,7 @@ func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]e
 		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 	}
 
-	tableName := fmt.Sprintf(`"%s"`, (&entities.Request{}).TableName())
+	tableName := fmt.Sprintf(`"%s"`, entities.TableReq)
 	columns := fmt.Sprintf(`"%s"`, strings.Join(RequestMappingCols, `","`))
 	statement := fmt.Sprintf(
 		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(id) DO NOTHING;",

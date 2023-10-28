@@ -49,7 +49,7 @@ func (sql *SqlApplication) Delete(ctx context.Context, doc *entities.Application
 func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.Application], error) {
 	doc := &entities.Application{}
 	tx := sql.client.WithContext(ctx).Model(doc).
-		Scopes(UseWsId(wsId, doc))
+		Scopes(UseWsId(wsId, doc.TableName()))
 
 	req := structure.ListReqBuild(opts)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
@@ -68,7 +68,7 @@ func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&doc).
-		Scopes(UseWsId(wsId, doc)).
+		Scopes(UseWsId(wsId, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {

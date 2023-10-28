@@ -4,6 +4,8 @@ set -e
 export API_CREDS_PATH=${API_CREDS_PATH:-"/tmp"}
 export API_ENDPOINT=${API_ENDPOINT:-"http://localhost:8180"}
 
+docker compose -f docker-compose.debugging.yaml up -d
+
 go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --output="$API_CREDS_PATH/sdkapi.json"
 
 export TEST_APP_ID=$(cat $API_CREDS_PATH/sdkapi.json | jq -r '.applications[0]')

@@ -50,7 +50,7 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 		}
 
 		appId := ginctx.Param("app_id")
-		headers := entities.Header{Header: http.Header{}}
+		headers := entities.Header{}
 		if len(req.Headers) > 0 {
 			for k, v := range req.Headers {
 				headers.Set(k, v)
@@ -64,7 +64,7 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			Tier:     ws.Tier,
 			AppId:    appId,
 			Type:     req.Type,
-			Body:     body,
+			Body:     string(body),
 			Headers:  headers,
 			Metadata: entities.Metadata{entities.MetaMsgIdempotencyKey: ginctx.GetHeader(ginmw.HeaderIdempotencyKey)},
 		}

@@ -23,10 +23,10 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string,
 	high := entities.Id(entities.IdNsRes, suid.AfterTime(to))
 
 	// @TODO: use chunk to fetch
-	selects := []string{"app_id", "msg_id", "req_id", "id", "status"}
+	selects := []string{"app_id", "msg_id", "ep_id", "id", "tier", "req_id", "status"}
 	var records []Res
 	tx := sql.client.
-		Table((&entities.Response{}).TableName()).
+		Table(entities.TableRes).
 		Where("app_id = ?", appId).
 		Where("msg_id IN ?", msgIds).
 		Where("id > ?", low).

@@ -2,6 +2,7 @@ package repos
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
@@ -22,7 +23,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 	selects := []string{"app_id", "id", "tier", "timestamp"}
 	var records []Msg
 	tx := sql.client.
-		Table((&entities.Message{}).TableName()).
+		Table(entities.TableMsg).
 		Where("app_id = ?", appId).
 		Where("id > ?", low).
 		Where("id < ?", high).
@@ -38,12 +39,48 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 }
 
 func (sql *SqlMessage) ListByIds(ctx context.Context, ids []string) ([]entities.Message, error) {
-	var records []entities.Message
-
-	tx := sql.client.
-		Model(&entities.Message{}).
+	rows, err := sql.client.
+		Table(entities.TableMsg).
 		Where("id IN ?", ids).
-		Find(&records)
+		Select([]string{"id", "timestamp", "tier", "app_id", "type", "metadata", "headers", "body"}).
+		Rows()
 
-	return records, tx.Error
+	if err != nil {
+		return []entities.Message{}, err
+	}
+
+	var records []entities.Message
+	defer rows.Close()
+	for rows.Next() {
+		record := entities.Message{}
+		var metadata string
+		var headers string
+		var body string
+
+		err := rows.Scan(
+			&record.Id,
+			&record.Timestamp,
+			&record.Tier,
+			&record.AppId,
+			&record.Type,
+			&metadata,
+			&headers,
+			&body,
+		)
+
+		// we don't accept partial success, if we got any error
+		// return the error immediately
+		if err != nil {
+			return []entities.Message{}, err
+		}
+		if err := json.Unmarshal([]byte(metadata), &record.Metadata); err != nil {
+			return []entities.Message{}, err
+		}
+		if err := json.Unmarshal([]byte(headers), &record.Headers); err != nil {
+			return []entities.Message{}, err
+		}
+		record.Body = body
+	}
+
+	return records, nil
 }

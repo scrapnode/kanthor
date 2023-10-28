@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 	"fmt"
+
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/database"
 	"gorm.io/gorm"
@@ -17,7 +18,7 @@ func (sql *SqlWorkspaceCredentials) Get(ctx context.Context, id string) (*entiti
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(wsc).
-		Where(fmt.Sprintf(`"%s".id = ?`, wsc.TableName()), id).
+		Where(fmt.Sprintf(`"%s".id = ?`, entities.TableWsc), id).
 		First(wsc)
 	if tx.Error != nil {
 		return nil, database.SqlError(tx.Error)

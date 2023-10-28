@@ -25,11 +25,9 @@ func (sql *SqlEndpoint) List(ctx context.Context, appId string) ([]entities.Endp
 func (sql *SqlEndpoint) Rules(ctx context.Context, appId string) ([]entities.EndpointRule, error) {
 	rules := []entities.EndpointRule{}
 
-	ep := &entities.Endpoint{}
-	epr := &entities.EndpointRule{}
-	join := fmt.Sprintf("JOIN %s ON %s.id = %s.ep_id AND %s.app_id = ?", ep.TableName(), ep.TableName(), epr.TableName(), ep.TableName())
-	order := fmt.Sprintf("%s.exclusionary DESC, %s.priority", epr.TableName(), epr.TableName())
-	selects := fmt.Sprintf("%s.*", epr.TableName())
+	join := fmt.Sprintf("JOIN %s ON %s.id = %s.ep_id AND %s.app_id = ?", entities.TableEp, entities.TableEp, entities.TableEpr, entities.TableEp)
+	order := fmt.Sprintf("%s.exclusionary DESC, %s.priority", entities.TableEpr, entities.TableEpr)
+	selects := fmt.Sprintf("%s.*", entities.TableEpr)
 
 	tx := sql.client.WithContext(ctx).
 		Joins(join, appId).

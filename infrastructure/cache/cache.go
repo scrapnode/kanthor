@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/namespace"
 )
 
 func New(conf *Config, logger logging.Logger) (Cache, error) {

@@ -17,13 +17,13 @@ type Request struct {
 
 	// HTTP: POST/PUT/PATCH
 	Headers Header `json:"headers"`
-	Body    []byte `json:"body"`
+	Body    string `json:"body"`
 	Uri     string `json:"uri"`
 	Method  string `json:"method"`
 }
 
 func (entity *Request) TableName() string {
-	return "kanthor_request"
+	return TableReq
 }
 
 func (entity *Request) GenId() {

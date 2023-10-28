@@ -33,8 +33,7 @@ CREATE INDEX IF NOT EXISTS kanthor_req_scan ON kanthor_request (app_id DESC, msg
 CREATE TABLE IF NOT EXISTS kanthor_response (
     app_id VARCHAR(64) NOT NULL,
     msg_id VARCHAR(64) NOT NULL,
-    id VARCHAR(64) NOT NULL,
-    PRIMARY KEY (app_id, msg_id, id),
+    id VARCHAR(64) NOT NULL PRIMARY KEY,
     
     timestamp BIGINT NOT NULL DEFAULT 0,
     ep_id VARCHAR(64) NOT NULL,

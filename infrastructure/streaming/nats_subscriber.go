@@ -9,8 +9,8 @@ import (
 
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/namespace"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/sourcegraph/conc"
 )
@@ -101,6 +101,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 		"initialized consumer",
 		"consumer_name", consumer.Config.Name,
 		"consumer_created_at", consumer.Created.Format(time.RFC3339),
+		"subject", consumer.Config.FilterSubject,
 	)
 
 	subscriber.subscription, err = subscriber.nats.js.PullSubscribe(

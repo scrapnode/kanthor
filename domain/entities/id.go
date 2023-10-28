@@ -8,7 +8,6 @@ import (
 
 var (
 	IdNsWs  = "ws"
-	IdNsWst = "wst"
 	IdNsWsc = "wsc"
 	IdNsApp = "app"
 	IdNsEp  = "ep"
@@ -24,10 +23,6 @@ func Id(ns, id string) string {
 
 func WsId() string {
 	return suid.New(IdNsWs)
-}
-
-func WstId() string {
-	return suid.New(IdNsWst)
 }
 
 func WscId() string {

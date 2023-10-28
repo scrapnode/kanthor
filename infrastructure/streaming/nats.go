@@ -9,8 +9,8 @@ import (
 
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/namespace"
 )
 
 func NewNats(conf *Config, logger logging.Logger) (Stream, error) {

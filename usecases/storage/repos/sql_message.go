@@ -7,6 +7,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -20,9 +21,9 @@ var MessageMapping = map[string]func(doc entities.Message) any{
 	"tier":      func(doc entities.Message) any { return doc.Tier },
 	"app_id":    func(doc entities.Message) any { return doc.AppId },
 	"type":      func(doc entities.Message) any { return doc.Type },
-	"metadata":  func(doc entities.Message) any { return doc.Metadata.String() },
-	"headers":   func(doc entities.Message) any { return doc.Headers.String() },
-	"body":      func(doc entities.Message) any { return string(doc.Body) },
+	"metadata":  func(doc entities.Message) any { return utils.Stringify(doc.Metadata) },
+	"headers":   func(doc entities.Message) any { return utils.Stringify(doc.Headers) },
+	"body":      func(doc entities.Message) any { return doc.Body },
 }
 var MessageMappingCols = lo.Keys(MessageMapping)
 
@@ -52,7 +53,7 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]e
 		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 	}
 
-	tableName := fmt.Sprintf(`"%s"`, (&entities.Message{}).TableName())
+	tableName := fmt.Sprintf(`"%s"`, entities.TableMsg)
 	columns := fmt.Sprintf(`"%s"`, strings.Join(MessageMappingCols, `","`))
 	statement := fmt.Sprintf(
 		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(id) DO NOTHING;",

@@ -47,7 +47,7 @@ func (sql *SqlEndpointRule) Delete(ctx context.Context, doc *entities.EndpointRu
 
 func (sql *SqlEndpointRule) List(ctx context.Context, ep *entities.Endpoint, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error) {
 	doc := &entities.EndpointRule{}
-	tx := sql.client.WithContext(ctx).Model(doc).Scopes(UseEpId(ep.Id, doc))
+	tx := sql.client.WithContext(ctx).Model(doc).Scopes(UseEpId(ep.Id, doc.TableName()))
 
 	req := structure.ListReqBuild(opts)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
@@ -66,7 +66,7 @@ func (sql *SqlEndpointRule) Get(ctx context.Context, ep *entities.Endpoint, id s
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
-		Scopes(UseEpId(ep.Id, doc)).
+		Scopes(UseEpId(ep.Id, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {

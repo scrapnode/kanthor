@@ -47,7 +47,7 @@ func (sql *SqlEndpoint) Delete(ctx context.Context, doc *entities.Endpoint) erro
 
 func (sql *SqlEndpoint) List(ctx context.Context, app *entities.Application, opts ...structure.ListOps) (*structure.ListRes[entities.Endpoint], error) {
 	doc := &entities.Endpoint{}
-	tx := sql.client.WithContext(ctx).Model(doc).Scopes(UseAppId(app.Id, doc))
+	tx := sql.client.WithContext(ctx).Model(doc).Scopes(UseAppId(app.Id, doc.TableName()))
 
 	req := structure.ListReqBuild(opts)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
@@ -66,7 +66,7 @@ func (sql *SqlEndpoint) Get(ctx context.Context, app *entities.Application, id s
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
-		Scopes(UseAppId(app.Id, doc)).
+		Scopes(UseAppId(app.Id, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {
@@ -80,12 +80,10 @@ func (sql *SqlEndpoint) GetOfWorkspace(ctx context.Context, ws *entities.Workspa
 	doc := &entities.Endpoint{}
 	doc.Id = id
 
-	app := &entities.Application{}
-
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
-		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."app_id"`, app.TableName(), app.TableName(), doc.TableName())).
-		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."ws_id" AND "%s" = ? `, ws.TableName(), ws.TableName(), app.TableName(), app.TableName()), ws.Id).
+		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."app_id"`, entities.TableApp, entities.TableApp, doc.TableName())).
+		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."ws_id" AND "%s" = ? `, entities.TableWs, entities.TableWs, entities.TableApp, entities.TableApp), ws.Id).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 

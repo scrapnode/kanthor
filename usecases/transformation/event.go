@@ -5,8 +5,8 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/namespace"
 )
 
 func EventToMessage(event *streaming.Event) (*entities.Message, error) {

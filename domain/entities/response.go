@@ -17,14 +17,14 @@ type Response struct {
 	Metadata Metadata `json:"metadata"`
 
 	Headers Header `json:"headers"`
-	Body    []byte `json:"body"`
+	Body    string `json:"body"`
 	Uri     string `json:"uri"`
 	Status  int    `json:"status"`
 	Error   string `json:"error"`
 }
 
 func (entity *Response) TableName() string {
-	return "kanthor_response"
+	return TableRes
 }
 
 func (entity *Response) GenId() {

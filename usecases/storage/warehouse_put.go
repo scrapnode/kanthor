@@ -74,7 +74,7 @@ func ValidateWarehousePutReqMessage(prefix string, message *entities.Message) er
 		validator.StringRequired(prefix+".tier", message.Tier),
 		validator.StringStartsWith(prefix+".app_id", message.AppId, entities.IdNsApp),
 		validator.StringRequired(prefix+".type", message.Type),
-		validator.SliceRequired(prefix+".body", message.Body),
+		validator.StringRequired(prefix+".body", message.Body),
 	)
 }
 
@@ -88,7 +88,7 @@ func ValidateWarehousePutReqRequest(prefix string, request *entities.Request) er
 		validator.StringRequired(prefix+".tier", request.Tier),
 		validator.StringStartsWith(prefix+".app_id", request.AppId, entities.IdNsApp),
 		validator.StringRequired(prefix+".type", request.Type),
-		validator.SliceRequired(prefix+".body", request.Body),
+		validator.StringRequired(prefix+".body", request.Body),
 		validator.StringRequired(prefix+".uri", request.Uri),
 		validator.StringRequired(prefix+".method", request.Method),
 	)

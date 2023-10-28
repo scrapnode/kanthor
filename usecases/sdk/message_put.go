@@ -17,7 +17,7 @@ type MessagePutReq struct {
 	AppId string
 	Type  string
 
-	Body     []byte
+	Body     string
 	Headers  entities.Header
 	Metadata entities.Metadata
 }
@@ -29,7 +29,7 @@ func (req *MessagePutReq) Validate() error {
 		validator.StringRequired("tier", req.Tier),
 		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
 		validator.StringRequired("type", req.Type),
-		validator.SliceRequired("body", req.Body),
+		validator.StringRequired("body", req.Body),
 	)
 }
 
@@ -52,7 +52,7 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 		AppId:    app.Id,
 		Type:     req.Type,
 		Body:     req.Body,
-		Headers:  entities.NewHeader(),
+		Headers:  entities.Header{},
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data

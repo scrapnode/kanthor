@@ -31,7 +31,7 @@ func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message)
 		validator.StringStartsWith(prefix+".app_id", message.AppId, entities.IdNsApp),
 		validator.StringRequired(prefix+".type", message.Type),
 		validator.MapNotNil[string, string](prefix+".metadata", message.Metadata),
-		validator.SliceRequired(prefix+".body", message.Body),
+		validator.StringRequired(prefix+".body", message.Body),
 	)
 }
 

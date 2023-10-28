@@ -10,7 +10,7 @@ type Workspace struct {
 }
 
 func (entity *Workspace) TableName() string {
-	return "kanthor_workspace"
+	return TableWs
 }
 
 func (entity *Workspace) GenId() {
@@ -30,7 +30,7 @@ type WorkspaceCredentials struct {
 }
 
 func (entity *WorkspaceCredentials) TableName() string {
-	return "kanthor_workspace_credentials"
+	return TableWsc
 }
 
 func (entity *WorkspaceCredentials) GenId() {

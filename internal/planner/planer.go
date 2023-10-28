@@ -79,7 +79,7 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 		AppId:    msg.AppId,
 		Type:     msg.Type,
 		Metadata: entities.Metadata{},
-		Headers:  entities.NewHeader(),
+		Headers:  entities.Header{},
 		Body:     msg.Body,
 		Uri:      ep.Uri,
 		Method:   ep.Method,
@@ -97,7 +97,7 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 	req.Headers.Set(entities.HeaderReqTs, fmt.Sprintf("%d", req.Timestamp))
 
 	// signature
-	sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, string(msg.Body))
+	sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, msg.Body)
 	signed := signature.Sign(sign, ep.SecretKey)
 	req.Headers.Set(entities.HeaderReqSig, fmt.Sprintf("v1=%s", signed))
 

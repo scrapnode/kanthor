@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/namespace"
 	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/namespace"
 )
 
 type Idempotency interface {

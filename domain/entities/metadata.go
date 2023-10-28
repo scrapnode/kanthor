@@ -1,7 +1,5 @@
 package entities
 
-import "encoding/json"
-
 var (
 	MetaMsgIdempotencyKey = "kanthor.msg.idempotency_key"
 	MetaAttId             = "kanthor.att.id"
@@ -24,9 +22,4 @@ func (meta Metadata) Merge(src map[string]string) {
 			meta[key] = value
 		}
 	}
-}
-
-func (meta Metadata) String() string {
-	data, _ := json.Marshal(meta)
-	return string(data)
 }

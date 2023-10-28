@@ -38,7 +38,7 @@ func (sql *SqlWorkspaceCredentials) Update(ctx context.Context, doc *entities.Wo
 func (sql *SqlWorkspaceCredentials) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.WorkspaceCredentials], error) {
 	doc := &entities.WorkspaceCredentials{}
 	tx := sql.client.WithContext(ctx).Model(doc).
-		Scopes(UseWsId(wsId, doc))
+		Scopes(UseWsId(wsId, doc.TableName()))
 
 	req := structure.ListReqBuild(opts)
 	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
@@ -57,7 +57,7 @@ func (sql *SqlWorkspaceCredentials) Get(ctx context.Context, wsId, id string) (*
 
 	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&doc).
-		Scopes(UseWsId(wsId, doc)).
+		Scopes(UseWsId(wsId, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {

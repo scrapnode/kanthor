@@ -18,7 +18,7 @@ type Attempt struct {
 }
 
 func (entity *Attempt) TableName() string {
-	return "kanthor_attempt"
+	return TableAtt
 }
 
 func (entity *Attempt) Marshal() ([]byte, error) {
