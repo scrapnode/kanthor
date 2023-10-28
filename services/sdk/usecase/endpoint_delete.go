@@ -27,18 +27,18 @@ type EndpointDeleteRes struct {
 }
 
 func (uc *endpoint) Delete(ctx context.Context, req *EndpointDeleteReq) (*EndpointDeleteRes, error) {
-	ep, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repos.Application().Get(ctx, req.WsId, req.AppId)
+	ep, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		app, err := uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
 		if err != nil {
 			return nil, err
 		}
 
-		ep, err := uc.repos.Endpoint().Get(txctx, app, req.Id)
+		ep, err := uc.repositories.Endpoint().Get(txctx, app, req.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := uc.repos.Endpoint().Delete(txctx, ep); err != nil {
+		if err := uc.repositories.Endpoint().Delete(txctx, ep); err != nil {
 			return nil, err
 		}
 		return ep, nil

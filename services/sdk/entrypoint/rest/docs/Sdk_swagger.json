@@ -37,7 +37,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.AccountGetRes"
+                            "$ref": "#/definitions/rest.AccountGetRes"
                         }
                     },
                     "default": {
@@ -99,7 +99,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationListRes"
+                            "$ref": "#/definitions/rest.ApplicationListRes"
                         }
                     },
                     "default": {
@@ -126,7 +126,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationCreateReq"
+                            "$ref": "#/definitions/rest.ApplicationCreateReq"
                         }
                     }
                 ],
@@ -134,7 +134,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationCreateRes"
+                            "$ref": "#/definitions/rest.ApplicationCreateRes"
                         }
                     },
                     "default": {
@@ -169,7 +169,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationGetRes"
+                            "$ref": "#/definitions/rest.ApplicationGetRes"
                         }
                     },
                     "default": {
@@ -203,7 +203,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationUpdateReq"
+                            "$ref": "#/definitions/rest.ApplicationUpdateReq"
                         }
                     }
                 ],
@@ -211,7 +211,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationUpdateRes"
+                            "$ref": "#/definitions/rest.ApplicationUpdateRes"
                         }
                     },
                     "default": {
@@ -244,7 +244,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationDeleteRes"
+                            "$ref": "#/definitions/rest.ApplicationDeleteRes"
                         }
                     },
                     "default": {
@@ -313,7 +313,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointListRes"
+                            "$ref": "#/definitions/rest.EndpointListRes"
                         }
                     },
                     "default": {
@@ -347,7 +347,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointCreateReq"
+                            "$ref": "#/definitions/rest.EndpointCreateReq"
                         }
                     }
                 ],
@@ -355,7 +355,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointCreateRes"
+                            "$ref": "#/definitions/rest.EndpointCreateRes"
                         }
                     },
                     "default": {
@@ -397,7 +397,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointGetRes"
+                            "$ref": "#/definitions/rest.EndpointGetRes"
                         }
                     },
                     "default": {
@@ -438,7 +438,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointUpdateReq"
+                            "$ref": "#/definitions/rest.EndpointUpdateReq"
                         }
                     }
                 ],
@@ -446,7 +446,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointUpdateRes"
+                            "$ref": "#/definitions/rest.EndpointUpdateRes"
                         }
                     },
                     "default": {
@@ -486,7 +486,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointDeleteRes"
+                            "$ref": "#/definitions/rest.EndpointDeleteRes"
                         }
                     },
                     "default": {
@@ -522,7 +522,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.MessagePutReq"
+                            "$ref": "#/definitions/rest.MessagePutReq"
                         }
                     }
                 ],
@@ -530,7 +530,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.MessagePutRes"
+                            "$ref": "#/definitions/rest.MessagePutRes"
                         }
                     },
                     "default": {
@@ -599,7 +599,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleListRes"
+                            "$ref": "#/definitions/rest.EndpointRuleListRes"
                         }
                     },
                     "default": {
@@ -633,7 +633,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleCreateReq"
+                            "$ref": "#/definitions/rest.EndpointRuleCreateReq"
                         }
                     }
                 ],
@@ -641,7 +641,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleCreateRes"
+                            "$ref": "#/definitions/rest.EndpointRuleCreateRes"
                         }
                     },
                     "default": {
@@ -683,7 +683,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleGetRes"
+                            "$ref": "#/definitions/rest.EndpointRuleGetRes"
                         }
                     },
                     "default": {
@@ -724,7 +724,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleUpdateReq"
+                            "$ref": "#/definitions/rest.EndpointRuleUpdateReq"
                         }
                     }
                 ],
@@ -732,7 +732,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleUpdateRes"
+                            "$ref": "#/definitions/rest.EndpointRuleUpdateRes"
                         }
                     },
                     "default": {
@@ -772,7 +772,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleDeleteRes"
+                            "$ref": "#/definitions/rest.EndpointRuleDeleteRes"
                         }
                     },
                     "default": {
@@ -926,7 +926,7 @@
                 }
             }
         },
-        "sdk.AccountGetRes": {
+        "rest.AccountGetRes": {
             "type": "object",
             "properties": {
                 "account": {
@@ -940,7 +940,7 @@
                 }
             }
         },
-        "sdk.ApplicationCreateReq": {
+        "rest.ApplicationCreateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -951,7 +951,7 @@
                 }
             }
         },
-        "sdk.ApplicationCreateRes": {
+        "rest.ApplicationCreateRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -972,7 +972,7 @@
                 }
             }
         },
-        "sdk.ApplicationDeleteRes": {
+        "rest.ApplicationDeleteRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -993,7 +993,7 @@
                 }
             }
         },
-        "sdk.ApplicationGetRes": {
+        "rest.ApplicationGetRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1014,7 +1014,7 @@
                 }
             }
         },
-        "sdk.ApplicationListRes": {
+        "rest.ApplicationListRes": {
             "type": "object",
             "properties": {
                 "cursor": {
@@ -1028,7 +1028,7 @@
                 }
             }
         },
-        "sdk.ApplicationUpdateReq": {
+        "rest.ApplicationUpdateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -1039,7 +1039,7 @@
                 }
             }
         },
-        "sdk.ApplicationUpdateRes": {
+        "rest.ApplicationUpdateRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1060,7 +1060,7 @@
                 }
             }
         },
-        "sdk.EndpointCreateReq": {
+        "rest.EndpointCreateReq": {
             "type": "object",
             "required": [
                 "method",
@@ -1089,7 +1089,7 @@
                 }
             }
         },
-        "sdk.EndpointCreateRes": {
+        "rest.EndpointCreateRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1121,7 +1121,7 @@
                 }
             }
         },
-        "sdk.EndpointDeleteRes": {
+        "rest.EndpointDeleteRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1153,7 +1153,7 @@
                 }
             }
         },
-        "sdk.EndpointGetRes": {
+        "rest.EndpointGetRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1185,7 +1185,7 @@
                 }
             }
         },
-        "sdk.EndpointListRes": {
+        "rest.EndpointListRes": {
             "type": "object",
             "properties": {
                 "cursor": {
@@ -1199,7 +1199,7 @@
                 }
             }
         },
-        "sdk.EndpointRuleCreateReq": {
+        "rest.EndpointRuleCreateReq": {
             "type": "object",
             "required": [
                 "condition_expression",
@@ -1224,7 +1224,7 @@
                 }
             }
         },
-        "sdk.EndpointRuleCreateRes": {
+        "rest.EndpointRuleCreateRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1260,7 +1260,7 @@
                 }
             }
         },
-        "sdk.EndpointRuleDeleteRes": {
+        "rest.EndpointRuleDeleteRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1296,7 +1296,7 @@
                 }
             }
         },
-        "sdk.EndpointRuleGetRes": {
+        "rest.EndpointRuleGetRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1332,7 +1332,7 @@
                 }
             }
         },
-        "sdk.EndpointRuleListRes": {
+        "rest.EndpointRuleListRes": {
             "type": "object",
             "properties": {
                 "cursor": {
@@ -1346,7 +1346,7 @@
                 }
             }
         },
-        "sdk.EndpointRuleUpdateReq": {
+        "rest.EndpointRuleUpdateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -1357,7 +1357,7 @@
                 }
             }
         },
-        "sdk.EndpointRuleUpdateRes": {
+        "rest.EndpointRuleUpdateRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1393,7 +1393,7 @@
                 }
             }
         },
-        "sdk.EndpointUpdateReq": {
+        "rest.EndpointUpdateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -1404,7 +1404,7 @@
                 }
             }
         },
-        "sdk.EndpointUpdateRes": {
+        "rest.EndpointUpdateRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1436,7 +1436,7 @@
                 }
             }
         },
-        "sdk.MessagePutReq": {
+        "rest.MessagePutReq": {
             "type": "object",
             "required": [
                 "body",
@@ -1459,7 +1459,7 @@
                 }
             }
         },
-        "sdk.MessagePutRes": {
+        "rest.MessagePutRes": {
             "type": "object",
             "properties": {
                 "id": {

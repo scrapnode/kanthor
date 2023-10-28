@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/project"
 )
 
@@ -20,11 +20,11 @@ func New(conf *Config, logger logging.Logger) (Cache, error) {
 	}
 
 	if strings.HasPrefix(uri.Scheme, "noop") {
-		return NewNoop(conf, logger), nil
+		return NewNoop(conf, logger)
 	}
 
 	if strings.HasPrefix(uri.Scheme, "redis") {
-		return NewRedis(conf, logger), nil
+		return NewRedis(conf, logger)
 	}
 
 	return nil, fmt.Errorf("cache: unknown engine")

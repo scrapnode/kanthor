@@ -175,7 +175,7 @@ func (uc *request) applicables(ctx context.Context, appIds []string) map[string]
 		wg.Go(func() {
 			key := utils.Key("scheduler", appId)
 			app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
-				endpoints, err := uc.repos.Endpoint().List(ctx, appId)
+				endpoints, err := uc.repositories.Endpoint().List(ctx, appId)
 				if err != nil {
 					return nil, err
 				}
@@ -184,7 +184,7 @@ func (uc *request) applicables(ctx context.Context, appIds []string) map[string]
 					returning.EndpointMap[ep.Id] = ep
 				}
 
-				rules, err := uc.repos.Endpoint().Rules(ctx, appId)
+				rules, err := uc.repositories.Endpoint().Rules(ctx, appId)
 				if err != nil {
 					return nil, err
 				}

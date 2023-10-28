@@ -27,15 +27,15 @@ type WorkspaceCredentialsUpdateRes struct {
 }
 
 func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCredentialsUpdateReq) (*WorkspaceCredentialsUpdateRes, error) {
-	doc, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
+	doc, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		wsc, err := uc.repositories.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}
 
 		wsc.Name = req.Name
 		wsc.SetAT(uc.infra.Timer.Now())
-		return uc.repos.WorkspaceCredentials().Update(txctx, wsc)
+		return uc.repositories.WorkspaceCredentials().Update(txctx, wsc)
 	})
 	if err != nil {
 		return nil, err

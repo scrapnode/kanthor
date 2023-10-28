@@ -30,8 +30,8 @@ type WorkspaceCredentialsExpireRes struct {
 }
 
 func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error) {
-	wsc, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		wsc, err := uc.repos.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
+	wsc, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		wsc, err := uc.repositories.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -43,7 +43,7 @@ func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCreden
 
 		wsc.ExpiredAt = uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(req.Duration)).UnixMilli()
 		wsc.SetAT(uc.infra.Timer.Now())
-		return uc.repos.WorkspaceCredentials().Update(txctx, wsc)
+		return uc.repositories.WorkspaceCredentials().Update(txctx, wsc)
 	})
 	if err != nil {
 		return nil, err

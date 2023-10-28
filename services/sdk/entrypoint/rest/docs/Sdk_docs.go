@@ -44,7 +44,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.AccountGetRes"
+                            "$ref": "#/definitions/rest.AccountGetRes"
                         }
                     },
                     "default": {
@@ -106,7 +106,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationListRes"
+                            "$ref": "#/definitions/rest.ApplicationListRes"
                         }
                     },
                     "default": {
@@ -133,7 +133,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationCreateReq"
+                            "$ref": "#/definitions/rest.ApplicationCreateReq"
                         }
                     }
                 ],
@@ -141,7 +141,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationCreateRes"
+                            "$ref": "#/definitions/rest.ApplicationCreateRes"
                         }
                     },
                     "default": {
@@ -176,7 +176,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationGetRes"
+                            "$ref": "#/definitions/rest.ApplicationGetRes"
                         }
                     },
                     "default": {
@@ -210,7 +210,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationUpdateReq"
+                            "$ref": "#/definitions/rest.ApplicationUpdateReq"
                         }
                     }
                 ],
@@ -218,7 +218,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationUpdateRes"
+                            "$ref": "#/definitions/rest.ApplicationUpdateRes"
                         }
                     },
                     "default": {
@@ -251,7 +251,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.ApplicationDeleteRes"
+                            "$ref": "#/definitions/rest.ApplicationDeleteRes"
                         }
                     },
                     "default": {
@@ -320,7 +320,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointListRes"
+                            "$ref": "#/definitions/rest.EndpointListRes"
                         }
                     },
                     "default": {
@@ -354,7 +354,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointCreateReq"
+                            "$ref": "#/definitions/rest.EndpointCreateReq"
                         }
                     }
                 ],
@@ -362,7 +362,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointCreateRes"
+                            "$ref": "#/definitions/rest.EndpointCreateRes"
                         }
                     },
                     "default": {
@@ -404,7 +404,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointGetRes"
+                            "$ref": "#/definitions/rest.EndpointGetRes"
                         }
                     },
                     "default": {
@@ -445,7 +445,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointUpdateReq"
+                            "$ref": "#/definitions/rest.EndpointUpdateReq"
                         }
                     }
                 ],
@@ -453,7 +453,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointUpdateRes"
+                            "$ref": "#/definitions/rest.EndpointUpdateRes"
                         }
                     },
                     "default": {
@@ -493,7 +493,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointDeleteRes"
+                            "$ref": "#/definitions/rest.EndpointDeleteRes"
                         }
                     },
                     "default": {
@@ -529,7 +529,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.MessagePutReq"
+                            "$ref": "#/definitions/rest.MessagePutReq"
                         }
                     }
                 ],
@@ -537,7 +537,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.MessagePutRes"
+                            "$ref": "#/definitions/rest.MessagePutRes"
                         }
                     },
                     "default": {
@@ -606,7 +606,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleListRes"
+                            "$ref": "#/definitions/rest.EndpointRuleListRes"
                         }
                     },
                     "default": {
@@ -640,7 +640,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleCreateReq"
+                            "$ref": "#/definitions/rest.EndpointRuleCreateReq"
                         }
                     }
                 ],
@@ -648,7 +648,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleCreateRes"
+                            "$ref": "#/definitions/rest.EndpointRuleCreateRes"
                         }
                     },
                     "default": {
@@ -690,7 +690,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleGetRes"
+                            "$ref": "#/definitions/rest.EndpointRuleGetRes"
                         }
                     },
                     "default": {
@@ -731,7 +731,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleUpdateReq"
+                            "$ref": "#/definitions/rest.EndpointRuleUpdateReq"
                         }
                     }
                 ],
@@ -739,7 +739,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleUpdateRes"
+                            "$ref": "#/definitions/rest.EndpointRuleUpdateRes"
                         }
                     },
                     "default": {
@@ -779,7 +779,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sdk.EndpointRuleDeleteRes"
+                            "$ref": "#/definitions/rest.EndpointRuleDeleteRes"
                         }
                     },
                     "default": {
@@ -933,7 +933,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.AccountGetRes": {
+        "rest.AccountGetRes": {
             "type": "object",
             "properties": {
                 "account": {
@@ -947,7 +947,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.ApplicationCreateReq": {
+        "rest.ApplicationCreateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -958,7 +958,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.ApplicationCreateRes": {
+        "rest.ApplicationCreateRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -979,7 +979,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.ApplicationDeleteRes": {
+        "rest.ApplicationDeleteRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1000,7 +1000,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.ApplicationGetRes": {
+        "rest.ApplicationGetRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1021,7 +1021,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.ApplicationListRes": {
+        "rest.ApplicationListRes": {
             "type": "object",
             "properties": {
                 "cursor": {
@@ -1035,7 +1035,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.ApplicationUpdateReq": {
+        "rest.ApplicationUpdateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -1046,7 +1046,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.ApplicationUpdateRes": {
+        "rest.ApplicationUpdateRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1067,7 +1067,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointCreateReq": {
+        "rest.EndpointCreateReq": {
             "type": "object",
             "required": [
                 "method",
@@ -1096,7 +1096,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointCreateRes": {
+        "rest.EndpointCreateRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1128,7 +1128,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointDeleteRes": {
+        "rest.EndpointDeleteRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1160,7 +1160,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointGetRes": {
+        "rest.EndpointGetRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1192,7 +1192,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointListRes": {
+        "rest.EndpointListRes": {
             "type": "object",
             "properties": {
                 "cursor": {
@@ -1206,7 +1206,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointRuleCreateReq": {
+        "rest.EndpointRuleCreateReq": {
             "type": "object",
             "required": [
                 "condition_expression",
@@ -1231,7 +1231,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointRuleCreateRes": {
+        "rest.EndpointRuleCreateRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1267,7 +1267,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointRuleDeleteRes": {
+        "rest.EndpointRuleDeleteRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1303,7 +1303,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointRuleGetRes": {
+        "rest.EndpointRuleGetRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1339,7 +1339,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointRuleListRes": {
+        "rest.EndpointRuleListRes": {
             "type": "object",
             "properties": {
                 "cursor": {
@@ -1353,7 +1353,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointRuleUpdateReq": {
+        "rest.EndpointRuleUpdateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -1364,7 +1364,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointRuleUpdateRes": {
+        "rest.EndpointRuleUpdateRes": {
             "type": "object",
             "properties": {
                 "condition_expression": {
@@ -1400,7 +1400,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointUpdateReq": {
+        "rest.EndpointUpdateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -1411,7 +1411,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.EndpointUpdateRes": {
+        "rest.EndpointUpdateRes": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -1443,7 +1443,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.MessagePutReq": {
+        "rest.MessagePutReq": {
             "type": "object",
             "required": [
                 "body",
@@ -1466,7 +1466,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "sdk.MessagePutRes": {
+        "rest.MessagePutRes": {
             "type": "object",
             "properties": {
                 "id": {

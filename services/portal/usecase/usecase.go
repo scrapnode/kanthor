@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/portal/config"
-	"github.com/scrapnode/kanthor/services/portal/repos"
+	"github.com/scrapnode/kanthor/services/portal/repositories"
 )
 
 type Portal interface {
@@ -19,23 +19,23 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	repos repos.Repositories,
+	repositories repositories.Repositories,
 ) Portal {
 	logger = logger.With("usecase", "portal")
 
 	return &portal{
-		conf:   conf,
-		logger: logger,
-		infra:  infra,
-		repos:  repos,
+		conf:         conf,
+		logger:       logger,
+		infra:        infra,
+		repositories: repositories,
 	}
 }
 
 type portal struct {
-	conf   *config.Config
-	logger logging.Logger
-	infra  *infrastructure.Infrastructure
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	infra        *infrastructure.Infrastructure
+	repositories repositories.Repositories
 
 	account              *account
 	workspace            *workspace
@@ -50,10 +50,10 @@ func (uc *portal) Account() Account {
 
 	if uc.account == nil {
 		uc.account = &account{
-			conf:   uc.conf,
-			logger: uc.logger,
-			infra:  uc.infra,
-			repos:  uc.repos,
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
 		}
 	}
 	return uc.account
@@ -65,10 +65,10 @@ func (uc *portal) Workspace() Workspace {
 
 	if uc.workspace == nil {
 		uc.workspace = &workspace{
-			conf:   uc.conf,
-			logger: uc.logger,
-			infra:  uc.infra,
-			repos:  uc.repos,
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
 		}
 	}
 	return uc.workspace
@@ -80,10 +80,10 @@ func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
 
 	if uc.workspaceCredentials == nil {
 		uc.workspaceCredentials = &workspaceCredentials{
-			conf:   uc.conf,
-			logger: uc.logger,
-			infra:  uc.infra,
-			repos:  uc.repos,
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
 		}
 	}
 	return uc.workspaceCredentials

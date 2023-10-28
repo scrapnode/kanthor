@@ -5,31 +5,26 @@ package ioc
 
 import (
 	"github.com/google/wire"
-	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/datastore"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/services"
-	"github.com/scrapnode/kanthor/services/storage"
-	uc "github.com/scrapnode/kanthor/usecases/storage"
-	"github.com/scrapnode/kanthor/usecases/storage/repos"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/services/storage/config"
+	"github.com/scrapnode/kanthor/services/storage/entrypoint"
+	"github.com/scrapnode/kanthor/services/storage/repositories"
+	"github.com/scrapnode/kanthor/services/storage/usecase"
 )
 
-func InitializeStorage(conf *config.Config, logger logging.Logger) (services.Service, error) {
+func Storage(provider configuration.Provider) (patterns.Runnable, error) {
 	wire.Build(
-		storage.New,
+		config.New,
+		logging.New,
 		infrastructure.New,
-		wire.FieldsOf(new(*config.Config), "Datastore"),
 		datastore.New,
-		InitializeStorageUsecase,
-	)
-	return nil, nil
-}
-
-func InitializeStorageUsecase(conf *config.Config, logger logging.Logger, infra *infrastructure.Infrastructure, ds datastore.Datastore) (uc.Storage, error) {
-	wire.Build(
-		uc.New,
-		repos.New,
+		repositories.New,
+		usecase.New,
+		entrypoint.New,
 	)
 	return nil, nil
 }

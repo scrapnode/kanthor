@@ -5,17 +5,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/sony/gobreaker"
 )
 
-func NewSony(conf *Config, logger logging.Logger) CircuitBreaker {
+func NewSony(conf *Config, logger logging.Logger) (CircuitBreaker, error) {
 	logger = logger.With("circuitbreaker", "gobreaker")
 	return &sonycb{
 		conf:     conf,
 		logger:   logger,
 		breakers: map[string]*gobreaker.CircuitBreaker{},
-	}
+	}, nil
 }
 
 type sonycb struct {

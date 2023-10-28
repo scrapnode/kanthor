@@ -29,7 +29,7 @@ func (uc *application) Create(ctx context.Context, req *ApplicationCreateReq) (*
 	doc.GenId()
 	doc.SetAT(uc.infra.Timer.Now())
 
-	app, err := uc.repos.Application().Create(ctx, doc)
+	app, err := uc.repositories.Application().Create(ctx, doc)
 	if err != nil {
 		return nil, err
 	}

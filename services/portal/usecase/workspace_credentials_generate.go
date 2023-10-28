@@ -53,7 +53,7 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCred
 	}
 	doc.Hash = hash
 
-	credentials, err := uc.repos.WorkspaceCredentials().Create(ctx, doc)
+	credentials, err := uc.repositories.WorkspaceCredentials().Create(ctx, doc)
 	if err != nil {
 		return nil, err
 	}

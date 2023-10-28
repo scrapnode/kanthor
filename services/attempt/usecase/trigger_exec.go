@@ -13,7 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/scrapnode/kanthor/services/attempt/repos"
+	"github.com/scrapnode/kanthor/services/attempt/repositories"
 	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc"
 )
@@ -150,24 +150,24 @@ func (uc *trigger) examine(
 	appId string,
 	applicable *planner.Applicable,
 	from, to time.Time,
-) ([]string, []repos.Req, error) {
+) ([]string, []repositories.Req, error) {
 	messages, msgIds, err := uc.scan(ctx, appId, from, to)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	requests, err := uc.repos.Request().Scan(ctx, appId, msgIds, from, to)
+	requests, err := uc.repositories.Request().Scan(ctx, appId, msgIds, from, to)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	responses, err := uc.repos.Response().Scan(ctx, appId, msgIds, from, to)
+	responses, err := uc.repositories.Response().Scan(ctx, appId, msgIds, from, to)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	schedulable := []string{}
-	attemptable := []repos.Req{}
+	attemptable := []repositories.Req{}
 
 	status := uc.hash(requests, responses)
 	for _, message := range messages {
@@ -193,13 +193,13 @@ func (uc *trigger) examine(
 	return schedulable, attemptable, nil
 }
 
-func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (map[string]repos.Msg, []string, error) {
+func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (map[string]repositories.Msg, []string, error) {
 	cursor, err := uc.infra.Cache.StringGet(ctx, "kanthor.usecases.attempt.message.scan")
 	if err != nil && !errors.Is(err, cache.ErrEntryNotFound) {
 		return nil, nil, err
 	}
 
-	messages, err := uc.repos.Message().Scan(ctx, appId, from, to, cursor)
+	messages, err := uc.repositories.Message().Scan(ctx, appId, from, to, cursor)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -214,7 +214,7 @@ func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (
 	}
 
 	ids := []string{}
-	returning := map[string]repos.Msg{}
+	returning := map[string]repositories.Msg{}
 	for _, msg := range messages {
 		returning[msg.Id] = msg
 		ids = append(ids, msg.Id)
@@ -226,7 +226,7 @@ func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (
 func (uc *trigger) applicable(ctx context.Context, appId string) (*planner.Applicable, error) {
 	key := utils.Key("scheduler", appId)
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
-		endpoints, err := uc.repos.Endpoint().List(ctx, appId)
+		endpoints, err := uc.repositories.Endpoint().List(ctx, appId)
 		if err != nil {
 			return nil, err
 		}
@@ -235,7 +235,7 @@ func (uc *trigger) applicable(ctx context.Context, appId string) (*planner.Appli
 			returning.EndpointMap[ep.Id] = ep
 		}
 
-		rules, err := uc.repos.Endpoint().Rules(ctx, appId)
+		rules, err := uc.repositories.Endpoint().Rules(ctx, appId)
 		if err != nil {
 			return nil, err
 		}
@@ -245,7 +245,7 @@ func (uc *trigger) applicable(ctx context.Context, appId string) (*planner.Appli
 	})
 }
 
-func (uc *trigger) hash(requests map[string]repos.Req, responses map[string]repos.Res) map[string]string {
+func (uc *trigger) hash(requests map[string]repositories.Req, responses map[string]repositories.Res) map[string]string {
 	returning := map[string]string{}
 
 	for _, request := range requests {
@@ -294,7 +294,7 @@ func (uc *trigger) schedule(
 	for i := 0; i < len(msgIds); i += size {
 		j := utils.ChunkNext(i, len(msgIds), size)
 
-		messages, err := uc.repos.Message().ListByIds(ctx, msgIds[i:j])
+		messages, err := uc.repositories.Message().ListByIds(ctx, msgIds[i:j])
 		if err != nil {
 			for _, id := range msgIds[i:j] {
 				ko.Set(id, err)
@@ -347,7 +347,7 @@ func (uc *trigger) create(
 	ko *safe.Map[error],
 	size int,
 	delay int64,
-	requests []repos.Req,
+	requests []repositories.Req,
 ) {
 	attempts := []entities.Attempt{}
 
@@ -366,7 +366,7 @@ func (uc *trigger) create(
 	for i := 0; i < len(attempts); i += size {
 		j := utils.ChunkNext(i, len(attempts), size)
 
-		ids, err := uc.repos.Attempt().Create(ctx, attempts[i:j])
+		ids, err := uc.repositories.Attempt().Create(ctx, attempts[i:j])
 		if err != nil {
 			for _, attempt := range attempts[i:j] {
 				ko.Set(attempt.ReqId, err)

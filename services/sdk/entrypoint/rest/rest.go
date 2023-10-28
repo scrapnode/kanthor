@@ -8,11 +8,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/scrapnode/kanthor/database"
+	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/database"
-	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/sdk/config"
 	"github.com/scrapnode/kanthor/services/sdk/entrypoint/rest/docs"
 	"github.com/scrapnode/kanthor/services/sdk/entrypoint/rest/middlewares"
@@ -28,6 +28,7 @@ func New(
 	db database.Database,
 	uc usecase.Sdk,
 ) patterns.Runnable {
+	logger = logger.With("service", "sdk", "entrypoint", "rest")
 	return &sdk{
 		conf:   conf,
 		logger: logger,
@@ -67,7 +68,7 @@ func (service *sdk) Start(ctx context.Context) error {
 	}
 
 	service.server = &http.Server{
-		Addr:    service.conf.Sdk.Gateway.Addr,
+		Addr:    service.conf.Gateway.Addr,
 		Handler: service.router(),
 	}
 
@@ -94,7 +95,7 @@ func (service *sdk) router() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		api.Use(ginmw.UseStartup(&service.conf.Sdk.Gateway))
+		api.Use(ginmw.UseStartup(&service.conf.Gateway))
 		api.Use(ginmw.UseMetric(service.infra.Metric, "sdk"))
 		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(middlewares.UseAuth(service.infra.Authorizator, service.uc))
@@ -138,7 +139,7 @@ func (service *sdk) Stop(ctx context.Context) error {
 }
 
 func (service *sdk) Run(ctx context.Context) error {
-	service.logger.Infow("running", "addr", service.conf.Sdk.Gateway.Addr)
+	service.logger.Infow("running", "addr", service.conf.Gateway.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}

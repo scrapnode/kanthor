@@ -1,4 +1,4 @@
-package dispatcher
+package entrypoint
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 		ctx := context.Background()
 
 		ucreq := &usecase.ForwarderSendReq{
-			Concurrency: service.conf.Dispatcher.Forwarder.Send.Concurrency,
+			Concurrency: service.conf.Forwarder.Send.Concurrency,
 			Requests:    requests,
 		}
 		// we alreay validated messages of request, don't need to validate again

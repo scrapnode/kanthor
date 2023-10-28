@@ -1,6 +1,6 @@
 # refs
 redis_uri: &redis_uri redis://127.0.0.1:6379/0
-postgres_uri: &postgres_uri postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30
+postgres_uri: &postgres_uri postgres://postgres:changemenow@127.0.0.1/postgres?connect_timeout=30&sslmode=disable
 nats_uri: &nats_uri nats://127.0.0.1:4222
 
 logger:
@@ -82,9 +82,9 @@ infrastructure:
       timeout: 30000 # 30s
       rate_limit: 300
     subscriber:
-    max_retry: 1
-    timeout: 60000 # 60s
-    concurrency: 1000
+      max_retry: 1
+      timeout: 60000 # 60s
+      concurrency: 1000
 
 # services
 sdk:

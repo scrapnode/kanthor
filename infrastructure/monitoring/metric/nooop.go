@@ -3,11 +3,11 @@ package metric
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 )
 
 func NewNoop(conf *Config, logger logging.Logger) (Metric, error) {
-	logger = logger.With("monitoring.metrics", "noop")
+	logger = logger.With("metric", "noop")
 	return &noop{conf: conf, logger: logger}, nil
 }
 

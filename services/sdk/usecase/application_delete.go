@@ -25,13 +25,13 @@ type ApplicationDeleteRes struct {
 }
 
 func (uc *application) Delete(ctx context.Context, req *ApplicationDeleteReq) (*ApplicationDeleteRes, error) {
-	app, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repos.Application().Get(txctx, req.WsId, req.Id)
+	app, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		app, err := uc.repositories.Application().Get(txctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := uc.repos.Application().Delete(txctx, app); err != nil {
+		if err := uc.repositories.Application().Delete(txctx, app); err != nil {
 			return nil, err
 		}
 		return app, nil

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	natscore "github.com/nats-io/nats.go"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/sourcegraph/conc/pool"
 )

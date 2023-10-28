@@ -3,32 +3,32 @@ package config
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/configuration"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/gateway"
 )
 
 // @TODO: mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
-	var conf Config
-	return &conf, provider.Unmarshal(&conf)
+	var conf Wrapper
+	return &conf.Sdk, provider.Unmarshal(&conf)
 }
 
-type Config struct {
-	Sdk Sdk `json:"sdk" yaml:"sdk" mapstructure:"sdk"`
+type Wrapper struct {
+	Sdk Config `json:"sdk" yaml:"sdk" mapstructure:"sdk"`
 }
 
-func (conf *Config) Validate() error {
+func (conf *Wrapper) Validate() error {
 	if err := conf.Sdk.Validate(); err != nil {
 		return err
 	}
 	return nil
 }
 
-type Sdk struct {
+type Config struct {
 	Gateway gateway.Config `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
 }
 
-func (conf *Sdk) Validate() error {
+func (conf *Config) Validate() error {
 	if err := conf.Gateway.Validate(); err != nil {
 		return fmt.Errorf("sdk.gateway: %v", err)
 	}

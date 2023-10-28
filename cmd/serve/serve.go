@@ -8,39 +8,37 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/scrapnode/kanthor/cmd/show"
-	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/configuration"
-	"github.com/scrapnode/kanthor/infrastructure/debugging"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/debugging"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/services"
 	"github.com/spf13/cobra"
 )
 
-func New(conf *config.Config, logger logging.Logger) *cobra.Command {
+func New(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "serve",
-		ValidArgs: config.SERVICES,
+		ValidArgs: services.SERVICES,
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			serviceName := args[0]
-			verbose, _ := cmd.Flags().GetBool("verbose")
-
-			if err := conf.Validate(serviceName); err != nil {
-				_ = show.Config(conf, []configuration.Source{}, verbose, false)
-				return err
-			}
-
-			service, err := Service(serviceName, conf, logger)
+			logger, err := logging.New(provider)
 			if err != nil {
 				return err
 			}
 
-			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-			defer stop()
-			if err := service.Start(ctx); err != nil {
+			serviceName := args[0]
+			service, err := Service(serviceName, provider)
+			if err != nil {
 				return err
 			}
 			debug := debugging.NewServer()
+
+			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+			defer stop()
+
+			if err := service.Start(ctx); err != nil {
+				return err
+			}
 			if err := debug.Start(ctx); err != nil {
 				return err
 			}
@@ -50,7 +48,6 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 					logger.Error(err)
 				}
 			}()
-
 			go func() {
 				if err := debug.Run(ctx); err != nil {
 					logger.Error(err)

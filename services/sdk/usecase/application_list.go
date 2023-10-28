@@ -26,7 +26,7 @@ type ApplicationListRes struct {
 }
 
 func (uc *application) List(ctx context.Context, req *ApplicationListReq) (*ApplicationListRes, error) {
-	listing, err := uc.repos.Application().List(
+	listing, err := uc.repositories.Application().List(
 		ctx,
 		req.WsId,
 		structure.WithListCursor(req.Cursor),

@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 )
 
 func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 	if conf.Engine == EngineCasbin {
-		return NewCasbin(conf, logger), nil
+		return NewCasbin(conf, logger)
 	}
 
 	return nil, fmt.Errorf("authorizator: unknown engine")

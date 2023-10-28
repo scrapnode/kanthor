@@ -3,8 +3,8 @@ package streaming
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 )
 
 func New(conf *Config, logger logging.Logger) (Stream, error) {

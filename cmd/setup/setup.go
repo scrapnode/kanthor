@@ -2,17 +2,16 @@ package setup
 
 import (
 	"github.com/scrapnode/kanthor/cmd/setup/account"
-	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/configuration"
 	"github.com/spf13/cobra"
 )
 
-func New(conf *config.Config, logger logging.Logger) *cobra.Command {
+func New(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
 		Use: "setup",
 	}
 
-	command.AddCommand(account.New(conf, logger))
+	command.AddCommand(account.New(provider))
 
 	return command
 }

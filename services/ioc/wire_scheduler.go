@@ -5,24 +5,26 @@ package ioc
 
 import (
 	"github.com/google/wire"
-	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/database"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
-	"github.com/scrapnode/kanthor/services/attempt/repos"
-	"github.com/scrapnode/kanthor/services/attempt/usecase"
-	"github.com/scrapnode/kanthor/services/scheduler"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/services/scheduler/config"
+	"github.com/scrapnode/kanthor/services/scheduler/entrypoint"
+	"github.com/scrapnode/kanthor/services/scheduler/repositories"
+	"github.com/scrapnode/kanthor/services/scheduler/usecase"
 )
 
-func InitializeScheduler(conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
+func Scheduler(provider configuration.Provider) (patterns.Runnable, error) {
 	wire.Build(
-		scheduler.New,
+		config.New,
+		logging.New,
 		infrastructure.New,
-		wire.FieldsOf(new(*config.Config), "Database"),
 		database.New,
-		repos.New,
+		repositories.New,
 		usecase.New,
+		entrypoint.New,
 	)
 	return nil, nil
 }

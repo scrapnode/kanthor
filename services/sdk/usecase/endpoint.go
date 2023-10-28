@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/sdk/config"
-	"github.com/scrapnode/kanthor/services/sdk/repos"
+	"github.com/scrapnode/kanthor/services/sdk/repositories"
 )
 
 type Endpoint interface {
@@ -19,8 +19,8 @@ type Endpoint interface {
 }
 
 type endpoint struct {
-	conf   *config.Config
-	logger logging.Logger
-	infra  *infrastructure.Infrastructure
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	infra        *infrastructure.Infrastructure
+	repositories repositories.Repositories
 }

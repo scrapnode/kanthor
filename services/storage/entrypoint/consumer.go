@@ -1,4 +1,4 @@
-package storage
+package entrypoint
 
 import (
 	"context"
@@ -23,8 +23,8 @@ func NewConsumer(service *storage) streaming.SubHandler {
 		maps := map[string]string{}
 
 		ucreq := &usecase.WarehousePutReq{
-			Timeout:   service.conf.Storage.Warehouse.Put.Timeout,
-			Size:      service.conf.Storage.Warehouse.Put.Size,
+			Timeout:   service.conf.Warehouse.Put.Timeout,
+			Size:      service.conf.Warehouse.Put.Size,
 			Messages:  []entities.Message{},
 			Requests:  []entities.Request{},
 			Responses: []entities.Response{},

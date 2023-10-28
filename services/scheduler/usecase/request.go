@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/scheduler/config"
-	"github.com/scrapnode/kanthor/services/scheduler/repos"
+	"github.com/scrapnode/kanthor/services/scheduler/repositories"
 )
 
 type Request interface {
@@ -15,9 +15,9 @@ type Request interface {
 }
 
 type request struct {
-	conf      *config.Config
-	logger    logging.Logger
-	infra     *infrastructure.Infrastructure
-	publisher streaming.Publisher
-	repos     repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	infra        *infrastructure.Infrastructure
+	publisher    streaming.Publisher
+	repositories repositories.Repositories
 }

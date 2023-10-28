@@ -1,7 +1,6 @@
 package services
 
 var (
-	ALL                      = "all"
 	PORTAL                   = "portal"
 	SDK                      = "sdk"
 	SCHEDULER                = "scheduler"

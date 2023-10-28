@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/storage/config"
-	"github.com/scrapnode/kanthor/services/storage/repos"
+	"github.com/scrapnode/kanthor/services/storage/repositories"
 )
 
 type Storage interface {
@@ -17,23 +17,23 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	repos repos.Repositories,
+	repositories repositories.Repositories,
 ) Storage {
 	logger = logger.With("usecase", "storage")
 
 	return &storage{
-		conf:   conf,
-		logger: logger,
-		infra:  infra,
-		repos:  repos,
+		conf:         conf,
+		logger:       logger,
+		infra:        infra,
+		repositories: repositories,
 	}
 }
 
 type storage struct {
-	conf   *config.Config
-	logger logging.Logger
-	infra  *infrastructure.Infrastructure
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	infra        *infrastructure.Infrastructure
+	repositories repositories.Repositories
 
 	warehose *warehose
 
@@ -46,10 +46,10 @@ func (uc *storage) Warehouse() Warehouse {
 
 	if uc.warehose == nil {
 		uc.warehose = &warehose{
-			conf:   uc.conf,
-			logger: uc.logger,
-			infra:  uc.infra,
-			repos:  uc.repos,
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
 		}
 	}
 	return uc.warehose

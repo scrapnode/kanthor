@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -17,7 +17,7 @@ import (
 )
 
 func NewOtel(conf *Config, logger logging.Logger) (Metric, error) {
-	logger = logger.With("monitoring.metrics", "otel")
+	logger = logger.With("metric", "otel")
 	return &otel{conf: conf, logger: logger}, nil
 }
 

@@ -1,4 +1,4 @@
-package scheduler
+package entrypoint
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 		ctx := context.Background()
 
 		ucreq := &usecase.RequestScheduleReq{
-			Timeout:  service.conf.Scheduler.Request.Schedule.Timeout,
+			Timeout:  service.conf.Request.Schedule.Timeout,
 			Messages: messages,
 		}
 		// we alreay validated messages of request, don't need to validate again

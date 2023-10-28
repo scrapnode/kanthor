@@ -41,7 +41,7 @@ type MessagePutRes struct {
 func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
 	key := CacheKeyApp(req.WsId, req.AppId)
 	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
-		return uc.repos.Application().Get(ctx, req.WsId, req.AppId)
+		return uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
 	})
 	if err != nil {
 		return nil, err

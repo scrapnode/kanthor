@@ -3,32 +3,25 @@ package config
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 // @TODO: mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
-	var conf Config
-	return &conf, provider.Unmarshal(&conf)
+	var conf Wrapper
+	return &conf.Attempt, provider.Unmarshal(&conf)
+}
+
+type Wrapper struct {
+	Attempt Config `json:"attempt" yaml:"attempt" mapstructure:"attempt"`
 }
 
 type Config struct {
-	Attempt Attempt `json:"attempt" yaml:"attempt" mapstructure:"attempt"`
-}
-
-func (conf *Config) Validate() error {
-	if err := conf.Attempt.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
-type Attempt struct {
 	Trigger AttemptTrigger `json:"trigger" yaml:"trigger" mapstructure:"trigger"`
 }
 
-func (conf *Attempt) Validate() error {
+func (conf *Config) Validate() error {
 	if err := conf.Trigger.Validate(); err != nil {
 		return fmt.Errorf("attempt.trigger: %v", err)
 	}

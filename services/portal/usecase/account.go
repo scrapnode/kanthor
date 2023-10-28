@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/portal/config"
-	"github.com/scrapnode/kanthor/services/portal/repos"
+	"github.com/scrapnode/kanthor/services/portal/repositories"
 )
 
 type Account interface {
@@ -14,8 +14,8 @@ type Account interface {
 }
 
 type account struct {
-	conf   *config.Config
-	logger logging.Logger
-	infra  *infrastructure.Infrastructure
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	infra        *infrastructure.Infrastructure
+	repositories repositories.Repositories
 }

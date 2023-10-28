@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	"github.com/scrapnode/kanthor/authenticator"
+	"github.com/scrapnode/kanthor/gateway"
 )
 
 type AccountGetRes struct {

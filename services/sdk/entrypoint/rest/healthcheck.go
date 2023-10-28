@@ -5,13 +5,12 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/project"
 )
 
 func RegisterHealthcheck(router gin.IRoutes, service *sdk) {
 	router.GET("/", func(ginctx *gin.Context) {
 		host, _ := os.Hostname()
-		ginctx.JSON(http.StatusOK, gin.H{"host": host, "service": "sdk", "version": project.Version()})
+		ginctx.JSON(http.StatusOK, gin.H{"host": host, "service": "sdk"})
 	})
 
 	router.GET("/readiness", func(ginctx *gin.Context) {

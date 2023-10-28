@@ -115,7 +115,7 @@ definitions:
       error:
         type: string
     type: object
-  sdk.AccountGetRes:
+  rest.AccountGetRes:
     properties:
       account:
         $ref: '#/definitions/authenticator.Account'
@@ -124,14 +124,14 @@ definitions:
           $ref: '#/definitions/authorizator.Permission'
         type: array
     type: object
-  sdk.ApplicationCreateReq:
+  rest.ApplicationCreateReq:
     properties:
       name:
         type: string
     required:
     - name
     type: object
-  sdk.ApplicationCreateRes:
+  rest.ApplicationCreateRes:
     properties:
       created_at:
         description: |-
@@ -148,7 +148,7 @@ definitions:
       ws_id:
         type: string
     type: object
-  sdk.ApplicationDeleteRes:
+  rest.ApplicationDeleteRes:
     properties:
       created_at:
         description: |-
@@ -165,7 +165,7 @@ definitions:
       ws_id:
         type: string
     type: object
-  sdk.ApplicationGetRes:
+  rest.ApplicationGetRes:
     properties:
       created_at:
         description: |-
@@ -182,7 +182,7 @@ definitions:
       ws_id:
         type: string
     type: object
-  sdk.ApplicationListRes:
+  rest.ApplicationListRes:
     properties:
       cursor:
         type: string
@@ -191,14 +191,14 @@ definitions:
           $ref: '#/definitions/entities.Application'
         type: array
     type: object
-  sdk.ApplicationUpdateReq:
+  rest.ApplicationUpdateReq:
     properties:
       name:
         type: string
     required:
     - name
     type: object
-  sdk.ApplicationUpdateRes:
+  rest.ApplicationUpdateRes:
     properties:
       created_at:
         description: |-
@@ -215,7 +215,7 @@ definitions:
       ws_id:
         type: string
     type: object
-  sdk.EndpointCreateReq:
+  rest.EndpointCreateReq:
     properties:
       method:
         enum:
@@ -236,7 +236,7 @@ definitions:
     - name
     - uri
     type: object
-  sdk.EndpointCreateRes:
+  rest.EndpointCreateRes:
     properties:
       app_id:
         type: string
@@ -264,7 +264,7 @@ definitions:
           gRPC: grpc:://app.kanthorlabs.com
         type: string
     type: object
-  sdk.EndpointDeleteRes:
+  rest.EndpointDeleteRes:
     properties:
       app_id:
         type: string
@@ -292,7 +292,7 @@ definitions:
           gRPC: grpc:://app.kanthorlabs.com
         type: string
     type: object
-  sdk.EndpointGetRes:
+  rest.EndpointGetRes:
     properties:
       app_id:
         type: string
@@ -320,7 +320,7 @@ definitions:
           gRPC: grpc:://app.kanthorlabs.com
         type: string
     type: object
-  sdk.EndpointListRes:
+  rest.EndpointListRes:
     properties:
       cursor:
         type: string
@@ -329,7 +329,7 @@ definitions:
           $ref: '#/definitions/entities.Endpoint'
         type: array
     type: object
-  sdk.EndpointRuleCreateReq:
+  rest.EndpointRuleCreateReq:
     properties:
       condition_expression:
         type: string
@@ -346,7 +346,7 @@ definitions:
     - condition_source
     - name
     type: object
-  sdk.EndpointRuleCreateRes:
+  rest.EndpointRuleCreateRes:
     properties:
       condition_expression:
         description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
@@ -381,7 +381,7 @@ definitions:
       updated_at:
         type: integer
     type: object
-  sdk.EndpointRuleDeleteRes:
+  rest.EndpointRuleDeleteRes:
     properties:
       condition_expression:
         description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
@@ -416,7 +416,7 @@ definitions:
       updated_at:
         type: integer
     type: object
-  sdk.EndpointRuleGetRes:
+  rest.EndpointRuleGetRes:
     properties:
       condition_expression:
         description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
@@ -451,7 +451,7 @@ definitions:
       updated_at:
         type: integer
     type: object
-  sdk.EndpointRuleListRes:
+  rest.EndpointRuleListRes:
     properties:
       cursor:
         type: string
@@ -460,14 +460,14 @@ definitions:
           $ref: '#/definitions/entities.EndpointRule'
         type: array
     type: object
-  sdk.EndpointRuleUpdateReq:
+  rest.EndpointRuleUpdateReq:
     properties:
       name:
         type: string
     required:
     - name
     type: object
-  sdk.EndpointRuleUpdateRes:
+  rest.EndpointRuleUpdateRes:
     properties:
       condition_expression:
         description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
@@ -502,14 +502,14 @@ definitions:
       updated_at:
         type: integer
     type: object
-  sdk.EndpointUpdateReq:
+  rest.EndpointUpdateReq:
     properties:
       name:
         type: string
     required:
     - name
     type: object
-  sdk.EndpointUpdateRes:
+  rest.EndpointUpdateRes:
     properties:
       app_id:
         type: string
@@ -537,7 +537,7 @@ definitions:
           gRPC: grpc:://app.kanthorlabs.com
         type: string
     type: object
-  sdk.MessagePutReq:
+  rest.MessagePutReq:
     properties:
       body:
         additionalProperties: true
@@ -553,7 +553,7 @@ definitions:
     - body
     - type
     type: object
-  sdk.MessagePutRes:
+  rest.MessagePutRes:
     properties:
       id:
         type: string
@@ -580,7 +580,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.AccountGetRes'
+            $ref: '#/definitions/rest.AccountGetRes'
         default:
           description: ""
           schema:
@@ -621,7 +621,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.ApplicationListRes'
+            $ref: '#/definitions/rest.ApplicationListRes'
         default:
           description: ""
           schema:
@@ -637,12 +637,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/sdk.ApplicationCreateReq'
+          $ref: '#/definitions/rest.ApplicationCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/sdk.ApplicationCreateRes'
+            $ref: '#/definitions/rest.ApplicationCreateRes'
         default:
           description: ""
           schema:
@@ -663,7 +663,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.ApplicationDeleteRes'
+            $ref: '#/definitions/rest.ApplicationDeleteRes'
         default:
           description: ""
           schema:
@@ -683,7 +683,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.ApplicationGetRes'
+            $ref: '#/definitions/rest.ApplicationGetRes'
         default:
           description: ""
           schema:
@@ -704,12 +704,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/sdk.ApplicationUpdateReq'
+          $ref: '#/definitions/rest.ApplicationUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.ApplicationUpdateRes'
+            $ref: '#/definitions/rest.ApplicationUpdateRes'
         default:
           description: ""
           schema:
@@ -755,7 +755,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointListRes'
+            $ref: '#/definitions/rest.EndpointListRes'
         default:
           description: ""
           schema:
@@ -776,12 +776,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/sdk.EndpointCreateReq'
+          $ref: '#/definitions/rest.EndpointCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/sdk.EndpointCreateRes'
+            $ref: '#/definitions/rest.EndpointCreateRes'
         default:
           description: ""
           schema:
@@ -807,7 +807,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointDeleteRes'
+            $ref: '#/definitions/rest.EndpointDeleteRes'
         default:
           description: ""
           schema:
@@ -832,7 +832,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointGetRes'
+            $ref: '#/definitions/rest.EndpointGetRes'
         default:
           description: ""
           schema:
@@ -858,12 +858,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/sdk.EndpointUpdateReq'
+          $ref: '#/definitions/rest.EndpointUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointUpdateRes'
+            $ref: '#/definitions/rest.EndpointUpdateRes'
         default:
           description: ""
           schema:
@@ -885,12 +885,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/sdk.MessagePutReq'
+          $ref: '#/definitions/rest.MessagePutReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/sdk.MessagePutRes'
+            $ref: '#/definitions/rest.MessagePutRes'
         default:
           description: ""
           schema:
@@ -936,7 +936,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointRuleListRes'
+            $ref: '#/definitions/rest.EndpointRuleListRes'
         default:
           description: ""
           schema:
@@ -957,12 +957,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/sdk.EndpointRuleCreateReq'
+          $ref: '#/definitions/rest.EndpointRuleCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/sdk.EndpointRuleCreateRes'
+            $ref: '#/definitions/rest.EndpointRuleCreateRes'
         default:
           description: ""
           schema:
@@ -988,7 +988,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointRuleDeleteRes'
+            $ref: '#/definitions/rest.EndpointRuleDeleteRes'
         default:
           description: ""
           schema:
@@ -1013,7 +1013,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointRuleGetRes'
+            $ref: '#/definitions/rest.EndpointRuleGetRes'
         default:
           description: ""
           schema:
@@ -1039,12 +1039,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/sdk.EndpointRuleUpdateReq'
+          $ref: '#/definitions/rest.EndpointRuleUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sdk.EndpointRuleUpdateRes'
+            $ref: '#/definitions/rest.EndpointRuleUpdateRes'
         default:
           description: ""
           schema:

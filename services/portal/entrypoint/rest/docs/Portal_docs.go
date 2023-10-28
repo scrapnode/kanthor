@@ -35,6 +35,9 @@ const docTemplatePortal = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    },
+                    {
+                        "WsId": []
                     }
                 ],
                 "tags": [
@@ -44,7 +47,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.AccountGetRes"
+                            "$ref": "#/definitions/rest.AccountGetRes"
                         }
                     },
                     "default": {
@@ -71,7 +74,7 @@ const docTemplatePortal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/portal.AccountSetupReq"
+                            "$ref": "#/definitions/rest.AccountSetupReq"
                         }
                     }
                 ],
@@ -79,7 +82,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.AccountSetupRes"
+                            "$ref": "#/definitions/rest.AccountSetupRes"
                         }
                     },
                     "default": {
@@ -108,7 +111,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceGetRes"
+                            "$ref": "#/definitions/rest.WorkspaceGetRes"
                         }
                     },
                     "default": {
@@ -138,7 +141,7 @@ const docTemplatePortal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceUpdateReq"
+                            "$ref": "#/definitions/rest.WorkspaceUpdateReq"
                         }
                     }
                 ],
@@ -146,7 +149,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceUpdateRes"
+                            "$ref": "#/definitions/rest.WorkspaceUpdateRes"
                         }
                     },
                     "default": {
@@ -211,7 +214,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsListRes"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsListRes"
                         }
                     },
                     "default": {
@@ -241,7 +244,7 @@ const docTemplatePortal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsCreateReq"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsCreateReq"
                         }
                     }
                 ],
@@ -249,7 +252,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsCreateRes"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsCreateRes"
                         }
                     },
                     "default": {
@@ -287,7 +290,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsGetRes"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsGetRes"
                         }
                     },
                     "default": {
@@ -324,7 +327,7 @@ const docTemplatePortal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsUpdateReq"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsUpdateReq"
                         }
                     }
                 ],
@@ -332,7 +335,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsUpdateRes"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsUpdateRes"
                         }
                     },
                     "default": {
@@ -371,7 +374,7 @@ const docTemplatePortal = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsExpireReq"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsExpireReq"
                         }
                     }
                 ],
@@ -379,7 +382,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/portal.WorkspaceCredentialsExpireRes"
+                            "$ref": "#/definitions/rest.WorkspaceCredentialsExpireRes"
                         }
                     },
                     "default": {
@@ -395,9 +398,6 @@ const docTemplatePortal = `{
     "definitions": {
         "authenticator.Account": {
             "type": "object",
-            "required": [
-                "sub"
-            ],
             "properties": {
                 "aud": {
                     "type": "string"
@@ -438,6 +438,9 @@ const docTemplatePortal = `{
                 "owner_id": {
                     "type": "string"
                 },
+                "tier": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "integer"
                 }
@@ -470,27 +473,6 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "entities.WorkspaceTier": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "ws_id": {
-                    "type": "string"
-                }
-            }
-        },
         "gateway.Error": {
             "type": "object",
             "properties": {
@@ -502,7 +484,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.AccountGetRes": {
+        "rest.AccountGetRes": {
             "type": "object",
             "properties": {
                 "account": {
@@ -510,10 +492,10 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.AccountSetupReq": {
+        "rest.AccountSetupReq": {
             "type": "object"
         },
-        "portal.AccountSetupRes": {
+        "rest.AccountSetupRes": {
             "type": "object",
             "properties": {
                 "account": {
@@ -521,13 +503,10 @@ const docTemplatePortal = `{
                 },
                 "workspace": {
                     "$ref": "#/definitions/entities.Workspace"
-                },
-                "workspace_tier": {
-                    "$ref": "#/definitions/entities.WorkspaceTier"
                 }
             }
         },
-        "portal.WorkspaceCredentialsCreateReq": {
+        "rest.WorkspaceCredentialsCreateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -541,7 +520,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceCredentialsCreateRes": {
+        "rest.WorkspaceCredentialsCreateRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -555,7 +534,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceCredentialsExpireReq": {
+        "rest.WorkspaceCredentialsExpireReq": {
             "type": "object",
             "properties": {
                 "duration": {
@@ -563,7 +542,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceCredentialsExpireRes": {
+        "rest.WorkspaceCredentialsExpireRes": {
             "type": "object",
             "properties": {
                 "expired_at": {
@@ -574,7 +553,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceCredentialsGetRes": {
+        "rest.WorkspaceCredentialsGetRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -601,7 +580,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceCredentialsListRes": {
+        "rest.WorkspaceCredentialsListRes": {
             "type": "object",
             "properties": {
                 "cursor": {
@@ -615,15 +594,18 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceCredentialsUpdateReq": {
+        "rest.WorkspaceCredentialsUpdateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
                 }
             }
         },
-        "portal.WorkspaceCredentialsUpdateRes": {
+        "rest.WorkspaceCredentialsUpdateRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -650,7 +632,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceGetRes": {
+        "rest.WorkspaceGetRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -667,14 +649,14 @@ const docTemplatePortal = `{
                     "type": "string"
                 },
                 "tier": {
-                    "$ref": "#/definitions/entities.WorkspaceTier"
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "integer"
                 }
             }
         },
-        "portal.WorkspaceUpdateReq": {
+        "rest.WorkspaceUpdateReq": {
             "type": "object",
             "required": [
                 "name"
@@ -685,7 +667,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "portal.WorkspaceUpdateRes": {
+        "rest.WorkspaceUpdateRes": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -699,6 +681,9 @@ const docTemplatePortal = `{
                     "type": "string"
                 },
                 "owner_id": {
+                    "type": "string"
+                },
+                "tier": {
                     "type": "string"
                 },
                 "updated_at": {

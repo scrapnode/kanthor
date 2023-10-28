@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	"github.com/scrapnode/kanthor/gateway"
 )
 
 type WorkspaceGetRes struct {

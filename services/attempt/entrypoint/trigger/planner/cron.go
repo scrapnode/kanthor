@@ -1,4 +1,4 @@
-package trigger
+package planner
 
 import (
 	"context"
@@ -25,10 +25,10 @@ func RegisterCron(service *planner) func() {
 		}()
 
 		ucreq := &usecase.TriggerPlanReq{
-			Timeout:   service.conf.Attempt.Trigger.Planner.Timeout,
-			Size:      service.conf.Attempt.Trigger.Planner.Size,
-			ScanStart: service.conf.Attempt.Trigger.Planner.ScanStart,
-			ScanEnd:   service.conf.Attempt.Trigger.Planner.ScanEnd,
+			Timeout:   service.conf.Trigger.Planner.Timeout,
+			Size:      service.conf.Trigger.Planner.Size,
+			ScanStart: service.conf.Trigger.Planner.ScanStart,
+			ScanEnd:   service.conf.Trigger.Planner.ScanEnd,
 		}
 		ucres, err := service.uc.Trigger().Plan(ctx, ucreq)
 		if err != nil {

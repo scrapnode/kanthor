@@ -18,8 +18,6 @@ definitions:
         type: string
       sub:
         type: string
-    required:
-    - sub
     type: object
   entities.Workspace:
     properties:
@@ -34,6 +32,8 @@ definitions:
       name:
         type: string
       owner_id:
+        type: string
+      tier:
         type: string
       updated_at:
         type: integer
@@ -59,23 +59,6 @@ definitions:
       ws_id:
         type: string
     type: object
-  entities.WorkspaceTier:
-    properties:
-      created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
   gateway.Error:
     properties:
       code:
@@ -83,23 +66,21 @@ definitions:
       error:
         type: string
     type: object
-  portal.AccountGetRes:
+  rest.AccountGetRes:
     properties:
       account:
         $ref: '#/definitions/authenticator.Account'
     type: object
-  portal.AccountSetupReq:
+  rest.AccountSetupReq:
     type: object
-  portal.AccountSetupRes:
+  rest.AccountSetupRes:
     properties:
       account:
         $ref: '#/definitions/authenticator.Account'
       workspace:
         $ref: '#/definitions/entities.Workspace'
-      workspace_tier:
-        $ref: '#/definitions/entities.WorkspaceTier'
     type: object
-  portal.WorkspaceCredentialsCreateReq:
+  rest.WorkspaceCredentialsCreateReq:
     properties:
       expired_at:
         type: integer
@@ -108,7 +89,7 @@ definitions:
     required:
     - name
     type: object
-  portal.WorkspaceCredentialsCreateRes:
+  rest.WorkspaceCredentialsCreateRes:
     properties:
       id:
         type: string
@@ -117,19 +98,19 @@ definitions:
       user:
         type: string
     type: object
-  portal.WorkspaceCredentialsExpireReq:
+  rest.WorkspaceCredentialsExpireReq:
     properties:
       duration:
         type: integer
     type: object
-  portal.WorkspaceCredentialsExpireRes:
+  rest.WorkspaceCredentialsExpireRes:
     properties:
       expired_at:
         type: integer
       id:
         type: string
     type: object
-  portal.WorkspaceCredentialsGetRes:
+  rest.WorkspaceCredentialsGetRes:
     properties:
       created_at:
         description: |-
@@ -150,7 +131,7 @@ definitions:
       ws_id:
         type: string
     type: object
-  portal.WorkspaceCredentialsListRes:
+  rest.WorkspaceCredentialsListRes:
     properties:
       cursor:
         type: string
@@ -159,12 +140,14 @@ definitions:
           $ref: '#/definitions/entities.WorkspaceCredentials'
         type: array
     type: object
-  portal.WorkspaceCredentialsUpdateReq:
+  rest.WorkspaceCredentialsUpdateReq:
     properties:
       name:
         type: string
+    required:
+    - name
     type: object
-  portal.WorkspaceCredentialsUpdateRes:
+  rest.WorkspaceCredentialsUpdateRes:
     properties:
       created_at:
         description: |-
@@ -185,7 +168,7 @@ definitions:
       ws_id:
         type: string
     type: object
-  portal.WorkspaceGetRes:
+  rest.WorkspaceGetRes:
     properties:
       created_at:
         description: |-
@@ -200,18 +183,18 @@ definitions:
       owner_id:
         type: string
       tier:
-        $ref: '#/definitions/entities.WorkspaceTier'
+        type: string
       updated_at:
         type: integer
     type: object
-  portal.WorkspaceUpdateReq:
+  rest.WorkspaceUpdateReq:
     properties:
       name:
         type: string
     required:
     - name
     type: object
-  portal.WorkspaceUpdateRes:
+  rest.WorkspaceUpdateRes:
     properties:
       created_at:
         description: |-
@@ -224,6 +207,8 @@ definitions:
       name:
         type: string
       owner_id:
+        type: string
+      tier:
         type: string
       updated_at:
         type: integer
@@ -250,13 +235,14 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.AccountGetRes'
+            $ref: '#/definitions/rest.AccountGetRes'
         default:
           description: ""
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
       - BearerAuth: []
+      - WsId: []
       tags:
       - account
     put:
@@ -266,12 +252,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/portal.AccountSetupReq'
+          $ref: '#/definitions/rest.AccountSetupReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.AccountSetupRes'
+            $ref: '#/definitions/rest.AccountSetupRes'
         default:
           description: ""
           schema:
@@ -286,7 +272,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.WorkspaceGetRes'
+            $ref: '#/definitions/rest.WorkspaceGetRes'
         default:
           description: ""
           schema:
@@ -303,12 +289,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/portal.WorkspaceUpdateReq'
+          $ref: '#/definitions/rest.WorkspaceUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.WorkspaceUpdateRes'
+            $ref: '#/definitions/rest.WorkspaceUpdateRes'
         default:
           description: ""
           schema:
@@ -350,7 +336,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.WorkspaceCredentialsListRes'
+            $ref: '#/definitions/rest.WorkspaceCredentialsListRes'
         default:
           description: ""
           schema:
@@ -367,12 +353,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/portal.WorkspaceCredentialsCreateReq'
+          $ref: '#/definitions/rest.WorkspaceCredentialsCreateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.WorkspaceCredentialsCreateRes'
+            $ref: '#/definitions/rest.WorkspaceCredentialsCreateRes'
         default:
           description: ""
           schema:
@@ -394,7 +380,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.WorkspaceCredentialsGetRes'
+            $ref: '#/definitions/rest.WorkspaceCredentialsGetRes'
         default:
           description: ""
           schema:
@@ -416,12 +402,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/portal.WorkspaceCredentialsUpdateReq'
+          $ref: '#/definitions/rest.WorkspaceCredentialsUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.WorkspaceCredentialsUpdateRes'
+            $ref: '#/definitions/rest.WorkspaceCredentialsUpdateRes'
         default:
           description: ""
           schema:
@@ -444,12 +430,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/portal.WorkspaceCredentialsExpireReq'
+          $ref: '#/definitions/rest.WorkspaceCredentialsExpireReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/portal.WorkspaceCredentialsExpireRes'
+            $ref: '#/definitions/rest.WorkspaceCredentialsExpireRes'
         default:
           description: ""
           schema:

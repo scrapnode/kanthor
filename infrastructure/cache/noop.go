@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 )
 
-func NewNoop(conf *Config, logger logging.Logger) Cache {
+func NewNoop(conf *Config, logger logging.Logger) (Cache, error) {
 	logger = logger.With("cache", "noop")
-	return &noop{conf: conf, logger: logger}
+	return &noop{conf: conf, logger: logger}, nil
 }
 
 type noop struct {

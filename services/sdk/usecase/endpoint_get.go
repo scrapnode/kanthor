@@ -32,12 +32,12 @@ func (uc *endpoint) Get(ctx context.Context, req *EndpointGetReq) (*EndpointGetR
 	key := CacheKeyEp(req.AppId, req.Id)
 	// @TODO: remove hardcode time-to-live
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*EndpointGetRes, error) {
-		app, err := uc.repos.Application().Get(ctx, req.WsId, req.AppId)
+		app, err := uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
 		if err != nil {
 			return nil, err
 		}
 
-		ep, err := uc.repos.Endpoint().Get(ctx, app, req.Id)
+		ep, err := uc.repositories.Endpoint().Get(ctx, app, req.Id)
 		if err != nil {
 			return nil, err
 		}

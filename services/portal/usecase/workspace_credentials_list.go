@@ -26,7 +26,7 @@ type WorkspaceCredentialsListRes struct {
 }
 
 func (uc *workspaceCredentials) List(ctx context.Context, req *WorkspaceCredentialsListReq) (*WorkspaceCredentialsListRes, error) {
-	listing, err := uc.repos.WorkspaceCredentials().List(
+	listing, err := uc.repositories.WorkspaceCredentials().List(
 		ctx, req.WsId,
 		structure.WithListCursor(req.Cursor),
 		structure.WithListSearch(req.Search),

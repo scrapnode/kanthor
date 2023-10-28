@@ -3,34 +3,41 @@ package config
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/configuration"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	"github.com/scrapnode/kanthor/authenticator"
+	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/gateway"
 )
 
 // @TODO: mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
-	var conf Config
-	return &conf, provider.Unmarshal(&conf)
+	var conf Wrapper
+	if err := provider.Unmarshal(&conf); err != nil {
+		return nil, err
+	}
+	if err := conf.Validate(); err != nil {
+		return nil, err
+	}
+
+	return &conf.Portal, nil
 }
 
-type Config struct {
-	Portal Portal `json:"portal" yaml:"portal" mapstructure:"portal"`
+type Wrapper struct {
+	Portal Config `json:"portal" yaml:"portal" mapstructure:"portal"`
 }
 
-func (conf *Config) Validate() error {
+func (conf *Wrapper) Validate() error {
 	if err := conf.Portal.Validate(); err != nil {
 		return err
 	}
 	return nil
 }
 
-type Portal struct {
+type Config struct {
 	Gateway       gateway.Config       `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
 	Authenticator authenticator.Config `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator"`
 }
 
-func (conf *Portal) Validate() error {
+func (conf *Config) Validate() error {
 	if err := conf.Gateway.Validate(); err != nil {
 		return fmt.Errorf("portal.gateway: %v", err)
 	}

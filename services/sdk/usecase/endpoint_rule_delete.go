@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -28,18 +28,18 @@ type EndpointRuleDeleteRes struct {
 func (uc *endpointRule) Delete(ctx context.Context, req *EndpointRuleDeleteReq) (*EndpointRuleDeleteRes, error) {
 	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
-	epr, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ep, err := uc.repos.Endpoint().GetOfWorkspace(txctx, ws, req.EpId)
+	epr, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, ws, req.EpId)
 		if err != nil {
 			return nil, err
 		}
 
-		epr, err := uc.repos.EndpointRule().Get(txctx, ep, req.Id)
+		epr, err := uc.repositories.EndpointRule().Get(txctx, ep, req.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := uc.repos.EndpointRule().Delete(txctx, epr); err != nil {
+		if err := uc.repositories.EndpointRule().Delete(txctx, epr); err != nil {
 			return nil, err
 		}
 		return epr, nil

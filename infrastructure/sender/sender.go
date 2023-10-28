@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 )
 
 func New(conf *Config, logger logging.Logger) (Send, error) {

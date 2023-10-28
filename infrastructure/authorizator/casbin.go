@@ -11,22 +11,22 @@ import (
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/project"
 )
 
-func NewCasbin(conf *Config, logger logging.Logger) Authorizator {
+func NewCasbin(conf *Config, logger logging.Logger) (Authorizator, error) {
 	logger = logger.With("authorizator", "casbin")
 
 	w := &watcher{
 		conf:    &conf.Casbin.Watcher,
 		logger:  logger.With("casbin.watcher", "nats"),
 		subject: project.SubjectInternal("infrastructure.casbin.watcher"),
-		nodeid:  suid.New("casbin.watcher"),
+		nodeid:  suid.New("casbinw"),
 	}
-	return &casbin{conf: conf, logger: logger, watcher: w}
+	return &casbin{conf: conf, logger: logger, watcher: w}, nil
 }
 
 type casbin struct {

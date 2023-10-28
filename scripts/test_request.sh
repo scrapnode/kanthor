@@ -6,6 +6,7 @@ export API_ENDPOINT=${API_ENDPOINT:-"http://localhost:8180"}
 
 docker compose -f docker-compose.debugging.yaml up -d
 
+go run main.go migrate database up && go run main.go migrate datastore up
 go run main.go setup account kanthor_root_key --data=scripts/k6/httpbin.json --output="$API_CREDS_PATH/sdk.json"
 
 export TEST_APP_ID=$(cat $API_CREDS_PATH/sdk.json | jq -r '.applications[0]')

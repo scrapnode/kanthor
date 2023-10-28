@@ -6,13 +6,13 @@ import (
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 )
 
-func NewRedis(conf *Config, logger logging.Logger) Idempotency {
+func NewRedis(conf *Config, logger logging.Logger) (Idempotency, error) {
 	logger = logger.With("idempotency", "redis")
-	return &redis{conf: conf, logger: logger}
+	return &redis{conf: conf, logger: logger}, nil
 }
 
 type redis struct {

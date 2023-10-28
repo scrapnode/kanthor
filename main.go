@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/scrapnode/kanthor/cmd"
-	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/configuration"
 )
 
 //go:embed .version

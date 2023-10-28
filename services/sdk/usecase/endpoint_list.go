@@ -28,12 +28,12 @@ type EndpointListRes struct {
 }
 
 func (uc *endpoint) List(ctx context.Context, req *EndpointListReq) (*EndpointListRes, error) {
-	app, err := uc.repos.Application().Get(ctx, req.WsId, req.AppId)
+	app, err := uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
 	if err != nil {
 		return nil, err
 	}
 
-	listing, err := uc.repos.Endpoint().List(
+	listing, err := uc.repositories.Endpoint().List(
 		ctx,
 		app,
 		structure.WithListCursor(req.Cursor),

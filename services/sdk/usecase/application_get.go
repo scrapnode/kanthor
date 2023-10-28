@@ -29,7 +29,7 @@ type ApplicationGetRes struct {
 func (uc *application) Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error) {
 	key := CacheKeyApp(req.WsId, req.Id)
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*ApplicationGetRes, error) {
-		app, err := uc.repos.Application().Get(ctx, req.WsId, req.Id)
+		app, err := uc.repositories.Application().Get(ctx, req.WsId, req.Id)
 		if err != nil {
 			return nil, err
 		}

@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/nats-io/nats.go"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 )
 
 type watcher struct {

@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 )
 
 func Rest(conf *Config, logger logging.Logger) Send {
-	logger = logger.With("pkg", "sender.rest")
+	logger = logger.With("sender", "rest")
 
 	client := resty.New().
 		SetLogger(logger).

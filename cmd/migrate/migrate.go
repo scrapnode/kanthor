@@ -1,7 +1,7 @@
 package migrate
 
 import (
-	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/configuration"
 	"github.com/spf13/cobra"
 )
 

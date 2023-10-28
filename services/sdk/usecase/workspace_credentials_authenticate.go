@@ -33,7 +33,7 @@ func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *Workspace
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*1, func() (*WorkspaceCredentialsAuthenticateRes, error) {
 		res := &WorkspaceCredentialsAuthenticateRes{}
 
-		credentials, err := uc.repos.WorkspaceCredentials().Get(ctx, req.User)
+		credentials, err := uc.repositories.WorkspaceCredentials().Get(ctx, req.User)
 		if err != nil {
 			return nil, err
 		}
@@ -49,7 +49,7 @@ func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *Workspace
 			return nil, err
 		}
 
-		ws, err := uc.repos.Workspace().Get(ctx, credentials.WsId)
+		ws, err := uc.repositories.Workspace().Get(ctx, credentials.WsId)
 		if err != nil {
 			return res, nil
 		}

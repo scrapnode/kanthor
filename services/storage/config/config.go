@@ -3,32 +3,32 @@ package config
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/configuration"
+	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 // @TODO: mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
-	var conf Config
-	return &conf, provider.Unmarshal(&conf)
+	var conf Wrapper
+	return &conf.Storage, provider.Unmarshal(&conf)
 }
 
-type Config struct {
-	Storage Storage `json:"storage" yaml:"storage" mapstructure:"storage"`
+type Wrapper struct {
+	Storage Config `json:"storage" yaml:"storage" mapstructure:"storage"`
 }
 
-func (conf *Config) Validate() error {
+func (conf *Wrapper) Validate() error {
 	if err := conf.Storage.Validate(); err != nil {
 		return err
 	}
 	return nil
 }
 
-type Storage struct {
+type Config struct {
 	Warehouse StorageWarehouse `json:"warehouse" yaml:"warehouse" mapstructure:"warehouse"`
 }
 
-func (conf *Storage) Validate() error {
+func (conf *Config) Validate() error {
 	if err := conf.Warehouse.Validate(); err != nil {
 		return fmt.Errorf("config.storage.warehouse: %v", err)
 	}

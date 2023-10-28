@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -11,14 +12,23 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/dlm"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
-func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
+func New(provider configuration.Provider) (*Infrastructure, error) {
+	conf, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+
 	t := timer.New()
 	crypt, err := cryptography.New(&conf.Cryptography)
 	if err != nil {
@@ -59,7 +69,7 @@ func New(conf *config.Config, logger logging.Logger) (*Infrastructure, error) {
 
 	infra := &Infrastructure{
 		conf:   conf,
-		logger: logger.With("infrastructure", "default"),
+		logger: logger,
 
 		Timer:                  t,
 		Cryptography:           crypt,

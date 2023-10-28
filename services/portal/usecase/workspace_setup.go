@@ -69,7 +69,7 @@ type WorkspaceSetupRes struct {
 }
 
 func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*WorkspaceSetupRes, error) {
-	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+	res, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
 		// starting with false
 		status := map[string]bool{}
 
@@ -83,7 +83,7 @@ func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*Worksp
 			status[epr.Id] = false
 		}
 
-		appIds, err := uc.repos.Application().BulkCreate(txctx, req.Applications)
+		appIds, err := uc.repositories.Application().BulkCreate(txctx, req.Applications)
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +91,7 @@ func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*Worksp
 			status[appId] = true
 		}
 
-		epIds, err := uc.repos.Endpoint().BulkCreate(txctx, req.Endpoints)
+		epIds, err := uc.repositories.Endpoint().BulkCreate(txctx, req.Endpoints)
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +99,7 @@ func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*Worksp
 			status[epId] = true
 		}
 
-		eprIds, err := uc.repos.EndpointRule().BulkCreate(txctx, req.EndpointRules)
+		eprIds, err := uc.repositories.EndpointRule().BulkCreate(txctx, req.EndpointRules)
 		if err != nil {
 			return nil, err
 		}

@@ -8,12 +8,12 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/scrapnode/kanthor/authenticator"
+	"github.com/scrapnode/kanthor/database"
+	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/database"
-	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/portal/config"
 	"github.com/scrapnode/kanthor/services/portal/entrypoint/rest/docs"
 	"github.com/scrapnode/kanthor/services/portal/entrypoint/rest/middlewares"
@@ -25,7 +25,6 @@ import (
 func New(
 	conf *config.Config,
 	logger logging.Logger,
-	auth authenticator.Authenticator,
 	infra *infrastructure.Infrastructure,
 	db database.Database,
 	uc usecase.Portal,
@@ -34,7 +33,6 @@ func New(
 	return &portal{
 		conf:   conf,
 		logger: logger,
-		auth:   auth,
 		infra:  infra,
 		db:     db,
 		uc:     uc,
@@ -44,7 +42,6 @@ func New(
 type portal struct {
 	conf   *config.Config
 	logger logging.Logger
-	auth   authenticator.Authenticator
 	infra  *infrastructure.Infrastructure
 	db     database.Database
 	uc     usecase.Portal
@@ -71,9 +68,13 @@ func (service *portal) Start(ctx context.Context) error {
 		return err
 	}
 
+	router, err := service.router()
+	if err != nil {
+		return err
+	}
 	service.server = &http.Server{
-		Addr:    service.conf.Portal.Gateway.Addr,
-		Handler: service.router(),
+		Addr:    service.conf.Gateway.Addr,
+		Handler: router,
 	}
 
 	service.status = patterns.StatusStarted
@@ -81,7 +82,7 @@ func (service *portal) Start(ctx context.Context) error {
 	return nil
 }
 
-func (service *portal) router() *gin.Engine {
+func (service *portal) router() (*gin.Engine, error) {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(cors.Default())
@@ -99,18 +100,22 @@ func (service *portal) router() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		api.Use(ginmw.UseStartup(&service.conf.Portal.Gateway))
+		api.Use(ginmw.UseStartup(&service.conf.Gateway))
 		api.Use(ginmw.UseMetric(service.infra.Metric, "portal"))
 		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(ginmw.UsePaging(service.logger, 5, 30))
-		api.Use(middlewares.UseAuth(service.auth, service.uc))
+		auth, err := authenticator.New(&service.conf.Authenticator, service.logger)
+		if err != nil {
+			return nil, err
+		}
+		api.Use(middlewares.UseAuth(auth, service.uc))
 
 		RegisterAccountRoutes(api.Group("/account"), service)
 		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
 		RegisterWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials"), service)
 	}
 
-	return router
+	return router, nil
 }
 
 func (service *portal) Stop(ctx context.Context) error {
@@ -140,7 +145,7 @@ func (service *portal) Stop(ctx context.Context) error {
 }
 
 func (service *portal) Run(ctx context.Context) error {
-	service.logger.Infow("running", "addr", service.conf.Portal.Gateway.Addr)
+	service.logger.Infow("running", "addr", service.conf.Gateway.Addr)
 	if err := service.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}

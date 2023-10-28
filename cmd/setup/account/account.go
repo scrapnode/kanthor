@@ -4,16 +4,17 @@ import (
 	"context"
 	"time"
 
-	"github.com/scrapnode/kanthor/config"
+	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/database"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/services/ioc"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/services/portal/config"
+	"github.com/scrapnode/kanthor/services/portal/repositories"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 	"github.com/spf13/cobra"
 )
 
-func New(conf *config.Config, logger logging.Logger) *cobra.Command {
+func New(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
 		Use:  "account",
 		Args: cobra.MatchAll(cobra.MinimumNArgs(1)),
@@ -31,22 +32,20 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 			ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute*5)
 			defer cancel()
 
-			infra, err := infrastructure.New(conf, logger)
+			conf, err := config.New(provider)
 			if err != nil {
 				return err
 			}
-			db, err := database.New(&conf.Database, logger)
+			logger, err := logging.New(provider)
 			if err != nil {
 				return err
 			}
-			uc, err := ioc.InitializePortalUsecase(conf, logger, infra, db)
+			infra, err := infrastructure.New(provider)
 			if err != nil {
 				return err
 			}
-			if err := db.Connect(ctx); err != nil {
-				return err
-			}
-			if err := infra.Connect(ctx); err != nil {
+			db, err := database.New(provider)
+			if err != nil {
 				return err
 			}
 
@@ -58,6 +57,16 @@ func New(conf *config.Config, logger logging.Logger) *cobra.Command {
 					logger.Error(err)
 				}
 			}()
+
+			if err := db.Connect(ctx); err != nil {
+				return err
+			}
+			if err := infra.Connect(ctx); err != nil {
+				return err
+			}
+
+			repos := repositories.New(logger, db)
+			uc := usecase.New(conf, logger, infra, repos)
 
 			out := &output{json: map[string]any{}}
 

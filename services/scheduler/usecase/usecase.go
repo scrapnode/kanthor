@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/scheduler/config"
-	"github.com/scrapnode/kanthor/services/scheduler/repos"
+	"github.com/scrapnode/kanthor/services/scheduler/repositories"
 )
 
 type Scheduler interface {
@@ -17,23 +17,23 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	repos repos.Repositories,
+	repositories repositories.Repositories,
 ) Scheduler {
 	logger = logger.With("usecase", "scheduler")
 
 	return &scheduler{
-		conf:   conf,
-		logger: logger,
-		infra:  infra,
-		repos:  repos,
+		conf:         conf,
+		logger:       logger,
+		infra:        infra,
+		repositories: repositories,
 	}
 }
 
 type scheduler struct {
-	conf   *config.Config
-	logger logging.Logger
-	infra  *infrastructure.Infrastructure
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	infra        *infrastructure.Infrastructure
+	repositories repositories.Repositories
 
 	request *request
 
@@ -46,11 +46,11 @@ func (uc *scheduler) Request() Request {
 
 	if uc.request == nil {
 		uc.request = &request{
-			conf:      uc.conf,
-			logger:    uc.logger,
-			infra:     uc.infra,
-			publisher: uc.infra.Stream.Publisher("scheduler_request"),
-			repos:     uc.repos,
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			publisher:    uc.infra.Stream.Publisher("scheduler_request"),
+			repositories: uc.repositories,
 		}
 	}
 	return uc.request

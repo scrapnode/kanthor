@@ -132,7 +132,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 
 		messages := req.Messages[i:j]
 		p.Go(func() {
-			records, err := uc.repos.Message().Create(ctx, messages)
+			records, err := uc.repositories.Message().Create(ctx, messages)
 			if err != nil {
 				for _, message := range req.Messages[i:j] {
 					ko.Set(message.Id, err)
@@ -151,7 +151,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 
 		requests := req.Requests[i:j]
 		p.Go(func() {
-			records, err := uc.repos.Request().Create(ctx, requests)
+			records, err := uc.repositories.Request().Create(ctx, requests)
 			if err != nil {
 				for _, request := range req.Requests[i:j] {
 					ko.Set(request.Id, err)
@@ -170,7 +170,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 
 		responses := req.Responses[i:j]
 		p.Go(func() {
-			records, err := uc.repos.Response().Create(ctx, responses)
+			records, err := uc.repositories.Response().Create(ctx, responses)
 			if err != nil {
 				for _, response := range req.Responses[i:j] {
 					ko.Set(response.Id, err)

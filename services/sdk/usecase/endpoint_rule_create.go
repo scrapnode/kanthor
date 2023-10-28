@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
+	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -36,7 +36,7 @@ type EndpointRuleCreateRes struct {
 func (uc *endpointRule) Create(ctx context.Context, req *EndpointRuleCreateReq) (*EndpointRuleCreateRes, error) {
 	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
-	ep, err := uc.repos.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
+	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (uc *endpointRule) Create(ctx context.Context, req *EndpointRuleCreateReq) 
 	doc.GenId()
 	doc.SetAT(uc.infra.Timer.Now())
 
-	epr, err := uc.repos.EndpointRule().Create(ctx, doc)
+	epr, err := uc.repositories.EndpointRule().Create(ctx, doc)
 	if err != nil {
 		return nil, err
 	}

@@ -49,7 +49,7 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 			errc <- err
 			return
 		}
-		tiers, err := uc.repos.Application().GetTiers(ctx, apps)
+		tiers, err := uc.repositories.Application().GetTiers(ctx, apps)
 		if err != nil {
 			errc <- err
 			return
@@ -107,7 +107,7 @@ func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Appli
 		return nil, err
 	}
 
-	apps, err := uc.repos.Application().Scan(ctx, size, cursor)
+	apps, err := uc.repositories.Application().Scan(ctx, size, cursor)
 	if err != nil {
 		return nil, err
 	}

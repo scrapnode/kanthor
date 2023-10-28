@@ -6,3 +6,4 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )";
 
 docker compose down || true
 docker compose up -d
+docker compose ps

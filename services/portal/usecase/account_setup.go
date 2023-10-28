@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/database"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/project"
 )
@@ -26,8 +26,8 @@ type AccountSetupRes struct {
 }
 
 func (uc *account) Setup(ctx context.Context, req *AccountSetupReq) (*AccountSetupRes, error) {
-	res, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ws, err := uc.repos.Workspace().GetOwned(txctx, req.AccountId)
+	res, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		ws, err := uc.repositories.Workspace().GetOwned(txctx, req.AccountId)
 		if err != nil {
 			is404 := errors.Is(err, database.ErrRecordNotFound)
 			if !is404 {
@@ -37,7 +37,7 @@ func (uc *account) Setup(ctx context.Context, req *AccountSetupReq) (*AccountSet
 			ws = &entities.Workspace{OwnerId: req.AccountId, Name: project.DefaultWorkspaceName(), Tier: project.Tier()}
 			ws.GenId()
 			ws.SetAT(uc.infra.Timer.Now())
-			if _, err := uc.repos.Workspace().Create(ctx, ws); err != nil {
+			if _, err := uc.repositories.Workspace().Create(ctx, ws); err != nil {
 				return nil, err
 			}
 		}

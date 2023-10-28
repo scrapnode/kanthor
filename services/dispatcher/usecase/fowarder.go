@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/dispatcher/config"
 )
 

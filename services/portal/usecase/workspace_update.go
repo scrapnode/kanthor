@@ -25,15 +25,15 @@ type WorkspaceUpdateRes struct {
 }
 
 func (uc *workspace) Update(ctx context.Context, req *WorkspaceUpdateReq) (*WorkspaceUpdateRes, error) {
-	ws, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ws, err := uc.repos.Workspace().Get(txctx, req.Id)
+	ws, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		ws, err := uc.repositories.Workspace().Get(txctx, req.Id)
 		if err != nil {
 			return nil, err
 		}
 
 		ws.Name = req.Name
 		ws.SetAT(uc.infra.Timer.Now())
-		return uc.repos.Workspace().Update(txctx, ws)
+		return uc.repositories.Workspace().Update(txctx, ws)
 	})
 	if err != nil {
 		return nil, err

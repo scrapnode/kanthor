@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/services/attempt/config"
-	"github.com/scrapnode/kanthor/services/attempt/repos"
+	"github.com/scrapnode/kanthor/services/attempt/repositories"
 )
 
 type Attempt interface {
@@ -17,23 +17,23 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	repos repos.Repositories,
+	repositories repositories.Repositories,
 ) Attempt {
 	logger = logger.With("usecase", "attempt")
 
 	return &attempt{
-		conf:   conf,
-		logger: logger,
-		infra:  infra,
-		repos:  repos,
+		conf:         conf,
+		logger:       logger,
+		infra:        infra,
+		repositories: repositories,
 	}
 }
 
 type attempt struct {
-	conf   *config.Config
-	logger logging.Logger
-	infra  *infrastructure.Infrastructure
-	repos  repos.Repositories
+	conf         *config.Config
+	logger       logging.Logger
+	infra        *infrastructure.Infrastructure
+	repositories repositories.Repositories
 
 	trigger *trigger
 
@@ -46,10 +46,10 @@ func (uc *attempt) Trigger() Trigger {
 
 	if uc.trigger == nil {
 		uc.trigger = &trigger{
-			conf:   uc.conf,
-			logger: uc.logger,
-			infra:  uc.infra,
-			repos:  uc.repos,
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
 		}
 	}
 	return uc.trigger

@@ -1,4 +1,4 @@
-package trigger
+package executor
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 func RegisterConsumer(service *executor) streaming.SubHandler {
 	return func(events map[string]*streaming.Event) map[string]error {
 		ucreq := &usecase.TriggerExecReq{
-			Size:         service.conf.Attempt.Trigger.Executor.Size,
-			Timeout:      service.conf.Attempt.Trigger.Executor.Timeout,
-			AttemptDelay: service.conf.Attempt.Trigger.Executor.AttemptDelay,
+			Size:         service.conf.Trigger.Executor.Size,
+			Timeout:      service.conf.Trigger.Executor.Timeout,
+			AttemptDelay: service.conf.Trigger.Executor.AttemptDelay,
 			Triggers:     map[string]*entities.AttemptTrigger{},
 		}
 

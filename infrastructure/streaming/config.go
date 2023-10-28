@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Name       string           `json:"name" yaml:"name" mapstructure:"name"`
 	Uri        string           `json:"uri" yaml:"uri" mapstructure:"uri"`
-	Nats       NatsConfig       `json:"stream" yaml:"stream" mapstructure:"stream"`
+	Nats       NatsConfig       `json:"nats" yaml:"nats" mapstructure:"nats"`
 	Publisher  PublisherConfig  `json:"publisher" yaml:"publisher" mapstructure:"publisher"`
 	Subscriber SubscriberConfig `json:"subscriber" yaml:"subscriber" mapstructure:"subscriber"`
 }

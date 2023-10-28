@@ -3,33 +3,33 @@ package serve
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/config"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/ioc"
 )
 
-func Service(name string, conf *config.Config, logger logging.Logger) (patterns.Runnable, error) {
-	if name == config.SERVICE_PORTAL {
-		return ioc.InitializePortal(conf, logger)
+func Service(name string, provider configuration.Provider) (patterns.Runnable, error) {
+	if name == services.PORTAL {
+		return ioc.Portal(provider)
 	}
-	if name == config.SERVICE_SDK {
-		return ioc.InitializeSdk(conf, logger)
+	if name == services.SDK {
+		return ioc.Sdk(provider)
 	}
-	if name == config.SERVICE_SCHEDULER {
-		return ioc.InitializeScheduler(conf, logger)
+	if name == services.SCHEDULER {
+		return ioc.Scheduler(provider)
 	}
-	if name == config.SERVICE_DISPATCHER {
-		return ioc.InitializeDispatcher(conf, logger)
+	if name == services.DISPATCHER {
+		return ioc.Dispatcher(provider)
 	}
-	if name == config.SERVICE_STORAGE {
-		return ioc.InitializeStorage(conf, logger)
+	if name == services.STORAGE {
+		return ioc.Storage(provider)
 	}
-	if name == config.SERVICE_ATTEMPT_TRIGGER_PLANNER {
-		return ioc.InitializeAttemptTriggerPlanner(conf, logger)
+	if name == services.ATTEMPT_TRIGGER_PLANNER {
+		return ioc.AttemptTriggerPlanner(provider)
 	}
-	if name == config.SERVICE_ATTEMPT_TRIGGER_EXECUTOR {
-		return ioc.InitializeAttemptTriggerExecutor(conf, logger)
+	if name == services.ATTEMPT_TRIGGER_EXECUTOR {
+		return ioc.AttemptTriggerExecutor(provider)
 	}
 
 	return nil, fmt.Errorf("serve.service: unknown service [%s]", name)

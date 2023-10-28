@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
-	ginmw "github.com/scrapnode/kanthor/infrastructure/gateway/gin/middlewares"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
+	"github.com/scrapnode/kanthor/gateway"
+	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
+	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )

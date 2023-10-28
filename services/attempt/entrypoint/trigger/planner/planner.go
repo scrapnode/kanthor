@@ -1,4 +1,4 @@
-package trigger
+package planner
 
 import (
 	"context"
@@ -6,10 +6,10 @@ import (
 	"sync"
 
 	"github.com/robfig/cron/v3"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/datastore"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/project"
@@ -17,7 +17,7 @@ import (
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
 
-func NewPlanner(
+func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
@@ -110,7 +110,7 @@ func (service *planner) Stop(ctx context.Context) error {
 }
 
 func (service *planner) Run(ctx context.Context) error {
-	id, err := service.cron.AddFunc(service.conf.Attempt.Trigger.Planner.Schedule, RegisterCron(service))
+	id, err := service.cron.AddFunc(service.conf.Trigger.Planner.Schedule, RegisterCron(service))
 	if err != nil {
 		return err
 	}

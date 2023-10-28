@@ -28,7 +28,7 @@ type WorkspaceGetRes struct {
 func (uc *workspace) Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error) {
 	key := utils.Key("portal", req.Id)
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*WorkspaceGetRes, error) {
-		ws, err := uc.repos.Workspace().Get(ctx, req.Id)
+		ws, err := uc.repositories.Workspace().Get(ctx, req.Id)
 		if err != nil {
 			return nil, err
 		}

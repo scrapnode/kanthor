@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/gateway"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -32,12 +32,12 @@ func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetReq) (*Endp
 
 	key := CacheKeyEpr(req.EpId, req.Id)
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*EndpointRuleGetRes, error) {
-		ep, err := uc.repos.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
+		ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
 		if err != nil {
 			return nil, err
 		}
 
-		epr, err := uc.repos.EndpointRule().Get(ctx, ep, req.Id)
+		epr, err := uc.repositories.EndpointRule().Get(ctx, ep, req.Id)
 		if err != nil {
 			return nil, err
 		}

@@ -7,13 +7,13 @@ import (
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 )
 
-func NewRedis(conf *Config, logger logging.Logger) Cache {
+func NewRedis(conf *Config, logger logging.Logger) (Cache, error) {
 	logger = logger.With("cache", "redis")
-	return &redis{conf: conf, logger: logger}
+	return &redis{conf: conf, logger: logger}, nil
 }
 
 type redis struct {

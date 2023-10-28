@@ -8,8 +8,8 @@ import (
 	"time"
 
 	natscore "github.com/nats-io/nats.go"
-	"github.com/scrapnode/kanthor/infrastructure/logging"
-	"github.com/scrapnode/kanthor/infrastructure/patterns"
+	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/project"
 )
 

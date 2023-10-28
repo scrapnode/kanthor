@@ -29,20 +29,20 @@ type EndpointUpdateRes struct {
 }
 
 func (uc *endpoint) Update(ctx context.Context, req *EndpointUpdateReq) (*EndpointUpdateRes, error) {
-	ep, err := uc.repos.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repos.Application().Get(ctx, req.WsId, req.AppId)
+	ep, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		app, err := uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
 		if err != nil {
 			return nil, err
 		}
 
-		ep, err := uc.repos.Endpoint().Get(txctx, app, req.Id)
+		ep, err := uc.repositories.Endpoint().Get(txctx, app, req.Id)
 		if err != nil {
 			return nil, err
 		}
 
 		ep.Name = req.Name
 		ep.SetAT(uc.infra.Timer.Now())
-		return uc.repos.Endpoint().Update(txctx, ep)
+		return uc.repositories.Endpoint().Update(txctx, ep)
 	})
 	if err != nil {
 		return nil, err

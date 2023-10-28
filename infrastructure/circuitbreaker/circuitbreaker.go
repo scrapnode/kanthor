@@ -1,9 +1,9 @@
 package circuitbreaker
 
-import "github.com/scrapnode/kanthor/infrastructure/logging"
+import "github.com/scrapnode/kanthor/logging"
 
 func New(conf *Config, logger logging.Logger) (CircuitBreaker, error) {
-	return NewSony(conf, logger), nil
+	return NewSony(conf, logger)
 }
 
 type CircuitBreaker interface {
