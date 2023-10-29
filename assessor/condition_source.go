@@ -1,4 +1,4 @@
-package planner
+package assessor
 
 import (
 	"github.com/scrapnode/kanthor/domain/entities"

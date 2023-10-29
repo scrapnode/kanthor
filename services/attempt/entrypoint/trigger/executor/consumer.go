@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
-	"github.com/scrapnode/kanthor/usecases/transformation"
 )
 
 func RegisterConsumer(service *executor) streaming.SubHandler {

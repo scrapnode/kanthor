@@ -1,4 +1,4 @@
-package planner
+package assessor
 
 import (
 	"fmt"
@@ -8,17 +8,17 @@ import (
 	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
-type Applicable struct {
+type Assets struct {
 	EndpointMap map[string]entities.Endpoint
 	Rules       []entities.EndpointRule
 }
 
-func Requests(msg *entities.Message, applicable *Applicable, timer timer.Timer) ([]entities.Request, [][]interface{}) {
+func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) ([]entities.Request, [][]interface{}) {
 	requests := []entities.Request{}
 	logs := [][]interface{}{}
 	seen := map[string]bool{}
 
-	for _, epr := range applicable.Rules {
+	for _, epr := range assets.Rules {
 		// already evaluated rules of this endpoint, ignore
 		if ignore, ok := seen[epr.EpId]; ok && ignore {
 			continue
@@ -34,14 +34,14 @@ func Requests(msg *entities.Message, applicable *Applicable, timer timer.Timer) 
 
 		check, err := ConditionExpression(&epr)
 		if err != nil {
-			logs = append(logs, append([]interface{}{"PLANNER.PLAN_REQUEST.RULE.CONDITION_EXRESSION.ERROR", "err", err.Error()}, log...))
+			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.CONDITION_EXRESSION.ERROR", "err", err.Error()}, log...))
 			// once we got error of evaludation, ignore request scheduling for this endpoint
 			seen[epr.EpId] = true
 			continue
 		}
 		source := ConditionSource(&epr, msg)
 		if source == "" {
-			logs = append(logs, append([]interface{}{"PLANNER.PLAN_REQUEST.RULE.CONDITION_SOURCE.EMPTY"}, log...))
+			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.CONDITION_SOURCE.EMPTY"}, log...))
 			// once we got error of evaludation, ignore request scheduling for this endpoint
 			seen[epr.EpId] = true
 			continue
@@ -51,18 +51,18 @@ func Requests(msg *entities.Message, applicable *Applicable, timer timer.Timer) 
 
 		// once we got exclusionary rule, ignore all other rules of current endpoint
 		if epr.Exclusionary && matched {
-			logs = append(logs, append([]interface{}{"PLANNER.PLAN_REQUEST.RULE.EXCLUSIONARY"}, log...))
+			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.EXCLUSIONARY"}, log...))
 			seen[epr.EpId] = true
 			continue
 		}
 
 		if !matched {
-			logs = append(logs, append([]interface{}{"PLANNER.PLAN_REQUEST.RULE.NOT_MATCHED"}, log...))
+			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.NOT_MATCHED"}, log...))
 			seen[epr.EpId] = false
 			continue
 		}
 
-		ep := applicable.EndpointMap[epr.EpId]
+		ep := assets.EndpointMap[epr.EpId]
 		req := Request(msg, &ep, &epr, timer)
 		requests = append(requests, req)
 	}

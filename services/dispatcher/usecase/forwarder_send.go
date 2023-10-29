@@ -7,12 +7,12 @@ import (
 	"net/http"
 
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc/pool"
 )
 

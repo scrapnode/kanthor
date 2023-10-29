@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/samber/lo"
+	"github.com/scrapnode/kanthor/assessor"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/internal/planner"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc"
 )
 
@@ -150,7 +150,7 @@ func (uc *request) arrange(ctx context.Context, messages []entities.Message) []e
 			continue
 		}
 
-		reqs, logs := planner.Requests(&message, &app, uc.infra.Timer)
+		reqs, logs := assessor.Requests(&message, &app, uc.infra.Timer)
 		if len(logs) > 0 {
 			for _, l := range logs {
 				uc.logger.Warnw(l[0].(string), l[1:]...)
@@ -166,20 +166,20 @@ func (uc *request) arrange(ctx context.Context, messages []entities.Message) []e
 	return requests
 }
 
-func (uc *request) applicables(ctx context.Context, appIds []string) map[string]planner.Applicable {
-	apps := &safe.Map[planner.Applicable]{}
+func (uc *request) applicables(ctx context.Context, appIds []string) map[string]assessor.Assets {
+	apps := &safe.Map[assessor.Assets]{}
 
 	var wg conc.WaitGroup
 	for _, id := range appIds {
 		appId := id
 		wg.Go(func() {
 			key := utils.Key("scheduler", appId)
-			app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
+			app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*assessor.Assets, error) {
 				endpoints, err := uc.repositories.Endpoint().List(ctx, appId)
 				if err != nil {
 					return nil, err
 				}
-				returning := &planner.Applicable{EndpointMap: map[string]entities.Endpoint{}}
+				returning := &assessor.Assets{EndpointMap: map[string]entities.Endpoint{}}
 				for _, ep := range endpoints {
 					returning.EndpointMap[ep.Id] = ep
 				}

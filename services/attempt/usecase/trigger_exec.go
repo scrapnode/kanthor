@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/scrapnode/kanthor/assessor"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/internal/planner"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
-	"github.com/scrapnode/kanthor/usecases/transformation"
 	"github.com/sourcegraph/conc"
 )
 
@@ -148,7 +148,7 @@ func (uc *trigger) consume(
 func (uc *trigger) examine(
 	ctx context.Context,
 	appId string,
-	applicable *planner.Applicable,
+	applicable *assessor.Assets,
 	from, to time.Time,
 ) ([]string, []repositories.Req, error) {
 	messages, msgIds, err := uc.scan(ctx, appId, from, to)
@@ -223,14 +223,14 @@ func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (
 	return returning, ids, nil
 }
 
-func (uc *trigger) applicable(ctx context.Context, appId string) (*planner.Applicable, error) {
+func (uc *trigger) applicable(ctx context.Context, appId string) (*assessor.Assets, error) {
 	key := utils.Key("scheduler", appId)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*planner.Applicable, error) {
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*assessor.Assets, error) {
 		endpoints, err := uc.repositories.Endpoint().List(ctx, appId)
 		if err != nil {
 			return nil, err
 		}
-		returning := &planner.Applicable{EndpointMap: map[string]entities.Endpoint{}}
+		returning := &assessor.Assets{EndpointMap: map[string]entities.Endpoint{}}
 		for _, ep := range endpoints {
 			returning.EndpointMap[ep.Id] = ep
 		}
@@ -286,7 +286,7 @@ func (uc *trigger) schedule(
 	ok *safe.Slice[string],
 	ko *safe.Map[error],
 	size int,
-	applicable *planner.Applicable,
+	applicable *assessor.Assets,
 	msgIds []string,
 ) {
 	requests := []entities.Request{}
@@ -303,7 +303,7 @@ func (uc *trigger) schedule(
 		}
 
 		for _, message := range messages {
-			reqs, logs := planner.Requests(&message, applicable, uc.infra.Timer)
+			reqs, logs := assessor.Requests(&message, applicable, uc.infra.Timer)
 			if len(logs) > 0 {
 				for _, l := range logs {
 					uc.logger.Warnw(l[0].(string), l[1:]...)

@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/scrapnode/kanthor/usecases/transformation"
 )
 
 type MessagePutReq struct {
