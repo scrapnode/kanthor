@@ -12,12 +12,12 @@ logger:
 database:
   uri: *postgres_uri
   migration:
-    source: file://./migration/database/sql
+    source: file://./data/migration/database/sql
 
 datastore:
   uri: *postgres_uri
   migration:
-    source: file://./migration/datastore/sql
+    source: file://./data/migration/datastore/sql
  
 # infrastructure
 infrastructure:

@@ -10,7 +10,6 @@ FROM alpine:3
 WORKDIR /app
 
 COPY --from=build /app/data ./data
-COPY --from=build /app/migration ./migration
 COPY --from=build /app/configs.yaml ./configs.yaml
 
 COPY --from=build /app/.kanthor/kanthor /usr/bin/kanthor
