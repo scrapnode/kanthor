@@ -62,7 +62,7 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err := streaming.New(&conf.Stream, logger)
+	s, err := streaming.New(&conf.Streaming, logger)
 	if err != nil {
 		return nil, err
 	}

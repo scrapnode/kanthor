@@ -7,12 +7,17 @@ import (
 
 	"github.com/scrapnode/kanthor/cmd"
 	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/project"
 )
 
+// @TODO: set version for project package
+//
 //go:embed .version
 var version string
 
 func main() {
+	project.SetVersion(version)
+
 	provider, err := configuration.New()
 	if err != nil {
 		panic(err)

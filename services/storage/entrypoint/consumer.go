@@ -48,6 +48,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 					continue
 				}
 				ucreq.Messages = append(ucreq.Messages, *message)
+				continue
 			}
 
 			if event.Is(project.Namespace(), constants.TopicRequest) {
@@ -65,6 +66,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 					continue
 				}
 				ucreq.Requests = append(ucreq.Requests, *request)
+				continue
 			}
 
 			if event.Is(project.Namespace(), constants.TopicResponse) {
@@ -82,6 +84,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 					continue
 				}
 				ucreq.Responses = append(ucreq.Responses, *response)
+				continue
 			}
 
 			err := fmt.Errorf("unrecognized event %s", event.Id)

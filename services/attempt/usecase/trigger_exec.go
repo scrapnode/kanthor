@@ -367,7 +367,7 @@ func (uc *trigger) create(
 	for i := 0; i < len(attempts); i += concurrency {
 		j := utils.ChunkNext(i, len(attempts), concurrency)
 
-		ids, err := uc.repositories.Attempt().Create(ctx, attempts[i:j])
+		ids, err := uc.repositories.Attempt().BulkCreate(ctx, attempts[i:j])
 		if err != nil {
 			for _, attempt := range attempts[i:j] {
 				ko.Set(attempt.ReqId, err)

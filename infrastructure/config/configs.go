@@ -51,7 +51,7 @@ type Config struct {
 	Cache                  cache.Config          `json:"cache" yaml:"cache" mapstructure:"cache"`
 	Metric                 metric.Config         `json:"metric" yaml:"metric" mapstructure:"metric"`
 	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
-	Stream                 streaming.Config      `json:"stream" yaml:"stream" mapstructure:"stream"`
+	Streaming              streaming.Config      `json:"streaming" yaml:"streaming" mapstructure:"streaming"`
 }
 
 func (conf *Config) Validate() error {
@@ -79,7 +79,7 @@ func (conf *Config) Validate() error {
 	if err := conf.Authorizator.Validate(); err != nil {
 		return fmt.Errorf("infrastructure.authorizator: %v", err)
 	}
-	if err := conf.Stream.Validate(); err != nil {
+	if err := conf.Streaming.Validate(); err != nil {
 		return fmt.Errorf("infrastructure.stream: %v", err)
 	}
 

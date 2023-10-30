@@ -50,7 +50,7 @@ infrastructure:
 
   distributed_lock_manager:
     uri: *redis_uri
-    time_to_live: 3600000 # 1h
+    timeout: 60000 # 1m
 
   cache:
     uri: *redis_uri
@@ -67,7 +67,7 @@ infrastructure:
   metric:
     engine: noop
 
-  stream:
+  streaming:
     name: main
     uri: *nats_uri
     nats:
@@ -126,7 +126,7 @@ attempt:
       schedule: "*/15 * * * *"
       timeout: 600000 # 60s
       scan_start: -7200000 # 1h30m
-      scan_end: -60000 # 30m
+      scan_end: -1800000 # 30m
     executor:
       timeout: 60000 # 60s
       concurrency: 500
@@ -136,7 +136,8 @@ attempt:
       schedule: "*/5 * * * *"
       timeout: 600000 # 60s
       scan_start: -7200000 # 1h30m
-      scan_end: -60000 # 30m
+      scan_end: -1800000 # 30m
     executor:
       timeout: 60000 # 60s
       concurrency: 500
+      reschedule_delay: 1800000 # 30m

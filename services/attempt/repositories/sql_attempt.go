@@ -28,7 +28,7 @@ var AttemptMapping = map[string]func(doc entities.Attempt) any{
 }
 var AttemptMappingCols = lo.Keys(AttemptMapping)
 
-func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]string, error) {
+func (sql *SqlAttempt) BulkCreate(ctx context.Context, docs []entities.Attempt) ([]string, error) {
 	ids := []string{}
 
 	if len(docs) == 0 {
@@ -83,4 +83,30 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, matching in
 		Find(&records)
 
 	return records, tx.Error
+}
+
+func (sql *SqlAttempt) MarkComplete(ctx context.Context, reqId string, res *entities.Response) error {
+	statement := fmt.Sprintf(
+		"UPDATE %s SET completed_at = ?, status = ?, res_id = ? WHERE id = ?",
+		entities.TableAtt,
+	)
+
+	if tx := sql.client.Exec(statement, res.Timestamp, res.Status, res.Id, reqId); tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
+func (sql *SqlAttempt) MarkReschedule(ctx context.Context, reqId string, ts int64) error {
+	statement := fmt.Sprintf(
+		"UPDATE %s SET schedule_counter = schedule_counter + 1, schedule_next = ?",
+		entities.TableAtt,
+	)
+
+	if tx := sql.client.Exec(statement, ts, reqId); tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }

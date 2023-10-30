@@ -9,13 +9,14 @@ type Attempt struct {
 	AppId string `json:"app_id"`
 	Tier  string `json:"tier"`
 
-	Status int    `json:"status"`
-	ResId  string `json:"res_id"`
+	ScheduledAt int64 `json:"scheduled_at"`
+	Status      int   `json:"status"`
+
+	ResId       string `json:"res_id"`
+	CompletedAt int64  `json:"completed_at"`
 
 	ScheduleCounter int   `json:"schedule_counter"`
 	ScheduleNext    int64 `json:"schedule_next"`
-	ScheduledAt     int64 `json:"scheduled_at"`
-	CompletedAt     int64 `json:"completed_at"`
 }
 
 func (entity *Attempt) TableName() string {

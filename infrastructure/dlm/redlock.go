@@ -21,7 +21,7 @@ func NewRedlock(conf *Config) (Factory, error) {
 
 	return func(key string) DistributedLockManager {
 		key = Key(key)
-		expiry := time.Millisecond * time.Duration(conf.TimeToLive)
+		expiry := time.Millisecond * time.Duration(conf.Timeout)
 		return &redlock{
 			key:  key,
 			conf: conf,
@@ -54,5 +54,5 @@ func (locker *redlock) Unlock(ctx context.Context) error {
 }
 
 func (locker *redlock) TimeToLive() time.Duration {
-	return time.Millisecond * time.Duration(locker.conf.TimeToLive)
+	return time.Millisecond * time.Duration(locker.conf.Timeout)
 }

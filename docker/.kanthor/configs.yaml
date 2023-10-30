@@ -1,7 +1,7 @@
 # refs
 redis_uri: &redis_uri redis://cache:6379/0
 postgres_uri: &postgres_uri postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
-nats_uri: &nats_uri nats://stream:4222
+nats_uri: &nats_uri nats://streaming:4222
 
 logger:
   pretty: true
@@ -50,7 +50,7 @@ infrastructure:
 
   distributed_lock_manager:
     uri: *redis_uri
-    time_to_live: 3600000 # 1h
+    timeout: 60000 # 1m
 
   cache:
     uri: *redis_uri
@@ -67,7 +67,7 @@ infrastructure:
   metric:
     engine: noop
 
-  stream:
+  streaming:
     name: main
     uri: *nats_uri
     nats:
@@ -123,21 +123,21 @@ storage:
 attempt:
   trigger:
     planner:
-      schedule: "*/15 * * * *"
+      schedule: "*/3 * * * *"
       timeout: 600000 # 60s
       scan_start: -7200000 # 1h30m
-      scan_end: -60000 # 30m
+      scan_end: -300000 # 5m
     executor:
       timeout: 60000 # 60s
       concurrency: 500
-      attempt_delay: 1800000 # 30m
+      arrange_delay: 300000 # 5m
   endeavour:
     planner:
-      schedule: "*/5 * * * *"
+      schedule: "*/3 * * * *"
       timeout: 600000 # 60s
       scan_start: -7200000 # 1h30m
-      scan_end: -60000 # 30m
+      scan_end: -300000 # 5m
     executor:
       timeout: 60000 # 60s
       concurrency: 500
-      attempt_delay: 1800000 # 30m
+      reschedule_delay: 300000 # 5m

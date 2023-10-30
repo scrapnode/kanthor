@@ -1,8 +1,8 @@
 version: "3.8"
 
 services:
-  stream:
-    container_name: kanthor-stream
+  streaming:
+    container_name: kanthor-streaming
     image: nats:2.9
     restart: unless-stopped
     networks:
@@ -189,6 +189,46 @@ services:
       - kanthor
       - serve
       - storage
+
+  attempt-trigger-planner:
+    depends_on:
+      streaming:
+        condition: service_started
+      warehouse:
+        condition: service_healthy
+      migration-datastore:
+        condition: service_started
+    container_name: kanthor-services-attempt-trigger-planner
+    image: kanthorlabs/kanthor:latest
+    restart: unless-stopped
+    networks:
+      - kanthor
+    volumes:
+      - ./docker/.kanthor:/root/.kanthor
+    command:
+      - kanthor
+      - serve
+      - attempt.trigger.planner
+
+  attempt-trigger-executor:
+    depends_on:
+      streaming:
+        condition: service_started
+      warehouse:
+        condition: service_healthy
+      migration-datastore:
+        condition: service_started
+    container_name: kanthor-services-attempt-trigger-executor
+    image: kanthorlabs/kanthor:latest
+    restart: unless-stopped
+    networks:
+      - kanthor
+    volumes:
+      - ./docker/.kanthor:/root/.kanthor
+    command:
+      - kanthor
+      - serve
+      - attempt.trigger.executor
 
 networks:
   kanthor:

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/transformation"
@@ -63,6 +64,10 @@ func (uc *endeavor) Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorEx
 	if err != nil {
 		return nil, err
 	}
+
+	ok := safe.Slice[string]{}
+	ko := safe.Map[error]{}
+
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
 	p := pool.New().WithMaxGoroutines(req.Concurrency)
@@ -72,6 +77,29 @@ func (uc *endeavor) Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorEx
 		p.Go(func() {
 			response := uc.send(ctx, request)
 			responses.Set(refId, response)
+
+			if entities.Is2xx(response.Status) {
+				err := uc.repositories.Attempt().MarkComplete(ctx, response.ReqId, response)
+				if err != nil {
+					ko.Set(refId, err)
+					return
+				}
+
+				ok.Append(refId)
+				return
+			}
+
+			if entities.Is5xx(response.Status) {
+				next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
+				err := uc.repositories.Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
+				if err != nil {
+					ko.Set(refId, err)
+					return
+				}
+
+				ok.Append(refId)
+				return
+			}
 		})
 	}
 	p.Wait()
@@ -89,19 +117,12 @@ func (uc *endeavor) Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorEx
 		events[refId] = event
 	}
 
-	ok := []string{}
-	ko := map[string]error{}
-
 	errs := uc.publisher.Pub(ctx, events)
-	for refId := range events {
-		if err, ok := errs[refId]; ok {
-			ko[refId] = err
-			continue
-		}
-		ok = append(ok, refId)
+	for refId, err := range errs {
+		uc.logger.Errorw("unable to publish response event of request", "req_id", refId, "err", err.Error())
 	}
 
-	return &EndeavorExecRes{Success: ok, Error: ko}, nil
+	return &EndeavorExecRes{Success: ok.Data(), Error: ko.Data()}, nil
 }
 
 func (uc *endeavor) requests(ctx context.Context, req *EndeavorExecReq) (map[string]*entities.Request, error) {

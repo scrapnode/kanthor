@@ -120,7 +120,6 @@ func (service *planner) Run(ctx context.Context) error {
 		service.logger.Debug("starting immediately because of development env")
 		service.cron.Entry(id).Job.Run()
 	}
-	service.cron.Run()
 
 	if err := service.readiness(); err != nil {
 		return err
@@ -145,14 +144,9 @@ func (service *planner) Run(ctx context.Context) error {
 		}
 	}()
 
-	service.logger.Info("running")
-	forever := make(chan bool)
-	select {
-	case <-forever:
-		return nil
-	case <-ctx.Done():
-		return nil
-	}
+	service.logger.Info("running", "schedule", service.conf.Trigger.Planner.Schedule)
+	service.cron.Run()
+	return nil
 }
 
 func (service *planner) readiness() error {

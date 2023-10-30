@@ -20,6 +20,11 @@ go run main.go migrate database up && go run main.go migrate datastore up
 docker compose -f docker-compose.debugging.yaml up -d
 docker compose -f docker-compose.yaml up -d sdk portal scheduler dispatcher storage
 
+export ENABLE_ATTEMPT=${ENABLE_ATTEMPT:-""}
+if [ $ENABLE_ATTEMPT != "" ]; then
+    docker compose -f docker-compose.yaml up -d attempt-trigger-planner attempt-trigger-executor
+fi
+
 echo "#2 sleep 5s"
 sleep 5
 

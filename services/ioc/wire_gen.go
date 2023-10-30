@@ -14,8 +14,10 @@ import (
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/attempt/config"
-	"github.com/scrapnode/kanthor/services/attempt/entrypoint/trigger/executor"
-	"github.com/scrapnode/kanthor/services/attempt/entrypoint/trigger/planner"
+	"github.com/scrapnode/kanthor/services/attempt/entrypoint/endeavor/executor"
+	"github.com/scrapnode/kanthor/services/attempt/entrypoint/endeavor/planner"
+	executor2 "github.com/scrapnode/kanthor/services/attempt/entrypoint/trigger/executor"
+	planner2 "github.com/scrapnode/kanthor/services/attempt/entrypoint/trigger/planner"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 	config2 "github.com/scrapnode/kanthor/services/dispatcher/config"
@@ -39,9 +41,9 @@ import (
 	usecase6 "github.com/scrapnode/kanthor/services/storage/usecase"
 )
 
-// Injectors from wire_attempt.go:
+// Injectors from wire_attempt_endeavor.go:
 
-func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, error) {
+func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable, error) {
 	configConfig, err := config.New(provider)
 	if err != nil {
 		return nil, err
@@ -64,7 +66,7 @@ func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, 
 	return runnable, nil
 }
 
-func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable, error) {
+func AttemptEndeavorExecutor(provider configuration.Provider) (patterns.Runnable, error) {
 	configConfig, err := config.New(provider)
 	if err != nil {
 		return nil, err
@@ -84,6 +86,54 @@ func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable,
 	repositoriesRepositories := repositories.New(logger, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
 	runnable := executor.New(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
+	return runnable, nil
+}
+
+// Injectors from wire_attempt_trigger.go:
+
+func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := planner2.New(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
+	return runnable, nil
+}
+
+func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := executor2.New(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
 	return runnable, nil
 }
 

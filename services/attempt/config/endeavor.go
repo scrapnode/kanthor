@@ -40,8 +40,9 @@ func (conf *EndeavorPlanner) Validate() error {
 }
 
 type EndeavorExecutor struct {
-	Timeout     int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	Concurrency int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
+	Timeout         int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Concurrency     int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
+	RescheduleDelay int64 `json:"reschedule_delay" yaml:"reschedule_delay" mapstructure:"reschedule_delay"`
 }
 
 func (conf *EndeavorExecutor) Validate() error {
@@ -49,5 +50,6 @@ func (conf *EndeavorExecutor) Validate() error {
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("attempt.endeavor.executor.timeout", conf.Timeout, 1000),
 		validator.NumberGreaterThan("attempt.endeavor.executor.concurrency", conf.Concurrency, 0),
+		validator.NumberGreaterThanOrEqual("attempt.trigger.executor.reschedule_delay", conf.RescheduleDelay, 60000),
 	)
 }
