@@ -6,8 +6,9 @@ import (
 
 type Attempt struct {
 	ReqId string `json:"req_id"`
+	AppId string `json:"app_id"`
+	Tier  string `json:"tier"`
 
-	Tier   string `json:"tier"`
 	Status int    `json:"status"`
 	ResId  string `json:"res_id"`
 

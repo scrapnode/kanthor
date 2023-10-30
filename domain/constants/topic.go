@@ -5,7 +5,8 @@ var (
 	TopicMessage  = "public.message"
 	TopicRequest  = "public.request"
 	TopicResponse = "public.response"
-	TopicTrigger  = "private.trigger"
+	TopicTrigger  = "private.attempt.trigger"
+	TopicEndeavor = "private.attempt.endeavor"
 )
 
 var (

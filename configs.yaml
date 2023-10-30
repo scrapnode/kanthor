@@ -125,10 +125,18 @@ attempt:
     planner:
       schedule: "*/15 * * * *"
       timeout: 600000 # 60s
-      size: 10000
       scan_start: -7200000 # 1h30m
       scan_end: -60000 # 30m
     executor:
       timeout: 60000 # 60s
-      size: 500
-      attempt_delay: 1800000 # 30m
+      concurrency: 500
+      arrange_delay: 1800000 # 30m
+  endeavour:
+    planner:
+      schedule: "*/5 * * * *"
+      timeout: 600000 # 60s
+      scan_start: -7200000 # 1h30m
+      scan_end: -60000 # 30m
+    executor:
+      timeout: 60000 # 60s
+      concurrency: 500

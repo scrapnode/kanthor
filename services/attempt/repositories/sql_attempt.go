@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"gorm.io/gorm"
 )
 
@@ -63,4 +65,22 @@ func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]s
 	}
 
 	return ids, nil
+}
+
+func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, matching int64) ([]entities.Attempt, error) {
+	// convert timestamp to safe id, so we can the table efficiently with primary key
+	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
+	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
+
+	// @TODO: use chunk to fetch
+	var records []entities.Attempt
+	tx := sql.client.
+		Table(entities.TableMsg).
+		Where("id > ?", low).
+		Where("id < ?", high).
+		Where("schedule_next <= ?", matching).
+		Order("req_id DESC").
+		Find(&records)
+
+	return records, tx.Error
 }

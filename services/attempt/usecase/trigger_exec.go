@@ -19,19 +19,19 @@ import (
 )
 
 type TriggerExecReq struct {
-	Size    int
-	Timeout int64
+	Concurrency int
+	Timeout     int64
 
-	AttemptDelay int64
+	ArrangeDelay int64
 	Triggers     map[string]*entities.AttemptTrigger
 }
 
 func (req *TriggerExecReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("size", req.Size, 1),
 		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
-		validator.NumberGreaterThan("attempt_delay", req.AttemptDelay, 60000),
+		validator.NumberGreaterThan("concurrency", req.Concurrency, 1),
+		validator.NumberGreaterThan("arrange_delay", req.ArrangeDelay, 60000),
 		validator.MapRequired("triggers", req.Triggers),
 	)
 	if err != nil {
@@ -70,7 +70,7 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 	for _, item := range req.Triggers {
 		trigger := item
 		wg.Go(func() {
-			resp, err := uc.consume(ctx, trigger, req.Size, req.AttemptDelay)
+			resp, err := uc.consume(ctx, trigger, req.Concurrency, req.ArrangeDelay)
 			if err != nil {
 				uc.logger.Errorw("unable to consume attempt trigger", "trigger", trigger.String(), "err", err.Error())
 				return
@@ -102,7 +102,7 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 func (uc *trigger) consume(
 	ctx context.Context,
 	trigger *entities.AttemptTrigger,
-	size int,
+	concurrency int,
 	delay int64,
 ) (*TriggerExecRes, error) {
 	key := fmt.Sprintf("kanthor.services.attempt.trigger.consumer/%s", trigger.AppId)
@@ -137,8 +137,8 @@ func (uc *trigger) consume(
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 
-	uc.schedule(ctx, ok, ko, size, applicable, msgIds)
-	uc.create(ctx, ok, ko, size, delay, requests)
+	uc.schedule(ctx, ok, ko, concurrency, applicable, msgIds)
+	uc.create(ctx, ok, ko, concurrency, delay, requests)
 
 	res := &TriggerExecRes{Success: ok.Data(), Error: ko.Data()}
 	return res, nil
@@ -285,14 +285,14 @@ func (uc *trigger) schedule(
 	ctx context.Context,
 	ok *safe.Slice[string],
 	ko *safe.Map[error],
-	size int,
+	concurrency int,
 	applicable *assessor.Assets,
 	msgIds []string,
 ) {
 	requests := []entities.Request{}
 
-	for i := 0; i < len(msgIds); i += size {
-		j := utils.ChunkNext(i, len(msgIds), size)
+	for i := 0; i < len(msgIds); i += concurrency {
+		j := utils.ChunkNext(i, len(msgIds), concurrency)
 
 		messages, err := uc.repositories.Message().ListByIds(ctx, msgIds[i:j])
 		if err != nil {
@@ -345,7 +345,7 @@ func (uc *trigger) create(
 	ctx context.Context,
 	ok *safe.Slice[string],
 	ko *safe.Map[error],
-	size int,
+	concurrency int,
 	delay int64,
 	requests []repositories.Req,
 ) {
@@ -357,14 +357,15 @@ func (uc *trigger) create(
 	for _, request := range requests {
 		attempts = append(attempts, entities.Attempt{
 			ReqId:        request.Id,
+			AppId:        request.AppId,
 			Tier:         request.Tier,
 			ScheduleNext: next.UnixMilli(),
 			ScheduledAt:  now.UnixMilli(),
 		})
 	}
 
-	for i := 0; i < len(attempts); i += size {
-		j := utils.ChunkNext(i, len(attempts), size)
+	for i := 0; i < len(attempts); i += concurrency {
+		j := utils.ChunkNext(i, len(attempts), concurrency)
 
 		ids, err := uc.repositories.Attempt().Create(ctx, attempts[i:j])
 		if err != nil {

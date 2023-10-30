@@ -13,10 +13,7 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
-		// create a map of events & requests so we can generate error map later
-		maps := map[string]string{}
-
-		requests := []entities.Request{}
+		requests := map[string]*entities.Request{}
 		for _, event := range events {
 			request, err := transformation.EventToRequest(event)
 			if err != nil {
@@ -32,13 +29,10 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 				continue
 			}
 
-			maps[request.Id] = event.Id
-			requests = append(requests, *request)
+			requests[event.Id] = request
 		}
 
-		retruning := map[string]error{}
 		ctx := context.Background()
-
 		ucreq := &usecase.ForwarderSendReq{
 			Concurrency: service.conf.Forwarder.Send.Concurrency,
 			Requests:    requests,
@@ -46,22 +40,14 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 		// we alreay validated messages of request, don't need to validate again
 		ucres, err := service.uc.Forwarder().Send(ctx, ucreq)
 		if err != nil {
+			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
-			for _, event := range events {
-				retruning[event.Id] = err
+			for refId := range ucreq.Requests {
+				retruning[refId] = err
 			}
 			return retruning
 		}
 
-		// ucres.Error contain a map of message id and error
-		// should convert it to a map of event id and error so our streaming service can retry it
-		if len(ucres.Error) > 0 {
-			for reqId, err := range ucres.Error {
-				eventId := maps[reqId]
-				retruning[eventId] = err
-			}
-		}
-
-		return retruning
+		return ucres.Error
 	}
 }

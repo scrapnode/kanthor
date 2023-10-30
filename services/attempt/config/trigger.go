@@ -35,7 +35,7 @@ func (conf *TriggerPlanner) Validate() error {
 		validator.DefaultConfig,
 		validator.StringRequired("attempt.trigger.planner.schedule", conf.Schedule),
 		validator.NumberGreaterThanOrEqual("attempt.trigger.planner.timeout", conf.Timeout, 1000),
-		validator.NumberGreaterThan("attempt.trigger.planner.size", conf.Size, 0),
+		validator.NumberGreaterThan("attempt.trigger.executor.size", conf.Size, 0),
 		validator.NumberLessThan("attempt.trigger.planner.scan_end", conf.ScanEnd, 0),
 		validator.NumberLessThan("attempt.trigger.planner.scan_start", conf.ScanStart, conf.ScanEnd),
 	)
@@ -43,15 +43,15 @@ func (conf *TriggerPlanner) Validate() error {
 
 type TriggerExecutor struct {
 	Timeout      int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	Size         int   `json:"size" yaml:"size" mapstructure:"size"`
-	AttemptDelay int64 `json:"attempt_delay" yaml:"attempt_delay" mapstructure:"attempt_delay"`
+	Concurrency  int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
+	ArrangeDelay int64 `json:"arrange_delay" yaml:"arrange_delay" mapstructure:"arrange_delay"`
 }
 
 func (conf *TriggerExecutor) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("attempt.trigger.executor.timeout", int(conf.Timeout), 1000),
-		validator.NumberGreaterThan("attempt.trigger.executor.size", conf.Size, 0),
-		validator.NumberGreaterThanOrEqual("attempt.trigger.executor.attempt_delay", conf.AttemptDelay, 60000),
+		validator.NumberGreaterThanOrEqual("attempt.trigger.executor.timeout", conf.Timeout, 1000),
+		validator.NumberGreaterThan("attempt.trigger.executor.concurrency", conf.Concurrency, 0),
+		validator.NumberGreaterThanOrEqual("attempt.trigger.executor.arrange_delay", conf.ArrangeDelay, 60000),
 	)
 }

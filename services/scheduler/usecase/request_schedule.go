@@ -20,7 +20,7 @@ import (
 type RequestScheduleReq struct {
 	Timeout int64
 
-	Messages []entities.Message
+	Messages map[string]*entities.Message
 }
 
 func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message) error {
@@ -38,7 +38,7 @@ func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message)
 func (req *RequestScheduleReq) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.SliceRequired("messages", req.Messages),
+		validator.MapRequired("messages", req.Messages),
 		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
 	)
 	if err != nil {
@@ -47,8 +47,8 @@ func (req *RequestScheduleReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Messages, func(i int, item *entities.Message) error {
-			prefix := fmt.Sprintf("messages[%d]", i)
+		validator.Map(req.Messages, func(refId string, item *entities.Message) error {
+			prefix := fmt.Sprintf("messages.%s", refId)
 			return ValidateRequestScheduleReqMessage(prefix, item)
 		}),
 	)
@@ -93,12 +93,12 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 		}
 
 		errs := uc.publisher.Pub(ctx, events)
-		for key := range events {
+		for refId := range events {
 			// map key back to message id
 			// to let system retry the message if any error was happen
-			msgId := maps[key]
+			msgId := maps[refId]
 
-			if err, ok := errs[key]; ok {
+			if err, ok := errs[refId]; ok {
 				ko.Set(msgId, err)
 				continue
 			}
@@ -135,7 +135,7 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 	}
 }
 
-func (uc *request) arrange(ctx context.Context, messages []entities.Message) []entities.Request {
+func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Message) []entities.Request {
 	apps := map[string]string{}
 	for _, message := range messages {
 		apps[message.AppId] = message.AppId
@@ -147,10 +147,11 @@ func (uc *request) arrange(ctx context.Context, messages []entities.Message) []e
 	for _, message := range messages {
 		app, ok := applicables[message.AppId]
 		if !ok {
+			uc.logger.Warnw("could not find applicable assets for app", "app_id", message.AppId, "msg_id", message.Id)
 			continue
 		}
 
-		reqs, logs := assessor.Requests(&message, &app, uc.infra.Timer)
+		reqs, logs := assessor.Requests(message, app, uc.infra.Timer)
 		if len(logs) > 0 {
 			for _, l := range logs {
 				uc.logger.Warnw(l[0].(string), l[1:]...)
@@ -166,8 +167,8 @@ func (uc *request) arrange(ctx context.Context, messages []entities.Message) []e
 	return requests
 }
 
-func (uc *request) applicables(ctx context.Context, appIds []string) map[string]assessor.Assets {
-	apps := &safe.Map[assessor.Assets]{}
+func (uc *request) applicables(ctx context.Context, appIds []string) map[string]*assessor.Assets {
+	apps := &safe.Map[*assessor.Assets]{}
 
 	var wg conc.WaitGroup
 	for _, id := range appIds {
@@ -196,7 +197,7 @@ func (uc *request) applicables(ctx context.Context, appIds []string) map[string]
 				uc.logger.Errorw("unable to get applicable endpoints", "err", err.Error(), "app_id", appId)
 				return
 			}
-			apps.Set(appId, *app)
+			apps.Set(appId, app)
 		})
 	}
 	wg.Wait()

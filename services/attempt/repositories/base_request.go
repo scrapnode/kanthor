@@ -3,6 +3,8 @@ package repositories
 import (
 	"context"
 	"time"
+
+	"github.com/scrapnode/kanthor/domain/entities"
 )
 
 type Req struct {
@@ -15,4 +17,5 @@ type Req struct {
 
 type Request interface {
 	Scan(ctx context.Context, appId string, msgIds []string, from, to time.Time) (map[string]Req, error)
+	ListByIds(ctx context.Context, ids []string) ([]entities.Request, error)
 }

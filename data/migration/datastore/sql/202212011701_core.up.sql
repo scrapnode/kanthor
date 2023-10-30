@@ -51,10 +51,12 @@ CREATE INDEX IF NOT EXISTS kanthor_res_scan ON kanthor_response (app_id DESC, ms
 
 CREATE TABLE IF NOT EXISTS kanthor_attempt (
     req_id VARCHAR(64) NOT NULL PRIMARY KEY,
-    res_id VARCHAR(64) NOT NULL,
 
+    app_id VARCHAR(64) NOT NULL,
     tier VARCHAR(64) NOT NULL,
     status INT NOT NULL,
+    
+    res_id VARCHAR(64) NOT NULL,
 
     schedule_counter INT NOT NULL,
     schedule_next BIGINT NOT NULL DEFAULT 0,

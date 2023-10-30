@@ -29,9 +29,9 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 	defer cancel()
 
 	p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
-	for key, event := range events {
+	for refId, event := range events {
 		if err := event.Validate(); err != nil {
-			returning.Set(key, err)
+			returning.Set(refId, err)
 			continue
 		}
 
@@ -39,7 +39,7 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 		p.Go(func() {
 			ack, err := publisher.nats.js.PublishMsg(msg, natscore.Context(ctx), natscore.MsgId(event.Id))
 			if err != nil {
-				returning.Set(key, err)
+				returning.Set(refId, err)
 				return
 			}
 

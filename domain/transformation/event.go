@@ -123,17 +123,49 @@ func EventFromTrigger(trigger *entities.AttemptTrigger) (*streaming.Event, error
 		trigger.Tier,
 		constants.TopicTrigger,
 		event.AppId,
-		event.Type,
 	)
 
 	return event, nil
 }
 
 func EventToTrigger(event *streaming.Event) (*entities.AttemptTrigger, error) {
-	var noti entities.AttemptTrigger
-	if err := noti.Unmarshal(event.Data); err != nil {
+	var trigger entities.AttemptTrigger
+	if err := trigger.Unmarshal(event.Data); err != nil {
 		return nil, err
 	}
 
-	return &noti, nil
+	return &trigger, nil
+}
+
+func EventFromAttempt(attempt *entities.Attempt) (*streaming.Event, error) {
+	data, err := attempt.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	event := &streaming.Event{
+		AppId:    attempt.AppId,
+		Type:     constants.TypeInternal,
+		Id:       attempt.ReqId,
+		Data:     data,
+		Metadata: map[string]string{},
+	}
+	event.Subject = streaming.Subject(
+		project.Namespace(),
+		attempt.Tier,
+		constants.TopicEndeavor,
+		event.AppId,
+		event.Type,
+	)
+
+	return event, nil
+}
+
+func EventToAttempt(event *streaming.Event) (*entities.Attempt, error) {
+	var attempt entities.Attempt
+	if err := attempt.Unmarshal(event.Data); err != nil {
+		return nil, err
+	}
+
+	return &attempt, nil
 }

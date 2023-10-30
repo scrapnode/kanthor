@@ -17,8 +17,8 @@ type Wrapper struct {
 }
 
 type Config struct {
-	Trigger   Trigger   `json:"trigger" yaml:"trigger" mapstructure:"trigger"`
-	Endeavour Endeavour `json:"endeavour" yaml:"endeavour" mapstructure:"endeavour"`
+	Trigger  Trigger  `json:"trigger" yaml:"trigger" mapstructure:"trigger"`
+	Endeavor Endeavor `json:"endeavor" yaml:"endeavor" mapstructure:"endeavor"`
 }
 
 func (conf *Config) Validate() error {
@@ -26,8 +26,8 @@ func (conf *Config) Validate() error {
 		return fmt.Errorf("attempt.trigger: %v", err)
 	}
 
-	if err := conf.Endeavour.Validate(); err != nil {
-		return fmt.Errorf("attempt.endeavour: %v", err)
+	if err := conf.Endeavor.Validate(); err != nil {
+		return fmt.Errorf("attempt.endeavor: %v", err)
 	}
 
 	return nil

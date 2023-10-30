@@ -11,6 +11,7 @@ import (
 
 type Attempt interface {
 	Trigger() Trigger
+	Endeavor() Endeavor
 }
 
 func New(
@@ -35,7 +36,8 @@ type attempt struct {
 	infra        *infrastructure.Infrastructure
 	repositories repositories.Repositories
 
-	trigger *trigger
+	trigger  *trigger
+	endeavor *endeavor
 
 	mu sync.Mutex
 }
@@ -53,4 +55,20 @@ func (uc *attempt) Trigger() Trigger {
 		}
 	}
 	return uc.trigger
+}
+
+func (uc *attempt) Endeavor() Endeavor {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.endeavor == nil {
+		uc.endeavor = &endeavor{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
+			publisher:    uc.infra.Stream.Publisher("attempt_endeavor"),
+		}
+	}
+	return uc.endeavor
 }

@@ -7,7 +7,7 @@ import (
 )
 
 // @TODO: remove hardcode
-var key = "attempt.trigger.cron"
+var key = "attempt.endeavor.cron"
 
 func RegisterCron(service *planner) func() {
 	return func() {
@@ -25,18 +25,17 @@ func RegisterCron(service *planner) func() {
 			}
 		}()
 
-		ucreq := &usecase.TriggerPlanReq{
-			Timeout:   service.conf.Trigger.Planner.Timeout,
-			Size:      service.conf.Trigger.Planner.Size,
-			ScanStart: service.conf.Trigger.Planner.ScanStart,
-			ScanEnd:   service.conf.Trigger.Planner.ScanEnd,
+		ucreq := &usecase.EndeavorPlanReq{
+			Timeout:   service.conf.Endeavor.Planner.Timeout,
+			ScanStart: service.conf.Endeavor.Planner.ScanStart,
+			ScanEnd:   service.conf.Endeavor.Planner.ScanEnd,
 		}
-		ucres, err := service.uc.Trigger().Plan(ctx, ucreq)
+		ucres, err := service.uc.Endeavor().Plan(ctx, ucreq)
 		if err != nil {
-			service.logger.Errorw("unable to plan attempt triggers", "err", err.Error())
+			service.logger.Errorw("unable to plan attempt endeavors", "err", err.Error())
 			return
 		}
 
-		service.logger.Infow("planned attempt triggers", "count", len(ucres.Success))
+		service.logger.Infow("planned attempt endeavors", "count", len(ucres.Success))
 	}
 }

@@ -13,8 +13,8 @@ import (
 )
 
 type TriggerPlanReq struct {
-	Size    int
 	Timeout int64
+	Size    int
 
 	ScanStart int64
 	ScanEnd   int64
@@ -23,8 +23,8 @@ type TriggerPlanReq struct {
 func (req *TriggerPlanReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("size", req.Size, 1),
 		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
+		validator.NumberGreaterThan("size", req.Size, 1),
 		validator.NumberGreaterThan("scan_start", req.ScanStart, req.ScanEnd),
 		validator.NumberLessThan("scan_end", req.ScanEnd, req.ScanStart),
 	)
@@ -97,8 +97,8 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 	}
 }
 
-// @TODO: remove it
-var key = "kanthor.usecases.attempt.trigger.scan"
+// @TODO: remove hardcode
+var key = "attempt.trigger.plan.cursor"
 
 func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Application, error) {
 	cursor, err := uc.infra.Cache.StringGet(ctx, key)
