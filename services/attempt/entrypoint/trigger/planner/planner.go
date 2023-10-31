@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/robfig/cron/v3"
-	"github.com/scrapnode/kanthor/datastore"
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
@@ -21,7 +21,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	ds datastore.Datastore,
+	db database.Database,
 	uc usecase.Attempt,
 ) patterns.Runnable {
 	logger = logger.With("service", "attempt.trigger.planner")
@@ -29,7 +29,7 @@ func New(
 		conf:   conf,
 		logger: logger,
 		infra:  infra,
-		ds:     ds,
+		db:     db,
 		uc:     uc,
 
 		cron: cron.New(),
@@ -44,7 +44,7 @@ type planner struct {
 	conf   *config.Config
 	logger logging.Logger
 	infra  *infrastructure.Infrastructure
-	ds     datastore.Datastore
+	db     database.Database
 	uc     usecase.Attempt
 
 	cron        *cron.Cron
@@ -62,7 +62,7 @@ func (service *planner) Start(ctx context.Context) error {
 		return ErrAlreadyStarted
 	}
 
-	if err := service.ds.Connect(ctx); err != nil {
+	if err := service.db.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -102,7 +102,7 @@ func (service *planner) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
-	if err := service.ds.Disconnect(ctx); err != nil {
+	if err := service.db.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
 
@@ -133,7 +133,7 @@ func (service *planner) Run(ctx context.Context) error {
 				return err
 			}
 
-			if err := service.ds.Liveness(); err != nil {
+			if err := service.db.Liveness(); err != nil {
 				return err
 			}
 
@@ -144,7 +144,7 @@ func (service *planner) Run(ctx context.Context) error {
 		}
 	}()
 
-	service.logger.Info("running", "schedule", service.conf.Trigger.Planner.Schedule)
+	service.logger.Infow("running", "schedule", service.conf.Trigger.Planner.Schedule)
 	service.cron.Run()
 	return nil
 }
@@ -157,7 +157,7 @@ func (service *planner) readiness() error {
 			return err
 		}
 
-		if err := service.ds.Readiness(); err != nil {
+		if err := service.db.Readiness(); err != nil {
 			return err
 		}
 

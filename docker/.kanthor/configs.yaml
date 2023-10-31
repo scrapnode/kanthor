@@ -5,7 +5,7 @@ nats_uri: &nats_uri nats://streaming:4222
 
 logger:
   pretty: true
-  level: debug
+  level: info
   with:
     env: localhost
 

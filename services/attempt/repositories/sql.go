@@ -3,91 +3,33 @@ package repositories
 import (
 	"sync"
 
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/logging"
-	"gorm.io/gorm"
+	"github.com/scrapnode/kanthor/services/attempt/repositories/db"
+	"github.com/scrapnode/kanthor/services/attempt/repositories/ds"
 )
 
-func NewSql(logger logging.Logger, ds datastore.Datastore) Repositories {
+func NewSql(logger logging.Logger, dbclient database.Database, dsclient datastore.Datastore) Repositories {
 	logger = logger.With("repositories", "sql")
-	return &sql{logger: logger, ds: ds}
+	return &sql{logger: logger, db: db.NewSql(logger, dbclient), ds: ds.NewSql(logger, dsclient)}
 }
 
 type sql struct {
 	logger logging.Logger
-	ds     datastore.Datastore
-
-	application *SqlApplication
-	endpoint    *SqlEndpoint
-	message     *SqlMessage
-	request     *SqlRequest
-	response    *SqlResponse
-	attempt     *SqlAttempt
-
-	mu sync.Mutex
+	db     db.Database
+	ds     ds.Datastore
+	mu     sync.Mutex
 }
 
-func (repo *sql) Application() Application {
+func (repo *sql) Database() db.Database {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
-
-	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.ds.Client().(*gorm.DB)}
-	}
-
-	return repo.application
+	return repo.db
 }
 
-func (repo *sql) Endpoint() Endpoint {
+func (repo *sql) Datastore() ds.Datastore {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
-
-	if repo.endpoint == nil {
-		repo.endpoint = &SqlEndpoint{client: repo.ds.Client().(*gorm.DB)}
-	}
-
-	return repo.endpoint
-}
-func (repo *sql) Message() Message {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.message == nil {
-		repo.message = &SqlMessage{client: repo.ds.Client().(*gorm.DB)}
-	}
-
-	return repo.message
-}
-
-func (repo *sql) Request() Request {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.request == nil {
-		repo.request = &SqlRequest{client: repo.ds.Client().(*gorm.DB)}
-	}
-
-	return repo.request
-}
-
-func (repo *sql) Response() Response {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.response == nil {
-		repo.response = &SqlResponse{client: repo.ds.Client().(*gorm.DB)}
-	}
-
-	return repo.response
-}
-
-func (repo *sql) Attempt() Attempt {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.attempt == nil {
-		repo.attempt = &SqlAttempt{client: repo.ds.Client().(*gorm.DB)}
-	}
-
-	return repo.attempt
+	return repo.ds
 }

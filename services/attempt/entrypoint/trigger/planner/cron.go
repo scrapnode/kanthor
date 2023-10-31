@@ -2,6 +2,7 @@ package planner
 
 import (
 	"context"
+	"time"
 
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
@@ -37,6 +38,6 @@ func RegisterCron(service *planner) func() {
 			return
 		}
 
-		service.logger.Infow("planned attempt triggers", "count", len(ucres.Success))
+		service.logger.Infow("planned attempt triggers", "count", len(ucres.Success), "from", ucres.From.Format(time.RFC3339), "to", ucres.To.Format(time.RFC3339))
 	}
 }

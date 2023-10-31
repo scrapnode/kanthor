@@ -6,6 +6,7 @@ package ioc
 import (
 	"github.com/google/wire"
 	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
@@ -22,6 +23,7 @@ func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable,
 		config.New,
 		logging.New,
 		infrastructure.New,
+		database.New,
 		datastore.New,
 		repositories.New,
 		usecase.New,
@@ -35,6 +37,7 @@ func AttemptEndeavorExecutor(provider configuration.Provider) (patterns.Runnable
 		config.New,
 		logging.New,
 		infrastructure.New,
+		database.New,
 		datastore.New,
 		repositories.New,
 		usecase.New,

@@ -29,20 +29,20 @@ func (req *EndeavorPlanReq) Validate() error {
 
 type EndeavorPlanRes struct {
 	Success []string
+	From    time.Time
+	To      time.Time
 }
 
 func (uc *endeavor) Plan(ctx context.Context, req *EndeavorPlanReq) (*EndeavorPlanRes, error) {
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
 	defer cancel()
 
+	from := uc.infra.Timer.Now().Add(time.Duration(req.ScanStart) * time.Millisecond)
+	to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
 	ok := []string{}
 
 	errc := make(chan error)
 	defer close(errc)
-
-	from := uc.infra.Timer.Now().Add(time.Duration(req.ScanStart) * time.Millisecond)
-	to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
-
 	go func() {
 		atts, err := uc.attempts(ctx, from, to)
 		if err != nil {
@@ -76,15 +76,15 @@ func (uc *endeavor) Plan(ctx context.Context, req *EndeavorPlanReq) (*EndeavorPl
 
 	select {
 	case err := <-errc:
-		return &EndeavorPlanRes{Success: ok}, err
+		return &EndeavorPlanRes{Success: ok, From: from, To: to}, err
 	case <-timeout.Done():
-		return &EndeavorPlanRes{Success: ok}, timeout.Err()
+		return &EndeavorPlanRes{Success: ok, From: from, To: to}, timeout.Err()
 	}
 }
 
 func (uc *endeavor) attempts(ctx context.Context, from, to time.Time) ([]entities.Attempt, error) {
 	matching := uc.infra.Timer.Now().UnixMilli()
-	attempts, err := uc.repositories.Attempt().Scan(ctx, from, to, matching)
+	attempts, err := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, matching)
 	if err != nil {
 		return []entities.Attempt{}, err
 	}

@@ -79,7 +79,7 @@ func (uc *endeavor) Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorEx
 			responses.Set(refId, response)
 
 			if entities.Is2xx(response.Status) {
-				err := uc.repositories.Attempt().MarkComplete(ctx, response.ReqId, response)
+				err := uc.repositories.Datastore().Attempt().MarkComplete(ctx, response.ReqId, response)
 				if err != nil {
 					ko.Set(refId, err)
 					return
@@ -91,7 +91,7 @@ func (uc *endeavor) Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorEx
 
 			if entities.Is5xx(response.Status) {
 				next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
-				err := uc.repositories.Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
+				err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
 				if err != nil {
 					ko.Set(refId, err)
 					return
@@ -130,7 +130,7 @@ func (uc *endeavor) requests(ctx context.Context, req *EndeavorExecReq) (map[str
 	for _, attempt := range req.Attempts {
 		reqIds = append(reqIds, attempt.ReqId)
 	}
-	requests, err := uc.repositories.Request().ListByIds(ctx, reqIds)
+	requests, err := uc.repositories.Datastore().Request().ListByIds(ctx, reqIds)
 	if err != nil {
 		return nil, err
 	}

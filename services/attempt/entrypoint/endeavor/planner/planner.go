@@ -144,7 +144,7 @@ func (service *planner) Run(ctx context.Context) error {
 		}
 	}()
 
-	service.logger.Info("running", "schedule", service.conf.Trigger.Planner.Schedule)
+	service.logger.Infow("running", "schedule", service.conf.Trigger.Planner.Schedule)
 	service.cron.Run()
 	return nil
 }

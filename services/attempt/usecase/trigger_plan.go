@@ -32,12 +32,16 @@ func (req *TriggerPlanReq) Validate() error {
 
 type TriggerPlanRes struct {
 	Success []string
+	From    time.Time
+	To      time.Time
 }
 
 func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanRes, error) {
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
 	defer cancel()
 
+	from := uc.infra.Timer.Now().Add(time.Duration(req.ScanStart) * time.Millisecond)
+	to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
 	ok := []string{}
 
 	errc := make(chan error)
@@ -49,14 +53,11 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 			errc <- err
 			return
 		}
-		tiers, err := uc.repositories.Application().GetTiers(ctx, apps)
+		tiers, err := uc.repositories.Database().Application().GetTiers(ctx, apps)
 		if err != nil {
 			errc <- err
 			return
 		}
-
-		from := uc.infra.Timer.Now().Add(time.Duration(req.ScanStart) * time.Millisecond)
-		to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
 
 		events := map[string]*streaming.Event{}
 		for _, app := range apps {
@@ -91,9 +92,9 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 
 	select {
 	case err := <-errc:
-		return &TriggerPlanRes{Success: ok}, err
+		return &TriggerPlanRes{Success: ok, From: from, To: to}, err
 	case <-timeout.Done():
-		return &TriggerPlanRes{Success: ok}, timeout.Err()
+		return &TriggerPlanRes{Success: ok, From: from, To: to}, timeout.Err()
 	}
 }
 
@@ -107,7 +108,7 @@ func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Appli
 		return nil, err
 	}
 
-	apps, err := uc.repositories.Application().Scan(ctx, size, cursor)
+	apps, err := uc.repositories.Database().Application().Scan(ctx, size, cursor)
 	if err != nil {
 		return nil, err
 	}
