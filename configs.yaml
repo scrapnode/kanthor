@@ -124,9 +124,10 @@ attempt:
   trigger:
     planner:
       schedule: "*/15 * * * *"
-      timeout: 600000 # 60s
+      timeout: 60000 # 60s
       scan_start: -7200000 # 1h30m
       scan_end: -1800000 # 30m
+      size: 500
     executor:
       timeout: 60000 # 60s
       concurrency: 500
@@ -134,7 +135,7 @@ attempt:
   endeavour:
     planner:
       schedule: "*/5 * * * *"
-      timeout: 600000 # 60s
+      timeout: 60000 # 60s
       scan_start: -7200000 # 1h30m
       scan_end: -1800000 # 30m
     executor:

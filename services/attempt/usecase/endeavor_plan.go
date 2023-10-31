@@ -22,8 +22,7 @@ func (req *EndeavorPlanReq) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
-		validator.NumberGreaterThan("scan_start", req.ScanStart, req.ScanEnd),
-		validator.NumberLessThan("scan_end", req.ScanEnd, req.ScanStart),
+		validator.NumberLessThan("scan_start", req.ScanStart, req.ScanEnd),
 	)
 }
 

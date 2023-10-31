@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
 
@@ -32,6 +33,11 @@ func RegisterCron(service *planner) func() {
 			ScanStart: service.conf.Trigger.Planner.ScanStart,
 			ScanEnd:   service.conf.Trigger.Planner.ScanEnd,
 		}
+		if err := ucreq.Validate(); err != nil {
+			service.logger.Errorw("invalid trigger plan request", "err", err.Error(), "ucreq", utils.Stringify(ucreq))
+			return
+		}
+
 		ucres, err := service.uc.Trigger().Plan(ctx, ucreq)
 		if err != nil {
 			service.logger.Errorw("unable to plan attempt triggers", "err", err.Error())

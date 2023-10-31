@@ -127,6 +127,7 @@ attempt:
       timeout: 600000 # 60s
       scan_start: -7200000 # 1h30m
       scan_end: -300000 # 5m
+      size: 500
     executor:
       timeout: 60000 # 60s
       concurrency: 500

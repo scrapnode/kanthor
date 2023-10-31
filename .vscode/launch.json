@@ -12,7 +12,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6061"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6061",
+        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "sdk"],
       "preLaunchTask": "make"
@@ -25,7 +26,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6062"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6062",
+        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "portal"],
       "preLaunchTask": "make"
@@ -38,7 +40,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6063"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6063",
+        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "scheduler"],
       "preLaunchTask": "make"
@@ -51,7 +54,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6064"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6064",
+        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "dispatcher"],
       "preLaunchTask": "make"
@@ -64,7 +68,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6065"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6065",
+        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "storage"],
       "preLaunchTask": "make"
@@ -77,7 +82,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6067"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
+        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "attempt.trigger.planner"],
       "preLaunchTask": "make"
@@ -90,7 +96,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6067"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
+        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "attempt.trigger.executor"],
       "preLaunchTask": "make"
