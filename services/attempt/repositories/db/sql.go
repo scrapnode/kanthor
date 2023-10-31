@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/scrapnode/kanthor/database"
-	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/logging"
 	"gorm.io/gorm"
 )
@@ -17,7 +16,6 @@ func NewSql(logger logging.Logger, db database.Database) Database {
 type sql struct {
 	logger logging.Logger
 	db     database.Database
-	ds     datastore.Datastore
 
 	application *SqlApplication
 	endpoint    *SqlEndpoint
@@ -30,7 +28,7 @@ func (repo *sql) Application() Application {
 	defer repo.mu.Unlock()
 
 	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.ds.Client().(*gorm.DB)}
+		repo.application = &SqlApplication{client: repo.db.Client().(*gorm.DB)}
 	}
 
 	return repo.application
@@ -41,7 +39,7 @@ func (repo *sql) Endpoint() Endpoint {
 	defer repo.mu.Unlock()
 
 	if repo.endpoint == nil {
-		repo.endpoint = &SqlEndpoint{client: repo.ds.Client().(*gorm.DB)}
+		repo.endpoint = &SqlEndpoint{client: repo.db.Client().(*gorm.DB)}
 	}
 
 	return repo.endpoint
