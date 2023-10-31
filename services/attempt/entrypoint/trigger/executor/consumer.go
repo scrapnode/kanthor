@@ -49,6 +49,8 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 			}
 		}
 
+		service.logger.Infow("consumed attempt", "count", len(ucres.Success))
+
 		return retruning
 	}
 }

@@ -356,11 +356,17 @@ func (uc *trigger) create(
 
 	for _, request := range requests {
 		attempts = append(attempts, entities.Attempt{
-			ReqId:        request.Id,
-			AppId:        request.AppId,
-			Tier:         request.Tier,
-			ScheduleNext: next.UnixMilli(),
-			ScheduledAt:  now.UnixMilli(),
+			ReqId: request.Id,
+			AppId: request.AppId,
+			Tier:  request.Tier,
+
+			ScheduledAt: now.UnixMilli(),
+			Status:      0,
+
+			ScheduleCounter: 0,
+			ScheduleNext:    next.UnixMilli(),
+
+			CompletedAt: 0,
 		})
 	}
 

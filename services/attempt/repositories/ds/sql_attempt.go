@@ -17,6 +17,7 @@ type SqlAttempt struct {
 }
 
 var AttemptMapping = map[string]func(doc entities.Attempt) any{
+	"app_id":           func(doc entities.Attempt) any { return doc.AppId },
 	"req_id":           func(doc entities.Attempt) any { return doc.ReqId },
 	"tier":             func(doc entities.Attempt) any { return doc.Tier },
 	"status":           func(doc entities.Attempt) any { return doc.Status },

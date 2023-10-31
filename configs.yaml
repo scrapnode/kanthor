@@ -125,7 +125,7 @@ attempt:
     planner:
       schedule: "*/15 * * * *"
       timeout: 60000 # 60s
-      scan_start: -7200000 # 1h30m
+      scan_start: -86400000 # 24h
       scan_end: -1800000 # 30m
       size: 500
     executor:
@@ -136,7 +136,7 @@ attempt:
     planner:
       schedule: "*/5 * * * *"
       timeout: 60000 # 60s
-      scan_start: -7200000 # 1h30m
+      scan_start: -86400000 # 24h
       scan_end: -1800000 # 30m
     executor:
       timeout: 60000 # 60s
