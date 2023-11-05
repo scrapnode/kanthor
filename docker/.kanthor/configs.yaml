@@ -73,9 +73,9 @@ infrastructure:
     nats:
       replicas: 0
       limits:
-        msg_bytes: 16000
-        msgs: 500000
-        bytes: 6000000000
+        msg_bytes: 32000
+        msgs: 1000000
+        bytes: 32000000000
         age: 259200000 #3d
     publisher:
       timeout: 30000 # 30s
