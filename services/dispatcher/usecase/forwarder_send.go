@@ -155,7 +155,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	if err != nil {
 		uc.logger.Errorw(err.Error(), "req_id", request.Id, "ep_id", request.EpId)
 		response.Error = err.Error()
-		response.Status = -1
+		response.Status = sender.Status(err.Error())
 	}
 
 	if res != nil {
