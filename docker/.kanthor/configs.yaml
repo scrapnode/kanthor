@@ -113,7 +113,7 @@ scheduler:
 dispatcher:
   forwarder:
     send:
-      concurrency: 300
+      concurrency: 500
 
 storage:
   warehouse:
