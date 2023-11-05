@@ -106,6 +106,7 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 }
 
 func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entities.Response {
+	// TODO: should notify entirely system about open circuit breaker open state of this endpoint
 	res, err := circuitbreaker.Do[sender.Response](
 		uc.infra.CircuitBreaker,
 		request.EpId,
