@@ -195,7 +195,7 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic stri
 		MaxRequestBatch: subscriber.conf.Subscriber.Concurrency,
 		// if MaxAckPending is 30000, and we are processing 29999 message already
 		// then we are going to request 1000, we will only get 1
-		MaxAckPending: subscriber.conf.Subscriber.Concurrency * 100,
+		MaxAckPending: subscriber.conf.Subscriber.Throughput,
 
 		// internal config
 		DeliverPolicy: natscore.DeliverAllPolicy,

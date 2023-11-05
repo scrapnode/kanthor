@@ -87,13 +87,15 @@ type SubscriberConfig struct {
 	MaxRetry    int   `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
 	Timeout     int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 	Concurrency int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
+	Throughput  int   `json:"throughput" yaml:"throughput" mapstructure:"throughput"`
 }
 
 func (conf *SubscriberConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("streaming.conf.publisher.concurrency", conf.Concurrency, 0),
-		validator.NumberGreaterThan("streaming.conf.publisher.timeout", conf.Timeout, 1000),
 		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.max_deliver", conf.MaxRetry, 1),
+		validator.NumberGreaterThan("streaming.conf.publisher.timeout", conf.Timeout, 1000),
+		validator.NumberGreaterThan("streaming.conf.publisher.concurrency", conf.Concurrency, 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.publisher.throughput", conf.Throughput, conf.Concurrency),
 	)
 }
