@@ -136,11 +136,11 @@ func (streaming *nats) stream() (*natscore.StreamInfo, error) {
 		// editable
 		Replicas: streaming.conf.Nats.Replicas,
 		// project.Subject(">") "We accept all subjects that belong to the configured project and tier
-		Subjects:   []string{project.Subject(">")},
-		MaxMsgs:    streaming.conf.Nats.Limits.Msgs,
-		MaxMsgSize: streaming.conf.Nats.Limits.MsgBytes,
-		MaxBytes:   streaming.conf.Nats.Limits.Bytes,
-		MaxAge:     time.Duration(streaming.conf.Nats.Limits.Age) * time.Second,
+		Subjects:          []string{project.Subject(">")},
+		MaxBytes:          streaming.conf.Nats.Limits.Size,
+		MaxMsgSize:        streaming.conf.Nats.Limits.MsgSize,
+		MaxMsgsPerSubject: streaming.conf.Nats.Limits.MsgCount,
+		MaxAge:            time.Duration(streaming.conf.Nats.Limits.MsgAge) * time.Millisecond,
 		// hardcode
 		Retention: natscore.LimitsPolicy,
 		Discard:   natscore.DiscardOld,

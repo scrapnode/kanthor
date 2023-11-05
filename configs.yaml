@@ -73,10 +73,10 @@ infrastructure:
     nats:
       replicas: 0
       limits:
-        msg_bytes: 32000
-        msgs: 1000000
-        bytes: 32000000000
-        age: 259200000 #3d
+        size: 12884901888 # 12Gi or 70% of 16Gi
+        msg_size: 32768 # 32kb
+        msg_count: 100000 # 100k per subject
+        msg_age: 259200000 # 3d
     publisher:
       timeout: 30000 # 30s
       rate_limit: 300

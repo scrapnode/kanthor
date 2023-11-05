@@ -51,10 +51,10 @@ func (conf *Config) Validate() error {
 type NatsConfig struct {
 	Replicas int `json:"replicas" yaml:"replicas" mapstructure:"replicas"`
 	Limits   struct {
-		Msgs     int64 `json:"msgs" yaml:"msgs" mapstructure:"msgs"`
-		MsgBytes int32 `json:"msg_bytes" yaml:"msg_bytes" mapstructure:"msg_bytes"`
-		Bytes    int64 `json:"bytes" yaml:"bytes" mapstructure:"bytes"`
-		Age      int64 `json:"age" yaml:"age" mapstructure:"age"`
+		Size     int64 `json:"size" yaml:"size" mapstructure:"size"`
+		MsgSize  int32 `json:"msg_size" yaml:"msg_size" mapstructure:"msg_size"`
+		MsgCount int64 `json:"msg_count" yaml:"msg_count" mapstructure:"msg_count"`
+		MsgAge   int64 `json:"msg_age" yaml:"msg_age" mapstructure:"msg_age"`
 	} `json:"limits" yaml:"limits" mapstructure:"limits"`
 }
 
@@ -62,10 +62,10 @@ func (conf *NatsConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("streaming.conf.nats.replicas", conf.Replicas, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msgs", conf.Limits.Msgs, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msg_bytes", int(conf.Limits.MsgBytes), 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.bytes", int(conf.Limits.Bytes), 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.age", int(conf.Limits.Age), 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.size", conf.Limits.Size, 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msg_size", conf.Limits.MsgSize, 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msg_bytes", conf.Limits.MsgCount, 0),
+		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.age", conf.Limits.MsgAge, 0),
 	)
 }
 
