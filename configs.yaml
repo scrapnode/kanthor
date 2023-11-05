@@ -75,7 +75,7 @@ infrastructure:
       limits:
         msg_bytes: 16000
         msgs: 500000
-        bytes: 6400000000
+        bytes: 6000000000
         age: 259200000 #3d
     publisher:
       timeout: 30000 # 30s
