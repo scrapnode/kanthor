@@ -46,7 +46,7 @@ infrastructure:
 
   idempotency:
     uri: *redis_uri
-    time_to_live: 86400000 # 1d
+    time_to_live: 300000 # 5m
 
   distributed_lock_manager:
     uri: *redis_uri
@@ -54,7 +54,7 @@ infrastructure:
 
   cache:
     uri: *redis_uri
-    time_to_live: 3600000 # 1h
+    time_to_live: 43200000 # 12h
 
   authorizator:
     engine: casbin

@@ -46,7 +46,7 @@ infrastructure:
 
   idempotency:
     uri: *redis_uri
-    time_to_live: 86400000 # 1d
+    time_to_live: 300000 # 5m
 
   distributed_lock_manager:
     uri: *redis_uri
@@ -54,7 +54,7 @@ infrastructure:
 
   cache:
     uri: *redis_uri
-    time_to_live: 3600000 # 1h
+    time_to_live: 43200000 # 12h
 
   authorizator:
     engine: casbin
@@ -124,22 +124,22 @@ storage:
 attempt:
   trigger:
     planner:
-      schedule: "*/3 * * * *"
+      schedule: "*/15 * * * *"
       timeout: 60000 # 60s
       scan_start: -86400000 # 24h
-      scan_end: -300000 # 5m
+      scan_end: -1800000 # 30m
       size: 500
     executor:
       timeout: 60000 # 60s
       concurrency: 500
-      arrange_delay: 300000 # 5m
+      arrange_delay: 1800000 # 30m
   endeavor:
     planner:
-      schedule: "*/3 * * * *"
+      schedule: "*/5 * * * *"
       timeout: 60000 # 60s
       scan_start: -86400000 # 24h
-      scan_end: -300000 # 5m
+      scan_end: -1800000 # 30m
     executor:
       timeout: 60000 # 60s
       concurrency: 500
-      reschedule_delay: 300000 # 5m
+      reschedule_delay: 1800000 # 30m
