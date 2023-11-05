@@ -1,12 +1,12 @@
 #!/bin/sh
 set -e
 
-export TEST_VUS=${TEST_VUS:-"1"}
-export TEST_DURATION_START=${TEST_DURATION_START:-"10s"}
-export TEST_DURATION_MID=${TEST_DURATION_MID:-"30s"}
-export TEST_DURATION_END=${K6_MID_DURATION:-"10s"}
-export API_CREDS_PATH=${API_CREDS_PATH:-"/tmp"}
-export API_ENDPOINT=${API_ENDPOINT:-"http://localhost:8180"}
+TEST_VUS=${TEST_VUS:-"1"}
+TEST_DURATION_START=${TEST_DURATION_START:-"10s"}
+TEST_DURATION_MID=${TEST_DURATION_MID:-"30s"}
+TEST_DURATION_END=${K6_MID_DURATION:-"10s"}
+API_CREDS_PATH=${API_CREDS_PATH:-"/tmp"}
+API_ENDPOINT=${API_ENDPOINT:-"http://localhost:8180"}
 
 docker compose -f docker-compose.yaml -f docker-compose.monitoring.yaml -f docker-compose.debugging.yaml down
 docker volume prune -f
@@ -20,7 +20,7 @@ go run main.go migrate database up && go run main.go migrate datastore up
 docker compose -f docker-compose.debugging.yaml up -d
 docker compose -f docker-compose.yaml up -d sdk portal scheduler dispatcher storage
 
-export ENABLE_ATTEMPT=${ENABLE_ATTEMPT:-""}
+ENABLE_ATTEMPT=${ENABLE_ATTEMPT:-""}
 if [ $ENABLE_ATTEMPT != "" ]; then
     docker compose -f docker-compose.yaml up -d attempt-trigger-planner attempt-trigger-executor
 fi
