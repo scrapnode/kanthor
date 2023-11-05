@@ -46,7 +46,7 @@ infrastructure:
 
   idempotency:
     uri: *redis_uri
-    time_to_live: 86400000 # 1 day
+    time_to_live: 86400000 # 1d
 
   distributed_lock_manager:
     uri: *redis_uri
