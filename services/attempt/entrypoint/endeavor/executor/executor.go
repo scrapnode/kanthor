@@ -114,7 +114,7 @@ func (service *executor) Stop(ctx context.Context) error {
 }
 
 func (service *executor) Run(ctx context.Context) error {
-	if err := service.subscriber.Sub(ctx, constants.TopicTrigger, RegisterConsumer(service)); err != nil {
+	if err := service.subscriber.Sub(ctx, constants.TopicEndeavor, RegisterConsumer(service)); err != nil {
 		return err
 	}
 

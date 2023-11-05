@@ -7,6 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/transformation"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -70,6 +71,9 @@ func (uc *endeavor) Plan(ctx context.Context, req *EndeavorPlanReq) (*EndeavorPl
 			ok = append(ok, key)
 		}
 
+		// next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
+		// err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
+
 		errc <- nil
 	}()
 
@@ -87,21 +91,23 @@ func (uc *endeavor) attempts(ctx context.Context, from, to time.Time) ([]entitie
 	if err != nil {
 		return []entities.Attempt{}, err
 	}
+	uc.logger.Debugw("found records", "record_count", len(attempts))
 
 	returning := []entities.Attempt{}
 	for _, attempt := range attempts {
-		// @TODO: remove hardcode
-		if attempt.Status == 0 {
-			attempts = append(attempts, attempt)
+		if attempt.Status == sender.StatusNone {
+			returning = append(returning, attempt)
 			continue
 		}
 
-		if entities.Is5xx(attempt.Status) {
-			attempts = append(attempts, attempt)
+		if sender.Is5xxStatus(attempt.Status) {
+			returning = append(returning, attempt)
 			continue
 		}
 
 		uc.logger.Warnw("ignore attempt", "req_id", attempt.ReqId, "status", attempt.Status)
 	}
+
+	uc.logger.Debugw("evaluate records", "record_count", len(returning))
 	return returning, nil
 }

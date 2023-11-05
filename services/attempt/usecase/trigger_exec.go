@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
@@ -264,7 +265,7 @@ func (uc *trigger) hash(requests map[string]ds.Req, responses map[string]ds.Res)
 		}
 
 		// status is ok, saved the success response id
-		if entities.Is2xx(response.Status) {
+		if sender.Is2xxStatus(response.Status) {
 			returning[key] = response.Id
 		}
 	}

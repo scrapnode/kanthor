@@ -7,7 +7,7 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-var SafeUnixDiff = time.Second * 7
+var SafeUnixDiff = time.Second * 10
 
 // New return a Sortable Unique IDentifier
 // IMPORTANT: ksuid is replied on Unix timestamp so the datetime factor is only correct at second level
@@ -20,7 +20,7 @@ func New(ns string) string {
 
 // AfterTime uses SafeUnixDiff as factor to make sure we can get an id that is always less than the given time
 func BeforeTime(t time.Time) string {
-	id, err := ksuid.NewRandomWithTime(t.Add(-SafeUnixDiff))
+	id, err := ksuid.NewRandomWithTime(t.Add(SafeUnixDiff))
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't generate KSUID, inconceivable! error: %v", err))
 	}
@@ -29,7 +29,7 @@ func BeforeTime(t time.Time) string {
 
 // AfterTime uses SafeUnixDiff as factor to make sure we can get an id that is always greater than the given time
 func AfterTime(t time.Time) string {
-	id, err := ksuid.NewRandomWithTime(t.Add(SafeUnixDiff))
+	id, err := ksuid.NewRandomWithTime(t.Add(-SafeUnixDiff))
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't generate KSUID, inconceivable! error: %v", err))
 	}

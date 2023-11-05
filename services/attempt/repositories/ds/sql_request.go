@@ -36,6 +36,10 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string, 
 		Select(selects).
 		Find(&records)
 
+	if len(records) == 0 {
+		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
+	}
+
 	returning := map[string]Req{}
 	for _, record := range records {
 		returning[record.Id] = record
@@ -45,7 +49,7 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string, 
 
 func (sql *SqlRequest) ListByIds(ctx context.Context, ids []string) ([]entities.Request, error) {
 	rows, err := sql.client.
-		Table(entities.TableMsg).
+		Table(entities.TableReq).
 		Where("id IN ?", ids).
 		Select([]string{"id", "timestamp", "msg_id", "ep_id", "tier", "app_id", "type", "metadata", "headers", "body", "uri", "method"}).
 		Rows()
@@ -55,7 +59,11 @@ func (sql *SqlRequest) ListByIds(ctx context.Context, ids []string) ([]entities.
 	}
 
 	var records []entities.Request
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			sql.client.Logger.Error(ctx, err.Error())
+		}
+	}()
 	for rows.Next() {
 		record := entities.Request{}
 		var metadata string
@@ -89,6 +97,8 @@ func (sql *SqlRequest) ListByIds(ctx context.Context, ids []string) ([]entities.
 			return []entities.Request{}, err
 		}
 		record.Body = body
+
+		records = append(records, record)
 	}
 
 	return records, nil

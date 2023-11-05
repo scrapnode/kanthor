@@ -5,7 +5,7 @@ nats_uri: &nats_uri nats://streaming:4222
 
 logger:
   pretty: true
-  level: info
+  level: debug
   with:
     env: localhost
 
@@ -124,7 +124,7 @@ attempt:
   trigger:
     planner:
       schedule: "*/3 * * * *"
-      timeout: 600000 # 60s
+      timeout: 60000 # 60s
       scan_start: -86400000 # 24h
       scan_end: -300000 # 5m
       size: 500
@@ -132,10 +132,10 @@ attempt:
       timeout: 60000 # 60s
       concurrency: 500
       arrange_delay: 300000 # 5m
-  endeavour:
+  endeavor:
     planner:
       schedule: "*/3 * * * *"
-      timeout: 600000 # 60s
+      timeout: 60000 # 60s
       scan_start: -86400000 # 24h
       scan_end: -300000 # 5m
     executor:

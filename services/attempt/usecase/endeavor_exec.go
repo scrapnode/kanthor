@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
@@ -78,18 +77,7 @@ func (uc *endeavor) Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorEx
 			response := uc.send(ctx, request)
 			responses.Set(refId, response)
 
-			if entities.Is2xx(response.Status) {
-				err := uc.repositories.Datastore().Attempt().MarkComplete(ctx, response.ReqId, response)
-				if err != nil {
-					ko.Set(refId, err)
-					return
-				}
-
-				ok.Append(refId)
-				return
-			}
-
-			if entities.Is5xx(response.Status) {
+			if sender.Is5xxStatus(response.Status) {
 				next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
 				err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
 				if err != nil {
@@ -100,6 +88,15 @@ func (uc *endeavor) Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorEx
 				ok.Append(refId)
 				return
 			}
+
+			err := uc.repositories.Datastore().Attempt().MarkComplete(ctx, response.ReqId, response)
+			if err != nil {
+				ko.Set(refId, err)
+				return
+			}
+
+			ok.Append(refId)
+
 		})
 	}
 	p.Wait()
@@ -161,8 +158,8 @@ func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entiti
 
 			// sending is success, but we got remote server error
 			// must use custom error here to trigger circuit breaker
-			if entities.Is5xx(res.Status) {
-				return res, errors.New(http.StatusText(res.Status))
+			if sender.Is5xxStatus(res.Status) {
+				return res, errors.New(sender.StatusText(res.Status))
 			}
 
 			return res, nil
@@ -192,7 +189,7 @@ func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entiti
 	if err != nil {
 		uc.logger.Errorw(err.Error(), "req_id", request.Id, "ep_id", request.EpId)
 		response.Error = err.Error()
-		response.Status = -1
+		response.Status = sender.Status(err.Error())
 	}
 
 	if res != nil {

@@ -230,6 +230,46 @@ services:
       - serve
       - attempt.trigger.executor
 
+  attempt-endeavor-planner:
+    depends_on:
+      streaming:
+        condition: service_started
+      warehouse:
+        condition: service_healthy
+      migration-datastore:
+        condition: service_started
+    container_name: kanthor-services-attempt-endeavor-planner
+    image: kanthorlabs/kanthor:latest
+    restart: unless-stopped
+    networks:
+      - kanthor
+    volumes:
+      - ./docker/.kanthor:/root/.kanthor
+    command:
+      - kanthor
+      - serve
+      - attempt.endeavor.planner
+
+  attempt-endeavor-executor:
+    depends_on:
+      streaming:
+        condition: service_started
+      warehouse:
+        condition: service_healthy
+      migration-datastore:
+        condition: service_started
+    container_name: kanthor-services-attempt-endeavor-executor
+    image: kanthorlabs/kanthor:latest
+    restart: unless-stopped
+    networks:
+      - kanthor
+    volumes:
+      - ./docker/.kanthor:/root/.kanthor
+    command:
+      - kanthor
+      - serve
+      - attempt.endeavor.executor
+
 networks:
   kanthor:
     name: kanthor

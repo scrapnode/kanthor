@@ -33,8 +33,12 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 	if cursor != "" {
 		tx = tx.Where("id", ">", cursor)
 	}
-
 	tx = tx.Find(&records)
+
+	if len(records) == 0 {
+		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
+	}
+
 	return records, tx.Error
 }
 

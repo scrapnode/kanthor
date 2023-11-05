@@ -101,6 +101,34 @@
       },
       "args": ["serve", "attempt.trigger.executor"],
       "preLaunchTask": "make"
+    },
+    {
+      "name": "attempt.endeavor.planner",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceRoot}",
+      "showLog": true,
+      "env": {
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
+        "KANTHOR_ENV": "development"
+      },
+      "args": ["serve", "attempt.endeavor.planner"],
+      "preLaunchTask": "make"
+    },
+    {
+      "name": "attempt.endeavor.executor",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceRoot}",
+      "showLog": true,
+      "env": {
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
+        "KANTHOR_ENV": "development"
+      },
+      "args": ["serve", "attempt.endeavor.executor"],
+      "preLaunchTask": "make"
     }
   ]
 }

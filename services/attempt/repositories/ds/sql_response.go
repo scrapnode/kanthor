@@ -35,6 +35,10 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string,
 		Select(selects).
 		Find(&records)
 
+	if len(records) == 0 {
+		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
+	}
+
 	returning := map[string]Res{}
 	for _, record := range records {
 		returning[record.Id] = record

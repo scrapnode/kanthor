@@ -132,7 +132,7 @@ attempt:
       timeout: 60000 # 60s
       concurrency: 500
       arrange_delay: 1800000 # 30m
-  endeavour:
+  endeavor:
     planner:
       schedule: "*/5 * * * *"
       timeout: 60000 # 60s

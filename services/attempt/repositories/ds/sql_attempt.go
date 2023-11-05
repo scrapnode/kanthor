@@ -70,25 +70,29 @@ func (sql *SqlAttempt) BulkCreate(ctx context.Context, docs []entities.Attempt) 
 
 func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, matching int64) ([]entities.Attempt, error) {
 	// convert timestamp to safe id, so we can the table efficiently with primary key
-	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
-	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
+	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
+	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
 
 	// @TODO: use chunk to fetch
 	var records []entities.Attempt
 	tx := sql.client.
-		Table(entities.TableMsg).
-		Where("id > ?", low).
-		Where("id < ?", high).
+		Table(entities.TableAtt).
+		Where("req_id > ?", low).
+		Where("req_id < ?", high).
 		Where("schedule_next <= ?", matching).
 		Order("req_id DESC").
 		Find(&records)
+
+	if len(records) == 0 {
+		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
+	}
 
 	return records, tx.Error
 }
 
 func (sql *SqlAttempt) MarkComplete(ctx context.Context, reqId string, res *entities.Response) error {
 	statement := fmt.Sprintf(
-		"UPDATE %s SET completed_at = ?, status = ?, res_id = ? WHERE id = ?",
+		"UPDATE %s SET completed_at = ?, status = ?, res_id = ? WHERE req_id = ?",
 		entities.TableAtt,
 	)
 
@@ -101,7 +105,7 @@ func (sql *SqlAttempt) MarkComplete(ctx context.Context, reqId string, res *enti
 
 func (sql *SqlAttempt) MarkReschedule(ctx context.Context, reqId string, ts int64) error {
 	statement := fmt.Sprintf(
-		"UPDATE %s SET schedule_counter = schedule_counter + 1, schedule_next = ?",
+		"UPDATE %s SET schedule_counter = schedule_counter + 1, schedule_next = ? WHERE req_id = ?",
 		entities.TableAtt,
 	)
 

@@ -45,11 +45,3 @@ func (entity *Response) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
 }
-
-func Is5xx(status int) bool {
-	return int(status/100) == 5
-}
-
-func Is2xx(status int) bool {
-	return int(status/100) == 2
-}
