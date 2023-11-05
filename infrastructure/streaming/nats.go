@@ -132,8 +132,7 @@ func (streaming *nats) stream() (*natscore.StreamInfo, error) {
 	// prepare configurations
 	sconf := &natscore.StreamConfig{
 		// non-editable
-		Name:    streaming.conf.Name,
-		Storage: natscore.MemoryStorage,
+		Name: streaming.conf.Name,
 		// editable
 		Replicas: streaming.conf.Nats.Replicas,
 		// project.Subject(">") "We accept all subjects that belong to the configured project and tier
