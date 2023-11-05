@@ -188,11 +188,14 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic stri
 		FilterSubject: fmt.Sprintf("%s.>", topic),
 
 		// advance config
-		MaxDeliver: subscriber.conf.Subscriber.MaxRetry,
-		// buffer 10% of timeout to make sure we have time to do other stuffs
-		AckWait: time.Millisecond * time.Duration(subscriber.conf.Subscriber.Timeout*110/100),
+		MaxDeliver: subscriber.conf.Subscriber.MaxRetry + 1,
+		// buffer 25% of timeout to make sure we have time to do other stuffs
+		AckWait: time.Millisecond * time.Duration(subscriber.conf.Subscriber.Timeout*125/100),
 		// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
 		MaxRequestBatch: subscriber.conf.Subscriber.Concurrency,
+		// if MaxAckPending is 30000, and we are processing 29999 message already
+		// then we are going to request 1000, we will only get 1
+		MaxAckPending: subscriber.conf.Subscriber.Concurrency * 30,
 
 		// internal config
 		DeliverPolicy: natscore.DeliverAllPolicy,

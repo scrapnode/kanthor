@@ -111,6 +111,8 @@ func NewConsumer(service *storage) streaming.SubHandler {
 			}
 		}
 
+		service.logger.Infow("put entities", "ok_count", len(ucres.Success), "ko_count", len(ucres.Error))
+
 		return retruning
 	}
 }

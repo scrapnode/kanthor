@@ -49,6 +49,8 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 			return retruning
 		}
 
+		service.logger.Infow("scheduled requests for messages", "ok_count", len(ucres.Success), "ko_count", len(ucres.Error))
+
 		return ucres.Error
 	}
 }
