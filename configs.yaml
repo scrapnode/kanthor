@@ -76,8 +76,7 @@ infrastructure:
         msg_bytes: 32000
         msgs: 1000000
         bytes: 3200000000
-        # 60*60*24*3 = 3d
-        age: 259200
+        age: 259200000 #3d
     publisher:
       timeout: 30000 # 30s
       rate_limit: 300
