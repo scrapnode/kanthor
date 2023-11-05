@@ -154,7 +154,6 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	// IMPORTANT: we have an anti-pattern response that returns both error && response to trigger circuit breaker
 	// so we should test both error and response seperately
 	if err != nil {
-		uc.logger.Errorw(err.Error(), "req_id", request.Id, "ep_id", request.EpId)
 		response.Error = err.Error()
 		response.Status = sender.Status(err.Error())
 	}
