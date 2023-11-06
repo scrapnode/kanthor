@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/scrapnode/kanthor/datastore/config"
 	"github.com/scrapnode/kanthor/logging"
@@ -87,6 +88,15 @@ func (ds *sql) Connect(ctx context.Context) error {
 		return err
 	}
 	ds.client = client
+
+	db, err := ds.client.DB()
+	if err != nil {
+		return err
+	}
+	db.SetConnMaxLifetime(time.Second * 60)
+	db.SetConnMaxIdleTime(time.Second * 15)
+	db.SetMaxIdleConns(1)
+	db.SetMaxOpenConns(100)
 
 	ds.status = patterns.StatusConnected
 	ds.logger.Info("connected")
