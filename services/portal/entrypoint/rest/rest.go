@@ -13,9 +13,9 @@ import (
 	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/portal/config"
-	"github.com/scrapnode/kanthor/services/portal/entrypoint/rest/docs"
 	"github.com/scrapnode/kanthor/services/portal/entrypoint/rest/middlewares"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 	swaggerfiles "github.com/swaggo/files"
@@ -94,7 +94,7 @@ func (service *portal) router() (*gin.Engine, error) {
 		swagger.GET("/*any", ginswagger.WrapHandler(
 			swaggerfiles.Handler,
 			ginswagger.PersistAuthorization(true),
-			ginswagger.InstanceName(docs.SwaggerInfoPortal.InfoInstanceName),
+			ginswagger.InstanceName(openapi.SwaggerInfoPortal.InfoInstanceName),
 		))
 	}
 

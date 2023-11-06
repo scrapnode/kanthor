@@ -12,9 +12,9 @@ import (
 	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/sdk/config"
-	"github.com/scrapnode/kanthor/services/sdk/entrypoint/rest/docs"
 	"github.com/scrapnode/kanthor/services/sdk/entrypoint/rest/middlewares"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 	swaggerfiles "github.com/swaggo/files"
@@ -89,7 +89,7 @@ func (service *sdk) router() *gin.Engine {
 		swagger.GET("/*any", ginswagger.WrapHandler(
 			swaggerfiles.Handler,
 			ginswagger.PersistAuthorization(true),
-			ginswagger.InstanceName(docs.SwaggerInfoSdk.InfoInstanceName),
+			ginswagger.InstanceName(openapi.SwaggerInfoSdk.InfoInstanceName),
 		))
 	}
 

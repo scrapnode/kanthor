@@ -3,9 +3,9 @@ set -e
 
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )";
 
-sh "$SCRIPT_DIR/ci_vet.sh"
-sh "$SCRIPT_DIR/gen_docs.sh"
+sh "$SCRIPT_DIR/gen_swagger.sh"
 sh "$SCRIPT_DIR/gen_ioc.sh"
+sh "$SCRIPT_DIR/ci_vet.sh"
 
 find . -type f -name 'checksum' -exec git add {} \;
 
