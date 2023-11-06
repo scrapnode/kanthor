@@ -10,30 +10,29 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceGetReq struct {
+type WorkspaceGetIn struct {
 	Id string
 }
 
-func (req *WorkspaceGetReq) Validate() error {
+func (in *WorkspaceGetIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("id", req.Id, entities.IdNsWs),
+		validator.StringStartsWith("id", in.Id, entities.IdNsWs),
 	)
 }
 
-type WorkspaceGetRes struct {
+type WorkspaceGetOut struct {
 	Workspace *entities.Workspace
 }
 
-func (uc *workspace) Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error) {
-	key := utils.Key("portal", req.Id)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*WorkspaceGetRes, error) {
-		ws, err := uc.repositories.Workspace().Get(ctx, req.Id)
+func (uc *workspace) Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error) {
+	key := utils.Key("portal", in.Id)
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*WorkspaceGetOut, error) {
+		ws, err := uc.repositories.Workspace().Get(ctx, in.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		res := &WorkspaceGetRes{Workspace: ws}
-		return res, nil
+		return &WorkspaceGetOut{Workspace: ws}, nil
 	})
 }

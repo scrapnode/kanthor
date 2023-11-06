@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndpointCreateReq struct {
+type EndpointCreateIn struct {
 	WsId  string
 	AppId string
 	Name  string
@@ -18,35 +18,35 @@ type EndpointCreateReq struct {
 	Method    string
 }
 
-func (req *EndpointCreateReq) Validate() error {
+func (in *EndpointCreateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
-		validator.StringRequired("name", req.Name),
-		validator.StringRequired("secret_key", req.SecretKey),
-		validator.StringLen("secret_key", req.SecretKey, 16, 32),
-		validator.StringUri("uri", req.Uri),
-		validator.StringOneOf("method", req.Method, []string{http.MethodPost, http.MethodPut}),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
+		validator.StringRequired("name", in.Name),
+		validator.StringRequired("secret_key", in.SecretKey),
+		validator.StringLen("secret_key", in.SecretKey, 16, 32),
+		validator.StringUri("uri", in.Uri),
+		validator.StringOneOf("method", in.Method, []string{http.MethodPost, http.MethodPut}),
 	)
 }
 
-type EndpointCreateRes struct {
+type EndpointCreateOut struct {
 	Doc *entities.Endpoint
 }
 
-func (uc *endpoint) Create(ctx context.Context, req *EndpointCreateReq) (*EndpointCreateRes, error) {
-	app, err := uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
+func (uc *endpoint) Create(ctx context.Context, in *EndpointCreateIn) (*EndpointCreateOut, error) {
+	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
 	}
 
 	doc := &entities.Endpoint{
 		AppId:     app.Id,
-		Name:      req.Name,
-		SecretKey: req.SecretKey,
-		Method:    req.Method,
-		Uri:       req.Uri,
+		Name:      in.Name,
+		SecretKey: in.SecretKey,
+		Method:    in.Method,
+		Uri:       in.Uri,
 	}
 	doc.GenId()
 	doc.SetAT(uc.infra.Timer.Now())
@@ -57,6 +57,5 @@ func (uc *endpoint) Create(ctx context.Context, req *EndpointCreateReq) (*Endpoi
 		return nil, err
 	}
 
-	res := &EndpointCreateRes{Doc: ep}
-	return res, nil
+	return &EndpointCreateOut{Doc: ep}, nil
 }

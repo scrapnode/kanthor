@@ -10,7 +10,7 @@ import (
 )
 
 type Forwarder interface {
-	Send(ctx context.Context, req *ForwarderSendReq) (*ForwarderSendRes, error)
+	Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderSendOut, error)
 }
 
 type forwarder struct {

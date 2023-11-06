@@ -53,18 +53,18 @@ func auth(
 		return ctx, err
 	}
 
-	ucreq := &usecase.WorkspaceCredentialsAuthenticateReq{User: user, Pass: pass}
-	if err := ucreq.Validate(); err != nil {
+	in := &usecase.WorkspaceCredentialsAuthenticateIn{User: user, Pass: pass}
+	if err := in.Validate(); err != nil {
 		return ctx, err
 	}
 
-	ucres, err := uc.WorkspaceCredentials().Authenticate(ctx, ucreq)
+	out, err := uc.WorkspaceCredentials().Authenticate(ctx, in)
 	if err != nil {
 		return ctx, err
 	}
 
-	acc := &authenticator.Account{Sub: user, Name: ucres.WorkspaceCredentials.Name}
+	acc := &authenticator.Account{Sub: user, Name: out.WorkspaceCredentials.Name}
 	ctx = context.WithValue(ctx, authenticator.CtxAcc, acc)
-	ctx = context.WithValue(ctx, gateway.CtxWs, ucres.Workspace)
+	ctx = context.WithValue(ctx, gateway.CtxWs, out.Workspace)
 	return ctx, nil
 }

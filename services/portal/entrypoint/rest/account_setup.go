@@ -32,21 +32,21 @@ func UseAccountSetup(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
 
-		ucreq := &usecase.AccountSetupReq{AccountId: acc.Sub}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.AccountSetupIn{AccountId: acc.Sub}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Account().Setup(ctx, ucreq)
+		out, err := service.uc.Account().Setup(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &AccountSetupRes{Account: acc, Workspace: ucres.Workspace}
+		res := &AccountSetupRes{Account: acc, Workspace: out.Workspace}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

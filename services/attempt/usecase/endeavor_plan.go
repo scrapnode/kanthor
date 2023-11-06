@@ -12,33 +12,33 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndeavorPlanReq struct {
+type EndeavorPlanIn struct {
 	Timeout int64
 
 	ScanStart int64
 	ScanEnd   int64
 }
 
-func (req *EndeavorPlanReq) Validate() error {
+func (in *EndeavorPlanIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
-		validator.NumberLessThan("scan_start", req.ScanStart, req.ScanEnd),
+		validator.NumberGreaterThan("timeout", int(in.Timeout), 1000),
+		validator.NumberLessThan("scan_start", in.ScanStart, in.ScanEnd),
 	)
 }
 
-type EndeavorPlanRes struct {
+type EndeavorPlanOut struct {
 	Success []string
 	From    time.Time
 	To      time.Time
 }
 
-func (uc *endeavor) Plan(ctx context.Context, req *EndeavorPlanReq) (*EndeavorPlanRes, error) {
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
+func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlanOut, error) {
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
 	defer cancel()
 
-	from := uc.infra.Timer.Now().Add(time.Duration(req.ScanStart) * time.Millisecond)
-	to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
+	from := uc.infra.Timer.Now().Add(time.Duration(in.ScanStart) * time.Millisecond)
+	to := uc.infra.Timer.Now().Add(time.Duration(in.ScanEnd) * time.Millisecond)
 	ok := []string{}
 
 	errc := make(chan error)
@@ -79,9 +79,9 @@ func (uc *endeavor) Plan(ctx context.Context, req *EndeavorPlanReq) (*EndeavorPl
 
 	select {
 	case err := <-errc:
-		return &EndeavorPlanRes{Success: ok, From: from, To: to}, err
+		return &EndeavorPlanOut{Success: ok, From: from, To: to}, err
 	case <-timeout.Done():
-		return &EndeavorPlanRes{Success: ok, From: from, To: to}, timeout.Err()
+		return &EndeavorPlanOut{Success: ok, From: from, To: to}, timeout.Err()
 	}
 }
 
@@ -105,7 +105,7 @@ func (uc *endeavor) attempts(ctx context.Context, from, to time.Time) ([]entitie
 			continue
 		}
 
-		uc.logger.Warnw("ignore attempt", "req_id", attempt.ReqId, "status", attempt.Status)
+		uc.logger.Warnw("ignore attempt", "in_id", attempt.ReqId, "status", attempt.Status)
 	}
 
 	uc.logger.Debugw("evaluate records", "record_count", len(returning))

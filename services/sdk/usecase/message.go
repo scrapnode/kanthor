@@ -11,7 +11,7 @@ import (
 )
 
 type Message interface {
-	Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error)
+	Put(ctx context.Context, in *MessagePutIn) (*MessagePutOut, error)
 }
 
 type message struct {

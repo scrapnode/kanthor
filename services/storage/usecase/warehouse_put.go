@@ -12,7 +12,7 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-type WarehousePutReq struct {
+type WarehousePutIn struct {
 	Timeout   int64
 	Size      int
 	Messages  []entities.Message
@@ -20,11 +20,11 @@ type WarehousePutReq struct {
 	Responses []entities.Response
 }
 
-func (req *WarehousePutReq) Validate() error {
+func (in *WarehousePutIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
-		validator.NumberGreaterThan("size", req.Size, 0),
+		validator.NumberGreaterThan("timeout", in.Timeout, 1000),
+		validator.NumberGreaterThan("size", in.Size, 0),
 	)
 	if err != nil {
 		return err
@@ -32,9 +32,9 @@ func (req *WarehousePutReq) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Messages, func(i int, item *entities.Message) error {
+		validator.Array(in.Messages, func(i int, item *entities.Message) error {
 			prefix := fmt.Sprintf("messages[%d]", i)
-			return ValidateWarehousePutReqMessage(prefix, item)
+			return ValidateWarehousePutInMessage(prefix, item)
 		}),
 	)
 	if err != nil {
@@ -43,9 +43,9 @@ func (req *WarehousePutReq) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Requests, func(i int, item *entities.Request) error {
+		validator.Array(in.Requests, func(i int, item *entities.Request) error {
 			prefix := fmt.Sprintf("requests[%d]", i)
-			return ValidateWarehousePutReqRequest(prefix, item)
+			return ValidateWarehousePutInRequest(prefix, item)
 		}),
 	)
 	if err != nil {
@@ -54,9 +54,9 @@ func (req *WarehousePutReq) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(req.Responses, func(i int, item *entities.Response) error {
+		validator.Array(in.Responses, func(i int, item *entities.Response) error {
 			prefix := fmt.Sprintf("responses[%d]", i)
-			return ValidateWarehousePutReqResponse(prefix, item)
+			return ValidateWarehousePutInResponse(prefix, item)
 		}),
 	)
 	if err != nil {
@@ -66,7 +66,7 @@ func (req *WarehousePutReq) Validate() error {
 	return nil
 }
 
-func ValidateWarehousePutReqMessage(prefix string, message *entities.Message) error {
+func ValidateWarehousePutInMessage(prefix string, message *entities.Message) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".id", message.Id, entities.IdNsMsg),
@@ -78,7 +78,7 @@ func ValidateWarehousePutReqMessage(prefix string, message *entities.Message) er
 	)
 }
 
-func ValidateWarehousePutReqRequest(prefix string, request *entities.Request) error {
+func ValidateWarehousePutInRequest(prefix string, request *entities.Request) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".id", request.Id, entities.IdNsReq),
@@ -94,7 +94,7 @@ func ValidateWarehousePutReqRequest(prefix string, request *entities.Request) er
 	)
 }
 
-func ValidateWarehousePutReqResponse(prefix string, response *entities.Response) error {
+func ValidateWarehousePutInResponse(prefix string, response *entities.Response) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".id", response.Id, entities.IdNsRes),
@@ -108,33 +108,33 @@ func ValidateWarehousePutReqResponse(prefix string, response *entities.Response)
 	)
 }
 
-type WarehousePutRes struct {
+type WarehousePutOut struct {
 	Success []string
 	Error   map[string]error
 }
 
-func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePutRes, error) {
-	count := len(req.Messages) + len(req.Requests) + len(req.Responses)
+func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutOut, error) {
+	count := len(in.Messages) + len(in.Requests) + len(in.Responses)
 	if count == 0 {
-		return &WarehousePutRes{Success: []string{}, Error: map[string]error{}}, nil
+		return &WarehousePutOut{Success: []string{}, Error: map[string]error{}}, nil
 	}
 
 	ok := safe.Map[string]{}
 	ko := safe.Map[error]{}
 
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
 	defer cancel()
 
 	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
 	p := pool.New().WithMaxGoroutines(1)
-	for i := 0; i < len(req.Messages); i += req.Size {
-		j := utils.ChunkNext(i, len(req.Messages), req.Size)
+	for i := 0; i < len(in.Messages); i += in.Size {
+		j := utils.ChunkNext(i, len(in.Messages), in.Size)
 
-		messages := req.Messages[i:j]
+		messages := in.Messages[i:j]
 		p.Go(func() {
 			records, err := uc.repositories.Message().Create(ctx, messages)
 			if err != nil {
-				for _, message := range req.Messages[i:j] {
+				for _, message := range in.Messages[i:j] {
 					ko.Set(message.Id, err)
 				}
 				return
@@ -146,14 +146,14 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 		})
 	}
 
-	for i := 0; i < len(req.Requests); i += req.Size {
-		j := utils.ChunkNext(i, len(req.Requests), req.Size)
+	for i := 0; i < len(in.Requests); i += in.Size {
+		j := utils.ChunkNext(i, len(in.Requests), in.Size)
 
-		requests := req.Requests[i:j]
+		requests := in.Requests[i:j]
 		p.Go(func() {
 			records, err := uc.repositories.Request().Create(ctx, requests)
 			if err != nil {
-				for _, request := range req.Requests[i:j] {
+				for _, request := range in.Requests[i:j] {
 					ko.Set(request.Id, err)
 				}
 				return
@@ -165,14 +165,14 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 		})
 	}
 
-	for i := 0; i < len(req.Responses); i += req.Size {
-		j := utils.ChunkNext(i, len(req.Responses), req.Size)
+	for i := 0; i < len(in.Responses); i += in.Size {
+		j := utils.ChunkNext(i, len(in.Responses), in.Size)
 
-		responses := req.Responses[i:j]
+		responses := in.Responses[i:j]
 		p.Go(func() {
 			records, err := uc.repositories.Response().Create(ctx, responses)
 			if err != nil {
-				for _, response := range req.Responses[i:j] {
+				for _, response := range in.Responses[i:j] {
 					ko.Set(response.Id, err)
 				}
 				return
@@ -194,10 +194,10 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 
 	select {
 	case <-c:
-		return &WarehousePutRes{Success: ok.Keys(), Error: ko.Data()}, nil
+		return &WarehousePutOut{Success: ok.Keys(), Error: ko.Data()}, nil
 	case <-timeout.Done():
 		// context deadline exceeded, should set that error to remain messages
-		for _, message := range req.Messages {
+		for _, message := range in.Messages {
 			if _, success := ok.Get(message.Id); success {
 				// already success, should not retry it
 				continue
@@ -210,7 +210,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 		}
 
 		// context deadline exceeded, should set that error to remain requests
-		for _, request := range req.Requests {
+		for _, request := range in.Requests {
 			if _, success := ok.Get(request.Id); success {
 				// already success, should not retry it
 				continue
@@ -223,7 +223,7 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 		}
 
 		// context deadline exceeded, should set that error to remain responses
-		for _, response := range req.Responses {
+		for _, response := range in.Responses {
 			if _, success := ok.Get(response.Id); success {
 				// already success, should not retry it
 				continue
@@ -235,6 +235,6 @@ func (uc *warehose) Put(ctx context.Context, req *WarehousePutReq) (*WarehousePu
 			}
 		}
 
-		return &WarehousePutRes{Success: ok.Keys(), Error: ko.Data()}, nil
+		return &WarehousePutOut{Success: ok.Keys(), Error: ko.Data()}, nil
 	}
 }

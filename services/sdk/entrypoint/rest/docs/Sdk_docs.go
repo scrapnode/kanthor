@@ -106,7 +106,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationListRes"
+                            "$ref": "#/definitions/rest.ApplicationListReq"
                         }
                     },
                     "default": {
@@ -1021,7 +1021,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "rest.ApplicationListRes": {
+        "rest.ApplicationListReq": {
             "type": "object",
             "properties": {
                 "cursor": {

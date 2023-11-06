@@ -22,7 +22,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 		// create a map of events & entities so we can generate error map later
 		maps := map[string]string{}
 
-		ucreq := &usecase.WarehousePutReq{
+		in := &usecase.WarehousePutIn{
 			Timeout:   service.conf.Warehouse.Put.Timeout,
 			Size:      service.conf.Warehouse.Put.Size,
 			Messages:  []entities.Message{},
@@ -42,12 +42,12 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				}
 				maps[message.Id] = event.Id
 
-				if err := usecase.ValidateWarehousePutReqMessage(prefix, message); err != nil {
+				if err := usecase.ValidateWarehousePutInMessage(prefix, message); err != nil {
 					// un-recoverable error
 					service.logger.Errorw("could not validate message", "event", event.String(), "message", message.String(), "err", err.Error())
 					continue
 				}
-				ucreq.Messages = append(ucreq.Messages, *message)
+				in.Messages = append(in.Messages, *message)
 				continue
 			}
 
@@ -60,12 +60,12 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				}
 				maps[request.Id] = event.Id
 
-				if err := usecase.ValidateWarehousePutReqRequest(prefix, request); err != nil {
+				if err := usecase.ValidateWarehousePutInRequest(prefix, request); err != nil {
 					// un-recoverable error
 					service.logger.Errorw("could not validate request", "event", event.String(), "request", request.String(), "err", err.Error())
 					continue
 				}
-				ucreq.Requests = append(ucreq.Requests, *request)
+				in.Requests = append(in.Requests, *request)
 				continue
 			}
 
@@ -78,12 +78,12 @@ func NewConsumer(service *storage) streaming.SubHandler {
 				}
 				maps[response.Id] = event.Id
 
-				if err := usecase.ValidateWarehousePutReqResponse(prefix, response); err != nil {
+				if err := usecase.ValidateWarehousePutInResponse(prefix, response); err != nil {
 					// un-recoverable error
 					service.logger.Errorw("could not validate response", "event", event.String(), "response", response.String(), "err", err.Error())
 					continue
 				}
-				ucreq.Responses = append(ucreq.Responses, *response)
+				in.Responses = append(in.Responses, *response)
 				continue
 			}
 
@@ -93,7 +93,7 @@ func NewConsumer(service *storage) streaming.SubHandler {
 		}
 
 		// we alreay validated messages, request and response, don't need to validate again
-		ucres, err := service.uc.Warehouse().Put(ctx, ucreq)
+		out, err := service.uc.Warehouse().Put(ctx, in)
 		if err != nil {
 			// got un-coverable error, should retry all event
 			for _, event := range events {
@@ -102,16 +102,16 @@ func NewConsumer(service *storage) streaming.SubHandler {
 			return retruning
 		}
 
-		// ucres.Error contain a map of entity id and error
+		// out.Error contain a map of entity id and error
 		// should convert it to a map of event id and error so our streaming service can retry it
-		if len(ucres.Error) > 0 {
-			for entId, err := range ucres.Error {
+		if len(out.Error) > 0 {
+			for entId, err := range out.Error {
 				eventId := maps[entId]
 				retruning[eventId] = err
 			}
 		}
 
-		service.logger.Infow("put entities", "ok_count", len(ucres.Success), "ko_count", len(ucres.Error))
+		service.logger.Infow("put entities", "ok_count", len(out.Success), "ko_count", len(out.Error))
 
 		return retruning
 	}

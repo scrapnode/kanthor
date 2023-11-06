@@ -26,21 +26,21 @@ func UseApplicationDelete(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		id := ginctx.Param("app_id")
-		ucreq := &usecase.ApplicationDeleteReq{Id: id}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.ApplicationDeleteIn{Id: id}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Application().Delete(ctx, ucreq)
+		out, err := service.uc.Application().Delete(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &ApplicationDeleteRes{ucres.Doc}
+		res := &ApplicationDeleteRes{out.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

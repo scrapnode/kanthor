@@ -9,42 +9,41 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndpointRuleListReq struct {
+type EndpointRuleListIn struct {
 	EpId string
 	*structure.ListReq
 }
 
-func (req *EndpointRuleListReq) Validate() error {
+func (in *EndpointRuleListIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
-		validator.PointerNotNil("list", req.ListReq),
+		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
+		validator.PointerNotNil("list", in.ListReq),
 	)
 }
 
-type EndpointRuleListRes struct {
+type EndpointRuleListOut struct {
 	*structure.ListRes[entities.EndpointRule]
 }
 
-func (uc *endpointRule) List(ctx context.Context, req *EndpointRuleListReq) (*EndpointRuleListRes, error) {
+func (uc *endpointRule) List(ctx context.Context, in *EndpointRuleListIn) (*EndpointRuleListOut, error) {
 	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
-	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
+	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, in.EpId)
 	if err != nil {
 		return nil, err
 	}
 	listing, err := uc.repositories.EndpointRule().List(
 		ctx,
 		ep,
-		structure.WithListCursor(req.Cursor),
-		structure.WithListSearch(req.Search),
-		structure.WithListLimit(req.Limit),
-		structure.WithListIds(req.Ids),
+		structure.WithListCursor(in.Cursor),
+		structure.WithListSearch(in.Search),
+		structure.WithListLimit(in.Limit),
+		structure.WithListIds(in.Ids),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &EndpointRuleListRes{ListRes: listing}
-	return res, nil
+	return &EndpointRuleListOut{ListRes: listing}, nil
 }

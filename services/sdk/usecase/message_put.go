@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type MessagePutReq struct {
+type MessagePutIn struct {
 	WsId  string
 	Tier  string
 	AppId string
@@ -22,42 +22,42 @@ type MessagePutReq struct {
 	Metadata entities.Metadata
 }
 
-func (req *MessagePutReq) Validate() error {
+func (in *MessagePutIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringRequired("tier", req.Tier),
-		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
-		validator.StringRequired("type", req.Type),
-		validator.StringRequired("body", req.Body),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringRequired("tier", in.Tier),
+		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
+		validator.StringRequired("type", in.Type),
+		validator.StringRequired("body", in.Body),
 	)
 }
 
-type MessagePutRes struct {
+type MessagePutOut struct {
 	EventId string `json:"event_id"`
 	Message *entities.Message
 }
 
-func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes, error) {
-	key := CacheKeyApp(req.WsId, req.AppId)
+func (uc *message) Put(ctx context.Context, in *MessagePutIn) (*MessagePutOut, error) {
+	key := CacheKeyApp(in.WsId, in.AppId)
 	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
-		return uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
+		return uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	msg := &entities.Message{
-		Tier:     req.Tier,
+		Tier:     in.Tier,
 		AppId:    app.Id,
-		Type:     req.Type,
-		Body:     req.Body,
+		Type:     in.Type,
+		Body:     in.Body,
 		Headers:  entities.Header{},
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data
-	msg.Headers.Merge(req.Headers)
-	msg.Metadata.Merge(req.Metadata)
+	msg.Headers.Merge(in.Headers)
+	msg.Metadata.Merge(in.Metadata)
 
 	msg.GenId()
 	msg.SetTS(uc.infra.Timer.Now())
@@ -73,6 +73,5 @@ func (uc *message) Put(ctx context.Context, req *MessagePutReq) (*MessagePutRes,
 		return nil, errs[event.Id]
 	}
 
-	res := &MessagePutRes{Message: msg}
-	return res, nil
+	return &MessagePutOut{Message: msg}, nil
 }

@@ -8,36 +8,35 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type ApplicationListReq struct {
+type ApplicationListIn struct {
 	WsId string
 	*structure.ListReq
 }
 
-func (req *ApplicationListReq) Validate() error {
+func (in *ApplicationListIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.PointerNotNil("list", req.ListReq),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.PointerNotNil("list", in.ListReq),
 	)
 }
 
-type ApplicationListRes struct {
+type ApplicationListOut struct {
 	*structure.ListRes[entities.Application]
 }
 
-func (uc *application) List(ctx context.Context, req *ApplicationListReq) (*ApplicationListRes, error) {
+func (uc *application) List(ctx context.Context, in *ApplicationListIn) (*ApplicationListOut, error) {
 	listing, err := uc.repositories.Application().List(
 		ctx,
-		req.WsId,
-		structure.WithListCursor(req.Cursor),
-		structure.WithListSearch(req.Search),
-		structure.WithListLimit(req.Limit),
-		structure.WithListIds(req.Ids),
+		in.WsId,
+		structure.WithListCursor(in.Cursor),
+		structure.WithListSearch(in.Search),
+		structure.WithListLimit(in.Limit),
+		structure.WithListIds(in.Ids),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &ApplicationListRes{ListRes: listing}
-	return res, nil
+	return &ApplicationListOut{ListRes: listing}, nil
 }

@@ -35,21 +35,21 @@ func UseApplicationCreate(service *sdk) gin.HandlerFunc {
 		}
 
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ucreq := &usecase.ApplicationCreateReq{Name: req.Name}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.ApplicationCreateIn{Name: req.Name}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Application().Create(ctx, ucreq)
+		out, err := service.uc.Application().Create(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &ApplicationCreateRes{ucres.Doc}
+		res := &ApplicationCreateRes{out.Doc}
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

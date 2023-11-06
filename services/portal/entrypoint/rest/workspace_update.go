@@ -39,21 +39,21 @@ func UseWorkspaceUpdate(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
-		ucreq := &usecase.WorkspaceUpdateReq{Id: ws.Id, Name: req.Name}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.WorkspaceUpdateIn{Id: ws.Id, Name: req.Name}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Workspace().Update(ctx, ucreq)
+		out, err := service.uc.Workspace().Update(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &WorkspaceUpdateRes{ucres.Doc}
+		res := &WorkspaceUpdateRes{out.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

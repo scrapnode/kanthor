@@ -17,13 +17,13 @@ import (
 	"github.com/sourcegraph/conc"
 )
 
-type RequestScheduleReq struct {
+type RequestScheduleIn struct {
 	Timeout int64
 
 	Messages map[string]*entities.Message
 }
 
-func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message) error {
+func ValidateRequestScheduleInMessage(prefix string, message *entities.Message) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".id", message.Id, entities.IdNsMsg),
@@ -35,11 +35,11 @@ func ValidateRequestScheduleReqMessage(prefix string, message *entities.Message)
 	)
 }
 
-func (req *RequestScheduleReq) Validate() error {
+func (in *RequestScheduleIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.MapRequired("messages", req.Messages),
-		validator.NumberGreaterThan("timeout", req.Timeout, 1000),
+		validator.MapRequired("messages", in.Messages),
+		validator.NumberGreaterThan("timeout", in.Timeout, 1000),
 	)
 	if err != nil {
 		return err
@@ -47,20 +47,20 @@ func (req *RequestScheduleReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Map(req.Messages, func(refId string, item *entities.Message) error {
+		validator.Map(in.Messages, func(refId string, item *entities.Message) error {
 			prefix := fmt.Sprintf("messages.%s", refId)
-			return ValidateRequestScheduleReqMessage(prefix, item)
+			return ValidateRequestScheduleInMessage(prefix, item)
 		}),
 	)
 }
 
-type RequestScheduleRes struct {
+type RequestScheduleOut struct {
 	Success []string
 	Error   map[string]error
 }
 
-func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*RequestScheduleRes, error) {
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
+func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*RequestScheduleOut, error) {
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
 	defer cancel()
 
 	ok := &safe.Map[[]string]{}
@@ -72,7 +72,7 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 	defer close(errc)
 
 	go func() {
-		requests := uc.arrange(ctx, req.Messages)
+		requests := uc.arrange(ctx, in.Messages)
 		if len(requests) == 0 {
 			errc <- nil
 			return
@@ -117,10 +117,10 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 
 	select {
 	case err := <-errc:
-		return &RequestScheduleRes{Success: ok.Keys(), Error: ko.Data()}, err
+		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, err
 	case <-timeout.Done():
 		// context deadline exceeded, should set that error to remain messages
-		for _, message := range req.Messages {
+		for _, message := range in.Messages {
 			if _, success := ok.Get(message.Id); success {
 				// already success, should not retry it
 				continue
@@ -131,7 +131,7 @@ func (uc *request) Schedule(ctx context.Context, req *RequestScheduleReq) (*Requ
 				ko.Set(message.Id, ctx.Err())
 			}
 		}
-		return &RequestScheduleRes{Success: ok.Keys(), Error: ko.Data()}, nil
+		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, nil
 	}
 }
 

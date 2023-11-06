@@ -7,13 +7,13 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceCredentialsUpdateReq struct {
+type WorkspaceCredentialsUpdateIn struct {
 	WsId string
 	Id   string
 	Name string
 }
 
-func (req *WorkspaceCredentialsUpdateReq) Validate() error {
+func (req *WorkspaceCredentialsUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
@@ -22,11 +22,11 @@ func (req *WorkspaceCredentialsUpdateReq) Validate() error {
 	)
 }
 
-type WorkspaceCredentialsUpdateRes struct {
+type WorkspaceCredentialsUpdateOut struct {
 	Doc *entities.WorkspaceCredentials
 }
 
-func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCredentialsUpdateReq) (*WorkspaceCredentialsUpdateRes, error) {
+func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCredentialsUpdateIn) (*WorkspaceCredentialsUpdateOut, error) {
 	doc, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
 		wsc, err := uc.repositories.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
 		if err != nil {
@@ -45,6 +45,5 @@ func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCreden
 	// IMPORTANT: don't return hash value
 	wsc.Hash = ""
 
-	res := &WorkspaceCredentialsUpdateRes{Doc: wsc}
-	return res, nil
+	return &WorkspaceCredentialsUpdateOut{Doc: wsc}, nil
 }

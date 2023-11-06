@@ -10,7 +10,7 @@ import (
 )
 
 type Account interface {
-	Setup(ctx context.Context, req *AccountSetupReq) (*AccountSetupRes, error)
+	Setup(ctx context.Context, in *AccountSetupIn) (*AccountSetupOut, error)
 }
 
 type account struct {

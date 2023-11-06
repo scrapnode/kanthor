@@ -16,12 +16,12 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-type ForwarderSendReq struct {
+type ForwarderSendIn struct {
 	Concurrency int
 	Requests    map[string]*entities.Request
 }
 
-func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) error {
+func ValidateForwarderSendInRequest(prefix string, item *entities.Request) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("request.id", item.Id, entities.IdNsReq),
@@ -37,11 +37,11 @@ func ValidateForwarderSendReqRequest(prefix string, item *entities.Request) erro
 	)
 }
 
-func (req *ForwarderSendReq) Validate() error {
+func (in *ForwarderSendIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.MapRequired("requests", req.Requests),
-		validator.NumberGreaterThan("concurrency", req.Concurrency, 1),
+		validator.MapRequired("requests", in.Requests),
+		validator.NumberGreaterThan("concurrency", in.Concurrency, 1),
 	)
 	if err != nil {
 		return err
@@ -49,25 +49,25 @@ func (req *ForwarderSendReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Map(req.Requests, func(refId string, item *entities.Request) error {
+		validator.Map(in.Requests, func(refId string, item *entities.Request) error {
 			prefix := fmt.Sprintf("requests.%s", refId)
-			return ValidateForwarderSendReqRequest(prefix, item)
+			return ValidateForwarderSendInRequest(prefix, item)
 		}),
 	)
 }
 
-type ForwarderSendRes struct {
+type ForwarderSendOut struct {
 	Success []string
 	Error   map[string]error
 }
 
-func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*ForwarderSendRes, error) {
+func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderSendOut, error) {
 	responses := safe.Map[*entities.Response]{}
 
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
-	p := pool.New().WithMaxGoroutines(req.Concurrency)
-	for ref, r := range req.Requests {
+	p := pool.New().WithMaxGoroutines(in.Concurrency)
+	for ref, r := range in.Requests {
 		refId := ref
 		request := r
 		p.Go(func() {
@@ -102,7 +102,7 @@ func (uc *forwarder) Send(ctx context.Context, req *ForwarderSendReq) (*Forwarde
 		ok = append(ok, refId)
 	}
 
-	return &ForwarderSendRes{Success: ok, Error: ko}, nil
+	return &ForwarderSendOut{Success: ok, Error: ko}, nil
 }
 
 func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entities.Response {

@@ -10,12 +10,12 @@ import (
 )
 
 type EndpointRule interface {
-	Create(ctx context.Context, req *EndpointRuleCreateReq) (*EndpointRuleCreateRes, error)
-	Update(ctx context.Context, req *EndpointRuleUpdateReq) (*EndpointRuleUpdateRes, error)
-	Delete(ctx context.Context, req *EndpointRuleDeleteReq) (*EndpointRuleDeleteRes, error)
+	Create(ctx context.Context, in *EndpointRuleCreateIn) (*EndpointRuleCreateOut, error)
+	Update(ctx context.Context, in *EndpointRuleUpdateIn) (*EndpointRuleUpdateOut, error)
+	Delete(ctx context.Context, in *EndpointRuleDeleteIn) (*EndpointRuleDeleteOut, error)
 
-	List(ctx context.Context, req *EndpointRuleListReq) (*EndpointRuleListRes, error)
-	Get(ctx context.Context, req *EndpointRuleGetReq) (*EndpointRuleGetRes, error)
+	List(ctx context.Context, in *EndpointRuleListIn) (*EndpointRuleListOut, error)
+	Get(ctx context.Context, in *EndpointRuleGetIn) (*EndpointRuleGetOut, error)
 }
 
 type endpointRule struct {

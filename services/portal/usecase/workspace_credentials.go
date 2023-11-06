@@ -10,11 +10,11 @@ import (
 )
 
 type WorkspaceCredentials interface {
-	Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error)
-	Update(ctx context.Context, req *WorkspaceCredentialsUpdateReq) (*WorkspaceCredentialsUpdateRes, error)
-	Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error)
-	List(ctx context.Context, req *WorkspaceCredentialsListReq) (*WorkspaceCredentialsListRes, error)
-	Get(ctx context.Context, req *WorkspaceCredentialsGetReq) (*WorkspaceCredentialsGetRes, error)
+	Generate(ctx context.Context, in *WorkspaceCredentialsGenerateIn) (*WorkspaceCredentialsGenerateOut, error)
+	Update(ctx context.Context, in *WorkspaceCredentialsUpdateIn) (*WorkspaceCredentialsUpdateOut, error)
+	Expire(ctx context.Context, in *WorkspaceCredentialsExpireIn) (*WorkspaceCredentialsExpireOut, error)
+	List(ctx context.Context, in *WorkspaceCredentialsListIn) (*WorkspaceCredentialsListOut, error)
+	Get(ctx context.Context, in *WorkspaceCredentialsGetIn) (*WorkspaceCredentialsGetOut, error)
 }
 
 type workspaceCredentials struct {

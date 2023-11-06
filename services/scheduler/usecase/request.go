@@ -11,7 +11,7 @@ import (
 )
 
 type Request interface {
-	Schedule(ctx context.Context, req *RequestScheduleReq) (*RequestScheduleRes, error)
+	Schedule(ctx context.Context, in *RequestScheduleIn) (*RequestScheduleOut, error)
 }
 
 type request struct {

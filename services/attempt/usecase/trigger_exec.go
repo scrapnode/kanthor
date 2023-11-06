@@ -19,7 +19,7 @@ import (
 	"github.com/sourcegraph/conc"
 )
 
-type TriggerExecReq struct {
+type TriggerExecIn struct {
 	Concurrency int
 	Timeout     int64
 
@@ -27,13 +27,13 @@ type TriggerExecReq struct {
 	Triggers     map[string]*entities.AttemptTrigger
 }
 
-func (req *TriggerExecReq) Validate() error {
+func (in *TriggerExecIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
-		validator.NumberGreaterThan("concurrency", req.Concurrency, 1),
-		validator.NumberGreaterThan("arrange_delay", req.ArrangeDelay, 60000),
-		validator.MapRequired("triggers", req.Triggers),
+		validator.NumberGreaterThan("timeout", int(in.Timeout), 1000),
+		validator.NumberGreaterThan("concurrency", in.Concurrency, 1),
+		validator.NumberGreaterThan("arrange_delay", in.ArrangeDelay, 60000),
+		validator.MapRequired("triggers", in.Triggers),
 	)
 	if err != nil {
 		return err
@@ -41,37 +41,37 @@ func (req *TriggerExecReq) Validate() error {
 
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.Map(req.Triggers, func(key string, item *entities.AttemptTrigger) error {
+		validator.Map(in.Triggers, func(key string, item *entities.AttemptTrigger) error {
 			prefix := fmt.Sprintf("triggers.%s", key)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringStartsWith(prefix+".app.id", req.Triggers[key].AppId, entities.IdNsApp),
-				validator.StringRequired(prefix+".tier", req.Triggers[key].Tier),
-				validator.NumberGreaterThan(prefix+".from", req.Triggers[key].From, 0),
-				validator.NumberGreaterThan(prefix+".to", int(req.Triggers[key].To), 0),
+				validator.StringStartsWith(prefix+".app.id", in.Triggers[key].AppId, entities.IdNsApp),
+				validator.StringRequired(prefix+".tier", in.Triggers[key].Tier),
+				validator.NumberGreaterThan(prefix+".from", in.Triggers[key].From, 0),
+				validator.NumberGreaterThan(prefix+".to", int(in.Triggers[key].To), 0),
 			)
 		}),
 	)
 }
 
-type TriggerExecRes struct {
+type TriggerExecOut struct {
 	Success []string
 	Error   map[string]error
 }
 
-func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecRes, error) {
+func (uc *trigger) Exec(ctx context.Context, in *TriggerExecIn) (*TriggerExecOut, error) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 
 	// timeout duration will be scaled based on how many triggers you have
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
+	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
 	defer cancel()
 
 	var wg conc.WaitGroup
-	for _, item := range req.Triggers {
+	for _, item := range in.Triggers {
 		trigger := item
 		wg.Go(func() {
-			resp, err := uc.consume(ctx, trigger, req.Concurrency, req.ArrangeDelay)
+			resp, err := uc.consume(ctx, trigger, in.Concurrency, in.ArrangeDelay)
 			if err != nil {
 				uc.logger.Errorw("unable to consume attempt trigger", "trigger", trigger.String(), "err", err.Error())
 				return
@@ -92,7 +92,7 @@ func (uc *trigger) Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecR
 
 	select {
 	case <-c:
-		return &TriggerExecRes{Success: ok.Data(), Error: ko.Data()}, nil
+		return &TriggerExecOut{Success: ok.Data(), Error: ko.Data()}, nil
 	case <-timeout.Done():
 		// actually we may have some success entries, but we can ignore them
 		// let cronjob pickup and retry them redundantly
@@ -105,7 +105,7 @@ func (uc *trigger) consume(
 	trigger *entities.AttemptTrigger,
 	concurrency int,
 	delay int64,
-) (*TriggerExecRes, error) {
+) (*TriggerExecOut, error) {
 	key := fmt.Sprintf("kanthor.services.attempt.trigger.consumer/%s", trigger.AppId)
 	// the lock duration will be long as much as possible
 	// so we will time the global timeout as as the lock duration
@@ -130,7 +130,7 @@ func (uc *trigger) consume(
 
 	from := time.UnixMilli(trigger.From)
 	to := time.UnixMilli(trigger.To)
-	msgIds, requests, err := uc.examine(ctx, trigger.AppId, applicable, from, to)
+	msgIds, inuests, err := uc.examine(ctx, trigger.AppId, applicable, from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -139,13 +139,13 @@ func (uc *trigger) consume(
 	ko := &safe.Map[error]{}
 
 	uc.schedule(ctx, ok, ko, concurrency, applicable, msgIds)
-	uc.create(ctx, ok, ko, concurrency, delay, requests)
+	uc.create(ctx, ok, ko, concurrency, delay, inuests)
 
-	res := &TriggerExecRes{Success: ok.Data(), Error: ko.Data()}
+	res := &TriggerExecOut{Success: ok.Data(), Error: ko.Data()}
 	return res, nil
 }
 
-// examine messages, requests and responses
+// examine messages, inuests and responses
 func (uc *trigger) examine(
 	ctx context.Context,
 	appId string,
@@ -157,7 +157,7 @@ func (uc *trigger) examine(
 		return nil, nil, err
 	}
 
-	requests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, msgIds, from, to)
+	inuests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, msgIds, from, to)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -170,20 +170,20 @@ func (uc *trigger) examine(
 	schedulable := []string{}
 	attemptable := []ds.Req{}
 
-	status := uc.hash(requests, responses)
+	status := uc.hash(inuests, responses)
 	for _, message := range messages {
 		for _, ep := range applicable.EndpointMap {
-			reqId, hasReq := status[reqkey(message.Id, ep.Id)]
+			inId, hasReq := status[inkey(message.Id, ep.Id)]
 			if !hasReq {
-				// no request -> must schedule message again -> don't create any attempt
+				// no inuest -> must schedule message again -> don't create any attempt
 				schedulable = append(schedulable, message.Id)
 				continue
 			}
 
 			_, hasRes := status[reskey(message.Id, ep.Id)]
 			if !hasRes {
-				// has request + no success response -> create an attempt
-				attemptable = append(attemptable, requests[reqId])
+				// has inuest + no success response -> create an attempt
+				attemptable = append(attemptable, inuests[inId])
 				continue
 			}
 
@@ -246,14 +246,14 @@ func (uc *trigger) applicable(ctx context.Context, appId string) (*assessor.Asse
 	})
 }
 
-func (uc *trigger) hash(requests map[string]ds.Req, responses map[string]ds.Res) map[string]string {
+func (uc *trigger) hash(inuests map[string]ds.Req, responses map[string]ds.Res) map[string]string {
 	returning := map[string]string{}
 
-	for _, request := range requests {
-		// for checking whether we have scheduled a request for an endpoint or not
-		// if no request was scheduled, we should schedule it instead of create an attempt
-		key := reqkey(request.MsgId, request.EpId)
-		returning[key] = request.Id
+	for _, inuest := range inuests {
+		// for checking whether we have scheduled a inuest for an endpoint or not
+		// if no inuest was scheduled, we should schedule it instead of create an attempt
+		key := inkey(inuest.MsgId, inuest.EpId)
+		returning[key] = inuest.Id
 	}
 
 	for _, response := range responses {
@@ -273,8 +273,8 @@ func (uc *trigger) hash(requests map[string]ds.Req, responses map[string]ds.Res)
 	return returning
 }
 
-func reqkey(msgId, epId string) string {
-	return fmt.Sprintf("%s/%s/req", msgId, epId)
+func inkey(msgId, epId string) string {
+	return fmt.Sprintf("%s/%s/in", msgId, epId)
 }
 
 func reskey(msgId, epId string) string {
@@ -290,7 +290,7 @@ func (uc *trigger) schedule(
 	applicable *assessor.Assets,
 	msgIds []string,
 ) {
-	requests := []entities.Request{}
+	inuests := []entities.Request{}
 
 	for i := 0; i < len(msgIds); i += concurrency {
 		j := utils.ChunkNext(i, len(msgIds), concurrency)
@@ -304,27 +304,27 @@ func (uc *trigger) schedule(
 		}
 
 		for _, message := range messages {
-			reqs, logs := assessor.Requests(&message, applicable, uc.infra.Timer)
+			ins, logs := assessor.Requests(&message, applicable, uc.infra.Timer)
 			if len(logs) > 0 {
 				for _, l := range logs {
 					uc.logger.Warnw(l[0].(string), l[1:]...)
 				}
 			}
-			requests = append(requests, reqs...)
+			inuests = append(inuests, ins...)
 		}
 	}
 
-	if len(requests) == 0 {
+	if len(inuests) == 0 {
 		return
 	}
 
 	events := map[string]*streaming.Event{}
-	for _, request := range requests {
-		key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
-		event, err := transformation.EventFromRequest(&request)
+	for _, inuest := range inuests {
+		key := utils.Key(inuest.AppId, inuest.MsgId, inuest.EpId, inuest.Id)
+		event, err := transformation.EventFromRequest(&inuest)
 		if err != nil {
 			// un-recoverable error
-			uc.logger.Errorw("could not transform request to event", "request", request.String())
+			uc.logger.Errorw("could not transform inuest to event", "inuest", inuest.String())
 			continue
 		}
 		events[key] = event
@@ -348,18 +348,18 @@ func (uc *trigger) create(
 	ko *safe.Map[error],
 	concurrency int,
 	delay int64,
-	requests []ds.Req,
+	inuests []ds.Req,
 ) {
 	attempts := []entities.Attempt{}
 
 	now := uc.infra.Timer.Now()
 	next := now.Add(time.Duration(delay) * time.Millisecond)
 
-	for _, request := range requests {
+	for _, inuest := range inuests {
 		attempts = append(attempts, entities.Attempt{
-			ReqId: request.Id,
-			AppId: request.AppId,
-			Tier:  request.Tier,
+			ReqId: inuest.Id,
+			AppId: inuest.AppId,
+			Tier:  inuest.Tier,
 
 			ScheduledAt: now.UnixMilli(),
 			Status:      0,

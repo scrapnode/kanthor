@@ -43,20 +43,20 @@ func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
-		ucreq := &usecase.WorkspaceCredentialsGenerateReq{
+		in := &usecase.WorkspaceCredentialsGenerateIn{
 			WsId:        ws.Id,
 			Name:        req.Name,
 			ExpiredAt:   req.ExpiredAt,
 			Role:        permissions.SdkOwner,
 			Permissions: permissions.SdkOwnerPermissions,
 		}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.WorkspaceCredentials().Generate(ctx, ucreq)
+		out, err := service.uc.WorkspaceCredentials().Generate(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
@@ -70,9 +70,9 @@ func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 		}
 
 		res := &WorkspaceCredentialsCreateRes{
-			Id:       ucres.Credentials.Id,
-			User:     ucres.Credentials.Id,
-			Password: ucres.Password,
+			Id:       out.Credentials.Id,
+			User:     out.Credentials.Id,
+			Password: out.Password,
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

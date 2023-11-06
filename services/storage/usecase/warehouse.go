@@ -10,7 +10,7 @@ import (
 )
 
 type Warehouse interface {
-	Put(ctx context.Context, req *WarehousePutReq) (*WarehousePutRes, error)
+	Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutOut, error)
 }
 
 type warehose struct {

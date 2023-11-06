@@ -26,21 +26,21 @@ func UseApplicationGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		id := ginctx.Param("app_id")
-		ucreq := &usecase.ApplicationGetReq{Id: id}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.ApplicationGetIn{Id: id}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Application().Get(ctx, ucreq)
+		out, err := service.uc.Application().Get(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &ApplicationGetRes{ucres.Doc}
+		res := &ApplicationGetRes{out.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

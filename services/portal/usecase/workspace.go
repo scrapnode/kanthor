@@ -10,10 +10,10 @@ import (
 )
 
 type Workspace interface {
-	Setup(ctx context.Context, req *WorkspaceSetupReq) (*WorkspaceSetupRes, error)
+	Setup(ctx context.Context, in *WorkspaceSetupIn) (*WorkspaceSetupOut, error)
 
-	Update(ctx context.Context, req *WorkspaceUpdateReq) (*WorkspaceUpdateRes, error)
-	Get(ctx context.Context, req *WorkspaceGetReq) (*WorkspaceGetRes, error)
+	Update(ctx context.Context, in *WorkspaceUpdateIn) (*WorkspaceUpdateOut, error)
+	Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error)
 }
 
 type workspace struct {

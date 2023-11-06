@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceCredentialsGenerateReq struct {
+type WorkspaceCredentialsGenerateIn struct {
 	WsId      string
 	Name      string
 	ExpiredAt int64
@@ -20,33 +20,33 @@ type WorkspaceCredentialsGenerateReq struct {
 	Permissions []authorizator.Permission
 }
 
-func (req *WorkspaceCredentialsGenerateReq) Validate() error {
+func (in *WorkspaceCredentialsGenerateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringRequired("name", req.Name),
-		validator.NumberGreaterThanOrEqual("expired_at", req.ExpiredAt, 0),
-		validator.StringRequired("role", req.Role),
-		validator.SliceRequired("permissions", req.Permissions),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringRequired("name", in.Name),
+		validator.NumberGreaterThanOrEqual("expired_at", in.ExpiredAt, 0),
+		validator.StringRequired("role", in.Role),
+		validator.SliceRequired("permissions", in.Permissions),
 	)
 }
 
-type WorkspaceCredentialsGenerateRes struct {
+type WorkspaceCredentialsGenerateOut struct {
 	Credentials *entities.WorkspaceCredentials
 	Password    string
 }
 
-func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCredentialsGenerateReq) (*WorkspaceCredentialsGenerateRes, error) {
+func (uc *workspaceCredentials) Generate(ctx context.Context, in *WorkspaceCredentialsGenerateIn) (*WorkspaceCredentialsGenerateOut, error) {
 	now := uc.infra.Timer.Now()
 	doc := &entities.WorkspaceCredentials{
-		WsId: req.WsId,
-		Name: req.Name,
+		WsId: in.WsId,
+		Name: in.Name,
 	}
 	doc.GenId()
 	doc.SetAT(now)
 
 	password := fmt.Sprintf("wsck_%s", utils.RandomString(constants.PasswordLength))
-	// once we got error, reject entirely request instead of do a partial success request
+	// once we got error, reject entirely inuest instead of do a partial success inuest
 	hash, err := uc.infra.Cryptography.KDF().StringHash(password)
 	if err != nil {
 		return nil, err
@@ -58,13 +58,13 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, req *WorkspaceCred
 		return nil, err
 	}
 
-	if err := uc.infra.Authorizator.Grant(credentials.WsId, credentials.Id, req.Role, req.Permissions); err != nil {
+	if err := uc.infra.Authorizator.Grant(credentials.WsId, credentials.Id, in.Role, in.Permissions); err != nil {
 		return nil, err
 	}
 	if err := uc.infra.Authorizator.Refresh(ctx); err != nil {
 		return nil, err
 	}
 
-	res := &WorkspaceCredentialsGenerateRes{Credentials: credentials, Password: password}
+	res := &WorkspaceCredentialsGenerateOut{Credentials: credentials, Password: password}
 	return res, nil
 }

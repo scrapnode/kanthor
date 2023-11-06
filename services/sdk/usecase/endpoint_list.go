@@ -8,27 +8,27 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndpointListReq struct {
+type EndpointListIn struct {
 	WsId  string
 	AppId string
 	*structure.ListReq
 }
 
-func (req *EndpointListReq) Validate() error {
+func (in *EndpointListIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
-		validator.PointerNotNil("list", req.ListReq),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
+		validator.PointerNotNil("list", in.ListReq),
 	)
 }
 
-type EndpointListRes struct {
+type EndpointListOut struct {
 	*structure.ListRes[entities.Endpoint]
 }
 
-func (uc *endpoint) List(ctx context.Context, req *EndpointListReq) (*EndpointListRes, error) {
-	app, err := uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
+func (uc *endpoint) List(ctx context.Context, in *EndpointListIn) (*EndpointListOut, error) {
+	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -36,15 +36,14 @@ func (uc *endpoint) List(ctx context.Context, req *EndpointListReq) (*EndpointLi
 	listing, err := uc.repositories.Endpoint().List(
 		ctx,
 		app,
-		structure.WithListCursor(req.Cursor),
-		structure.WithListSearch(req.Search),
-		structure.WithListLimit(req.Limit),
-		structure.WithListIds(req.Ids),
+		structure.WithListCursor(in.Cursor),
+		structure.WithListSearch(in.Search),
+		structure.WithListLimit(in.Limit),
+		structure.WithListIds(in.Ids),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &EndpointListRes{ListRes: listing}
-	return res, nil
+	return &EndpointListOut{ListRes: listing}, nil
 }

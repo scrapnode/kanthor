@@ -41,25 +41,25 @@ func UseWorkspaceCredentialsUpdate(service *portal) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 		id := ginctx.Param("wsc_id")
-		ucreq := &usecase.WorkspaceCredentialsUpdateReq{
+		in := &usecase.WorkspaceCredentialsUpdateIn{
 			WsId: ws.Id,
 			Id:   id,
 			Name: req.Name,
 		}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.WorkspaceCredentials().Update(ctx, ucreq)
+		out, err := service.uc.WorkspaceCredentials().Update(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &WorkspaceCredentialsUpdateRes{ucres.Doc}
+		res := &WorkspaceCredentialsUpdateRes{out.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

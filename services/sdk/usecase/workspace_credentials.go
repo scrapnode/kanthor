@@ -10,7 +10,7 @@ import (
 )
 
 type WorkspaceCredentials interface {
-	Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error)
+	Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateIn) (*WorkspaceCredentialsAuthenticateOut, error)
 }
 
 type workspaceCredentials struct {

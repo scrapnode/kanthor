@@ -11,7 +11,7 @@ import (
 
 func RegisterConsumer(service *executor) streaming.SubHandler {
 	return func(events map[string]*streaming.Event) map[string]error {
-		ucreq := &usecase.EndeavorExecReq{
+		in := &usecase.EndeavorExecIn{
 			Concurrency: service.conf.Endeavor.Executor.Concurrency,
 			Attempts:    map[string]*entities.Attempt{},
 		}
@@ -25,22 +25,22 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 				continue
 			}
 
-			ucreq.Attempts[event.Id] = attempt
+			in.Attempts[event.Id] = attempt
 		}
 
 		ctx := context.Background()
 
-		ucres, err := service.uc.Endeavor().Exec(ctx, ucreq)
+		out, err := service.uc.Endeavor().Exec(ctx, in)
 		if err != nil {
 			service.logger.Errorw("unable to consume an attempt", "err", err.Error())
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
-			for refId := range ucreq.Attempts {
+			for refId := range in.Attempts {
 				retruning[refId] = err
 			}
 			return retruning
 		}
 
-		return ucres.Error
+		return out.Error
 	}
 }

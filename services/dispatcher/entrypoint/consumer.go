@@ -23,7 +23,7 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 				continue
 			}
 
-			if err := usecase.ValidateForwarderSendReqRequest("request", request); err != nil {
+			if err := usecase.ValidateForwarderSendInRequest("request", request); err != nil {
 				service.logger.Errorw(err.Error(), "event", event.String(), "request", request.String())
 				// got malformed request, should ignore and not retry it
 				continue
@@ -33,23 +33,23 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 		}
 
 		ctx := context.Background()
-		ucreq := &usecase.ForwarderSendReq{
+		in := &usecase.ForwarderSendIn{
 			Concurrency: service.conf.Forwarder.Send.Concurrency,
 			Requests:    requests,
 		}
 		// we alreay validated messages of request, don't need to validate again
-		ucres, err := service.uc.Forwarder().Send(ctx, ucreq)
+		out, err := service.uc.Forwarder().Send(ctx, in)
 		if err != nil {
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
-			for refId := range ucreq.Requests {
+			for refId := range in.Requests {
 				retruning[refId] = err
 			}
 			return retruning
 		}
 
-		service.logger.Infow("dispatched requests", "ok_count", len(ucres.Success), "ko_count", len(ucres.Error))
+		service.logger.Infow("dispatched requests", "ok_count", len(out.Success), "ko_count", len(out.Error))
 
-		return ucres.Error
+		return out.Error
 	}
 }

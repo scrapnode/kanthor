@@ -10,8 +10,8 @@ import (
 )
 
 type Trigger interface {
-	Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanRes, error)
-	Exec(ctx context.Context, req *TriggerExecReq) (*TriggerExecRes, error)
+	Plan(ctx context.Context, in *TriggerPlanIn) (*TriggerPlanOut, error)
+	Exec(ctx context.Context, in *TriggerExecIn) (*TriggerExecOut, error)
 }
 
 type trigger struct {

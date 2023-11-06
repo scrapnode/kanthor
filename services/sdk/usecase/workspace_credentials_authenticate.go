@@ -10,30 +10,30 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceCredentialsAuthenticateReq struct {
+type WorkspaceCredentialsAuthenticateIn struct {
 	User string
 	Pass string
 }
 
-func (req *WorkspaceCredentialsAuthenticateReq) Validate() error {
+func (in *WorkspaceCredentialsAuthenticateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("user", req.User, entities.IdNsWsc),
-		validator.StringRequired("pass", req.Pass),
+		validator.StringStartsWith("user", in.User, entities.IdNsWsc),
+		validator.StringRequired("pass", in.Pass),
 	)
 }
 
-type WorkspaceCredentialsAuthenticateRes struct {
+type WorkspaceCredentialsAuthenticateOut struct {
 	Workspace            *entities.Workspace
 	WorkspaceCredentials *entities.WorkspaceCredentials
 }
 
-func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateReq) (*WorkspaceCredentialsAuthenticateRes, error) {
-	key := CacheKeyWsAuthenticate(req.User)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*1, func() (*WorkspaceCredentialsAuthenticateRes, error) {
-		res := &WorkspaceCredentialsAuthenticateRes{}
+func (uc *workspaceCredentials) Authenticate(ctx context.Context, in *WorkspaceCredentialsAuthenticateIn) (*WorkspaceCredentialsAuthenticateOut, error) {
+	key := CacheKeyWsAuthenticate(in.User)
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*1, func() (*WorkspaceCredentialsAuthenticateOut, error) {
+		res := &WorkspaceCredentialsAuthenticateOut{}
 
-		credentials, err := uc.repositories.WorkspaceCredentials().Get(ctx, req.User)
+		credentials, err := uc.repositories.WorkspaceCredentials().Get(ctx, in.User)
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +45,7 @@ func (uc *workspaceCredentials) Authenticate(ctx context.Context, req *Workspace
 			return nil, fmt.Errorf("workspace credentials was expired (%s)", expiredAt)
 		}
 
-		if err := uc.infra.Cryptography.KDF().StringCompare(credentials.Hash, req.Pass); err != nil {
+		if err := uc.infra.Cryptography.KDF().StringCompare(credentials.Hash, in.Pass); err != nil {
 			return nil, err
 		}
 

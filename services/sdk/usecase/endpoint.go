@@ -10,12 +10,12 @@ import (
 )
 
 type Endpoint interface {
-	Create(ctx context.Context, req *EndpointCreateReq) (*EndpointCreateRes, error)
-	Update(ctx context.Context, req *EndpointUpdateReq) (*EndpointUpdateRes, error)
-	Delete(ctx context.Context, req *EndpointDeleteReq) (*EndpointDeleteRes, error)
+	Create(ctx context.Context, in *EndpointCreateIn) (*EndpointCreateOut, error)
+	Update(ctx context.Context, in *EndpointUpdateIn) (*EndpointUpdateOut, error)
+	Delete(ctx context.Context, in *EndpointDeleteIn) (*EndpointDeleteOut, error)
 
-	List(ctx context.Context, req *EndpointListReq) (*EndpointListRes, error)
-	Get(ctx context.Context, req *EndpointGetReq) (*EndpointGetRes, error)
+	List(ctx context.Context, in *EndpointListIn) (*EndpointListOut, error)
+	Get(ctx context.Context, in *EndpointGetIn) (*EndpointGetOut, error)
 }
 
 type endpoint struct {

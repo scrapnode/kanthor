@@ -9,29 +9,29 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceCredentialsExpireReq struct {
+type WorkspaceCredentialsExpireIn struct {
 	WsId     string
 	Id       string
 	Duration int64
 }
 
-func (req *WorkspaceCredentialsExpireReq) Validate() error {
+func (in *WorkspaceCredentialsExpireIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringStartsWith("id", req.Id, entities.IdNsWsc),
-		validator.NumberGreaterThanOrEqual("duration", req.Duration, 0),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("id", in.Id, entities.IdNsWsc),
+		validator.NumberGreaterThanOrEqual("duration", in.Duration, 0),
 	)
 }
 
-type WorkspaceCredentialsExpireRes struct {
+type WorkspaceCredentialsExpireOut struct {
 	Id        string
 	ExpiredAt int64
 }
 
-func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCredentialsExpireReq) (*WorkspaceCredentialsExpireRes, error) {
+func (uc *workspaceCredentials) Expire(ctx context.Context, in *WorkspaceCredentialsExpireIn) (*WorkspaceCredentialsExpireOut, error) {
 	wsc, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		wsc, err := uc.repositories.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
+		wsc, err := uc.repositories.WorkspaceCredentials().Get(txctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +41,7 @@ func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCreden
 			return nil, errors.New("credentials was already expired")
 		}
 
-		wsc.ExpiredAt = uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(req.Duration)).UnixMilli()
+		wsc.ExpiredAt = uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(in.Duration)).UnixMilli()
 		wsc.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.WorkspaceCredentials().Update(txctx, wsc)
 	})
@@ -50,7 +50,7 @@ func (uc *workspaceCredentials) Expire(ctx context.Context, req *WorkspaceCreden
 	}
 
 	doc := wsc.(*entities.WorkspaceCredentials)
-	res := &WorkspaceCredentialsExpireRes{
+	res := &WorkspaceCredentialsExpireOut{
 		Id:        doc.Id,
 		ExpiredAt: doc.ExpiredAt,
 	}

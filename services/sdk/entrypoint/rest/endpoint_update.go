@@ -40,21 +40,21 @@ func UseEndpointUpdate(service *sdk) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
-		ucreq := &usecase.EndpointUpdateReq{AppId: appId, Id: id, Name: req.Name}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.EndpointUpdateIn{AppId: appId, Id: id, Name: req.Name}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Endpoint().Update(ctx, ucreq)
+		out, err := service.uc.Endpoint().Update(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &EndpointUpdateRes{ucres.Doc}
+		res := &EndpointUpdateRes{out.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

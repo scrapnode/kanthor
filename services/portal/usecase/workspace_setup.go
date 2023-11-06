@@ -8,19 +8,19 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceSetupReq struct {
+type WorkspaceSetupIn struct {
 	Workspace     *entities.Workspace
 	Applications  []entities.Application
 	Endpoints     []entities.Endpoint
 	EndpointRules []entities.EndpointRule
 }
 
-func (req *WorkspaceSetupReq) Validate() error {
+func (in *WorkspaceSetupIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.PointerNotNil("wokrspace", req.Workspace),
-		validator.Array(req.Applications, func(i int, item *entities.Application) error {
-			prefix := fmt.Sprintf("req.applications[%d]", i)
+		validator.PointerNotNil("wokrspace", in.Workspace),
+		validator.Array(in.Applications, func(i int, item *entities.Application) error {
+			prefix := fmt.Sprintf("in.applications[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
 				validator.StringStartsWith(prefix+".id", item.Id, entities.IdNsApp),
@@ -30,8 +30,8 @@ func (req *WorkspaceSetupReq) Validate() error {
 				validator.StringRequired(prefix+".name", item.Name),
 			)
 		}),
-		validator.Array(req.Endpoints, func(i int, item *entities.Endpoint) error {
-			prefix := fmt.Sprintf("req.endpoints[%d]", i)
+		validator.Array(in.Endpoints, func(i int, item *entities.Endpoint) error {
+			prefix := fmt.Sprintf("in.endpoints[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
 				validator.StringStartsWith(prefix+".id", item.Id, entities.IdNsEp),
@@ -44,8 +44,8 @@ func (req *WorkspaceSetupReq) Validate() error {
 				validator.StringUri(prefix+".uri", item.Uri),
 			)
 		}),
-		validator.Array(req.EndpointRules, func(i int, item *entities.EndpointRule) error {
-			prefix := fmt.Sprintf("req.endpoint_rules[%d]", i)
+		validator.Array(in.EndpointRules, func(i int, item *entities.EndpointRule) error {
+			prefix := fmt.Sprintf("in.endpoint_rules[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
 				validator.StringStartsWith(prefix+".id", item.Id, entities.IdNsEpr),
@@ -61,29 +61,29 @@ func (req *WorkspaceSetupReq) Validate() error {
 	)
 }
 
-type WorkspaceSetupRes struct {
+type WorkspaceSetupOut struct {
 	ApplicationIds  []string
 	EndpointIds     []string
 	EndpointRuleIds []string
 	Status          map[string]bool
 }
 
-func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*WorkspaceSetupRes, error) {
+func (uc *workspace) Setup(ctx context.Context, in *WorkspaceSetupIn) (*WorkspaceSetupOut, error) {
 	res, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
 		// starting with false
 		status := map[string]bool{}
 
-		for _, app := range req.Applications {
+		for _, app := range in.Applications {
 			status[app.Id] = false
 		}
-		for _, ep := range req.Endpoints {
+		for _, ep := range in.Endpoints {
 			status[ep.Id] = false
 		}
-		for _, epr := range req.EndpointRules {
+		for _, epr := range in.EndpointRules {
 			status[epr.Id] = false
 		}
 
-		appIds, err := uc.repositories.Application().BulkCreate(txctx, req.Applications)
+		appIds, err := uc.repositories.Application().BulkCreate(txctx, in.Applications)
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +91,7 @@ func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*Worksp
 			status[appId] = true
 		}
 
-		epIds, err := uc.repositories.Endpoint().BulkCreate(txctx, req.Endpoints)
+		epIds, err := uc.repositories.Endpoint().BulkCreate(txctx, in.Endpoints)
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +99,7 @@ func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*Worksp
 			status[epId] = true
 		}
 
-		eprIds, err := uc.repositories.EndpointRule().BulkCreate(txctx, req.EndpointRules)
+		eprIds, err := uc.repositories.EndpointRule().BulkCreate(txctx, in.EndpointRules)
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +107,7 @@ func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*Worksp
 			status[eprId] = true
 		}
 
-		res := &WorkspaceSetupRes{
+		res := &WorkspaceSetupOut{
 			ApplicationIds:  appIds,
 			EndpointIds:     epIds,
 			EndpointRuleIds: eprIds,
@@ -119,5 +119,5 @@ func (uc *workspace) Setup(ctx context.Context, req *WorkspaceSetupReq) (*Worksp
 	if err != nil {
 		return nil, err
 	}
-	return res.(*WorkspaceSetupRes), nil
+	return res.(*WorkspaceSetupOut), nil
 }

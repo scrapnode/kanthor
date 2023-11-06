@@ -11,8 +11,8 @@ import (
 )
 
 type Endeavor interface {
-	Plan(ctx context.Context, req *EndeavorPlanReq) (*EndeavorPlanRes, error)
-	Exec(ctx context.Context, req *EndeavorExecReq) (*EndeavorExecRes, error)
+	Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlanOut, error)
+	Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExecOut, error)
 }
 
 type endeavor struct {

@@ -27,23 +27,23 @@ func RegisterCron(service *planner) func() {
 			}
 		}()
 
-		ucreq := &usecase.TriggerPlanReq{
+		in := &usecase.TriggerPlanIn{
 			Timeout:   service.conf.Trigger.Planner.Timeout,
 			Size:      service.conf.Trigger.Planner.Size,
 			ScanStart: service.conf.Trigger.Planner.ScanStart,
 			ScanEnd:   service.conf.Trigger.Planner.ScanEnd,
 		}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw("invalid trigger plan request", "err", err.Error(), "ucreq", utils.Stringify(ucreq))
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw("invalid trigger plan request", "err", err.Error(), "in", utils.Stringify(in))
 			return
 		}
 
-		ucres, err := service.uc.Trigger().Plan(ctx, ucreq)
+		out, err := service.uc.Trigger().Plan(ctx, in)
 		if err != nil {
 			service.logger.Errorw("unable to plan attempt triggers", "err", err.Error())
 			return
 		}
 
-		service.logger.Infow("planned attempt triggers", "count", len(ucres.Success), "from", ucres.From.Format(time.RFC3339), "to", ucres.To.Format(time.RFC3339))
+		service.logger.Infow("planned attempt triggers", "count", len(out.Success), "from", out.From.Format(time.RFC3339), "to", out.To.Format(time.RFC3339))
 	}
 }

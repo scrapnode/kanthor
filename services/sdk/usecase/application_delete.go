@@ -7,26 +7,26 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type ApplicationDeleteReq struct {
+type ApplicationDeleteIn struct {
 	WsId string
 	Id   string
 }
 
-func (req *ApplicationDeleteReq) Validate() error {
+func (in *ApplicationDeleteIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringStartsWith("id", req.Id, entities.IdNsApp),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("id", in.Id, entities.IdNsApp),
 	)
 }
 
-type ApplicationDeleteRes struct {
+type ApplicationDeleteOut struct {
 	Doc *entities.Application
 }
 
-func (uc *application) Delete(ctx context.Context, req *ApplicationDeleteReq) (*ApplicationDeleteRes, error) {
+func (uc *application) Delete(ctx context.Context, in *ApplicationDeleteIn) (*ApplicationDeleteOut, error) {
 	app, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repositories.Application().Get(txctx, req.WsId, req.Id)
+		app, err := uc.repositories.Application().Get(txctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -40,6 +40,5 @@ func (uc *application) Delete(ctx context.Context, req *ApplicationDeleteReq) (*
 		return nil, err
 	}
 
-	res := &ApplicationDeleteRes{Doc: app.(*entities.Application)}
-	return res, nil
+	return &ApplicationDeleteOut{Doc: app.(*entities.Application)}, nil
 }

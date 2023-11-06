@@ -38,21 +38,21 @@ func UseApplicationUpdate(service *sdk) gin.HandlerFunc {
 
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		id := ginctx.Param("app_id")
-		ucreq := &usecase.ApplicationUpdateReq{Id: id, Name: req.Name}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.ApplicationUpdateIn{Id: id, Name: req.Name}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Application().Update(ctx, ucreq)
+		out, err := service.uc.Application().Update(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &ApplicationUpdateRes{ucres.Doc}
+		res := &ApplicationUpdateRes{out.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

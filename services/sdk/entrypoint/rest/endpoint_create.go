@@ -42,27 +42,27 @@ func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
-		ucreq := &usecase.EndpointCreateReq{
+		in := &usecase.EndpointCreateIn{
 			AppId:     appId,
 			Name:      req.Name,
 			SecretKey: req.SecretKey,
 			Method:    req.Method,
 			Uri:       req.Uri,
 		}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Endpoint().Create(ctx, ucreq)
+		out, err := service.uc.Endpoint().Create(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &EndpointCreateRes{ucres.Doc}
+		res := &EndpointCreateRes{out.Doc}
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

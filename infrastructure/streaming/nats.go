@@ -142,8 +142,10 @@ func (streaming *nats) stream() (*natscore.StreamInfo, error) {
 		MaxMsgsPerSubject: streaming.conf.Nats.Limits.MsgCount,
 		MaxAge:            time.Duration(streaming.conf.Nats.Limits.MsgAge) * time.Millisecond,
 		// hardcode
-		Retention: natscore.LimitsPolicy,
-		Discard:   natscore.DiscardOld,
+		// 5m of deduplicated
+		Duplicates: time.Duration(300000) * time.Millisecond,
+		Retention:  natscore.LimitsPolicy,
+		Discard:    natscore.DiscardOld,
 	}
 
 	// not found, create a new one

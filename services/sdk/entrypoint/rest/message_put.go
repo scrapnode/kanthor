@@ -59,7 +59,7 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
-		ucreq := &usecase.MessagePutReq{
+		in := &usecase.MessagePutIn{
 			WsId:     ws.Id,
 			Tier:     ws.Tier,
 			AppId:    appId,
@@ -69,22 +69,22 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			Metadata: entities.Metadata{entities.MetaMsgIdempotencyKey: ginctx.GetHeader(ginmw.HeaderIdempotencyKey)},
 		}
 
-		if err := ucreq.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		if err := in.Validate(); err != nil {
+			logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := uc.Message().Put(ctx, ucreq)
+		out, err := uc.Message().Put(ctx, in)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &MessagePutRes{ucres.Message.Id}
+		res := &MessagePutRes{out.Message.Id}
 
-		logger.Debugw("put message", "msg_id", ucres.Message.Id)
+		logger.Debugw("put message", "msg_id", out.Message.Id)
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

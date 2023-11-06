@@ -12,7 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type TriggerPlanReq struct {
+type TriggerPlanIn struct {
 	Timeout int64
 	Size    int
 
@@ -20,7 +20,7 @@ type TriggerPlanReq struct {
 	ScanEnd   int64
 }
 
-func (req *TriggerPlanReq) Validate() error {
+func (req *TriggerPlanIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
@@ -29,13 +29,13 @@ func (req *TriggerPlanReq) Validate() error {
 	)
 }
 
-type TriggerPlanRes struct {
+type TriggerPlanOut struct {
 	Success []string
 	From    time.Time
 	To      time.Time
 }
 
-func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanRes, error) {
+func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanIn) (*TriggerPlanOut, error) {
 	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
 	defer cancel()
 
@@ -91,9 +91,9 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanReq) (*TriggerPlanR
 
 	select {
 	case err := <-errc:
-		return &TriggerPlanRes{Success: ok, From: from, To: to}, err
+		return &TriggerPlanOut{Success: ok, From: from, To: to}, err
 	case <-timeout.Done():
-		return &TriggerPlanRes{Success: ok, From: from, To: to}, timeout.Err()
+		return &TriggerPlanOut{Success: ok, From: from, To: to}, timeout.Err()
 	}
 }
 

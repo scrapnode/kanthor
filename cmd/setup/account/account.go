@@ -68,23 +68,23 @@ func New(provider configuration.Provider) *cobra.Command {
 			repos := repositories.New(logger, db)
 			uc := usecase.New(conf, logger, infra, repos)
 
-			out := &output{json: map[string]any{}}
+			p := &printing{json: map[string]any{}}
 
-			account, err := uc.Account().Setup(ctx, &usecase.AccountSetupReq{AccountId: args[0]})
+			account, err := uc.Account().Setup(ctx, &usecase.AccountSetupIn{AccountId: args[0]})
 			if err != nil {
 				return err
 			}
-			out.AddJson("id", account.Workspace.Id)
-			out.AddJson("tier", account.Workspace.Tier)
+			p.AddJson("id", account.Workspace.Id)
+			p.AddJson("tier", account.Workspace.Tier)
 
-			if err := apps(uc, ctx, account.Workspace, file, out); err != nil {
+			if err := apps(uc, ctx, account.Workspace, file, p); err != nil {
 				return err
 			}
-			if err := creds(uc, ctx, account.Workspace, out); err != nil {
+			if err := creds(uc, ctx, account.Workspace, p); err != nil {
 				return err
 			}
 
-			return out.Render(dest)
+			return p.Render(dest)
 		},
 	}
 

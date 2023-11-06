@@ -10,12 +10,12 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndpointRuleGetReq struct {
+type EndpointRuleGetIn struct {
 	EpId string
 	Id   string
 }
 
-func (req *EndpointRuleGetReq) Validate() error {
+func (req *EndpointRuleGetIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
@@ -23,15 +23,15 @@ func (req *EndpointRuleGetReq) Validate() error {
 	)
 }
 
-type EndpointRuleGetRes struct {
+type EndpointRuleGetOut struct {
 	Doc *entities.EndpointRule
 }
 
-func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetReq) (*EndpointRuleGetRes, error) {
+func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetIn) (*EndpointRuleGetOut, error) {
 	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 	key := CacheKeyEpr(req.EpId, req.Id)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*EndpointRuleGetRes, error) {
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*EndpointRuleGetOut, error) {
 		ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
 		if err != nil {
 			return nil, err
@@ -45,7 +45,6 @@ func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetReq) (*Endp
 		if err != nil {
 			return nil, err
 		}
-		res := &EndpointRuleGetRes{Doc: epr}
-		return res, nil
+		return &EndpointRuleGetOut{Doc: epr}, nil
 	})
 }

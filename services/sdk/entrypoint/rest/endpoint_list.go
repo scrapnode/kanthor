@@ -32,24 +32,24 @@ func UseEndpointList(service *sdk) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
 
-		ucreq := &usecase.EndpointListReq{
+		in := &usecase.EndpointListIn{
 			AppId:   appId,
 			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
 		}
-		if err := ucreq.Validate(); err != nil {
+		if err := in.Validate(); err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Endpoint().List(ctx, ucreq)
+		out, err := service.uc.Endpoint().List(ctx, in)
 		if err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &EndpointListRes{ListRes: ucres.ListRes}
+		res := &EndpointListRes{ListRes: out.ListRes}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

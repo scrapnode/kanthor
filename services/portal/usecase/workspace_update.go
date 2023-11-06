@@ -7,31 +7,31 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceUpdateReq struct {
+type WorkspaceUpdateIn struct {
 	Id   string
 	Name string
 }
 
-func (req *WorkspaceUpdateReq) Validate() error {
+func (in *WorkspaceUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("id", req.Id, entities.IdNsWs),
-		validator.StringRequired("name", req.Name),
+		validator.StringStartsWith("id", in.Id, entities.IdNsWs),
+		validator.StringRequired("name", in.Name),
 	)
 }
 
-type WorkspaceUpdateRes struct {
+type WorkspaceUpdateOut struct {
 	Doc *entities.Workspace
 }
 
-func (uc *workspace) Update(ctx context.Context, req *WorkspaceUpdateReq) (*WorkspaceUpdateRes, error) {
+func (uc *workspace) Update(ctx context.Context, in *WorkspaceUpdateIn) (*WorkspaceUpdateOut, error) {
 	ws, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ws, err := uc.repositories.Workspace().Get(txctx, req.Id)
+		ws, err := uc.repositories.Workspace().Get(txctx, in.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		ws.Name = req.Name
+		ws.Name = in.Name
 		ws.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.Workspace().Update(txctx, ws)
 	})
@@ -39,6 +39,5 @@ func (uc *workspace) Update(ctx context.Context, req *WorkspaceUpdateReq) (*Work
 		return nil, err
 	}
 
-	res := &WorkspaceUpdateRes{Doc: ws.(*entities.Workspace)}
-	return res, nil
+	return &WorkspaceUpdateOut{Doc: ws.(*entities.Workspace)}, nil
 }

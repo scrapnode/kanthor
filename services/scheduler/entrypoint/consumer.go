@@ -23,7 +23,7 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 				continue
 			}
 
-			if err := usecase.ValidateRequestScheduleReqMessage("message", message); err != nil {
+			if err := usecase.ValidateRequestScheduleInMessage("message", message); err != nil {
 				service.logger.Errorw(err.Error(), "event", event.String(), "message", message.String())
 				// got malformed message, should ignore and not retry it
 				continue
@@ -34,12 +34,12 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 
 		ctx := context.Background()
 
-		ucreq := &usecase.RequestScheduleReq{
+		in := &usecase.RequestScheduleIn{
 			Timeout:  service.conf.Request.Schedule.Timeout,
 			Messages: messages,
 		}
 		// we alreay validated messages of request, don't need to validate again
-		ucres, err := service.uc.Request().Schedule(ctx, ucreq)
+		out, err := service.uc.Request().Schedule(ctx, in)
 		if err != nil {
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
@@ -49,8 +49,8 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 			return retruning
 		}
 
-		service.logger.Infow("scheduled requests for messages", "ok_count", len(ucres.Success), "ko_count", len(ucres.Error))
+		service.logger.Infow("scheduled requests for messages", "ok_count", len(out.Success), "ko_count", len(out.Error))
 
-		return ucres.Error
+		return out.Error
 	}
 }

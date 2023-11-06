@@ -7,25 +7,25 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type ApplicationCreateReq struct {
+type ApplicationCreateIn struct {
 	WsId string
 	Name string
 }
 
-func (req *ApplicationCreateReq) Validate() error {
+func (in *ApplicationCreateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringRequired("name", req.Name),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringRequired("name", in.Name),
 	)
 }
 
-type ApplicationCreateRes struct {
+type ApplicationCreateOut struct {
 	Doc *entities.Application
 }
 
-func (uc *application) Create(ctx context.Context, req *ApplicationCreateReq) (*ApplicationCreateRes, error) {
-	doc := &entities.Application{WsId: req.WsId, Name: req.Name}
+func (uc *application) Create(ctx context.Context, in *ApplicationCreateIn) (*ApplicationCreateOut, error) {
+	doc := &entities.Application{WsId: in.WsId, Name: in.Name}
 	doc.GenId()
 	doc.SetAT(uc.infra.Timer.Now())
 
@@ -34,6 +34,5 @@ func (uc *application) Create(ctx context.Context, req *ApplicationCreateReq) (*
 		return nil, err
 	}
 
-	res := &ApplicationCreateRes{Doc: app}
-	return res, nil
+	return &ApplicationCreateOut{Doc: app}, nil
 }

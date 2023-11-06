@@ -45,7 +45,7 @@ func UseAuth(engine authenticator.Authenticator, uc usecase.Portal) gin.HandlerF
 }
 
 func workspace(uc usecase.Portal, ctx context.Context, id string) (*entities.Workspace, error) {
-	req := &usecase.WorkspaceGetReq{Id: id}
+	req := &usecase.WorkspaceGetIn{Id: id}
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}

@@ -9,31 +9,30 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type ApplicationGetReq struct {
+type ApplicationGetIn struct {
 	WsId string
 	Id   string
 }
 
-func (req *ApplicationGetReq) Validate() error {
+func (in *ApplicationGetIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringStartsWith("id", req.Id, entities.IdNsApp),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("id", in.Id, entities.IdNsApp),
 	)
 }
 
-type ApplicationGetRes struct {
+type ApplicationGetOut struct {
 	Doc *entities.Application
 }
 
-func (uc *application) Get(ctx context.Context, req *ApplicationGetReq) (*ApplicationGetRes, error) {
-	key := CacheKeyApp(req.WsId, req.Id)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*ApplicationGetRes, error) {
-		app, err := uc.repositories.Application().Get(ctx, req.WsId, req.Id)
+func (uc *application) Get(ctx context.Context, in *ApplicationGetIn) (*ApplicationGetOut, error) {
+	key := CacheKeyApp(in.WsId, in.Id)
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*ApplicationGetOut, error) {
+		app, err := uc.repositories.Application().Get(ctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}
-		res := &ApplicationGetRes{Doc: app}
-		return res, nil
+		return &ApplicationGetOut{Doc: app}, nil
 	})
 }

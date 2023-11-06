@@ -8,39 +8,39 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndpointRuleUpdateReq struct {
+type EndpointRuleUpdateIn struct {
 	EpId string
 	Id   string
 	Name string
 }
 
-func (req *EndpointRuleUpdateReq) Validate() error {
+func (in *EndpointRuleUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
-		validator.StringStartsWith("id", req.EpId, entities.IdNsEpr),
-		validator.StringRequired("name", req.Name),
+		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
+		validator.StringStartsWith("id", in.EpId, entities.IdNsEpr),
+		validator.StringRequired("name", in.Name),
 	)
 }
 
-type EndpointRuleUpdateRes struct {
+type EndpointRuleUpdateOut struct {
 	Doc *entities.EndpointRule
 }
 
-func (uc *endpointRule) Update(ctx context.Context, req *EndpointRuleUpdateReq) (*EndpointRuleUpdateRes, error) {
+func (uc *endpointRule) Update(ctx context.Context, in *EndpointRuleUpdateIn) (*EndpointRuleUpdateOut, error) {
 	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
 	epr, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, ws, req.EpId)
+		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, ws, in.EpId)
 		if err != nil {
 			return nil, err
 		}
-		epr, err := uc.repositories.EndpointRule().Get(txctx, ep, req.Id)
+		epr, err := uc.repositories.EndpointRule().Get(txctx, ep, in.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		epr.Name = req.Name
+		epr.Name = in.Name
 		epr.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.EndpointRule().Update(txctx, epr)
 	})
@@ -48,6 +48,6 @@ func (uc *endpointRule) Update(ctx context.Context, req *EndpointRuleUpdateReq) 
 		return nil, err
 	}
 
-	res := &EndpointRuleUpdateRes{Doc: epr.(*entities.EndpointRule)}
+	res := &EndpointRuleUpdateOut{Doc: epr.(*entities.EndpointRule)}
 	return res, nil
 }

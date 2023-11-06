@@ -13,7 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
-func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file string, out *output) error {
+func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file string, p *printing) error {
 	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
@@ -24,22 +24,22 @@ func apps(uc usecase.Portal, ctx context.Context, ws *entities.Workspace, file s
 	}
 
 	apps, eps, eprs, tree := mapping(ws, data)
-	ucreq := &usecase.WorkspaceSetupReq{
+	in := &usecase.WorkspaceSetupIn{
 		Workspace:     ws,
 		Applications:  apps,
 		Endpoints:     eps,
 		EndpointRules: eprs,
 	}
-	if err := ucreq.Validate(); err != nil {
+	if err := in.Validate(); err != nil {
 		return err
 	}
-	ucres, err := uc.Workspace().Setup(ctx, ucreq)
+	out, err := uc.Workspace().Setup(ctx, in)
 	if err != nil {
 		return err
 	}
 
-	out.AddStdout(appsOutput(tree, ucres.Status))
-	out.AddJson("applications", ucres.ApplicationIds)
+	p.AddStdout(appsOutput(tree, out.Status))
+	p.AddJson("applications", out.ApplicationIds)
 
 	return nil
 }

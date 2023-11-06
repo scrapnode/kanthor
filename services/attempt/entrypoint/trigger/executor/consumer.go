@@ -11,7 +11,7 @@ import (
 
 func RegisterConsumer(service *executor) streaming.SubHandler {
 	return func(events map[string]*streaming.Event) map[string]error {
-		ucreq := &usecase.TriggerExecReq{
+		in := &usecase.TriggerExecIn{
 			Timeout:      service.conf.Trigger.Executor.Timeout,
 			Concurrency:  service.conf.Trigger.Executor.Concurrency,
 			ArrangeDelay: service.conf.Trigger.Executor.ArrangeDelay,
@@ -27,13 +27,13 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 				continue
 			}
 
-			ucreq.Triggers[event.Id] = trigger
+			in.Triggers[event.Id] = trigger
 		}
 
 		ctx := context.Background()
 		retruning := map[string]error{}
 
-		ucres, err := service.uc.Trigger().Exec(ctx, ucreq)
+		out, err := service.uc.Trigger().Exec(ctx, in)
 		if err != nil {
 			service.logger.Errorw("unable to consume an attempt trigger", "err", err.Error())
 			// basically we will not try to retry an attempt trigger
@@ -41,15 +41,15 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 			return retruning
 		}
 
-		if len(ucres.Error) > 0 {
+		if len(out.Error) > 0 {
 			// basically we will not try to retry an attempt trigger
 			// because it could be retry later by cronjob
-			for key, err := range ucres.Error {
+			for key, err := range out.Error {
 				service.logger.Errorw("consume an attempt trigger got some errors", "key", key, "err", err.Error())
 			}
 		}
 
-		service.logger.Infow("consumed attempt", "count", len(ucres.Success))
+		service.logger.Infow("consumed attempt", "count", len(out.Success))
 
 		return retruning
 	}

@@ -12,7 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 
-type ApplicationListRes struct {
+type ApplicationListReq struct {
 	*structure.ListRes[entities.Application]
 }
 
@@ -23,27 +23,27 @@ type ApplicationListRes struct {
 // @Param		_q					query		string					false	"search keyword" 						minlength(2)  maxlength(32)
 // @Param		_limit				query		int						false	"limit returning records"				minimum(5)    maximum(30)
 // @Param		_id					query		[]string				false	"only return records with selected ids"
-// @Success		200					{object}	ApplicationListRes
+// @Success		200					{object}	ApplicationListReq
 // @Failure		default				{object}	gateway.Error
 // @Security	BasicAuth
 func UseApplicationList(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ucreq := &usecase.ApplicationListReq{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		in := &usecase.ApplicationListIn{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Application().List(ctx, ucreq)
+		out, err := service.uc.Application().List(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &ApplicationListRes{ListRes: ucres.ListRes}
+		res := &ApplicationListReq{ListRes: out.ListRes}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

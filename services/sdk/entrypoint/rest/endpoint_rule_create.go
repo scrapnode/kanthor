@@ -44,7 +44,7 @@ func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		epId := ginctx.Param("ep_id")
 
-		ucreq := &usecase.EndpointRuleCreateReq{
+		in := &usecase.EndpointRuleCreateIn{
 			EpId:                epId,
 			Name:                req.Name,
 			Priority:            req.Priority,
@@ -52,20 +52,20 @@ func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {
 			ConditionSource:     req.ConditionSource,
 			ConditionExpression: req.ConditionExpression,
 		}
-		if err := ucreq.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+		if err := in.Validate(); err != nil {
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.EndpointRule().Create(ctx, ucreq)
+		out, err := service.uc.EndpointRule().Create(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &EndpointRuleCreateRes{ucres.Doc}
+		res := &EndpointRuleCreateRes{out.Doc}
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

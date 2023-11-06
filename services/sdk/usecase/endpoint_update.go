@@ -7,40 +7,40 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndpointUpdateReq struct {
+type EndpointUpdateIn struct {
 	WsId  string
 	AppId string
 	Id    string
 	Name  string
 }
 
-func (req *EndpointUpdateReq) Validate() error {
+func (in *EndpointUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ws_id", req.WsId, entities.IdNsWs),
-		validator.StringStartsWith("app_id", req.AppId, entities.IdNsApp),
-		validator.StringStartsWith("id", req.Id, entities.IdNsEp),
-		validator.StringRequired("name", req.Name),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
+		validator.StringStartsWith("id", in.Id, entities.IdNsEp),
+		validator.StringRequired("name", in.Name),
 	)
 }
 
-type EndpointUpdateRes struct {
+type EndpointUpdateOut struct {
 	Doc *entities.Endpoint
 }
 
-func (uc *endpoint) Update(ctx context.Context, req *EndpointUpdateReq) (*EndpointUpdateRes, error) {
+func (uc *endpoint) Update(ctx context.Context, in *EndpointUpdateIn) (*EndpointUpdateOut, error) {
 	ep, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repositories.Application().Get(ctx, req.WsId, req.AppId)
+		app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
 		if err != nil {
 			return nil, err
 		}
 
-		ep, err := uc.repositories.Endpoint().Get(txctx, app, req.Id)
+		ep, err := uc.repositories.Endpoint().Get(txctx, app, in.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		ep.Name = req.Name
+		ep.Name = in.Name
 		ep.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.Endpoint().Update(txctx, ep)
 	})
@@ -48,6 +48,5 @@ func (uc *endpoint) Update(ctx context.Context, req *EndpointUpdateReq) (*Endpoi
 		return nil, err
 	}
 
-	res := &EndpointUpdateRes{Doc: ep.(*entities.Endpoint)}
-	return res, nil
+	return &EndpointUpdateOut{Doc: ep.(*entities.Endpoint)}, nil
 }

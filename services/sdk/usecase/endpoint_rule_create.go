@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type EndpointRuleCreateReq struct {
+type EndpointRuleCreateIn struct {
 	EpId string
 	Name string
 
@@ -18,36 +18,36 @@ type EndpointRuleCreateReq struct {
 	ConditionExpression string
 }
 
-func (req *EndpointRuleCreateReq) Validate() error {
+func (in *EndpointRuleCreateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
-		validator.StringRequired("name", req.Name),
-		validator.NumberGreaterThan("priority", req.Priority, 0),
-		validator.StringRequired("condition_source", req.ConditionSource),
-		validator.StringRequired("condition_expression", req.ConditionExpression),
+		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
+		validator.StringRequired("name", in.Name),
+		validator.NumberGreaterThan("priority", in.Priority, 0),
+		validator.StringRequired("condition_source", in.ConditionSource),
+		validator.StringRequired("condition_expression", in.ConditionExpression),
 	)
 }
 
-type EndpointRuleCreateRes struct {
+type EndpointRuleCreateOut struct {
 	Doc *entities.EndpointRule
 }
 
-func (uc *endpointRule) Create(ctx context.Context, req *EndpointRuleCreateReq) (*EndpointRuleCreateRes, error) {
+func (uc *endpointRule) Create(ctx context.Context, in *EndpointRuleCreateIn) (*EndpointRuleCreateOut, error) {
 	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
 
-	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
+	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, in.EpId)
 	if err != nil {
 		return nil, err
 	}
 
 	doc := &entities.EndpointRule{
 		EpId:                ep.Id,
-		Name:                req.Name,
-		Priority:            req.Priority,
-		Exclusionary:        req.Exclusionary,
-		ConditionSource:     req.ConditionSource,
-		ConditionExpression: req.ConditionExpression,
+		Name:                in.Name,
+		Priority:            in.Priority,
+		Exclusionary:        in.Exclusionary,
+		ConditionSource:     in.ConditionSource,
+		ConditionExpression: in.ConditionExpression,
 	}
 	doc.GenId()
 	doc.SetAT(uc.infra.Timer.Now())
@@ -57,6 +57,5 @@ func (uc *endpointRule) Create(ctx context.Context, req *EndpointRuleCreateReq) 
 		return nil, err
 	}
 
-	res := &EndpointRuleCreateRes{Doc: epr}
-	return res, nil
+	return &EndpointRuleCreateOut{Doc: epr}, nil
 }

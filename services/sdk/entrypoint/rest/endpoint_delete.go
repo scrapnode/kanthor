@@ -28,21 +28,21 @@ func UseEndpointDelete(service *sdk) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
-		ucreq := &usecase.EndpointDeleteReq{AppId: appId, Id: id}
-		if err := ucreq.Validate(); err != nil {
+		in := &usecase.EndpointDeleteIn{AppId: appId, Id: id}
+		if err := in.Validate(); err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
 			return
 		}
 
-		ucres, err := service.uc.Endpoint().Delete(ctx, ucreq)
+		out, err := service.uc.Endpoint().Delete(ctx, in)
 		if err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(ucreq))
+			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &EndpointDeleteRes{ucres.Doc}
+		res := &EndpointDeleteRes{out.Doc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }
