@@ -114,7 +114,12 @@ func (service *storage) Stop(ctx context.Context) error {
 }
 
 func (service *storage) Run(ctx context.Context) error {
-	if err := service.subscriber.Sub(ctx, constants.TopicPublic, NewConsumer(service)); err != nil {
+	topic := constants.TopicPublic
+	if service.conf.Topic != "" {
+		topic = service.conf.Topic
+	}
+
+	if err := service.subscriber.Sub(ctx, topic, NewConsumer(service)); err != nil {
 		return err
 	}
 

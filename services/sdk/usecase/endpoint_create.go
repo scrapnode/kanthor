@@ -27,7 +27,7 @@ func (in *EndpointCreateIn) Validate() error {
 		validator.StringRequired("secret_key", in.SecretKey),
 		validator.StringLen("secret_key", in.SecretKey, 16, 32),
 		validator.StringUri("uri", in.Uri),
-		validator.StringOneOf("method", in.Method, []string{http.MethodPost, http.MethodPut}),
+		validator.StringRequiredOneOf("method", in.Method, []string{http.MethodPost, http.MethodPut}),
 	)
 }
 

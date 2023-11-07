@@ -18,7 +18,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringOneOf("authenticator.config.engine", conf.Engine, []string{EngineAsk}),
+		validator.StringRequiredOneOf("authenticator.config.engine", conf.Engine, []string{EngineAsk}),
 	)
 	if err != nil {
 		return err

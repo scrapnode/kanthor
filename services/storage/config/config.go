@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -25,10 +26,19 @@ func (conf *Wrapper) Validate() error {
 }
 
 type Config struct {
+	Topic     string           `json:"topic" yaml:"topic" mapstructure:"topic"`
 	Warehouse StorageWarehouse `json:"warehouse" yaml:"warehouse" mapstructure:"warehouse"`
 }
 
 func (conf *Config) Validate() error {
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringOneOf("config.storage.topic", conf.Topic, []string{constants.TopicMessage, constants.TopicRequest, constants.TopicResponse}),
+	)
+	if err != nil {
+		return err
+	}
+
 	if err := conf.Warehouse.Validate(); err != nil {
 		return fmt.Errorf("config.storage.warehouse: %v", err)
 	}
@@ -54,7 +64,7 @@ type StorageWarehousePut struct {
 func (conf *StorageWarehousePut) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("config.storage.forwarder.send.timeout", conf.Timeout, 1000),
-		validator.NumberGreaterThan("config.storage.forwarder.send.size", conf.Size, 0),
+		validator.NumberGreaterThanOrEqual("config.storage.warehouse.put.timeout", conf.Timeout, 1000),
+		validator.NumberGreaterThan("config.storage.warehouse.put.size", conf.Size, 0),
 	)
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/services/ioc"
 )
 
-func Service(name string, provider configuration.Provider) (patterns.Runnable, error) {
+func Service(provider configuration.Provider, name string) (patterns.Runnable, error) {
 	if name == services.PORTAL {
 		return ioc.Portal(provider)
 	}

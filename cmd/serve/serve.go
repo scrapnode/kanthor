@@ -27,7 +27,7 @@ func New(provider configuration.Provider) *cobra.Command {
 			}
 
 			serviceName := args[0]
-			service, err := Service(serviceName, provider)
+			service, err := Service(provider, serviceName)
 			if err != nil {
 				return err
 			}

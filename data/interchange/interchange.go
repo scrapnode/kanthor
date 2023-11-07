@@ -82,7 +82,7 @@ func (ep *Endpoint) Validate(key string) error {
 		validator.StringRequired(fmt.Sprintf("%s.name", key), ep.Name),
 		validator.StringLenIfNotEmpty(fmt.Sprintf("%s.secret_key", key), ep.SecretKey, 16, 32),
 		validator.StringUri(fmt.Sprintf("%s.uri", key), ep.Uri),
-		validator.StringOneOf(fmt.Sprintf("%s.method", key), ep.Method, []string{http.MethodPost, http.MethodPut}),
+		validator.StringRequiredOneOf(fmt.Sprintf("%s.method", key), ep.Method, []string{http.MethodPost, http.MethodPut}),
 	)
 	if err != nil {
 		return err

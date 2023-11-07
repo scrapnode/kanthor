@@ -16,6 +16,11 @@ func Stringify(value interface{}) string {
 	return string(bytes)
 }
 
+func StringifyIndent(value interface{}, prefix string) string {
+	bytes, _ := json.MarshalIndent(value, prefix, "  ")
+	return string(bytes)
+}
+
 func RandomString(n int) string {
 	var str string
 	count := n / 32

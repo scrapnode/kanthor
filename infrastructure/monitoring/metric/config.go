@@ -19,7 +19,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringOneOf("metric.config.engine", conf.Engine, []string{EngineNoop, EngineOtel}),
+		validator.StringRequiredOneOf("metric.config.engine", conf.Engine, []string{EngineNoop, EngineOtel}),
 	)
 	if err != nil {
 		return err
