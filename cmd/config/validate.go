@@ -34,11 +34,14 @@ func NewValidate(provider configuration.Provider) *cobra.Command {
 				return err
 			}
 
-			fmt.Println("--- infrastructure ---")
-			fmt.Println(utils.StringifyIndent(infra, ""))
+			if verbose, err := cmd.Flags().GetBool("verbose"); err == nil && verbose {
+				fmt.Println("--- infrastructure ---")
+				fmt.Println(utils.StringifyIndent(infra))
 
-			fmt.Println("--- " + serviceName + " ---")
-			fmt.Println(utils.StringifyIndent(service, ""))
+				fmt.Println("--- " + serviceName + " ---")
+				fmt.Println(utils.StringifyIndent(service))
+			}
+
 			return nil
 		},
 	}

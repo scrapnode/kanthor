@@ -15,10 +15,10 @@ import (
 )
 
 func Service(provider configuration.Provider, name string) (validator.Validator, error) {
-	if name == services.PORTAL {
+	if name == services.SDK {
 		return sdk.New(provider)
 	}
-	if name == services.SDK {
+	if name == services.PORTAL {
 		return portal.New(provider)
 	}
 	if name == services.SCHEDULER {

@@ -126,7 +126,8 @@ func (service *executor) Stop(ctx context.Context) error {
 }
 
 func (service *executor) Run(ctx context.Context) error {
-	if err := service.subscriber.Sub(ctx, constants.TopicTrigger, RegisterConsumer(service)); err != nil {
+	topic := constants.TopicTrigger
+	if err := service.subscriber.Sub(ctx, topic, RegisterConsumer(service)); err != nil {
 		return err
 	}
 
@@ -161,7 +162,7 @@ func (service *executor) Run(ctx context.Context) error {
 		}
 	}()
 
-	service.logger.Info("running")
+	service.logger.Infow("running", "topic", topic)
 	forever := make(chan bool)
 	select {
 	case <-forever:

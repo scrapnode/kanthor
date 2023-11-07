@@ -16,8 +16,8 @@ func Stringify(value interface{}) string {
 	return string(bytes)
 }
 
-func StringifyIndent(value interface{}, prefix string) string {
-	bytes, _ := json.MarshalIndent(value, prefix, "  ")
+func StringifyIndent(value interface{}) string {
+	bytes, _ := json.MarshalIndent(value, "", "  ")
 	return string(bytes)
 }
 
