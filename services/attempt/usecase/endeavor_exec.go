@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/status"
 	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
@@ -77,7 +78,7 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 			response := uc.send(ctx, request)
 			responses.Set(refId, response)
 
-			if sender.Is5xxStatus(response.Status) {
+			if status.Is5xx(response.Status) {
 				next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
 				err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
 				if err != nil {
@@ -158,8 +159,8 @@ func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entiti
 
 			// sending is success, but we got remote server error
 			// must use custom error here to trigger circuit breaker
-			if sender.Is5xxStatus(res.Status) {
-				return res, errors.New(sender.StatusText(res.Status))
+			if status.Is5xx(res.Status) {
+				return res, errors.New(status.Text(res.Status))
 			}
 
 			return res, nil
@@ -189,7 +190,7 @@ func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entiti
 	if err != nil {
 		uc.logger.Errorw(err.Error(), "req_id", request.Id, "ep_id", request.EpId)
 		response.Error = err.Error()
-		response.Status = sender.Status(err.Error())
+		response.Status = status.Code(err.Error())
 	}
 
 	if res != nil {

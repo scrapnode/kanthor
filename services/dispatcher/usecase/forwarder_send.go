@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/status"
 	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
@@ -125,7 +126,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 
 			// sending is success, but we got remote server error
 			// must use custom error here to trigger circuit breaker
-			if sender.Is5xxStatus(res.Status) {
+			if status.Is5xx(res.Status) {
 				return res, errors.New(http.StatusText(res.Status))
 			}
 
@@ -155,7 +156,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	// so we should test both error and response seperately
 	if err != nil {
 		response.Error = err.Error()
-		response.Status = sender.Status(err.Error())
+		response.Status = status.Code(err.Error())
 	}
 
 	if res != nil {

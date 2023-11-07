@@ -7,6 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/project"
 	"gorm.io/gorm"
 )
 
@@ -14,32 +15,52 @@ type SqlMessage struct {
 	client *gorm.DB
 }
 
-func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time, cursor string) ([]Msg, error) {
+func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time) ([]Msg, error) {
 	// convert timestamp to safe id, so we can the table efficiently with primary key
 	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
 
-	// @TODO: use chunk to fetch
 	selects := []string{"app_id", "id", "tier", "timestamp"}
-	var records []Msg
-	tx := sql.client.
-		Table(entities.TableMsg).
-		Where("app_id = ?", appId).
-		Where("id > ?", low).
-		Where("id < ?", high).
-		Order("app_id DESC, id DESC").
-		Select(selects)
 
-	if cursor != "" {
-		tx = tx.Where("id", ">", cursor)
+	var cursor string
+	var records []Msg
+
+	for {
+		var scanned []Msg
+
+		tx := sql.client.
+			Table(entities.TableMsg).
+			Where("app_id = ?", appId).
+			Where("id < ?", high).
+			Order("app_id DESC, id DESC").
+			Select(selects)
+
+		if cursor == "" {
+			tx = tx.Where("id > ?", low)
+		} else {
+			tx = tx.Where("id > ?", cursor)
+		}
+
+		if tx = tx.Find(&scanned); tx.Error != nil {
+			return nil, tx.Error
+		}
+
+		// collect scanned records
+		records = append(records, scanned...)
+
+		// if we found less than request size, that mean we were in last page
+		if len(scanned) < project.ScanBatchSize {
+			break
+		}
+
+		cursor = scanned[len(scanned)-1].Id
 	}
-	tx = tx.Find(&records)
 
 	if len(records) == 0 {
 		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
 	}
 
-	return records, tx.Error
+	return records, nil
 }
 
 func (sql *SqlMessage) ListByIds(ctx context.Context, ids []string) ([]entities.Message, error) {

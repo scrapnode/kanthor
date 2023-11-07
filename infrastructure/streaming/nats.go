@@ -135,7 +135,7 @@ func (streaming *nats) stream() (*natscore.StreamInfo, error) {
 		Name: streaming.conf.Name,
 		// editable
 		Replicas: streaming.conf.Nats.Replicas,
-		// project.Subject(">") "We accept all subjects that belong to the configured project and tier
+		// project.Subject(">") mean we accept all subjects that belong to the configured project and tier
 		Subjects:          []string{project.Subject(">")},
 		MaxBytes:          streaming.conf.Nats.Limits.Size,
 		MaxMsgSize:        streaming.conf.Nats.Limits.MsgSize,

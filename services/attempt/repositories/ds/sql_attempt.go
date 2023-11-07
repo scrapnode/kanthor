@@ -8,7 +8,9 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/status"
 	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/project"
 	"gorm.io/gorm"
 )
 
@@ -68,26 +70,49 @@ func (sql *SqlAttempt) BulkCreate(ctx context.Context, docs []entities.Attempt) 
 	return ids, nil
 }
 
-func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, matching int64) ([]entities.Attempt, error) {
+func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, less int64) ([]entities.Attempt, error) {
 	// convert timestamp to safe id, so we can the table efficiently with primary key
 	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
 
-	// @TODO: use chunk to fetch
+	var cursor string
 	var records []entities.Attempt
-	tx := sql.client.
-		Table(entities.TableAtt).
-		Where("req_id > ?", low).
-		Where("req_id < ?", high).
-		Where("schedule_next <= ?", matching).
-		Order("req_id DESC").
-		Find(&records)
+	for {
+		var scanned []entities.Attempt
+
+		tx := sql.client.
+			Table(entities.TableAtt).
+			Where("req_id < ?", high).
+			Where("schedule_next <= ?", less).
+			Order("req_id DESC").
+			Limit(project.ScanBatchSize)
+
+		if cursor == "" {
+			tx = tx.Where("req_id > ?", low)
+		} else {
+			tx = tx.Where("req_id > ?", cursor)
+		}
+
+		if tx = tx.Find(&scanned); tx.Error != nil {
+			return nil, tx.Error
+		}
+
+		// collect scanned records
+		records = append(records, scanned...)
+
+		// if we found less than request size, that mean we were in last page
+		if len(scanned) < project.ScanBatchSize {
+			break
+		}
+
+		cursor = scanned[len(scanned)-1].ReqId
+	}
 
 	if len(records) == 0 {
 		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
 	}
 
-	return records, tx.Error
+	return records, nil
 }
 
 func (sql *SqlAttempt) MarkComplete(ctx context.Context, reqId string, res *entities.Response) error {
@@ -110,6 +135,19 @@ func (sql *SqlAttempt) MarkReschedule(ctx context.Context, reqId string, ts int6
 	)
 
 	if tx := sql.client.Exec(statement, ts, reqId); tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
+func (sql *SqlAttempt) MarkIgnore(ctx context.Context, reqIds []string) error {
+	statement := fmt.Sprintf(
+		"UPDATE %s SET status = ? WHERE req_id IN ?",
+		entities.TableAtt,
+	)
+
+	if tx := sql.client.Exec(statement, status.ErrIgnore, reqIds); tx.Error != nil {
 		return tx.Error
 	}
 

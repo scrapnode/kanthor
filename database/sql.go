@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/scrapnode/kanthor/database/config"
 	"github.com/scrapnode/kanthor/logging"
@@ -86,6 +87,17 @@ func (db *sql) Connect(ctx context.Context) error {
 		return err
 	}
 	db.client = client
+
+	isntance, err := db.client.DB()
+	if err != nil {
+		return err
+	}
+	// each postgres connection has their backend
+	// the longer connection is alive, the more memory they consume
+	isntance.SetConnMaxLifetime(time.Second * 300)
+	isntance.SetConnMaxIdleTime(time.Second * 60)
+	isntance.SetMaxIdleConns(1)
+	isntance.SetMaxOpenConns(10)
 
 	db.status = patterns.StatusConnected
 	db.logger.Info("connected")

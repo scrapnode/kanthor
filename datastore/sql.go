@@ -89,16 +89,16 @@ func (ds *sql) Connect(ctx context.Context) error {
 	}
 	ds.client = client
 
-	db, err := ds.client.DB()
+	isntance, err := ds.client.DB()
 	if err != nil {
 		return err
 	}
-
 	// each postgres connection has their backend
 	// the longer connection is alive, the more memory they consume
-	db.SetConnMaxLifetime(time.Second * 300)
-	db.SetConnMaxIdleTime(time.Second * 60)
-	db.SetMaxIdleConns(1)
+	isntance.SetConnMaxLifetime(time.Second * 300)
+	isntance.SetConnMaxIdleTime(time.Second * 60)
+	isntance.SetMaxIdleConns(1)
+	isntance.SetMaxOpenConns(10)
 
 	ds.status = patterns.StatusConnected
 	ds.logger.Info("connected")

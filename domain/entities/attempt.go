@@ -36,6 +36,10 @@ func (entity *Attempt) String() string {
 	return string(data)
 }
 
+func (entity *Attempt) Complete() bool {
+	return entity.CompletedAt > 0
+}
+
 type AttemptTrigger struct {
 	AppId string `json:"app_id"`
 	Tier  string `json:"tier"`

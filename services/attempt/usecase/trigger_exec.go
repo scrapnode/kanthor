@@ -2,15 +2,14 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/scrapnode/kanthor/assessor"
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/status"
 	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
-	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
@@ -195,23 +194,9 @@ func (uc *trigger) examine(
 }
 
 func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (map[string]ds.Msg, []string, error) {
-	cursor, err := uc.infra.Cache.StringGet(ctx, "kanthor.usecases.attempt.message.scan")
-	if err != nil && !errors.Is(err, cache.ErrEntryNotFound) {
-		return nil, nil, err
-	}
-
-	messages, err := uc.repositories.Datastore().Message().Scan(ctx, appId, from, to, cursor)
+	messages, err := uc.repositories.Datastore().Message().Scan(ctx, appId, from, to)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	if len(messages) > 0 {
-		cursor = messages[len(messages)-1].Id
-	}
-
-	err = uc.infra.Cache.StringSet(ctx, "kanthor.usecases.attempt.message.scan", cursor, time.Hour)
-	if err != nil {
-		uc.logger.Errorw("unable to set scan cursor to reuse later", "err", err.Error(), "cursor", cursor)
 	}
 
 	ids := []string{}
@@ -265,7 +250,7 @@ func (uc *trigger) hash(inuests map[string]ds.Req, responses map[string]ds.Res) 
 		}
 
 		// status is ok, saved the success response id
-		if sender.Is2xxStatus(response.Status) {
+		if status.Is2xx(response.Status) {
 			returning[key] = response.Id
 		}
 	}

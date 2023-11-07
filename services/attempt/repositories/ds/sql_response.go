@@ -6,6 +6,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/project"
 	"gorm.io/gorm"
 )
 
@@ -22,26 +23,48 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string,
 	low := entities.Id(entities.IdNsRes, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsRes, suid.AfterTime(to))
 
-	// @TODO: use chunk to fetch
 	selects := []string{"app_id", "msg_id", "ep_id", "id", "tier", "req_id", "status"}
-	var records []Res
-	tx := sql.client.
-		Table(entities.TableRes).
-		Where("app_id = ?", appId).
-		Where("msg_id IN ?", msgIds).
-		Where("id > ?", low).
-		Where("id < ?", high).
-		Order("app_id DESC, msg_id DESC, id DESC").
-		Select(selects).
-		Find(&records)
 
-	if len(records) == 0 {
+	var cursor string
+	returning := map[string]Res{}
+
+	for {
+		var scanned []Res
+
+		tx := sql.client.
+			Table(entities.TableRes).
+			Where("app_id = ?", appId).
+			Where("msg_id IN ?", msgIds).
+			Where("id < ?", high).
+			Order("app_id DESC, msg_id DESC, id DESC").
+			Select(selects)
+
+		if cursor == "" {
+			tx = tx.Where("id > ?", low)
+		} else {
+			tx = tx.Where("id > ?", cursor)
+		}
+
+		if tx = tx.Find(&scanned); tx.Error != nil {
+			return nil, tx.Error
+		}
+
+		// collect scanned records
+		for _, s := range scanned {
+			returning[s.Id] = s
+		}
+
+		// if we found less than request size, that mean we were in last page
+		if len(scanned) < project.ScanBatchSize {
+			break
+		}
+
+		cursor = scanned[len(scanned)-1].Id
+	}
+
+	if len(returning) == 0 {
 		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
 	}
 
-	returning := map[string]Res{}
-	for _, record := range records {
-		returning[record.Id] = record
-	}
-	return returning, tx.Error
+	return returning, nil
 }

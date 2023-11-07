@@ -2,12 +2,11 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/domain/status"
 	"github.com/scrapnode/kanthor/domain/transformation"
-	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -44,32 +43,17 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 	errc := make(chan error)
 	defer close(errc)
 	go func() {
-		atts, err := uc.attempts(ctx, from, to)
+		s, err := uc.scan(ctx, from, to)
 		if err != nil {
 			errc <- err
 			return
 		}
 
-		events := map[string]*streaming.Event{}
-		for _, att := range atts {
-			refId := att.ReqId
-			event, err := transformation.EventFromAttempt(&att)
-			if err != nil {
-				// un-recoverable error
-				uc.logger.Errorw("could not transform attempt to event", "attempt", att.String())
-				continue
-			}
-			events[refId] = event
-		}
+		ids := uc.trigger(ctx, s)
+		ok = append(ok, ids...)
 
-		var perr error
-		errs := uc.infra.Stream.Publisher("attempt_endeavor_plan").Pub(ctx, events)
-		for refId := range events {
-			if err, ok := errs[refId]; ok {
-				perr = errors.Join(perr, err)
-			}
-
-			ok = append(ok, refId)
+		if err := uc.repositories.Datastore().Attempt().MarkIgnore(ctx, s.Ignore); err != nil {
+			uc.logger.Errorw("unable to ignore attempts", "req_ids", s.Ignore)
 		}
 
 		errc <- nil
@@ -83,35 +67,78 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 	}
 }
 
-func (uc *endeavor) attempts(ctx context.Context, from, to time.Time) ([]entities.Attempt, error) {
-	matching := uc.infra.Timer.Now().UnixMilli()
-	attempts, err := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, matching)
+type strive struct {
+	Attemptable []entities.Attempt
+	Ignore      []string
+}
+
+func (uc *endeavor) scan(ctx context.Context, from, to time.Time) (*strive, error) {
+	returning := &strive{Attemptable: []entities.Attempt{}, Ignore: []string{}}
+
+	less := uc.infra.Timer.Now().UnixMilli()
+	attempts, err := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, less)
 	if err != nil {
-		return []entities.Attempt{}, err
+		return nil, err
 	}
 	uc.logger.Debugw("found records", "record_count", len(attempts))
 
-	returning := []entities.Attempt{}
 	for _, attempt := range attempts {
-		if attempt.Status == sender.StatusErr {
-			returning = append(returning, attempt)
+		// ignore
+		if attempt.Status == status.ErrIgnore {
+			continue
+		}
+		// or Ignore
+		if attempt.Complete() {
 			continue
 		}
 
-		if attempt.Status == sender.StatusNone {
-			returning = append(returning, attempt)
+		if attempt.Status == status.ErrUnknown {
+			returning.Attemptable = append(returning.Attemptable, attempt)
 			continue
 		}
 
-		if sender.Is5xxStatus(attempt.Status) {
-			returning = append(returning, attempt)
+		if attempt.Status == status.None {
+			returning.Attemptable = append(returning.Attemptable, attempt)
 			continue
 		}
 
-		// TODO: mark ignored attempt as complete
+		if status.Is5xx(attempt.Status) {
+			returning.Attemptable = append(returning.Attemptable, attempt)
+			continue
+		}
+
+		returning.Ignore = append(returning.Ignore, attempt.ReqId)
 		uc.logger.Warnw("ignore attempt", "req_id", attempt.ReqId, "status", attempt.Status)
 	}
 
-	uc.logger.Debugw("evaluate records", "record_count", len(returning))
+	uc.logger.Debugw("evaluate records", "attempt_count", len(returning.Attemptable), "Ignore_count", len(returning.Ignore))
 	return returning, nil
+}
+
+func (uc *endeavor) trigger(ctx context.Context, s *strive) []string {
+	events := map[string]*streaming.Event{}
+	for _, att := range s.Attemptable {
+		refId := att.ReqId
+		event, err := transformation.EventFromAttempt(&att)
+		if err != nil {
+			// un-recoverable error
+			uc.logger.Errorw("could not transform attempt to event", "attempt", att.String())
+			continue
+		}
+		events[refId] = event
+	}
+
+	errs := uc.infra.Stream.Publisher("attempt_endeavor_plan").Pub(ctx, events)
+	ok := []string{}
+
+	for refId := range events {
+		if err, ok := errs[refId]; ok {
+			uc.logger.Errorw("trigger event got error", "req_id", refId, "error", err.Error())
+			continue
+		}
+
+		ok = append(ok, refId)
+	}
+
+	return ok
 }

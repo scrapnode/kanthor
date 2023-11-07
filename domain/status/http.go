@@ -1,12 +1,8 @@
-package sender
+package status
 
-import (
-	"net/http"
-)
+import "net/http"
 
-var StatusNone = 0
-var StatusErr = -1
-var status2text = map[int]string{
+var http2text = map[int]string{
 	http.StatusContinue:                      "Continue",
 	http.StatusSwitchingProtocols:            "Switching Protocols",
 	http.StatusProcessing:                    "Processing",
@@ -71,26 +67,10 @@ var status2text = map[int]string{
 	http.StatusNetworkAuthenticationRequired: "Network Authentication Required",
 }
 
-func StatusText(code int) string {
-	if text, ok := status2text[code]; ok {
-		return text
-	}
-	return ""
-}
-
-func Status(str string) int {
-	for code, text := range status2text {
-		if text == str {
-			return code
-		}
-	}
-	return StatusErr
-}
-
-func Is5xxStatus(status int) bool {
+func Is5xx(status int) bool {
 	return int(status/100) == 5
 }
 
-func Is2xxStatus(status int) bool {
+func Is2xx(status int) bool {
 	return int(status/100) == 2
 }
