@@ -71,9 +71,6 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 			ok = append(ok, key)
 		}
 
-		// next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
-		// err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
-
 		errc <- nil
 	}()
 
@@ -95,6 +92,11 @@ func (uc *endeavor) attempts(ctx context.Context, from, to time.Time) ([]entitie
 
 	returning := []entities.Attempt{}
 	for _, attempt := range attempts {
+		if attempt.Status == sender.StatusErr {
+			returning = append(returning, attempt)
+			continue
+		}
+
 		if attempt.Status == sender.StatusNone {
 			returning = append(returning, attempt)
 			continue
@@ -105,7 +107,7 @@ func (uc *endeavor) attempts(ctx context.Context, from, to time.Time) ([]entitie
 			continue
 		}
 
-		uc.logger.Warnw("ignore attempt", "in_id", attempt.ReqId, "status", attempt.Status)
+		uc.logger.Warnw("ignore attempt", "req_id", attempt.ReqId, "status", attempt.Status)
 	}
 
 	uc.logger.Debugw("evaluate records", "record_count", len(returning))

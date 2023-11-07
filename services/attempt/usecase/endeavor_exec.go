@@ -25,7 +25,7 @@ type EndeavorExecIn struct {
 func ValidateEndeavorExecInAttempt(prefix string, item *entities.Attempt) error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("attempt.in_id", item.ReqId, entities.IdNsReq),
+		validator.StringStartsWith("attempt.req_id", item.ReqId, entities.IdNsReq),
 		validator.StringStartsWith("attempt.app_id", item.AppId, entities.IdNsApp),
 		validator.StringRequired("attempt.tier", item.Tier),
 		validator.StringStartsWith("attempt.rest_id", item.ResId, entities.IdNsRes),
@@ -59,7 +59,7 @@ type EndeavorExecOut struct {
 func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExecOut, error) {
 	responses := safe.Map[*entities.Response]{}
 
-	inuests, err := uc.inuests(ctx, in)
+	requests, err := uc.requests(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +68,13 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 	ko := safe.Map[error]{}
 
 	// we don't need to implement global timeout as we did with scheduler
-	// because for each inuest, we already configured the sender timeout
+	// because for each request, we already configured the sender timeout
 	p := pool.New().WithMaxGoroutines(in.Concurrency)
-	for ref, r := range inuests {
+	for ref, r := range requests {
 		refId := ref
-		inuest := r
+		request := r
 		p.Go(func() {
-			response := uc.send(ctx, inuest)
+			response := uc.send(ctx, request)
 			responses.Set(refId, response)
 
 			if sender.Is5xxStatus(response.Status) {
@@ -116,39 +116,39 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 
 	errs := uc.publisher.Pub(ctx, events)
 	for refId, err := range errs {
-		uc.logger.Errorw("unable to publish response event of inuest", "in_id", refId, "err", err.Error())
+		uc.logger.Errorw("unable to publish response event of request", "req_id", refId, "err", err.Error())
 	}
 
 	return &EndeavorExecOut{Success: ok.Data(), Error: ko.Data()}, nil
 }
 
-func (uc *endeavor) inuests(ctx context.Context, in *EndeavorExecIn) (map[string]*entities.Request, error) {
+func (uc *endeavor) requests(ctx context.Context, in *EndeavorExecIn) (map[string]*entities.Request, error) {
 	inIds := []string{}
 	for _, attempt := range in.Attempts {
 		inIds = append(inIds, attempt.ReqId)
 	}
-	inuests, err := uc.repositories.Datastore().Request().ListByIds(ctx, inIds)
+	requests, err := uc.repositories.Datastore().Request().ListByIds(ctx, inIds)
 	if err != nil {
 		return nil, err
 	}
 
 	returning := map[string]*entities.Request{}
-	for _, inuest := range inuests {
-		returning[inuest.Id] = &inuest
+	for _, request := range requests {
+		returning[request.Id] = &request
 	}
 	return returning, nil
 }
 
-func (uc *endeavor) send(ctx context.Context, inuest *entities.Request) *entities.Response {
+func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entities.Response {
 	res, err := circuitbreaker.Do[sender.Response](
 		uc.infra.CircuitBreaker,
-		inuest.EpId,
+		request.EpId,
 		func() (interface{}, error) {
 			in := &sender.Request{
-				Method:  inuest.Method,
-				Headers: inuest.Headers.ToHTTP(),
-				Uri:     inuest.Uri,
-				Body:    []byte(inuest.Body),
+				Method:  request.Method,
+				Headers: request.Headers.ToHTTP(),
+				Uri:     request.Uri,
+				Body:    []byte(request.Body),
 			}
 
 			res, err := uc.infra.Send(ctx, in)
@@ -170,24 +170,24 @@ func (uc *endeavor) send(ctx context.Context, inuest *entities.Request) *entitie
 	)
 
 	response := &entities.Response{
-		MsgId:    inuest.MsgId,
-		EpId:     inuest.EpId,
-		ReqId:    inuest.Id,
-		Tier:     inuest.Tier,
-		AppId:    inuest.AppId,
-		Type:     inuest.Type,
+		MsgId:    request.MsgId,
+		EpId:     request.EpId,
+		ReqId:    request.Id,
+		Tier:     request.Tier,
+		AppId:    request.AppId,
+		Type:     request.Type,
 		Headers:  entities.Header{},
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data
-	response.Metadata.Merge(inuest.Metadata)
+	response.Metadata.Merge(request.Metadata)
 	response.GenId()
 	response.SetTS(uc.infra.Timer.Now())
 
 	// IMPORTANT: we have an anti-pattern response that returns both error && response to trigger circuit breaker
 	// so we should test both error and response seperately
 	if err != nil {
-		uc.logger.Errorw(err.Error(), "in_id", inuest.Id, "ep_id", inuest.EpId)
+		uc.logger.Errorw(err.Error(), "req_id", request.Id, "ep_id", request.EpId)
 		response.Error = err.Error()
 		response.Status = sender.Status(err.Error())
 	}

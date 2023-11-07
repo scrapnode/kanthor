@@ -175,14 +175,14 @@ func (uc *trigger) examine(
 		for _, ep := range applicable.EndpointMap {
 			inId, hasReq := status[inkey(message.Id, ep.Id)]
 			if !hasReq {
-				// no inuest -> must schedule message again -> don't create any attempt
+				// no request -> must schedule message again -> don't create any attempt
 				schedulable = append(schedulable, message.Id)
 				continue
 			}
 
 			_, hasRes := status[reskey(message.Id, ep.Id)]
 			if !hasRes {
-				// has inuest + no success response -> create an attempt
+				// has request + no success response -> create an attempt
 				attemptable = append(attemptable, inuests[inId])
 				continue
 			}
@@ -249,11 +249,11 @@ func (uc *trigger) applicable(ctx context.Context, appId string) (*assessor.Asse
 func (uc *trigger) hash(inuests map[string]ds.Req, responses map[string]ds.Res) map[string]string {
 	returning := map[string]string{}
 
-	for _, inuest := range inuests {
-		// for checking whether we have scheduled a inuest for an endpoint or not
-		// if no inuest was scheduled, we should schedule it instead of create an attempt
-		key := inkey(inuest.MsgId, inuest.EpId)
-		returning[key] = inuest.Id
+	for _, request := range inuests {
+		// for checking whether we have scheduled a request for an endpoint or not
+		// if no request was scheduled, we should schedule it instead of create an attempt
+		key := inkey(request.MsgId, request.EpId)
+		returning[key] = request.Id
 	}
 
 	for _, response := range responses {
@@ -319,12 +319,12 @@ func (uc *trigger) schedule(
 	}
 
 	events := map[string]*streaming.Event{}
-	for _, inuest := range inuests {
-		key := utils.Key(inuest.AppId, inuest.MsgId, inuest.EpId, inuest.Id)
-		event, err := transformation.EventFromRequest(&inuest)
+	for _, request := range inuests {
+		key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
+		event, err := transformation.EventFromRequest(&request)
 		if err != nil {
 			// un-recoverable error
-			uc.logger.Errorw("could not transform inuest to event", "inuest", inuest.String())
+			uc.logger.Errorw("could not transform request to event", "request", request.String())
 			continue
 		}
 		events[key] = event
@@ -355,11 +355,11 @@ func (uc *trigger) create(
 	now := uc.infra.Timer.Now()
 	next := now.Add(time.Duration(delay) * time.Millisecond)
 
-	for _, inuest := range inuests {
+	for _, request := range inuests {
 		attempts = append(attempts, entities.Attempt{
-			ReqId: inuest.Id,
-			AppId: inuest.AppId,
-			Tier:  inuest.Tier,
+			ReqId: request.Id,
+			AppId: request.AppId,
+			Tier:  request.Tier,
 
 			ScheduledAt: now.UnixMilli(),
 			Status:      0,
