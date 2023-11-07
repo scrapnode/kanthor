@@ -19,7 +19,7 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 		for _, event := range events {
 			attempt, err := transformation.EventToAttempt(event)
 			if err != nil {
-				service.logger.Errorw("unable to transform event to attempt", "err", err.Error(), "event", event.String())
+				service.logger.Errorw("unable to transform event to attempt endeavor", "err", err.Error(), "event", event.String())
 				// unable to parse message from event is considered as un-retriable error
 				// ignore the error, and we need to check it manually with log
 				continue
@@ -32,7 +32,7 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 
 		out, err := service.uc.Endeavor().Exec(ctx, in)
 		if err != nil {
-			service.logger.Errorw("unable to consume an attempt", "err", err.Error())
+			service.logger.Errorw("unable to consume an attempt endeavors", "err", err.Error())
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
 			for refId := range in.Attempts {
@@ -40,6 +40,8 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 			}
 			return retruning
 		}
+
+		service.logger.Infow("consumed attempt endeavors", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
 
 		return out.Error
 	}

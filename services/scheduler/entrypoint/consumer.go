@@ -49,7 +49,7 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 			return retruning
 		}
 
-		service.logger.Infow("scheduled requests for messages", "ok_count", len(out.Success), "ko_count", len(out.Error))
+		service.logger.Infow("scheduled requests for messages", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
 
 		return out.Error
 	}

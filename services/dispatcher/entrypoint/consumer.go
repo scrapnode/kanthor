@@ -48,7 +48,7 @@ func NewConsumer(service *dispatcher) streaming.SubHandler {
 			return retruning
 		}
 
-		service.logger.Infow("dispatched requests", "ok_count", len(out.Success), "ko_count", len(out.Error))
+		service.logger.Infow("dispatched requests", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
 
 		return out.Error
 	}

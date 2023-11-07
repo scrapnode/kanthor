@@ -31,14 +31,13 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 		}
 
 		ctx := context.Background()
-		retruning := map[string]error{}
 
 		out, err := service.uc.Trigger().Exec(ctx, in)
 		if err != nil {
 			service.logger.Errorw("unable to consume an attempt trigger", "err", err.Error())
 			// basically we will not try to retry an attempt trigger
 			// because it could be retry later by cronjob
-			return retruning
+			return map[string]error{}
 		}
 
 		if len(out.Error) > 0 {
@@ -49,8 +48,8 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 			}
 		}
 
-		service.logger.Infow("consumed attempt", "count", len(out.Success))
+		service.logger.Infow("consumed attempt triggers", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
 
-		return retruning
+		return map[string]error{}
 	}
 }
