@@ -116,7 +116,9 @@ func (uc *trigger) applications(ctx context.Context, size int) ([]entities.Appli
 	if nomore {
 		uc.logger.Warnw("no more applications to scan", "cursor", cursor)
 		// no more app, reset cursor
-		uc.infra.Cache.Del(ctx, key)
+		if err := uc.infra.Cache.Del(ctx, key); err != nil {
+			uc.logger.Errorw("unable reset cursor", "err", err.Error(), "cache_key", key, "cursor", cursor)
+		}
 		return []entities.Application{}, nil
 	}
 
