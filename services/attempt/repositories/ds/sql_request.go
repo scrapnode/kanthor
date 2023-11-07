@@ -36,7 +36,7 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string, 
 			Where("app_id = ?", appId).
 			Where("msg_id IN ?", msgIds).
 			Where("id < ?", high).
-			Order("app_id DESC, msg_id DESC, id DESC").
+			Order("app_id ASC, msg_id ASC, id ASC").
 			Select(selects)
 
 		if cursor == "" {

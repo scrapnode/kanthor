@@ -46,11 +46,11 @@ infrastructure:
 
   idempotency:
     uri: *redis_uri
-    time_to_live: 300000 # 5m
+    time_to_live: 900000 # 15m
 
   distributed_lock_manager:
     uri: *redis_uri
-    timeout: 60000 # 1m
+    timeout: 1800000 # 3m
 
   cache:
     uri: *redis_uri

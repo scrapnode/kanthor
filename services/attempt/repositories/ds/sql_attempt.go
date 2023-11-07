@@ -84,7 +84,7 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, less int64)
 			Table(entities.TableAtt).
 			Where("req_id < ?", high).
 			Where("schedule_next <= ?", less).
-			Order("req_id DESC").
+			Order("req_id ASC").
 			Limit(project.ScanBatchSize)
 
 		if cursor == "" {

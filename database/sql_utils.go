@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+
 	"github.com/scrapnode/kanthor/domain/structure"
 	"gorm.io/gorm"
 )

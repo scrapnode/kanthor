@@ -32,7 +32,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 			Table(entities.TableMsg).
 			Where("app_id = ?", appId).
 			Where("id < ?", high).
-			Order("app_id DESC, id DESC").
+			Order("app_id ASC, id ASC").
 			Select(selects)
 
 		if cursor == "" {

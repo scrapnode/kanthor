@@ -2,7 +2,8 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS kanthor_message (
     app_id VARCHAR(64) NOT NULL,
-    id VARCHAR(64) NOT NULL  PRIMARY KEY,
+    id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (app_id, id),
 
     timestamp BIGINT NOT NULL DEFAULT 0,
     tier VARCHAR(64) NOT NULL,
@@ -11,12 +12,12 @@ CREATE TABLE IF NOT EXISTS kanthor_message (
     body TEXT NOT NULL,
     metadata TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS kanthor_msg_scan ON kanthor_message (app_id DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_request (
     app_id VARCHAR(64) NOT NULL,
     msg_id VARCHAR(64) NOT NULL,
-    id VARCHAR(64) NOT NULL PRIMARY KEY,
+    id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (app_id, msg_id, id),
 
     timestamp BIGINT NOT NULL DEFAULT 0,
     ep_id VARCHAR(64) NOT NULL,
@@ -28,12 +29,12 @@ CREATE TABLE IF NOT EXISTS kanthor_request (
     headers TEXT NOT NULL,
     body TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS kanthor_req_scan ON kanthor_request (app_id DESC, msg_id DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_response (
     app_id VARCHAR(64) NOT NULL,
     msg_id VARCHAR(64) NOT NULL,
-    id VARCHAR(64) NOT NULL PRIMARY KEY,
+    id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (app_id, msg_id, id),
     
     timestamp BIGINT NOT NULL DEFAULT 0,
     ep_id VARCHAR(64) NOT NULL,
@@ -47,7 +48,6 @@ CREATE TABLE IF NOT EXISTS kanthor_response (
     body TEXT NOT NULL,
     error TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS kanthor_res_scan ON kanthor_response (app_id DESC, msg_id DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS kanthor_attempt (
     req_id VARCHAR(64) NOT NULL PRIMARY KEY,
