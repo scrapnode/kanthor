@@ -24,7 +24,7 @@ func (conf *Wrapper) Validate() error {
 }
 
 type Config struct {
-	Topic     string           `json:"topic" yaml:"topic" mapstructure:"topic"`
+	Topic     string           `json:"topic" yaml:"topic" mapstructure:"STORAGE_TOPIC"`
 	Warehouse StorageWarehouse `json:"warehouse" yaml:"warehouse" mapstructure:"warehouse"`
 }
 
