@@ -52,24 +52,24 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 
 		events := map[string]*streaming.Event{}
 		for _, att := range atts {
+			refId := att.ReqId
 			event, err := transformation.EventFromAttempt(&att)
 			if err != nil {
 				// un-recoverable error
 				uc.logger.Errorw("could not transform attempt to event", "attempt", att.String())
 				continue
 			}
-			events[key] = event
+			events[refId] = event
 		}
-		uc.logger.Debugw("prepare events", "record_count", len(events))
 
 		var perr error
 		errs := uc.infra.Stream.Publisher("attempt_endeavor_plan").Pub(ctx, events)
-		for key := range events {
-			if err, ok := errs[key]; ok {
+		for refId := range events {
+			if err, ok := errs[refId]; ok {
 				perr = errors.Join(perr, err)
 			}
 
-			ok = append(ok, key)
+			ok = append(ok, refId)
 		}
 
 		errc <- nil
@@ -108,6 +108,7 @@ func (uc *endeavor) attempts(ctx context.Context, from, to time.Time) ([]entitie
 			continue
 		}
 
+		// TODO: mark ignored attempt as complete
 		uc.logger.Warnw("ignore attempt", "req_id", attempt.ReqId, "status", attempt.Status)
 	}
 

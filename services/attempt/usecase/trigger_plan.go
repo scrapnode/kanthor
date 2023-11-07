@@ -60,7 +60,7 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanIn) (*TriggerPlanOu
 
 		events := map[string]*streaming.Event{}
 		for _, app := range apps {
-			key := app.Id
+			refId := app.Id
 			trigger := &entities.AttemptTrigger{
 				AppId: app.Id,
 				Tier:  tiers[app.Id],
@@ -73,17 +73,17 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanIn) (*TriggerPlanOu
 				uc.logger.Errorw("could not transform trigger to event", "trigger", trigger.String())
 				continue
 			}
-			events[key] = event
+			events[refId] = event
 		}
 
 		var perr error
 		errs := uc.infra.Stream.Publisher("attempt_trigger_plan").Pub(ctx, events)
-		for key := range events {
-			if err, ok := errs[key]; ok {
+		for refId := range events {
+			if err, ok := errs[refId]; ok {
 				perr = errors.Join(perr, err)
 			}
 
-			ok = append(ok, key)
+			ok = append(ok, refId)
 		}
 
 		errc <- nil
