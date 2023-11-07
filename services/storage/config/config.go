@@ -8,8 +8,13 @@ import (
 
 // @TODO: mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
+	provider.SetDefault("storage.topic", constants.TopicPublic)
+
 	var conf Wrapper
-	return &conf.Storage, provider.Unmarshal(&conf)
+	if err := provider.Unmarshal(&conf); err != nil {
+		return nil, err
+	}
+	return &conf.Storage, nil
 }
 
 type Wrapper struct {
@@ -24,14 +29,23 @@ func (conf *Wrapper) Validate() error {
 }
 
 type Config struct {
-	Topic     string           `json:"topic" yaml:"topic" mapstructure:"STORAGE_TOPIC"`
+	Topic     string           `json:"topic" yaml:"topic" mapstructure:"topic"`
 	Warehouse StorageWarehouse `json:"warehouse" yaml:"warehouse" mapstructure:"warehouse"`
 }
 
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringOneOf("CONFIG.STORAGE.TOPIC", conf.Topic, []string{constants.TopicMessage, constants.TopicRequest, constants.TopicResponse}),
+		validator.StringOneOf(
+			"CONFIG.STORAGE.TOPIC",
+			conf.Topic,
+			[]string{
+				constants.TopicMessage,
+				constants.TopicRequest,
+				constants.TopicResponse,
+				constants.TopicPublic,
+			},
+		),
 	)
 	if err != nil {
 		return err

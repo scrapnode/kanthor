@@ -38,6 +38,6 @@ type Config struct {
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequiredOneOf("CONFIG.LOGGER.LEVEL", conf.Level, []string{"debug", "info", "warn", "error", "fatal"}),
+		validator.StringOneOf("CONFIG.LOGGER.LEVEL", conf.Level, []string{"debug", "info", "warn", "error", "fatal"}),
 	)
 }

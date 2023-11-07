@@ -67,24 +67,15 @@ func StringOneOf(prop, value string, oneOf []string) Fn {
 	}
 
 	return func() error {
-		for _, o := range oneOf {
-			if b, has := m[o]; has && b {
-				return nil
-			}
-		}
-
-		return fmt.Errorf("%s (value:%s) must be one of %q", prop, value, oneOf)
-	}
-}
-
-func StringRequiredOneOf(prop, value string, oneOf []string) Fn {
-
-	return func() error {
 		if err := StringRequired(prop, value)(); err != nil {
 			return err
 		}
 
-		return StringOneOf(prop, value, oneOf)()
+		if b, has := m[value]; has && b {
+			return nil
+		}
+
+		return fmt.Errorf("%s (value:%s) must be one of %q", prop, value, oneOf)
 	}
 }
 

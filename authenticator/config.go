@@ -22,7 +22,7 @@ func (conf *Config) Validate(prefix string) error {
 
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequiredOneOf(prefix+"AUTHENTICATOR.ENGINE", conf.Engine, []string{EngineAsk}),
+		validator.StringOneOf(prefix+"AUTHENTICATOR.ENGINE", conf.Engine, []string{EngineAsk}),
 	)
 	if err != nil {
 		return err

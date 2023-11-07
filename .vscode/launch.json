@@ -129,6 +129,19 @@
       },
       "args": ["serve", "attempt.endeavor.executor"],
       "preLaunchTask": "make"
+    },
+    {
+      "name": "config.validate.storage",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceRoot}",
+      "showLog": true,
+      "env": {
+        "KANTHOR_ENV": "development"
+      },
+      "args": ["config", "validate", "storage"],
+      "preLaunchTask": "make"
     }
   ]
 }

@@ -58,3 +58,7 @@ func (provider *file) Unmarshal(dest interface{}) error {
 func (provider *file) Sources() []Source {
 	return provider.sources
 }
+
+func (provider *file) SetDefault(key string, value interface{}) {
+	provider.viper.SetDefault(key, value)
+}
