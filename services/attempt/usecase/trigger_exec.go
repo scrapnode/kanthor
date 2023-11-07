@@ -129,7 +129,7 @@ func (uc *trigger) consume(
 
 	from := time.UnixMilli(trigger.From)
 	to := time.UnixMilli(trigger.To)
-	msgIds, inuests, err := uc.examine(ctx, trigger.AppId, applicable, from, to)
+	msgIds, requests, err := uc.examine(ctx, trigger.AppId, applicable, from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -138,13 +138,13 @@ func (uc *trigger) consume(
 	ko := &safe.Map[error]{}
 
 	uc.schedule(ctx, ok, ko, concurrency, applicable, msgIds)
-	uc.create(ctx, ok, ko, concurrency, delay, inuests)
+	uc.create(ctx, ok, ko, concurrency, delay, requests)
 
 	res := &TriggerExecOut{Success: ok.Data(), Error: ko.Data()}
 	return res, nil
 }
 
-// examine messages, inuests and responses
+// examine messages, requests and responses
 func (uc *trigger) examine(
 	ctx context.Context,
 	appId string,
@@ -156,7 +156,7 @@ func (uc *trigger) examine(
 		return nil, nil, err
 	}
 
-	inuests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, msgIds, from, to)
+	requests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, msgIds, from, to)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -169,7 +169,7 @@ func (uc *trigger) examine(
 	schedulable := []string{}
 	attemptable := []ds.Req{}
 
-	status := uc.hash(inuests, responses)
+	status := uc.hash(requests, responses)
 	for _, message := range messages {
 		for _, ep := range applicable.EndpointMap {
 			inId, hasReq := status[inkey(message.Id, ep.Id)]
@@ -182,7 +182,7 @@ func (uc *trigger) examine(
 			_, hasRes := status[reskey(message.Id, ep.Id)]
 			if !hasRes {
 				// has request + no success response -> create an attempt
-				attemptable = append(attemptable, inuests[inId])
+				attemptable = append(attemptable, requests[inId])
 				continue
 			}
 
@@ -231,10 +231,10 @@ func (uc *trigger) applicable(ctx context.Context, appId string) (*assessor.Asse
 	})
 }
 
-func (uc *trigger) hash(inuests map[string]ds.Req, responses map[string]ds.Res) map[string]string {
+func (uc *trigger) hash(requests map[string]ds.Req, responses map[string]ds.Res) map[string]string {
 	returning := map[string]string{}
 
-	for _, request := range inuests {
+	for _, request := range requests {
 		// for checking whether we have scheduled a request for an endpoint or not
 		// if no request was scheduled, we should schedule it instead of create an attempt
 		key := inkey(request.MsgId, request.EpId)
@@ -275,7 +275,7 @@ func (uc *trigger) schedule(
 	applicable *assessor.Assets,
 	msgIds []string,
 ) {
-	inuests := []entities.Request{}
+	requests := []entities.Request{}
 
 	for i := 0; i < len(msgIds); i += concurrency {
 		j := utils.ChunkNext(i, len(msgIds), concurrency)
@@ -295,16 +295,16 @@ func (uc *trigger) schedule(
 					uc.logger.Warnw(l[0].(string), l[1:]...)
 				}
 			}
-			inuests = append(inuests, ins...)
+			requests = append(requests, ins...)
 		}
 	}
 
-	if len(inuests) == 0 {
+	if len(requests) == 0 {
 		return
 	}
 
 	events := map[string]*streaming.Event{}
-	for _, request := range inuests {
+	for _, request := range requests {
 		key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
 		event, err := transformation.EventFromRequest(&request)
 		if err != nil {
@@ -333,14 +333,14 @@ func (uc *trigger) create(
 	ko *safe.Map[error],
 	concurrency int,
 	delay int64,
-	inuests []ds.Req,
+	requests []ds.Req,
 ) {
 	attempts := []entities.Attempt{}
 
 	now := uc.infra.Timer.Now()
 	next := now.Add(time.Duration(delay) * time.Millisecond)
 
-	for _, request := range inuests {
+	for _, request := range requests {
 		attempts = append(attempts, entities.Attempt{
 			ReqId: request.Id,
 			AppId: request.AppId,
