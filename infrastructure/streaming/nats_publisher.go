@@ -43,7 +43,7 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 				return
 			}
 
-			publisher.logger.Debugw("published message", "subject", event.Subject, "msg_seq", ack.Sequence)
+			publisher.logger.Debugw("published message", "subject", event.Subject, "event_id", event.Id, "msg_seq", ack.Sequence)
 		})
 	}
 	p.Wait()

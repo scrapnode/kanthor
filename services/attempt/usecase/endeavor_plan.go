@@ -60,6 +60,7 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 			}
 			events[key] = event
 		}
+		uc.logger.Debugw("prepare events", "record_count", len(events))
 
 		var perr error
 		errs := uc.infra.Stream.Publisher("attempt_endeavor_plan").Pub(ctx, events)
