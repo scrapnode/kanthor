@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/robfig/cron/v3"
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
@@ -21,6 +22,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
+	db database.Database,
 	ds datastore.Datastore,
 	uc usecase.Attempt,
 ) patterns.Runnable {
@@ -29,6 +31,7 @@ func New(
 		conf:   conf,
 		logger: logger,
 		infra:  infra,
+		db:     db,
 		ds:     ds,
 		uc:     uc,
 
@@ -44,6 +47,7 @@ type planner struct {
 	conf   *config.Config
 	logger logging.Logger
 	infra  *infrastructure.Infrastructure
+	db     database.Database
 	ds     datastore.Datastore
 	uc     usecase.Attempt
 
@@ -60,6 +64,10 @@ func (service *planner) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.db.Connect(ctx); err != nil {
+		return err
 	}
 
 	if err := service.ds.Connect(ctx); err != nil {
@@ -102,6 +110,10 @@ func (service *planner) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
+	if err := service.db.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
 	if err := service.ds.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
@@ -133,6 +145,10 @@ func (service *planner) Run(ctx context.Context) error {
 				return err
 			}
 
+			if err := service.db.Liveness(); err != nil {
+				return err
+			}
+
 			if err := service.ds.Liveness(); err != nil {
 				return err
 			}
@@ -154,6 +170,10 @@ func (service *planner) readiness() error {
 		service.logger.Debug("checking readiness")
 
 		if err := service.infra.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.db.Readiness(); err != nil {
 			return err
 		}
 

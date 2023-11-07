@@ -7,6 +7,7 @@ import (
 
 	"github.com/robfig/cron/v3"
 	"github.com/scrapnode/kanthor/database"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
@@ -22,6 +23,7 @@ func New(
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
 	db database.Database,
+	ds datastore.Datastore,
 	uc usecase.Attempt,
 ) patterns.Runnable {
 	logger = logger.With("service", "attempt.trigger.planner")
@@ -30,6 +32,7 @@ func New(
 		logger: logger,
 		infra:  infra,
 		db:     db,
+		ds:     ds,
 		uc:     uc,
 
 		cron: cron.New(),
@@ -45,6 +48,7 @@ type planner struct {
 	logger logging.Logger
 	infra  *infrastructure.Infrastructure
 	db     database.Database
+	ds     datastore.Datastore
 	uc     usecase.Attempt
 
 	cron        *cron.Cron
@@ -63,6 +67,10 @@ func (service *planner) Start(ctx context.Context) error {
 	}
 
 	if err := service.db.Connect(ctx); err != nil {
+		return err
+	}
+
+	if err := service.ds.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -106,6 +114,10 @@ func (service *planner) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
+	if err := service.ds.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
 	return returning
 }
 
@@ -137,6 +149,10 @@ func (service *planner) Run(ctx context.Context) error {
 				return err
 			}
 
+			if err := service.ds.Liveness(); err != nil {
+				return err
+			}
+
 			return nil
 		})
 		if err != nil {
@@ -158,6 +174,10 @@ func (service *planner) readiness() error {
 		}
 
 		if err := service.db.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.ds.Readiness(); err != nil {
 			return err
 		}
 

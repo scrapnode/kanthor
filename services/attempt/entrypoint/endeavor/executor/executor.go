@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/infrastructure"
@@ -21,6 +22,7 @@ func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
+	db database.Database,
 	ds datastore.Datastore,
 	uc usecase.Attempt,
 ) patterns.Runnable {
@@ -30,6 +32,7 @@ func New(
 		logger:     logger,
 		subscriber: infra.Stream.Subscriber("attempt_endeavor_executor"),
 		infra:      infra,
+		db:         db,
 		ds:         ds,
 		uc:         uc,
 
@@ -45,6 +48,7 @@ type executor struct {
 	logger     logging.Logger
 	subscriber streaming.Subscriber
 	infra      *infrastructure.Infrastructure
+	db         database.Database
 	ds         datastore.Datastore
 	uc         usecase.Attempt
 
@@ -60,6 +64,10 @@ func (service *executor) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.db.Connect(ctx); err != nil {
+		return err
 	}
 
 	if err := service.ds.Connect(ctx); err != nil {
@@ -106,6 +114,10 @@ func (service *executor) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
+	if err := service.db.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
 	if err := service.ds.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
@@ -131,6 +143,10 @@ func (service *executor) Run(ctx context.Context) error {
 			}
 
 			if err := service.infra.Liveness(); err != nil {
+				return err
+			}
+
+			if err := service.db.Liveness(); err != nil {
 				return err
 			}
 
@@ -164,6 +180,10 @@ func (service *executor) readiness() error {
 		}
 
 		if err := service.infra.Readiness(); err != nil {
+			return err
+		}
+
+		if err := service.db.Readiness(); err != nil {
 			return err
 		}
 

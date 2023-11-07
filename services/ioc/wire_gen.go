@@ -56,17 +56,17 @@ func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable,
 	if err != nil {
 		return nil, err
 	}
-	datastoreDatastore, err := datastore.New(provider)
+	databaseDatabase, err := database.New(provider)
 	if err != nil {
 		return nil, err
 	}
-	databaseDatabase, err := database.New(provider)
+	datastoreDatastore, err := datastore.New(provider)
 	if err != nil {
 		return nil, err
 	}
 	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := planner.New(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
+	runnable := planner.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
 }
 
@@ -83,17 +83,17 @@ func AttemptEndeavorExecutor(provider configuration.Provider) (patterns.Runnable
 	if err != nil {
 		return nil, err
 	}
-	datastoreDatastore, err := datastore.New(provider)
+	databaseDatabase, err := database.New(provider)
 	if err != nil {
 		return nil, err
 	}
-	databaseDatabase, err := database.New(provider)
+	datastoreDatastore, err := datastore.New(provider)
 	if err != nil {
 		return nil, err
 	}
 	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := executor.New(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
+	runnable := executor.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
 }
 
@@ -122,7 +122,7 @@ func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, 
 	}
 	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := planner2.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, attempt)
+	runnable := planner2.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
 }
 
@@ -139,17 +139,17 @@ func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable,
 	if err != nil {
 		return nil, err
 	}
-	datastoreDatastore, err := datastore.New(provider)
+	databaseDatabase, err := database.New(provider)
 	if err != nil {
 		return nil, err
 	}
-	databaseDatabase, err := database.New(provider)
+	datastoreDatastore, err := datastore.New(provider)
 	if err != nil {
 		return nil, err
 	}
 	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := executor2.New(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, attempt)
+	runnable := executor2.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
 }
 
