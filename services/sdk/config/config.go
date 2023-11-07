@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/gateway"
 )
@@ -29,8 +27,8 @@ type Config struct {
 }
 
 func (conf *Config) Validate() error {
-	if err := conf.Gateway.Validate(); err != nil {
-		return fmt.Errorf("sdk.gateway: %v", err)
+	if err := conf.Gateway.Validate("CONFIG.SDK"); err != nil {
+		return err
 	}
 	return nil
 }

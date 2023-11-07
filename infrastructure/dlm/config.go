@@ -10,7 +10,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("distributed_lock_manager.conf.uri", conf.Uri),
-		validator.NumberGreaterThanOrEqual("distributed_lock_manager.conf.timeout", conf.Timeout, 1000),
+		validator.StringUri("CONFIG.INFRA.DLM.URI", conf.Uri),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.DLM.TIMEOUT", conf.Timeout, 1000),
 	)
 }

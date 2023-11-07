@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -30,7 +28,7 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	if err := conf.Request.Validate(); err != nil {
-		return fmt.Errorf("scheduler.request: %v", err)
+		return err
 	}
 
 	return nil
@@ -42,7 +40,7 @@ type SchedulerRequest struct {
 
 func (conf *SchedulerRequest) Validate() error {
 	if err := conf.Schedule.Validate(); err != nil {
-		return fmt.Errorf("scheduler.request.schedule: %v", err)
+		return err
 	}
 	return nil
 }
@@ -54,6 +52,6 @@ type SchedulerRequestSchedule struct {
 func (conf *SchedulerRequestSchedule) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("scheduler.request.schedule.timeout", conf.Timeout, 1000),
+		validator.NumberGreaterThanOrEqual("CONFIG.SCHEDULER.REQUEST.SCHEDULE.TIMEOUT", conf.Timeout, 1000),
 	)
 }

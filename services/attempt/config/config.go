@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/configuration"
 )
 
@@ -23,11 +21,11 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	if err := conf.Trigger.Validate(); err != nil {
-		return fmt.Errorf("attempt.trigger: %v", err)
+		return err
 	}
 
 	if err := conf.Endeavor.Validate(); err != nil {
-		return fmt.Errorf("attempt.endeavor: %v", err)
+		return err
 	}
 
 	return nil

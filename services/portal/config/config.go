@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/authenticator"
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/gateway"
@@ -38,11 +36,11 @@ type Config struct {
 }
 
 func (conf *Config) Validate() error {
-	if err := conf.Gateway.Validate(); err != nil {
-		return fmt.Errorf("portal.gateway: %v", err)
+	if err := conf.Gateway.Validate("CONFIG.PORTAL"); err != nil {
+		return err
 	}
-	if err := conf.Authenticator.Validate(); err != nil {
-		return fmt.Errorf("portal.authenticator: %v", err)
+	if err := conf.Authenticator.Validate("CONFIG.PORTAL"); err != nil {
+		return err
 	}
 	return nil
 }

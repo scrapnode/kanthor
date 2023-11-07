@@ -33,5 +33,5 @@ type SymmetricConfig struct {
 }
 
 func (conf *SymmetricConfig) Validate() error {
-	return validator.Validate(validator.DefaultConfig, validator.StringLen("cryptography.symmetric.key", conf.Key, 32, 32))
+	return validator.Validate(validator.DefaultConfig, validator.StringLen("CONFIG.INFRA.CRYPTOGRAPHY.SYMMETRIC.KEY", conf.Key, 32, 32))
 }

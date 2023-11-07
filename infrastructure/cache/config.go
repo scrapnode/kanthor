@@ -10,7 +10,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("cache.conf.uri", conf.Uri),
-		validator.NumberGreaterThanOrEqual("cache.conf.time_to_live", conf.TimeToLive, 1000),
+		validator.StringUri("CONFIG.INFRA.CACHE.URI", conf.Uri),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.CACHE.TIME_TO_LIVE", conf.TimeToLive, 1000),
 	)
 }

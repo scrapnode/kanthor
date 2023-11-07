@@ -18,7 +18,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequiredOneOf("authorizator.config.engine", conf.Engine, []string{EngineCasbin}),
+		validator.StringRequiredOneOf("CONFIG.INFRA.AUTHORIZATOR.ENGINE", conf.Engine, []string{EngineCasbin}),
 	)
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (conf *Config) Validate() error {
 
 	if conf.Engine == EngineCasbin {
 		if conf.Casbin == nil {
-			return errors.New("authorizator.config.casbin: null value")
+			return errors.New("CONFIG.INFRA.AUTHORIZATOR.CASBIN: nil value")
 		}
 		if err := conf.Casbin.Validate(); err != nil {
 			return err
@@ -45,8 +45,8 @@ type CasbinConfig struct {
 func (conf *CasbinConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("authorizator.conf.casbin.model_uri", conf.ModelUri),
-		validator.StringUri("authorizator.conf.casbin.policy_uri", conf.PolicyUri),
+		validator.StringUri("CONFIG.INFRA.AUTHORIZATOR.CASBIN.MODEL_URI", conf.ModelUri),
+		validator.StringUri("CONFIG.INFRA.AUTHORIZATOR.CASBIN.POLICY_URI", conf.PolicyUri),
 	)
 }
 

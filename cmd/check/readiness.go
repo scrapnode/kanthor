@@ -1,8 +1,6 @@
 package check
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
 	"github.com/scrapnode/kanthor/services"
@@ -21,7 +19,6 @@ func NewReadiness() *cobra.Command {
 			if err := client.Readiness(); err != nil {
 				return err
 			}
-			fmt.Println("ready")
 			return nil
 		},
 	}

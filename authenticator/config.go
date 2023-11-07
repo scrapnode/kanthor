@@ -15,10 +15,14 @@ type Config struct {
 	Ask    *AskConfig `json:"ask" yaml:"ask" mapstructure:"ask"`
 }
 
-func (conf *Config) Validate() error {
+func (conf *Config) Validate(prefix string) error {
+	if prefix != "" {
+		prefix += "."
+	}
+
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequiredOneOf("authenticator.config.engine", conf.Engine, []string{EngineAsk}),
+		validator.StringRequiredOneOf(prefix+"AUTHENTICATOR.ENGINE", conf.Engine, []string{EngineAsk}),
 	)
 	if err != nil {
 		return err
@@ -26,9 +30,9 @@ func (conf *Config) Validate() error {
 
 	if conf.Engine == EngineAsk {
 		if conf.Ask == nil {
-			return errors.New("authenticator.config.ask: null value")
+			return errors.New(prefix + "AUTHENTICATOR.ASK: nil value")
 		}
-		if err := conf.Ask.Validate(); err != nil {
+		if err := conf.Ask.Validate(prefix); err != nil {
 			return err
 		}
 	}
@@ -41,10 +45,10 @@ type AskConfig struct {
 	SecretKey string `json:"secret_key" yaml:"secret_key" mapstructure:"secret_key"`
 }
 
-func (conf *AskConfig) Validate() error {
+func (conf *AskConfig) Validate(prefix string) error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("authenticator.conf.ask.access_key", conf.AccessKey),
-		validator.StringRequired("authenticator.conf.ask.secret_key", conf.SecretKey),
+		validator.StringRequired("AUTHENTICATOR.ASK.ACCESS_KEY", conf.AccessKey),
+		validator.StringRequired("AUTHENTICATOR.ASK.SECRET_KEY", conf.SecretKey),
 	)
 }

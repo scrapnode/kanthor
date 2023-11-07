@@ -57,7 +57,7 @@ func New(provider configuration.Provider) *cobra.Command {
 			// listen for the interrupt signal.
 			<-ctx.Done()
 
-			logger.Warnw("got stop signal", "error", ctx.Err())
+			logger.Warnw("SYSTEM.SIGNAL.INTERRUPT", "error", ctx.Err())
 
 			// wait a little to stop our service
 			errc := make(chan error)

@@ -12,7 +12,7 @@ type Config struct {
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("idempotency.conf.uri", conf.Uri),
-		validator.NumberGreaterThanOrEqual("idempotency.conf.time_to_live", conf.TimeToLive, 1000),
+		validator.StringUri("CONFIG.INFRA.IDEMPOTENCY.URI", conf.Uri),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.IDEMPOTENCY.TIME_TO_LIVE", conf.TimeToLive, 1000),
 	)
 }

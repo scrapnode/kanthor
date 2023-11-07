@@ -34,5 +34,5 @@ func Service(provider configuration.Provider, name string) (validator.Validator,
 		return attempt.New(provider)
 	}
 
-	return nil, fmt.Errorf("serve.service: unknown service [%s]", name)
+	return nil, fmt.Errorf("SYSTEM.SERVICE.UNKNOWN: %s", name)
 }

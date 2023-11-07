@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -13,10 +11,10 @@ type Trigger struct {
 
 func (conf *Trigger) Validate() error {
 	if err := conf.Planner.Validate(); err != nil {
-		return fmt.Errorf("attempt.trigger.planner: %v", err)
+		return err
 	}
 	if err := conf.Executor.Validate(); err != nil {
-		return fmt.Errorf("attempt.trigger.executor: %v", err)
+		return err
 	}
 	return nil
 }
@@ -33,11 +31,11 @@ type TriggerPlanner struct {
 func (conf *TriggerPlanner) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("attempt.trigger.planner.schedule", conf.Schedule),
-		validator.NumberGreaterThanOrEqual("attempt.trigger.planner.timeout", conf.Timeout, 1000),
-		validator.NumberGreaterThan("attempt.trigger.executor.size", conf.Size, 0),
-		validator.NumberLessThan("attempt.trigger.planner.scan_end", conf.ScanEnd, 0),
-		validator.NumberLessThan("attempt.trigger.planner.scan_start", conf.ScanStart, conf.ScanEnd),
+		validator.StringRequired("CONFIG.ATTEMPT.TRIGGER.PLANNER.SCHEDULE", conf.Schedule),
+		validator.NumberGreaterThanOrEqual("CONFIG.ATTEMPT.TRIGGER.PLANNER.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("CONFIG.ATTEMPT.TRIGGER.PLANNER.SIZE", conf.Size, 0),
+		validator.NumberLessThan("CONFIG.ATTEMPT.TRIGGER.PLANNER.SCAN_END", conf.ScanEnd, 0),
+		validator.NumberLessThan("CONFIG.ATTEMPT.TRIGGER.PLANNER.SCAN_START", conf.ScanStart, conf.ScanEnd),
 	)
 }
 
@@ -50,8 +48,8 @@ type TriggerExecutor struct {
 func (conf *TriggerExecutor) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("attempt.trigger.executor.timeout", conf.Timeout, 1000),
-		validator.NumberGreaterThan("attempt.trigger.executor.concurrency", conf.Concurrency, 0),
-		validator.NumberGreaterThanOrEqual("attempt.trigger.executor.arrange_delay", conf.ArrangeDelay, 60000),
+		validator.NumberGreaterThanOrEqual("CONFIG.ATTEMPT.TRIGGER.EXECUTOR.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("CONFIG.ATTEMPT.TRIGGER.EXECUTOR.CONCURRENCY", conf.Concurrency, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.ATTEMPT.TRIGGER.EXECUTOR.ARRANGE_DELAY", conf.ArrangeDelay, 60000),
 	)
 }

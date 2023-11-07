@@ -28,7 +28,7 @@ type Close struct {
 func (conf *Close) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("circuit_breaker.close.cleanup_interval", conf.CleanupInterval, 1000),
+		validator.NumberGreaterThan("CONFIG.INFRA.CIRCUIT_BREAKER.CLOSE.CLEANUP_INTERVAL", conf.CleanupInterval, 1000),
 	)
 }
 
@@ -39,7 +39,7 @@ type Half struct {
 func (conf *Half) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("circuit_breaker.half.passthrough_requests", conf.PassthroughRequests, 0),
+		validator.NumberGreaterThan("CONFIG.INFRA.CIRCUIT_BREAKER.HALF.PASSTHROUGH_REQUESTS", conf.PassthroughRequests, 0),
 	)
 }
 
@@ -51,7 +51,7 @@ type Open struct {
 func (conf *Open) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("circuit_breaker.open.duration", conf.Duration, 1000),
+		validator.NumberGreaterThan("CONFIG.INFRA.CIRCUIT_BREAKER.OPEN.DURATION", conf.Duration, 1000),
 	)
 	if err != nil {
 		return err
@@ -72,8 +72,8 @@ type OpenConditions struct {
 func (conf *OpenConditions) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("circuit_breaker.open.conidtion.error_consecutive", conf.ErrorConsecutive, 1),
-		validator.NumberGreaterThan("circuit_breaker.open.conidtion.error_ratio", conf.ErrorRatio, 0.0),
-		validator.NumberLessThan("circuit_breaker.open.conidtion.error_ratio", conf.ErrorRatio, 1.0),
+		validator.NumberGreaterThan("CONFIG.INFRA.CIRCUIT_BREAKER.OPEN.CONDITION.ERROR_CONSECUTIVE", conf.ErrorConsecutive, 1),
+		validator.NumberGreaterThan("CONFIG.INFRA.CIRCUIT_BREAKER.OPEN.CONDITION.ERROR_RATIO", conf.ErrorRatio, 0.0),
+		validator.NumberLessThan("CONFIG.INFRA.CIRCUIT_BREAKER.OPEN.CONDITION.ERROR_RATIO", conf.ErrorRatio, 1.0),
 	)
 }

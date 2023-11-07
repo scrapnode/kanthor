@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -30,7 +28,7 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	if err := conf.Forwarder.Validate(); err != nil {
-		return fmt.Errorf("dispatcher.forwarder: %v", err)
+		return err
 	}
 
 	return nil
@@ -42,7 +40,7 @@ type DispatcherForwarder struct {
 
 func (conf *DispatcherForwarder) Validate() error {
 	if err := conf.Send.Validate(); err != nil {
-		return fmt.Errorf("dispatcher.forwarder.send: %v", err)
+		return err
 	}
 	return nil
 }
@@ -54,6 +52,6 @@ type DispatcherForwarderSend struct {
 func (conf *DispatcherForwarderSend) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("dispatcher.forwarder.send.concurrency", conf.Concurrency, 0),
+		validator.NumberGreaterThan("CONFIG.DISPATCHER.FORWARDER.SEND.CONCURRENCY", conf.Concurrency, 0),
 	)
 }

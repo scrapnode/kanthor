@@ -19,8 +19,8 @@ type Config struct {
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("streaming.conf.name", conf.Name),
-		validator.StringUri("streaming.conf.uri", conf.Uri),
+		validator.StringRequired("CONFIG.INFRA.STREAMING.NAME", conf.Name),
+		validator.StringUri("CONFIG.INFRA.STREAMING.URI", conf.Uri),
 	)
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func (conf *Config) Validate() error {
 
 	uri, err := url.Parse(conf.Uri)
 	if err != nil {
-		return fmt.Errorf("streaming.conf.uri: unable to parse uri | %s", err.Error())
+		return fmt.Errorf("CONFIG.INFRA.STREAMING.URI: unable to parse uri | %s", err.Error())
 	}
 
 	if strings.HasPrefix(uri.Scheme, "nats") {
@@ -61,11 +61,11 @@ type NatsConfig struct {
 func (conf *NatsConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.replicas", conf.Replicas, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.size", conf.Limits.Size, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msg_size", conf.Limits.MsgSize, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.msg_bytes", conf.Limits.MsgCount, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.nats.limits.age", conf.Limits.MsgAge, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.NATS.REPLICAS", conf.Replicas, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.NATS.LIMITS.SIZE", conf.Limits.Size, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.NATS.LIMITS.MSG_SIZE", conf.Limits.MsgSize, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.NATS.LIMITS.MSG_COUNT", conf.Limits.MsgCount, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.NATS.LIMITS.AGE", conf.Limits.MsgAge, 0),
 	)
 }
 
@@ -77,8 +77,8 @@ type PublisherConfig struct {
 func (conf *PublisherConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("streaming.conf.publisher.timeout", conf.Timeout, 1000),
-		validator.NumberGreaterThan("streaming.conf.publisher.rate_limit", conf.RateLimit, 0),
+		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.PUBLISHER.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.PUBLISHER.RATE_LIMIT", conf.RateLimit, 0),
 	)
 }
 
@@ -93,9 +93,9 @@ type SubscriberConfig struct {
 func (conf *SubscriberConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("streaming.subscriber.config.max_deliver", conf.MaxRetry, 1),
-		validator.NumberGreaterThan("streaming.conf.publisher.timeout", conf.Timeout, 1000),
-		validator.NumberGreaterThan("streaming.conf.publisher.concurrency", conf.Concurrency, 0),
-		validator.NumberGreaterThanOrEqual("streaming.conf.publisher.throughput", conf.Throughput, conf.Concurrency),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.SUBSCRIBER.MAX_RETRY", conf.MaxRetry, 1),
+		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.SUBSCRIBER.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.SUBSCRIBER.CONCURRENCY", conf.Concurrency, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.SUBSCRIBER.THOUGHPUT", conf.Throughput, conf.Concurrency),
 	)
 }
