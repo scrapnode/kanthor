@@ -7,6 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/project"
 	"gorm.io/gorm"
 )
@@ -70,6 +71,23 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string, 
 }
 
 func (sql *SqlRequest) ListByIds(ctx context.Context, ids []string) ([]entities.Request, error) {
+	var returning []entities.Request
+	for i := 0; i < len(ids); i += project.ScanBatchSize {
+		j := utils.ChunkNext(i, len(ids), project.ScanBatchSize)
+
+		requests, err := sql.list(ctx, ids[i:j])
+		// we don't accept partial success, if we got any error
+		// return the error immediately
+		if err != nil {
+			return nil, err
+		}
+		returning = append(returning, requests...)
+	}
+
+	return returning, nil
+}
+
+func (sql *SqlRequest) list(ctx context.Context, ids []string) ([]entities.Request, error) {
 	rows, err := sql.client.
 		Table(entities.TableReq).
 		Where("id IN ?", ids).

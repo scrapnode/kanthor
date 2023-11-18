@@ -78,7 +78,8 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 			response := uc.send(ctx, request)
 			responses.Set(refId, response)
 
-			if status.Is5xx(response.Status) {
+			// reschedule for certaintly response type
+			if response.Reschedulable() {
 				next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
 				err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
 				if err != nil {
@@ -90,6 +91,7 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 				return
 			}
 
+			// otherwise mark the request as complete not matter what status it is (even though the status is fail)
 			err := uc.repositories.Datastore().Attempt().MarkComplete(ctx, response.ReqId, response)
 			if err != nil {
 				ko.Set(refId, err)

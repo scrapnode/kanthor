@@ -2,6 +2,8 @@ package entities
 
 import (
 	"encoding/json"
+
+	"github.com/scrapnode/kanthor/domain/status"
 )
 
 type Response struct {
@@ -44,4 +46,8 @@ func (entity *Response) Unmarshal(data []byte) error {
 func (entity *Response) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
+}
+
+func (entity *Response) Reschedulable() bool {
+	return status.Is5xx(entity.Status) || entity.Status == status.ErrUnknown || entity.Status == status.None
 }

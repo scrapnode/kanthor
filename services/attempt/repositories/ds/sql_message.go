@@ -7,6 +7,7 @@ import (
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/project"
 	"gorm.io/gorm"
 )
@@ -64,6 +65,23 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 }
 
 func (sql *SqlMessage) ListByIds(ctx context.Context, ids []string) ([]entities.Message, error) {
+	var returning []entities.Message
+	for i := 0; i < len(ids); i += project.ScanBatchSize {
+		j := utils.ChunkNext(i, len(ids), project.ScanBatchSize)
+
+		messages, err := sql.list(ctx, ids[i:j])
+		// we don't accept partial success, if we got any error
+		// return the error immediately
+		if err != nil {
+			return nil, err
+		}
+		returning = append(returning, messages...)
+	}
+
+	return returning, nil
+}
+
+func (sql *SqlMessage) list(ctx context.Context, ids []string) ([]entities.Message, error) {
 	rows, err := sql.client.
 		Table(entities.TableMsg).
 		Where("id IN ?", ids).
@@ -96,13 +114,13 @@ func (sql *SqlMessage) ListByIds(ctx context.Context, ids []string) ([]entities.
 		// we don't accept partial success, if we got any error
 		// return the error immediately
 		if err != nil {
-			return []entities.Message{}, err
+			return nil, err
 		}
 		if err := json.Unmarshal([]byte(metadata), &record.Metadata); err != nil {
-			return []entities.Message{}, err
+			return nil, err
 		}
 		if err := json.Unmarshal([]byte(headers), &record.Headers); err != nil {
-			return []entities.Message{}, err
+			return nil, err
 		}
 		record.Body = body
 	}
