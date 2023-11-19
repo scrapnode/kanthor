@@ -40,3 +40,16 @@ func Service(provider configuration.Provider, name string) (patterns.Runnable, e
 
 	return nil, fmt.Errorf("serve.service: unknown service [%s]", name)
 }
+
+func Services(provider configuration.Provider) ([]patterns.Runnable, error) {
+	instances := []patterns.Runnable{}
+	for _, name := range services.SERVICES {
+		instance, err := Service(provider, name)
+		if err != nil {
+			return nil, err
+		}
+
+		instances = append(instances, instance)
+	}
+	return instances, nil
+}

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
@@ -30,7 +31,7 @@ func Service(provider configuration.Provider, name string) (validator.Validator,
 	if name == services.STORAGE {
 		return storage.New(provider)
 	}
-	if name == services.ATTEMPT {
+	if slices.Contains(services.ATTEMPTS, name) {
 		return attempt.New(provider)
 	}
 

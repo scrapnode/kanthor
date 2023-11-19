@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/samber/lo"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/status"
 	"github.com/scrapnode/kanthor/pkg/suid"
@@ -18,56 +18,59 @@ type SqlAttempt struct {
 	client *gorm.DB
 }
 
-var AttemptMapping = map[string]func(doc entities.Attempt) any{
-	"app_id":           func(doc entities.Attempt) any { return doc.AppId },
-	"req_id":           func(doc entities.Attempt) any { return doc.ReqId },
-	"tier":             func(doc entities.Attempt) any { return doc.Tier },
-	"status":           func(doc entities.Attempt) any { return doc.Status },
-	"res_id":           func(doc entities.Attempt) any { return doc.ResId },
-	"schedule_counter": func(doc entities.Attempt) any { return doc.ScheduleCounter },
-	"schedule_next":    func(doc entities.Attempt) any { return doc.ScheduleNext },
-	"scheduled_at":     func(doc entities.Attempt) any { return doc.ScheduledAt },
-	"completed_at":     func(doc entities.Attempt) any { return doc.CompletedAt },
-}
-var AttemptMappingCols = lo.Keys(AttemptMapping)
-
-func (sql *SqlAttempt) BulkCreate(ctx context.Context, docs []entities.Attempt) ([]string, error) {
-	ids := []string{}
-
+func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]string, error) {
+	var ids []string
 	if len(docs) == 0 {
 		return ids, nil
 	}
 
-	names := []string{}
-	values := map[string]interface{}{}
-	for k, doc := range docs {
-		ids = append(ids, doc.ReqId)
-
-		keys := []string{}
-		for _, col := range AttemptMappingCols {
-			key := fmt.Sprintf("%s_%d", col, k)
-			keys = append(keys, "@"+key)
-
-			mapping := AttemptMapping[col]
-			values[key] = mapping(doc)
-		}
-		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
+	m := sql.mapper()
+	if err := m.Parse(docs); err != nil {
+		return nil, err
 	}
 
 	tableName := fmt.Sprintf(`"%s"`, entities.TableAtt)
-	columns := fmt.Sprintf(`"%s"`, strings.Join(AttemptMappingCols, `","`))
-	statement := fmt.Sprintf(
-		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(req_id) DO NOTHING;",
-		tableName,
-		columns,
-		strings.Join(names, ","),
-	)
+	cols := fmt.Sprintf(`"%s"`, strings.Join(m.Names(), `","`))
+	unnest := strings.Join(m.Casters(), ",")
+	query := `INSERT INTO %s (%s) (SELECT * FROM UNNEST(%s)) ON CONFLICT (req_id) DO NOTHING;`
+	statement := fmt.Sprintf(query, tableName, cols, unnest)
 
-	if tx := sql.client.Exec(statement, values); tx.Error != nil {
+	if tx := sql.client.Exec(statement, m.Values()...); tx.Error != nil {
 		return nil, tx.Error
 	}
 
 	return ids, nil
+}
+
+func (sql *SqlAttempt) mapper() *datastore.Mapper[entities.Attempt] {
+	return datastore.NewMapper[entities.Attempt](
+		map[string]func(doc entities.Attempt) any{
+			"app_id":           func(doc entities.Attempt) any { return doc.AppId },
+			"req_id":           func(doc entities.Attempt) any { return doc.ReqId },
+			"tier":             func(doc entities.Attempt) any { return doc.Tier },
+			"status":           func(doc entities.Attempt) any { return doc.Status },
+			"res_id":           func(doc entities.Attempt) any { return doc.ResId },
+			"schedule_counter": func(doc entities.Attempt) any { return doc.ScheduleCounter },
+			"schedule_next":    func(doc entities.Attempt) any { return doc.ScheduleNext },
+			"scheduled_at":     func(doc entities.Attempt) any { return doc.ScheduledAt },
+			"completed_at":     func(doc entities.Attempt) any { return doc.CompletedAt },
+		},
+		map[string]string{
+			// cast timestamp as int8[]
+			"timestamp": "int8[]",
+			// cast status as int2[]
+			"status": "int2[]",
+			// cast schedule_counter as int2[]
+			"schedule_counter": "int2[]",
+			// cast schedule_next as int8[]
+			"schedule_next": "int8[]",
+			// cast scheduled_at as int8[]
+			"scheduled_at": "int8[]",
+			// cast completed_at as int8[]
+			"completed_at": "int8[]",
+			// others will be varchar[] by default
+		},
+	)
 }
 
 func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, less int64) ([]entities.Attempt, error) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/samber/lo"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
@@ -15,56 +15,46 @@ type SqlMessage struct {
 	client *gorm.DB
 }
 
-var MessageMapping = map[string]func(doc entities.Message) any{
-	"id":        func(doc entities.Message) any { return doc.Id },
-	"timestamp": func(doc entities.Message) any { return doc.Timestamp },
-	"tier":      func(doc entities.Message) any { return doc.Tier },
-	"app_id":    func(doc entities.Message) any { return doc.AppId },
-	"type":      func(doc entities.Message) any { return doc.Type },
-	"metadata":  func(doc entities.Message) any { return utils.Stringify(doc.Metadata) },
-	"headers":   func(doc entities.Message) any { return utils.Stringify(doc.Headers) },
-	"body":      func(doc entities.Message) any { return doc.Body },
-}
-var MessageMappingCols = lo.Keys(MessageMapping)
-
 func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]entities.TSEntity, error) {
-	records := []entities.TSEntity{}
-
+	var records []entities.TSEntity
 	if len(docs) == 0 {
 		return records, nil
 	}
 
-	names := []string{}
-	values := map[string]interface{}{}
-	for k, doc := range docs {
-		record := entities.TSEntity{}
-		record.Id = doc.Id
-		record.Timestamp = doc.Timestamp
-		records = append(records, record)
-
-		keys := []string{}
-		for _, col := range MessageMappingCols {
-			key := fmt.Sprintf("%s_%d", col, k)
-			keys = append(keys, "@"+key)
-
-			mapping := MessageMapping[col]
-			values[key] = mapping(doc)
-		}
-		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
+	m := sql.mapper()
+	if err := m.Parse(docs); err != nil {
+		return nil, err
 	}
 
 	tableName := fmt.Sprintf(`"%s"`, entities.TableMsg)
-	columns := fmt.Sprintf(`"%s"`, strings.Join(MessageMappingCols, `","`))
-	statement := fmt.Sprintf(
-		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(app_id, id) DO NOTHING;",
-		tableName,
-		columns,
-		strings.Join(names, ","),
-	)
+	cols := fmt.Sprintf(`"%s"`, strings.Join(m.Names(), `","`))
+	unnest := strings.Join(m.Casters(), ",")
+	query := `INSERT INTO %s (%s) (SELECT * FROM UNNEST(%s)) ON CONFLICT (app_id, id) DO NOTHING;`
+	statement := fmt.Sprintf(query, tableName, cols, unnest)
 
-	if tx := sql.client.Exec(statement, values); tx.Error != nil {
+	if tx := sql.client.Exec(statement, m.Values()...); tx.Error != nil {
 		return nil, tx.Error
 	}
 
 	return records, nil
+}
+
+func (sql *SqlMessage) mapper() *datastore.Mapper[entities.Message] {
+	return datastore.NewMapper[entities.Message](
+		map[string]func(doc entities.Message) any{
+			"id":        func(doc entities.Message) any { return doc.Id },
+			"timestamp": func(doc entities.Message) any { return doc.Timestamp },
+			"tier":      func(doc entities.Message) any { return doc.Tier },
+			"app_id":    func(doc entities.Message) any { return doc.AppId },
+			"type":      func(doc entities.Message) any { return doc.Type },
+			"metadata":  func(doc entities.Message) any { return utils.Stringify(doc.Metadata) },
+			"headers":   func(doc entities.Message) any { return utils.Stringify(doc.Headers) },
+			"body":      func(doc entities.Message) any { return doc.Body },
+		},
+		map[string]string{
+			// cast timestamp as int8[]
+			"timestamp": "int8[]",
+			// others will be varchar[] by default
+		},
+	)
 }
