@@ -36,6 +36,12 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []entities.Message) ([]e
 		return nil, tx.Error
 	}
 
+	for _, doc := range docs {
+		record := entities.TSEntity{}
+		record.Id = doc.Id
+		record.Timestamp = doc.Timestamp
+		records = append(records, record)
+	}
 	return records, nil
 }
 
