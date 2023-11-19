@@ -39,6 +39,9 @@ func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]s
 		return nil, tx.Error
 	}
 
+	for _, doc := range docs {
+		ids = append(ids, doc.ReqId)
+	}
 	return ids, nil
 }
 
