@@ -46,7 +46,7 @@ func single(provider configuration.Provider, name string) (err error) {
 	}
 	debug := debugging.NewServer()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	if err = service.Start(ctx); err != nil {
