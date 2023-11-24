@@ -6,3 +6,8 @@ type Datastore interface {
 	Response() Response
 	Attempt() Attempt
 }
+
+type ScanResults[T any] struct {
+	Data  T
+	Error error
+}

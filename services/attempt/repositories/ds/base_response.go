@@ -2,7 +2,6 @@ package ds
 
 import (
 	"context"
-	"time"
 )
 
 type Res struct {
@@ -14,5 +13,5 @@ type Res struct {
 }
 
 type Response interface {
-	Scan(ctx context.Context, appId string, msgIds []string, from, to time.Time) (map[string]Res, error)
+	Scan(ctx context.Context, appId string, msgIds []string, limit int) (map[string]Res, error)
 }

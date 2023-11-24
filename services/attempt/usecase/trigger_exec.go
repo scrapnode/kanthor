@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/scrapnode/kanthor/assessor"
@@ -137,10 +138,7 @@ func (uc *trigger) consume(
 
 	from := time.UnixMilli(trigger.From)
 	to := time.UnixMilli(trigger.To)
-	msgIds, requests, err := uc.examine(ctx, trigger.AppId, applicable, from, to)
-	if err != nil {
-		return nil, err
-	}
+	ch := uc.repositories.Datastore().Message().Scan(ctx, trigger.AppId, from, to, concurrency)
 
 	out := &TriggerExecOut{
 		Success:   []string{},
@@ -149,18 +147,29 @@ func (uc *trigger) consume(
 		Created:   []string{},
 	}
 
-	scheduledok, scheduledko := uc.schedule(ctx, concurrency, applicable, msgIds)
-	out.Success = append(out.Success, scheduledok.Data()...)
-	for k, v := range scheduledko.Data() {
-		out.Error[k] = v
+	for r := range ch {
+		if r.Error != nil {
+			return nil, err
+		}
+
+		msgIds, requests, err := uc.examine(ctx, trigger.AppId, concurrency, applicable, r.Data)
+		if err != nil {
+			return nil, err
+		}
+
+		scheduledok, scheduledko := uc.schedule(ctx, concurrency, applicable, msgIds)
+		out.Success = append(out.Success, scheduledok.Data()...)
+		for k, v := range scheduledko.Data() {
+			out.Error[k] = v
+		}
+		out.Scheduled = append(out.Scheduled, scheduledok.Data()...)
+		createdok, createdko := uc.create(ctx, concurrency, delay, requests)
+		out.Success = append(out.Success, createdok.Data()...)
+		for k, v := range createdko.Data() {
+			out.Error[k] = v
+		}
+		out.Scheduled = append(out.Scheduled, createdok.Data()...)
 	}
-	out.Scheduled = append(out.Scheduled, scheduledok.Data()...)
-	createdok, createdko := uc.create(ctx, concurrency, delay, requests)
-	out.Success = append(out.Success, createdok.Data()...)
-	for k, v := range createdko.Data() {
-		out.Error[k] = v
-	}
-	out.Scheduled = append(out.Scheduled, createdok.Data()...)
 
 	return out, nil
 }
@@ -169,20 +178,22 @@ func (uc *trigger) consume(
 func (uc *trigger) examine(
 	ctx context.Context,
 	appId string,
+	concurrency int,
 	applicable *assessor.Assets,
-	from, to time.Time,
+	messages map[string]ds.Msg,
 ) ([]string, []ds.Req, error) {
-	messages, msgIds, err := uc.scan(ctx, appId, from, to)
+	var ids []string
+	for id := range messages {
+		ids = append(ids, id)
+	}
+	log.Printf("count %d", len(ids))
+
+	requests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, ids, concurrency)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	requests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, msgIds, from, to)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	responses, err := uc.repositories.Datastore().Response().Scan(ctx, appId, msgIds, from, to)
+	responses, err := uc.repositories.Datastore().Response().Scan(ctx, appId, ids, concurrency)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -212,22 +223,6 @@ func (uc *trigger) examine(
 	}
 
 	return schedulable, attemptable, nil
-}
-
-func (uc *trigger) scan(ctx context.Context, appId string, from, to time.Time) (map[string]ds.Msg, []string, error) {
-	messages, err := uc.repositories.Datastore().Message().Scan(ctx, appId, from, to)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	ids := []string{}
-	returning := map[string]ds.Msg{}
-	for _, msg := range messages {
-		returning[msg.Id] = msg
-		ids = append(ids, msg.Id)
-	}
-
-	return returning, ids, nil
 }
 
 func (uc *trigger) applicable(ctx context.Context, appId string) (*assessor.Assets, error) {

@@ -3,10 +3,8 @@ package ds
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/project"
 	"gorm.io/gorm"
@@ -16,56 +14,29 @@ type SqlRequest struct {
 	client *gorm.DB
 }
 
-func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string, from, to time.Time) (map[string]Req, error) {
+func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string, limit int) (map[string]Req, error) {
 	if len(msgIds) == 0 {
 		return map[string]Req{}, nil
 	}
 
-	// convert timestamp to safe id, so we can the table efficiently with primary key
-	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
-	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
-
 	selects := []string{"app_id", "msg_id", "ep_id", "id", "tier"}
+	var requests []Req
+	tx := sql.client.
+		Table(entities.TableReq).
+		Where("app_id = ?", appId).
+		Where("msg_id IN ?", msgIds).
+		Order("app_id ASC, msg_id ASC, id ASC").
+		Limit(limit).
+		Select(selects)
 
-	var cursor string
-	returning := map[string]Req{}
-	for {
-		var scanned []Req
-
-		tx := sql.client.
-			Table(entities.TableReq).
-			Where("app_id = ?", appId).
-			Where("msg_id IN ?", msgIds).
-			Where("id < ?", high).
-			Order("app_id ASC, msg_id ASC, id ASC").
-			Limit(project.ScanBatchSize).
-			Select(selects)
-
-		if cursor == "" {
-			tx = tx.Where("id > ?", low)
-		} else {
-			tx = tx.Where("id > ?", cursor)
-		}
-
-		if tx = tx.Find(&scanned); tx.Error != nil {
-			return nil, tx.Error
-		}
-
-		// collect scanned records
-		for _, s := range scanned {
-			returning[s.Id] = s
-		}
-
-		// if we found less than request size, that mean we were in last page
-		if len(scanned) < project.ScanBatchSize {
-			break
-		}
-
-		cursor = scanned[len(scanned)-1].Id
+	if tx = tx.Find(&requests); tx.Error != nil {
+		return nil, tx.Error
 	}
 
-	if len(returning) == 0 {
-		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
+	returning := map[string]Req{}
+	// collect scanned records
+	for _, s := range requests {
+		returning[s.Id] = s
 	}
 
 	return returning, nil

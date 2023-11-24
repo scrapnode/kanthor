@@ -15,6 +15,6 @@ type Msg struct {
 }
 
 type Message interface {
-	Scan(ctx context.Context, appId string, from, to time.Time) ([]Msg, error)
+	Scan(ctx context.Context, appId string, from, to time.Time, limit int) chan *ScanResults[map[string]Msg]
 	ListByIds(ctx context.Context, ids []string) ([]entities.Message, error)
 }

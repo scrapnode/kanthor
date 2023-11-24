@@ -33,27 +33,38 @@ type EndeavorPlanOut struct {
 }
 
 func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlanOut, error) {
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
-	defer cancel()
-
 	from := uc.infra.Timer.Now().Add(time.Duration(in.ScanStart) * time.Millisecond)
 	to := uc.infra.Timer.Now().Add(time.Duration(in.ScanEnd) * time.Millisecond)
 	ok := []string{}
 
+	less := uc.infra.Timer.Now().UnixMilli()
+
 	errc := make(chan error)
 	defer close(errc)
 	go func() {
-		s, err := uc.scan(ctx, from, to)
-		if err != nil {
-			errc <- err
-			return
-		}
+		// @TODO: remove hardcode of scan size
+		ch := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, less, 300)
 
-		ids := uc.trigger(ctx, s)
-		ok = append(ok, ids...)
+		for r := range ch {
+			if r.Error != nil {
+				errc <- r.Error
+				return
+			}
 
-		if err := uc.repositories.Datastore().Attempt().MarkIgnore(ctx, s.Ignore); err != nil {
-			uc.logger.Errorw("unable to ignore attempts", "req_ids", s.Ignore)
+			uc.logger.Debugw("found records", "record_count", len(r.Data))
+
+			s, err := uc.evaluate(ctx, r.Data)
+			if err != nil {
+				errc <- err
+				return
+			}
+
+			ids := uc.trigger(ctx, s)
+			ok = append(ok, ids...)
+
+			if err := uc.repositories.Datastore().Attempt().MarkIgnore(ctx, s.Ignore); err != nil {
+				uc.logger.Errorw("unable to ignore attempts", "req_ids", s.Ignore)
+			}
 		}
 
 		errc <- nil
@@ -62,8 +73,8 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 	select {
 	case err := <-errc:
 		return &EndeavorPlanOut{Success: ok, From: from, To: to}, err
-	case <-timeout.Done():
-		return &EndeavorPlanOut{Success: ok, From: from, To: to}, timeout.Err()
+	case <-ctx.Done():
+		return &EndeavorPlanOut{Success: ok, From: from, To: to}, ctx.Err()
 	}
 }
 
@@ -72,15 +83,8 @@ type strive struct {
 	Ignore      []string
 }
 
-func (uc *endeavor) scan(ctx context.Context, from, to time.Time) (*strive, error) {
+func (uc *endeavor) evaluate(ctx context.Context, attempts []entities.Attempt) (*strive, error) {
 	returning := &strive{Attemptable: []entities.Attempt{}, Ignore: []string{}}
-
-	less := uc.infra.Timer.Now().UnixMilli()
-	attempts, err := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, less)
-	if err != nil {
-		return nil, err
-	}
-	uc.logger.Debugw("found records", "record_count", len(attempts))
 
 	for _, attempt := range attempts {
 		// ignore

@@ -47,7 +47,6 @@ func (logger SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (s
 	// gorm explain helpers does not work well with cast like ?::varchar[]
 	// so should redact the query to not make developer confuse about why the display query does not work
 	if strings.Contains(sql, "::") {
-		args = append(args, "sql", sql)
 		logger.log.Debugw("<REDACTED_CAST_QUERY>", args...)
 		return
 	}

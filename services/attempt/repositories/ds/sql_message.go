@@ -16,53 +16,56 @@ type SqlMessage struct {
 	client *gorm.DB
 }
 
-func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time) ([]Msg, error) {
+func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time, limit int) chan *ScanResults[map[string]Msg] {
+	ch := make(chan *ScanResults[map[string]Msg], 1)
 	// convert timestamp to safe id, so we can the table efficiently with primary key
 	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
 
 	selects := []string{"app_id", "id", "tier", "timestamp"}
+	go func() {
+		var cursor string
+		for {
+			var msgs []Msg
 
-	var cursor string
-	var records []Msg
+			tx := sql.client.
+				Table(entities.TableMsg).
+				Where("app_id = ?", appId).
+				Where("id < ?", high).
+				Order("app_id ASC, id ASC").
+				Limit(limit).
+				Select(selects)
 
-	for {
-		var scanned []Msg
+			if cursor == "" {
+				tx = tx.Where("id > ?", low)
+			} else {
+				tx = tx.Where("id > ?", cursor)
+			}
 
-		tx := sql.client.
-			Table(entities.TableMsg).
-			Where("app_id = ?", appId).
-			Where("id < ?", high).
-			Order("app_id ASC, id ASC").
-			Limit(project.ScanBatchSize).
-			Select(selects)
+			if tx = tx.Find(&msgs); tx.Error != nil {
+				ch <- &ScanResults[map[string]Msg]{Error: tx.Error}
 
-		if cursor == "" {
-			tx = tx.Where("id > ?", low)
-		} else {
-			tx = tx.Where("id > ?", cursor)
+				close(ch)
+				break
+			}
+
+			returning := map[string]Msg{}
+			for _, msg := range msgs {
+				returning[msg.Id] = msg
+			}
+			ch <- &ScanResults[map[string]Msg]{Data: returning}
+
+			// if we found less than request size, that mean we were in last page
+			if len(msgs) < limit {
+				close(ch)
+				break
+			}
+
+			cursor = msgs[len(msgs)-1].Id
 		}
+	}()
 
-		if tx = tx.Find(&scanned); tx.Error != nil {
-			return nil, tx.Error
-		}
-
-		// collect scanned records
-		records = append(records, scanned...)
-
-		// if we found less than request size, that mean we were in last page
-		if len(scanned) < project.ScanBatchSize {
-			break
-		}
-
-		cursor = scanned[len(scanned)-1].Id
-	}
-
-	if len(records) == 0 {
-		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
-	}
-
-	return records, nil
+	return ch
 }
 
 func (sql *SqlMessage) ListByIds(ctx context.Context, ids []string) ([]entities.Message, error) {

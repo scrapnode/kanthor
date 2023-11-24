@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/status"
 	"github.com/scrapnode/kanthor/pkg/suid"
-	"github.com/scrapnode/kanthor/project"
 	"gorm.io/gorm"
 )
 
@@ -76,49 +75,51 @@ func (sql *SqlAttempt) mapper() *datastore.Mapper[entities.Attempt] {
 	)
 }
 
-func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, less int64) ([]entities.Attempt, error) {
+func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64, limit int) chan *ScanResults[[]entities.Attempt] {
+	ch := make(chan *ScanResults[[]entities.Attempt], 1)
+
 	// convert timestamp to safe id, so we can the table efficiently with primary key
 	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
 
-	var cursor string
-	var records []entities.Attempt
-	for {
-		var scanned []entities.Attempt
+	go func() {
+		var cursor string
+		for {
+			var attempts []entities.Attempt
 
-		tx := sql.client.
-			Table(entities.TableAtt).
-			Where("req_id < ?", high).
-			Where("schedule_next <= ?", less).
-			Order("req_id ASC").
-			Limit(project.ScanBatchSize)
+			tx := sql.client.
+				Table(entities.TableAtt).
+				Where("req_id < ?", high).
+				Where("schedule_next <= ?", next).
+				Order("req_id ASC").
+				Limit(limit)
 
-		if cursor == "" {
-			tx = tx.Where("req_id > ?", low)
-		} else {
-			tx = tx.Where("req_id > ?", cursor)
+			if cursor == "" {
+				tx = tx.Where("req_id > ?", low)
+			} else {
+				tx = tx.Where("req_id > ?", cursor)
+			}
+
+			if tx = tx.Find(&attempts); tx.Error != nil {
+				ch <- &ScanResults[[]entities.Attempt]{Error: tx.Error}
+
+				close(ch)
+				break
+			}
+
+			ch <- &ScanResults[[]entities.Attempt]{Data: attempts}
+
+			// if we found less than request size, that mean we were in last page
+			if len(attempts) < limit {
+				close(ch)
+				break
+			}
+
+			cursor = attempts[len(attempts)-1].ReqId
 		}
+	}()
 
-		if tx = tx.Find(&scanned); tx.Error != nil {
-			return nil, tx.Error
-		}
-
-		// collect scanned records
-		records = append(records, scanned...)
-
-		// if we found less than request size, that mean we were in last page
-		if len(scanned) < project.ScanBatchSize {
-			break
-		}
-
-		cursor = scanned[len(scanned)-1].ReqId
-	}
-
-	if len(records) == 0 {
-		sql.client.Logger.Warn(ctx, "scanning return zero records", "from", low, "to", high)
-	}
-
-	return records, nil
+	return ch
 }
 
 func (sql *SqlAttempt) MarkComplete(ctx context.Context, reqId string, res *entities.Response) error {
