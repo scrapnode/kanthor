@@ -20,7 +20,6 @@ import (
 
 type TriggerExecIn struct {
 	Concurrency int
-	Timeout     int64
 
 	ArrangeDelay int64
 	Triggers     map[string]*entities.AttemptTrigger
@@ -29,7 +28,6 @@ type TriggerExecIn struct {
 func (in *TriggerExecIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("timeout", int(in.Timeout), 1000),
 		validator.NumberGreaterThan("concurrency", in.Concurrency, 1),
 		validator.NumberGreaterThan("arrange_delay", in.ArrangeDelay, 60000),
 		validator.MapRequired("triggers", in.Triggers),
@@ -56,28 +54,24 @@ func (in *TriggerExecIn) Validate() error {
 type TriggerExecOut struct {
 	Success []string
 	Error   map[string]error
+
+	Scheduled []string
+	Created   []string
 }
 
 func (uc *trigger) Exec(ctx context.Context, in *TriggerExecIn) (*TriggerExecOut, error) {
-	ok := &safe.Slice[string]{}
-	ko := &safe.Map[error]{}
-
-	// timeout duration will be scaled based on how many triggers you have
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
-	defer cancel()
+	outs := &safe.Slice[*TriggerExecOut]{}
 
 	var wg conc.WaitGroup
 	for _, item := range in.Triggers {
 		trigger := item
 		wg.Go(func() {
-			resp, err := uc.consume(ctx, trigger, in.Concurrency, in.ArrangeDelay)
+			out, err := uc.consume(ctx, trigger, in.Concurrency, in.ArrangeDelay)
 			if err != nil {
 				uc.logger.Errorw("unable to consume attempt trigger", "trigger", trigger.String(), "err", err.Error())
 				return
 			}
-
-			ko.Merge(resp.Error)
-			ok.Append(resp.Success...)
+			outs.Append(out)
 		})
 	}
 
@@ -91,8 +85,22 @@ func (uc *trigger) Exec(ctx context.Context, in *TriggerExecIn) (*TriggerExecOut
 
 	select {
 	case <-c:
-		return &TriggerExecOut{Success: ok.Data(), Error: ko.Data()}, nil
-	case <-timeout.Done():
+		out := &TriggerExecOut{
+			Success:   []string{},
+			Error:     map[string]error{},
+			Scheduled: []string{},
+			Created:   []string{},
+		}
+		for _, o := range outs.Data() {
+			out.Success = append(out.Success, o.Success...)
+			for k, v := range o.Error {
+				out.Error[k] = v
+			}
+			out.Scheduled = append(out.Scheduled, o.Scheduled...)
+			out.Created = append(out.Created, o.Created...)
+		}
+		return out, nil
+	case <-ctx.Done():
 		// actually we may have some success entries, but we can ignore them
 		// let cronjob pickup and retry them redundantly
 		return nil, ctx.Err()
@@ -134,14 +142,27 @@ func (uc *trigger) consume(
 		return nil, err
 	}
 
-	ok := &safe.Slice[string]{}
-	ko := &safe.Map[error]{}
+	out := &TriggerExecOut{
+		Success:   []string{},
+		Error:     map[string]error{},
+		Scheduled: []string{},
+		Created:   []string{},
+	}
 
-	uc.schedule(ctx, ok, ko, concurrency, applicable, msgIds)
-	uc.create(ctx, ok, ko, concurrency, delay, requests)
+	scheduledok, scheduledko := uc.schedule(ctx, concurrency, applicable, msgIds)
+	out.Success = append(out.Success, scheduledok.Data()...)
+	for k, v := range scheduledko.Data() {
+		out.Error[k] = v
+	}
+	out.Scheduled = append(out.Scheduled, scheduledok.Data()...)
+	createdok, createdko := uc.create(ctx, concurrency, delay, requests)
+	out.Success = append(out.Success, createdok.Data()...)
+	for k, v := range createdko.Data() {
+		out.Error[k] = v
+	}
+	out.Scheduled = append(out.Scheduled, createdok.Data()...)
 
-	res := &TriggerExecOut{Success: ok.Data(), Error: ko.Data()}
-	return res, nil
+	return out, nil
 }
 
 // examine messages, requests and responses
@@ -267,14 +288,9 @@ func reskey(msgId, epId string) string {
 }
 
 // schedule messages
-func (uc *trigger) schedule(
-	ctx context.Context,
-	ok *safe.Slice[string],
-	ko *safe.Map[error],
-	concurrency int,
-	applicable *assessor.Assets,
-	msgIds []string,
-) {
+func (uc *trigger) schedule(ctx context.Context, concurrency int, applicable *assessor.Assets, msgIds []string) (*safe.Slice[string], *safe.Map[error]) {
+	ok := &safe.Slice[string]{}
+	ko := &safe.Map[error]{}
 	requests := []entities.Request{}
 
 	for i := 0; i < len(msgIds); i += concurrency {
@@ -300,7 +316,7 @@ func (uc *trigger) schedule(
 	}
 
 	if len(requests) == 0 {
-		return
+		return ok, ko
 	}
 
 	events := map[string]*streaming.Event{}
@@ -324,17 +340,14 @@ func (uc *trigger) schedule(
 
 		ok.Append(key)
 	}
+
+	return ok, ko
 }
 
 // create attempts
-func (uc *trigger) create(
-	ctx context.Context,
-	ok *safe.Slice[string],
-	ko *safe.Map[error],
-	concurrency int,
-	delay int64,
-	requests []ds.Req,
-) {
+func (uc *trigger) create(ctx context.Context, concurrency int, delay int64, requests []ds.Req) (*safe.Slice[string], *safe.Map[error]) {
+	ok := &safe.Slice[string]{}
+	ko := &safe.Map[error]{}
 	attempts := []entities.Attempt{}
 
 	now := uc.infra.Timer.Now()
@@ -369,4 +382,6 @@ func (uc *trigger) create(
 
 		ok.Append(ids...)
 	}
+
+	return ok, ko
 }

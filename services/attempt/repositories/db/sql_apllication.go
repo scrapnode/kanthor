@@ -2,13 +2,38 @@ package db
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/domain/entities"
 	"gorm.io/gorm"
 )
 
 type SqlApplication struct {
 	client *gorm.DB
+}
+
+func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.ApplicationWithRelationship, error) {
+	doc := &entities.Application{}
+	doc.Id = id
+
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	tx := transaction.WithContext(ctx).Model(&doc).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		First(doc)
+	if tx.Error != nil {
+		return nil, database.SqlError(tx.Error)
+	}
+
+	returning := &entities.ApplicationWithRelationship{Application: doc}
+	wstx := transaction.WithContext(ctx).Model(&entities.Workspace{}).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, entities.TableWs), doc.WsId).
+		First(&returning.Workspace)
+	if wstx.Error != nil {
+		return nil, database.SqlError(wstx.Error)
+	}
+
+	return returning, nil
 }
 
 func (sql *SqlApplication) Scan(ctx context.Context, limit int, cursor string) ([]entities.Application, error) {

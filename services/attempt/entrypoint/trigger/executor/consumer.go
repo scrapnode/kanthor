@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/transformation"
@@ -12,7 +13,6 @@ import (
 func RegisterConsumer(service *executor) streaming.SubHandler {
 	return func(events map[string]*streaming.Event) map[string]error {
 		in := &usecase.TriggerExecIn{
-			Timeout:      service.conf.Trigger.Executor.Timeout,
 			Concurrency:  service.conf.Trigger.Executor.Concurrency,
 			ArrangeDelay: service.conf.Trigger.Executor.ArrangeDelay,
 			Triggers:     map[string]*entities.AttemptTrigger{},
@@ -30,7 +30,8 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 			in.Triggers[event.Id] = trigger
 		}
 
-		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Trigger.Executor.Timeout))
+		defer cancel()
 
 		out, err := service.uc.Trigger().Exec(ctx, in)
 		if err != nil {
@@ -48,7 +49,14 @@ func RegisterConsumer(service *executor) streaming.SubHandler {
 			}
 		}
 
-		service.logger.Infow("consumed attempt triggers", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
+		service.logger.Infow(
+			"consumed attempt triggers",
+			"event_count", len(events),
+			"ok_count", len(out.Success),
+			"scheduled", len(out.Scheduled),
+			"created", len(out.Created),
+			"ko_count", len(out.Error),
+		)
 
 		return map[string]error{}
 	}

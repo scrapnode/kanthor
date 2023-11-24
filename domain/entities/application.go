@@ -34,3 +34,8 @@ func (entity *Application) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
 }
+
+type ApplicationWithRelationship struct {
+	*Application
+	Workspace *Workspace
+}

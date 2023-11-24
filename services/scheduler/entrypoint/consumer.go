@@ -2,6 +2,7 @@ package entrypoint
 
 import (
 	"context"
+	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/domain/transformation"
@@ -32,10 +33,10 @@ func NewConsumer(service *scheduler) streaming.SubHandler {
 			messages[event.Id] = message
 		}
 
-		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Request.Schedule.Timeout))
+		defer cancel()
 
 		in := &usecase.RequestScheduleIn{
-			Timeout:  service.conf.Request.Schedule.Timeout,
 			Messages: messages,
 		}
 		// we alreay validated messages of request, don't need to validate again

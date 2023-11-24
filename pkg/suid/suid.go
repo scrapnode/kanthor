@@ -2,6 +2,7 @@ package suid
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
@@ -16,6 +17,27 @@ var SafeUnixDiff = time.Second * 10
 // other standard UUID v7 (https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-01.html#name-uuidv7-layout-and-bit-order)
 func New(ns string) string {
 	return fmt.Sprintf("%s_%s", ns, ksuid.New().String())
+}
+
+func Parse(id string) (ns string, suid string) {
+	segments := strings.Split(id, "_")
+	return segments[0], segments[1]
+}
+
+func Ns(id string) string {
+	segments := strings.Split(id, "_")
+	return segments[0]
+}
+
+func Valid(id string) bool {
+	ns, suid := Parse(id)
+	if ns == "" || suid == "" {
+		return false
+	}
+	if _, err := ksuid.Parse(suid); err != nil {
+		return false
+	}
+	return true
 }
 
 // AfterTime uses SafeUnixDiff as factor to make sure we can get an id that is always less than the given time

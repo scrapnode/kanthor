@@ -26,11 +26,12 @@ func main() {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Panicf("main.recover: %v | stack: %s", r, debug.Stack())
+			log.Printf("main.recover: %v | stack: %s", r, debug.Stack())
 		}
 	}()
 
 	if err := command.Execute(); err != nil {
-		log.Panicf("main.error: %v", err)
+		log.Printf("main.error: %s", err)
+		log.Printf("main.error.stack: %s", debug.Stack())
 	}
 }

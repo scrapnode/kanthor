@@ -18,8 +18,6 @@ import (
 )
 
 type RequestScheduleIn struct {
-	Timeout int64
-
 	Messages map[string]*entities.Message
 }
 
@@ -39,7 +37,6 @@ func (in *RequestScheduleIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.MapRequired("messages", in.Messages),
-		validator.NumberGreaterThan("timeout", in.Timeout, 1000),
 	)
 	if err != nil {
 		return err
@@ -60,9 +57,6 @@ type RequestScheduleOut struct {
 }
 
 func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*RequestScheduleOut, error) {
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
-	defer cancel()
-
 	ok := &safe.Map[[]string]{}
 	// ko must be map of message id and their error
 	// so we can retry it if schedule requests of message got any error
@@ -118,7 +112,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 	select {
 	case err := <-errc:
 		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, err
-	case <-timeout.Done():
+	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages
 		for _, message := range in.Messages {
 			if _, success := ok.Get(message.Id); success {

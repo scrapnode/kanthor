@@ -37,6 +37,7 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string,
 			Where("msg_id IN ?", msgIds).
 			Where("id < ?", high).
 			Order("app_id ASC, msg_id ASC, id ASC").
+			Limit(project.ScanBatchSize).
 			Select(selects)
 
 		if cursor == "" {

@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/safe"
@@ -13,7 +12,6 @@ import (
 )
 
 type WarehousePutIn struct {
-	Timeout   int64
 	Size      int
 	Messages  []entities.Message
 	Requests  []entities.Request
@@ -23,7 +21,6 @@ type WarehousePutIn struct {
 func (in *WarehousePutIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("timeout", in.Timeout, 1000),
 		validator.NumberGreaterThan("size", in.Size, 0),
 	)
 	if err != nil {
@@ -122,9 +119,6 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 	ok := safe.Map[string]{}
 	ko := safe.Map[error]{}
 
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(in.Timeout))
-	defer cancel()
-
 	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
 	p := pool.New().WithMaxGoroutines(1)
 	for i := 0; i < len(in.Messages); i += in.Size {
@@ -195,7 +189,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 	select {
 	case <-c:
 		return &WarehousePutOut{Success: ok.Keys(), Error: ko.Data()}, nil
-	case <-timeout.Done():
+	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages
 		for _, message := range in.Messages {
 			if _, success := ok.Get(message.Id); success {

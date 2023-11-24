@@ -3,6 +3,7 @@ package entrypoint
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/domain/entities"
@@ -17,13 +18,11 @@ func NewConsumer(service *storage) streaming.SubHandler {
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
 		retruning := map[string]error{}
-		ctx := context.Background()
 
 		// create a map of events & entities so we can generate error map later
 		maps := map[string]string{}
 
 		in := &usecase.WarehousePutIn{
-			Timeout:   service.conf.Warehouse.Put.Timeout,
 			Size:      service.conf.Warehouse.Put.Size,
 			Messages:  []entities.Message{},
 			Requests:  []entities.Request{},
@@ -91,6 +90,9 @@ func NewConsumer(service *storage) streaming.SubHandler {
 			retruning[event.Id] = err
 			service.logger.Warnw(err.Error(), "event", event.String())
 		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Warehouse.Put.Timeout))
+		defer cancel()
 
 		// we alreay validated messages, request and response, don't need to validate again
 		out, err := service.uc.Warehouse().Put(ctx, in)

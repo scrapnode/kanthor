@@ -34,6 +34,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 			Where("app_id = ?", appId).
 			Where("id < ?", high).
 			Order("app_id ASC, id ASC").
+			Limit(project.ScanBatchSize).
 			Select(selects)
 
 		if cursor == "" {
