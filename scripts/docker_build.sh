@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 docker build --platform linux/amd64 --progress=plain -t kanthorlabs/base:latest docker/base

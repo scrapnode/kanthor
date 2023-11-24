@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 API_CREDS_PATH=${API_CREDS_PATH:-"/tmp"}

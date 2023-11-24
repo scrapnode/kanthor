@@ -1,0 +1,27 @@
+{
+  "name": "@kanthorlabs/kanthor",
+  "version": "2022.1201.1701",
+  "description": "Open-source Webhook Gateway: Delivery your message with precision and ease",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scrapnode/kanthor.git"
+  },
+  "keywords": [
+    "webhook",
+    "webhook-service",
+    "webhook-server"
+  ],
+  "author": "Tuan Nguyen <tuan.nguyen@kanthorlabs.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scrapnode/kanthor/issues"
+  },
+  "homepage": "https://github.com/scrapnode/kanthor#readme",
+  "dependencies": {
+    "whatwg-fetch": "^3.6.19"
+  }
+}
