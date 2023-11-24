@@ -21,7 +21,6 @@ func (conf *Trigger) Validate() error {
 
 type TriggerPlanner struct {
 	Schedule string `json:"schedule" yaml:"schedule" mapstructure:"schedule"`
-	Timeout  int64  `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
 	Size     int    `json:"size" yaml:"size" mapstructure:"size"`
 
 	ScanStart int64 `json:"scan_start" yaml:"scan_start" mapstructure:"scan_start"`
@@ -32,7 +31,6 @@ func (conf *TriggerPlanner) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringRequired("CONFIG.ATTEMPT.TRIGGER.PLANNER.SCHEDULE", conf.Schedule),
-		validator.NumberGreaterThanOrEqual("CONFIG.ATTEMPT.TRIGGER.PLANNER.TIMEOUT", conf.Timeout, 1000),
 		validator.NumberGreaterThan("CONFIG.ATTEMPT.TRIGGER.PLANNER.SIZE", conf.Size, 0),
 		validator.NumberLessThan("CONFIG.ATTEMPT.TRIGGER.PLANNER.SCAN_END", conf.ScanEnd, 0),
 		validator.NumberLessThan("CONFIG.ATTEMPT.TRIGGER.PLANNER.SCAN_START", conf.ScanStart, conf.ScanEnd),

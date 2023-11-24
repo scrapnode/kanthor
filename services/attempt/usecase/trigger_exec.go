@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/scrapnode/kanthor/assessor"
@@ -15,7 +14,6 @@ import (
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/scrapnode/kanthor/services/attempt/repositories/ds"
 	"github.com/sourcegraph/conc"
 )
 
@@ -138,7 +136,11 @@ func (uc *trigger) consume(
 
 	from := time.UnixMilli(trigger.From)
 	to := time.UnixMilli(trigger.To)
-	ch := uc.repositories.Datastore().Message().Scan(ctx, trigger.AppId, from, to, concurrency)
+
+	count, err := uc.repositories.Datastore().Message().Count(ctx, trigger.AppId, from, to)
+	if err != nil {
+		return nil, err
+	}
 
 	out := &TriggerExecOut{
 		Success:   []string{},
@@ -147,23 +149,27 @@ func (uc *trigger) consume(
 		Created:   []string{},
 	}
 
+	var scanned int64
+	ch := uc.repositories.Datastore().Message().Scan(ctx, trigger.AppId, from, to, concurrency)
 	for r := range ch {
+		scanned += int64(len(r.Data))
+		uc.logger.Infof("app_id:%s scanned %d/%d rows", trigger.AppId, scanned, count)
 		if r.Error != nil {
-			return nil, err
+			return nil, r.Error
 		}
 
-		msgIds, requests, err := uc.examine(ctx, trigger.AppId, concurrency, applicable, r.Data)
+		msgIds, requests, err := uc.examine(ctx, trigger.AppId, applicable, r.Data)
 		if err != nil {
 			return nil, err
 		}
 
-		scheduledok, scheduledko := uc.schedule(ctx, concurrency, applicable, msgIds)
+		scheduledok, scheduledko := uc.schedule(ctx, applicable, msgIds)
 		out.Success = append(out.Success, scheduledok.Data()...)
 		for k, v := range scheduledko.Data() {
 			out.Error[k] = v
 		}
 		out.Scheduled = append(out.Scheduled, scheduledok.Data()...)
-		createdok, createdko := uc.create(ctx, concurrency, delay, requests)
+		createdok, createdko := uc.create(ctx, delay, requests)
 		out.Success = append(out.Success, createdok.Data()...)
 		for k, v := range createdko.Data() {
 			out.Error[k] = v
@@ -178,43 +184,41 @@ func (uc *trigger) consume(
 func (uc *trigger) examine(
 	ctx context.Context,
 	appId string,
-	concurrency int,
 	applicable *assessor.Assets,
-	messages map[string]ds.Msg,
-) ([]string, []ds.Req, error) {
-	var ids []string
+	messages map[string]entities.Message,
+) ([]entities.Message, []entities.Request, error) {
+	var msgIds []string
 	for id := range messages {
-		ids = append(ids, id)
+		msgIds = append(msgIds, id)
 	}
-	log.Printf("count %d", len(ids))
 
-	requests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, ids, concurrency)
+	requests, err := uc.repositories.Datastore().Request().Scan(ctx, appId, msgIds)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	responses, err := uc.repositories.Datastore().Response().Scan(ctx, appId, ids, concurrency)
+	responses, err := uc.repositories.Datastore().Response().Scan(ctx, appId, msgIds)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	schedulable := []string{}
-	attemptable := []ds.Req{}
+	schedulable := []entities.Message{}
+	attemptable := []entities.Request{}
 
 	status := uc.hash(requests, responses)
 	for _, message := range messages {
 		for _, ep := range applicable.EndpointMap {
-			inId, hasReq := status[inkey(message.Id, ep.Id)]
+			reqId, hasReq := status[reqkey(message.Id, ep.Id)]
 			if !hasReq {
 				// no request -> must schedule message again -> don't create any attempt
-				schedulable = append(schedulable, message.Id)
+				schedulable = append(schedulable, message)
 				continue
 			}
 
 			_, hasRes := status[reskey(message.Id, ep.Id)]
 			if !hasRes {
 				// has request + no success response -> create an attempt
-				attemptable = append(attemptable, requests[inId])
+				attemptable = append(attemptable, requests[reqId])
 				continue
 			}
 
@@ -247,13 +251,13 @@ func (uc *trigger) applicable(ctx context.Context, appId string) (*assessor.Asse
 	})
 }
 
-func (uc *trigger) hash(requests map[string]ds.Req, responses map[string]ds.Res) map[string]string {
+func (uc *trigger) hash(requests map[string]entities.Request, responses map[string]entities.Response) map[string]string {
 	returning := map[string]string{}
 
 	for _, request := range requests {
 		// for checking whether we have scheduled a request for an endpoint or not
 		// if no request was scheduled, we should schedule it instead of create an attempt
-		key := inkey(request.MsgId, request.EpId)
+		key := reqkey(request.MsgId, request.EpId)
 		returning[key] = request.Id
 	}
 
@@ -274,8 +278,8 @@ func (uc *trigger) hash(requests map[string]ds.Req, responses map[string]ds.Res)
 	return returning
 }
 
-func inkey(msgId, epId string) string {
-	return fmt.Sprintf("%s/%s/in", msgId, epId)
+func reqkey(msgId, epId string) string {
+	return fmt.Sprintf("%s/%s/req", msgId, epId)
 }
 
 func reskey(msgId, epId string) string {
@@ -283,31 +287,19 @@ func reskey(msgId, epId string) string {
 }
 
 // schedule messages
-func (uc *trigger) schedule(ctx context.Context, concurrency int, applicable *assessor.Assets, msgIds []string) (*safe.Slice[string], *safe.Map[error]) {
+func (uc *trigger) schedule(ctx context.Context, applicable *assessor.Assets, messages []entities.Message) (*safe.Slice[string], *safe.Map[error]) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 	requests := []entities.Request{}
 
-	for i := 0; i < len(msgIds); i += concurrency {
-		j := utils.ChunkNext(i, len(msgIds), concurrency)
-
-		messages, err := uc.repositories.Datastore().Message().ListByIds(ctx, msgIds[i:j])
-		if err != nil {
-			for _, id := range msgIds[i:j] {
-				ko.Set(id, err)
+	for _, message := range messages {
+		ins, logs := assessor.Requests(&message, applicable, uc.infra.Timer)
+		if len(logs) > 0 {
+			for _, l := range logs {
+				uc.logger.Warnw(l[0].(string), l[1:]...)
 			}
-			continue
 		}
-
-		for _, message := range messages {
-			ins, logs := assessor.Requests(&message, applicable, uc.infra.Timer)
-			if len(logs) > 0 {
-				for _, l := range logs {
-					uc.logger.Warnw(l[0].(string), l[1:]...)
-				}
-			}
-			requests = append(requests, ins...)
-		}
+		requests = append(requests, ins...)
 	}
 
 	if len(requests) == 0 {
@@ -340,7 +332,7 @@ func (uc *trigger) schedule(ctx context.Context, concurrency int, applicable *as
 }
 
 // create attempts
-func (uc *trigger) create(ctx context.Context, concurrency int, delay int64, requests []ds.Req) (*safe.Slice[string], *safe.Map[error]) {
+func (uc *trigger) create(ctx context.Context, delay int64, requests []entities.Request) (*safe.Slice[string], *safe.Map[error]) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 	attempts := []entities.Attempt{}
@@ -351,6 +343,7 @@ func (uc *trigger) create(ctx context.Context, concurrency int, delay int64, req
 	for _, request := range requests {
 		attempts = append(attempts, entities.Attempt{
 			ReqId: request.Id,
+			MsgId: request.MsgId,
 			AppId: request.AppId,
 			Tier:  request.Tier,
 
@@ -364,19 +357,14 @@ func (uc *trigger) create(ctx context.Context, concurrency int, delay int64, req
 		})
 	}
 
-	for i := 0; i < len(attempts); i += concurrency {
-		j := utils.ChunkNext(i, len(attempts), concurrency)
-
-		ids, err := uc.repositories.Datastore().Attempt().Create(ctx, attempts[i:j])
-		if err != nil {
-			for _, attempt := range attempts[i:j] {
-				ko.Set(attempt.ReqId, err)
-			}
-			continue
+	ids, err := uc.repositories.Datastore().Attempt().Create(ctx, attempts)
+	if err != nil {
+		for _, attempt := range attempts {
+			ko.Set(attempt.ReqId, err)
 		}
-
-		ok.Append(ids...)
 	}
+
+	ok.Append(ids...)
 
 	return ok, ko
 }

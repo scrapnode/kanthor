@@ -3,17 +3,15 @@ package dlm
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/scrapnode/kanthor/project"
 )
 
-type Factory func(key string) DistributedLockManager
+type Factory func(key string, opts ...Option) DistributedLockManager
 
 type DistributedLockManager interface {
 	Lock(ctx context.Context) error
 	Unlock(ctx context.Context) error
-	TimeToLive() time.Duration
 }
 
 func New(conf *Config) (Factory, error) {

@@ -122,7 +122,14 @@ func (service *planner) Stop(ctx context.Context) error {
 }
 
 func (service *planner) Run(ctx context.Context) error {
-	id, err := service.cron.AddFunc(service.conf.Trigger.Planner.Schedule, RegisterCron(service))
+	schedule, err := cron.
+		NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor).
+		Parse(service.conf.Trigger.Planner.Schedule)
+	if err != nil {
+		return err
+	}
+
+	id, err := service.cron.AddFunc(service.conf.Trigger.Planner.Schedule, RegisterCron(service, schedule.(*cron.SpecSchedule)))
 	if err != nil {
 		return err
 	}

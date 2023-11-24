@@ -47,8 +47,9 @@ func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]s
 func (sql *SqlAttempt) mapper() *datastore.Mapper[entities.Attempt] {
 	return datastore.NewMapper[entities.Attempt](
 		map[string]func(doc entities.Attempt) any{
-			"app_id":           func(doc entities.Attempt) any { return doc.AppId },
 			"req_id":           func(doc entities.Attempt) any { return doc.ReqId },
+			"msg_id":           func(doc entities.Attempt) any { return doc.MsgId },
+			"app_id":           func(doc entities.Attempt) any { return doc.AppId },
 			"tier":             func(doc entities.Attempt) any { return doc.Tier },
 			"status":           func(doc entities.Attempt) any { return doc.Status },
 			"res_id":           func(doc entities.Attempt) any { return doc.ResId },
@@ -73,6 +74,21 @@ func (sql *SqlAttempt) mapper() *datastore.Mapper[entities.Attempt] {
 			// others will be varchar[] by default
 		},
 	)
+}
+
+func (sql *SqlAttempt) Count(ctx context.Context, appId string, from, to time.Time, next int64) (int64, error) {
+	// convert timestamp to safe id, so we can the table efficiently with primary key
+	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
+	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
+
+	var count int64
+	tx := sql.client.
+		Table(entities.TableAtt).
+		Where("req_id < ?", high).
+		Where("req_id > ?", low).
+		Where("schedule_next <= ?", next).
+		Count(&count)
+	return count, tx.Error
 }
 
 func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64, limit int) chan *ScanResults[[]entities.Attempt] {

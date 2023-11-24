@@ -6,6 +6,23 @@ import (
 	"github.com/scrapnode/kanthor/domain/status"
 )
 
+var ResponseProps = []string{
+	"id",
+	"timestamp",
+	"msg_id",
+	"ep_id",
+	"req_id",
+	"tier",
+	"app_id",
+	"type",
+	"metadata",
+	"headers",
+	"body",
+	"uri",
+	"status",
+	"error",
+}
+
 type Response struct {
 	TSEntity
 

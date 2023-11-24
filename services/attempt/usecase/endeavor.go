@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/logging"
@@ -13,6 +14,7 @@ import (
 type Endeavor interface {
 	Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlanOut, error)
 	Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExecOut, error)
+	Evaluate(ctx context.Context, attempts []entities.Attempt) (*entities.AttemptStrive, error)
 }
 
 type endeavor struct {

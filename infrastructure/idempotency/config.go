@@ -6,7 +6,7 @@ import (
 
 type Config struct {
 	Uri        string `json:"uri" yaml:"uri" mapstructure:"uri"`
-	TimeToLive int    `json:"time_to_live" yaml:"timeToLive" mapstructure:"time_to_live"`
+	TimeToLive uint64 `json:"time_to_live" yaml:"timeToLive" mapstructure:"time_to_live"`
 }
 
 func (conf *Config) Validate() error {

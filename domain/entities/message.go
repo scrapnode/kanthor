@@ -4,6 +4,17 @@ import (
 	"encoding/json"
 )
 
+var MessageProps = []string{
+	"id",
+	"timestamp",
+	"tier",
+	"app_id",
+	"type",
+	"metadata",
+	"headers",
+	"body",
+}
+
 type Message struct {
 	TSEntity
 

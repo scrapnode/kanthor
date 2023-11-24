@@ -4,6 +4,21 @@ import (
 	"encoding/json"
 )
 
+var RequestProps = []string{
+	"id",
+	"timestamp",
+	"msg_id",
+	"ep_id",
+	"tier",
+	"app_id",
+	"type",
+	"metadata",
+	"headers",
+	"body",
+	"uri",
+	"method",
+}
+
 type Request struct {
 	TSEntity
 

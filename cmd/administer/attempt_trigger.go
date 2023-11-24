@@ -35,6 +35,10 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			concurrency, err := cmd.Flags().GetInt("concurrency")
+			if err != nil {
+				return err
+			}
 
 			conf, err := config.New(provider)
 			if err != nil {
@@ -87,7 +91,7 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 
 			uc := usecase.New(conf, logger, infra, repos)
 			in := &usecase.TriggerExecIn{
-				Concurrency:  100,
+				Concurrency:  concurrency,
 				ArrangeDelay: 0,
 				Triggers: map[string]*entities.AttemptTrigger{
 					suid.New("atttr"): {
@@ -123,6 +127,8 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 
 	t := time.Now().UTC().Add(time.Hour * 24).Format(format)
 	command.Flags().StringP("to", "t", t, fmt.Sprintf("--to=%s (UTC +00:00) | end of scan time", t))
+
+	command.Flags().IntP("concurrency", "", 500, "--concurrency=500 | concurrency exection items")
 
 	return command
 }

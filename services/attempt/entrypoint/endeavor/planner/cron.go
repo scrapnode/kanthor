@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/robfig/cron/v3"
+	"github.com/scrapnode/kanthor/infrastructure/dlm"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
@@ -11,10 +13,13 @@ import (
 // @TODO: remove hardcode
 var key = "attempt.endeavor.cron"
 
-func RegisterCron(service *planner) func() {
+func RegisterCron(service *planner, schedule *cron.SpecSchedule) func() {
 	return func() {
-		locker := service.infra.DistributedLockManager(key)
-		ctx, cancel := context.WithTimeout(context.Background(), locker.TimeToLive())
+		ttl := schedule.Second + schedule.Minute + schedule.Hour + schedule.Dom + schedule.Month + schedule.Dow
+		// lock longger than timeout
+		locker := service.infra.DistributedLockManager(key, dlm.TimeToLive(ttl+uint64(time.Minute)))
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(ttl))
 		defer cancel()
 
 		if err := locker.Lock(ctx); err != nil {
@@ -28,7 +33,7 @@ func RegisterCron(service *planner) func() {
 		}()
 
 		in := &usecase.EndeavorPlanIn{
-			Timeout:   service.conf.Endeavor.Planner.Timeout,
+			Size:      service.conf.Endeavor.Planner.Size,
 			ScanStart: service.conf.Endeavor.Planner.ScanStart,
 			ScanEnd:   service.conf.Endeavor.Planner.ScanEnd,
 		}

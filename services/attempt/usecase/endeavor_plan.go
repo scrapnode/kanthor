@@ -12,8 +12,7 @@ import (
 )
 
 type EndeavorPlanIn struct {
-	Timeout int64
-
+	Size      int
 	ScanStart int64
 	ScanEnd   int64
 }
@@ -21,7 +20,8 @@ type EndeavorPlanIn struct {
 func (in *EndeavorPlanIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("timeout", int(in.Timeout), 1000),
+		validator.NumberGreaterThan("size", in.Size, 0),
+		validator.NumberLessThan("scan_end", in.ScanEnd, 0),
 		validator.NumberLessThan("scan_start", in.ScanStart, in.ScanEnd),
 	)
 }
@@ -42,8 +42,7 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 	errc := make(chan error)
 	defer close(errc)
 	go func() {
-		// @TODO: remove hardcode of scan size
-		ch := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, less, 300)
+		ch := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, less, in.Size)
 
 		for r := range ch {
 			if r.Error != nil {
@@ -53,7 +52,7 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 
 			uc.logger.Debugw("found records", "record_count", len(r.Data))
 
-			s, err := uc.evaluate(ctx, r.Data)
+			s, err := uc.Evaluate(ctx, r.Data)
 			if err != nil {
 				errc <- err
 				return
@@ -78,13 +77,8 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 	}
 }
 
-type strive struct {
-	Attemptable []entities.Attempt
-	Ignore      []string
-}
-
-func (uc *endeavor) evaluate(ctx context.Context, attempts []entities.Attempt) (*strive, error) {
-	returning := &strive{Attemptable: []entities.Attempt{}, Ignore: []string{}}
+func (uc *endeavor) Evaluate(ctx context.Context, attempts []entities.Attempt) (*entities.AttemptStrive, error) {
+	returning := &entities.AttemptStrive{Attemptable: []entities.Attempt{}, Ignore: []string{}}
 
 	for _, attempt := range attempts {
 		// ignore
@@ -119,7 +113,7 @@ func (uc *endeavor) evaluate(ctx context.Context, attempts []entities.Attempt) (
 	return returning, nil
 }
 
-func (uc *endeavor) trigger(ctx context.Context, s *strive) []string {
+func (uc *endeavor) trigger(ctx context.Context, s *entities.AttemptStrive) []string {
 	events := map[string]*streaming.Event{}
 	for _, att := range s.Attemptable {
 		refId := att.ReqId

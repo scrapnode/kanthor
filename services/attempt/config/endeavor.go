@@ -21,7 +21,7 @@ func (conf *Endeavor) Validate() error {
 
 type EndeavorPlanner struct {
 	Schedule string `json:"schedule" yaml:"schedule" mapstructure:"schedule"`
-	Timeout  int64  `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Size     int    `json:"size" yaml:"size" mapstructure:"size"`
 
 	ScanStart int64 `json:"scan_start" yaml:"scan_start" mapstructure:"scan_start"`
 	ScanEnd   int64 `json:"scan_end" yaml:"scan_end" mapstructure:"scan_end"`
@@ -31,7 +31,7 @@ func (conf *EndeavorPlanner) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringRequired("CONFIG.ATTEMPT.ENDEAVOR.PLANNER.SCHEDULE", conf.Schedule),
-		validator.NumberGreaterThanOrEqual("CONFIG.ATTEMPT.ENDEAVOR.PLANNER.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("CONFIG.ATTEMPT.ENDEAVOR.PLANNER.SIZE", conf.Size, 0),
 		validator.NumberLessThan("CONFIG.ATTEMPT.ENDEAVOR.PLANNER.SCAN_END", conf.ScanEnd, 0),
 		validator.NumberLessThan("CONFIG.ATTEMPT.ENDEAVOR.PLANNER.SCAN_START", conf.ScanStart, conf.ScanEnd),
 	)

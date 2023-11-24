@@ -6,6 +6,7 @@ import (
 
 type Attempt struct {
 	ReqId string `json:"req_id"`
+	MsgId string `json:"msg_id"`
 	AppId string `json:"app_id"`
 	Tier  string `json:"tier"`
 
@@ -58,4 +59,9 @@ func (noti *AttemptTrigger) Unmarshal(data []byte) error {
 func (noti *AttemptTrigger) String() string {
 	data, _ := json.Marshal(noti)
 	return string(data)
+}
+
+type AttemptStrive struct {
+	Attemptable []Attempt
+	Ignore      []string
 }

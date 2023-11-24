@@ -60,6 +60,7 @@ type EndeavorExecOut struct {
 func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExecOut, error) {
 	responses := safe.Map[*entities.Response]{}
 
+	refs := uc.reference(ctx, in)
 	requests, err := uc.requests(ctx, in)
 	if err != nil {
 		return nil, err
@@ -71,30 +72,31 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
 	p := pool.New().WithMaxGoroutines(in.Concurrency)
-	for ref, r := range requests {
-		refId := ref
-		request := r
+	for k, v := range requests {
+		reqId := k
+		request := v
+		refId := refs[reqId]
 		p.Go(func() {
-			response := uc.send(ctx, request)
-			responses.Set(refId, response)
+			response := uc.send(ctx, &request)
+			responses.Set(reqId, response)
 
 			// reschedule for certaintly response type
 			if response.Reschedulable() {
 				next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
 				err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
 				if err != nil {
-					ko.Set(refId, err)
+					ko.Set(reqId, err)
 					return
 				}
 
-				ok.Append(refId)
+				ok.Append(reqId)
 				return
 			}
 
 			// otherwise mark the request as complete not matter what status it is (even though the status is fail)
 			err := uc.repositories.Datastore().Attempt().MarkComplete(ctx, response.ReqId, response)
 			if err != nil {
-				ko.Set(refId, err)
+				ko.Set(reqId, err)
 				return
 			}
 
@@ -106,7 +108,7 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 
 	events := map[string]*streaming.Event{}
 	kv := responses.Data()
-	for refId, response := range kv {
+	for reqId, response := range kv {
 		event, err := transformation.EventFromResponse(response)
 		if err != nil {
 			// un-recoverable error
@@ -114,32 +116,38 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 			continue
 		}
 
-		events[refId] = event
+		events[reqId] = event
 	}
 
 	errs := uc.publisher.Pub(ctx, events)
-	for refId, err := range errs {
-		uc.logger.Errorw("unable to publish response event of request", "req_id", refId, "err", err.Error())
+	for reqId, err := range errs {
+		uc.logger.Errorw("unable to publish response event of request", "req_id", reqId, "err", err.Error())
 	}
 
 	return &EndeavorExecOut{Success: ok.Data(), Error: ko.Data()}, nil
 }
 
-func (uc *endeavor) requests(ctx context.Context, in *EndeavorExecIn) (map[string]*entities.Request, error) {
-	inIds := []string{}
-	for _, attempt := range in.Attempts {
-		inIds = append(inIds, attempt.ReqId)
+func (uc *endeavor) reference(ctx context.Context, in *EndeavorExecIn) map[string]string {
+	returning := map[string]string{}
+	for key, attempt := range in.Attempts {
+		returning[attempt.ReqId] = key
 	}
-	requests, err := uc.repositories.Datastore().Request().ListByIds(ctx, inIds)
-	if err != nil {
-		return nil, err
+	return returning
+}
+
+func (uc *endeavor) requests(ctx context.Context, in *EndeavorExecIn) (map[string]entities.Request, error) {
+	maps := map[string]map[string][]string{}
+	for _, attempt := range in.Attempts {
+		if _, ok := maps[attempt.AppId]; !ok {
+			maps[attempt.AppId] = map[string][]string{}
+		}
+		if _, ok := maps[attempt.AppId][attempt.MsgId]; !ok {
+			maps[attempt.AppId][attempt.MsgId] = []string{}
+		}
+		maps[attempt.AppId][attempt.MsgId] = append(maps[attempt.AppId][attempt.MsgId], attempt.ReqId)
 	}
 
-	returning := map[string]*entities.Request{}
-	for _, request := range requests {
-		returning[request.Id] = &request
-	}
-	return returning, nil
+	return uc.repositories.Datastore().Request().ListByIds(ctx, maps)
 }
 
 func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entities.Response {

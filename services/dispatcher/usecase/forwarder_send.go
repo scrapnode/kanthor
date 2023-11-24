@@ -67,7 +67,7 @@ func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderS
 
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
-	p := pool.New().WithMaxGoroutines(in.Concurrency)
+	p := pool.New().WithMaxGoroutines(int(in.Concurrency))
 	for ref, r := range in.Requests {
 		refId := ref
 		request := r

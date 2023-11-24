@@ -50,7 +50,7 @@ infrastructure:
 
   distributed_lock_manager:
     uri: *redis_uri
-    timeout: 1800000 # 3m
+    time_to_live: 1800000 # 3m
 
   cache:
     uri: *redis_uri
@@ -123,22 +123,20 @@ storage:
 attempt:
   trigger:
     planner:
-      schedule: "*/15 * * * *"
-      timeout: 60000 # 60s
+      schedule: "*/30 * * * *"
       scan_start: -86400000 # 24h
       scan_end: -1800000 # 30m
       size: 500
     executor:
-      timeout: 60000 # 60s
+      timeout: 3600000 # 3h
       concurrency: 500
       arrange_delay: 1800000 # 30m
   endeavor:
     planner:
-      schedule: "*/5 * * * *"
-      timeout: 60000 # 60s
+      schedule: "*/15 * * * *"
       scan_start: -86400000 # 24h
       scan_end: -1800000 # 30m
     executor:
-      timeout: 60000 # 60s
+      timeout: 5400000 # 1h30m
       concurrency: 500
       reschedule_delay: 1800000 # 30m
