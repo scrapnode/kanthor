@@ -51,9 +51,5 @@ func (logger SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (s
 		return
 	}
 
-	// if len(sql) > 1024 {
-	// 	sql = "<TRUNCATED_LONG_QUERY> (1024 chars) | " + sql[:1024]
-	// }
-
 	logger.log.Debugw(sql, args...)
 }

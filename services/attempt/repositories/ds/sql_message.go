@@ -35,6 +35,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
 
 	go func() {
+		defer close(ch)
 		var cursor string
 		for {
 			records := map[string]entities.Message{}
@@ -56,9 +57,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 			rows, err := tx.Rows()
 			if err != nil {
 				ch <- &ScanResults[map[string]entities.Message]{Error: err}
-
-				close(ch)
-				break
+				return
 			}
 
 			defer func() {
@@ -85,21 +84,15 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 
 				if err != nil {
 					ch <- &ScanResults[map[string]entities.Message]{Error: err}
-
-					close(ch)
 					return
 				}
 
 				if err := json.Unmarshal([]byte(metadata), &record.Metadata); err != nil {
 					ch <- &ScanResults[map[string]entities.Message]{Error: err}
-
-					close(ch)
 					return
 				}
 				if err := json.Unmarshal([]byte(headers), &record.Headers); err != nil {
 					ch <- &ScanResults[map[string]entities.Message]{Error: err}
-
-					close(ch)
 					return
 				}
 
@@ -110,8 +103,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 			ch <- &ScanResults[map[string]entities.Message]{Data: records}
 
 			if len(records) < limit {
-				close(ch)
-				break
+				return
 			}
 		}
 	}()

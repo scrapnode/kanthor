@@ -20,10 +20,14 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string) 
 	}
 
 	records := map[string]entities.Request{}
+	seen := map[string]bool{}
 
 	rows, err := sql.client.
 		Table(entities.TableReq).
 		Where("app_id = ? AND msg_id IN ?", appId, msgIds).
+		// the order is important because it's not only sort as primary key order
+		// but also use to only fetch the first row of duplicated rows
+		Order("app_id ASC, msg_id ASC, id ASC ").
 		Select(entities.RequestProps).
 		Rows()
 
@@ -55,6 +59,12 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string) 
 			&record.Uri,
 			&record.Method,
 		)
+		// check duplicated requests
+		key := ReqKey(record.MsgId, record.EpId)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = true
 
 		// we don't accept partial success, if we got any error
 		// return the error immediately

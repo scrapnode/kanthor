@@ -128,7 +128,7 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 	t := time.Now().UTC().Add(time.Hour * 24).Format(format)
 	command.Flags().StringP("to", "t", t, fmt.Sprintf("--to=%s (UTC +00:00) | end of scan time", t))
 
-	command.Flags().IntP("concurrency", "", 500, "--concurrency=500 | concurrency exection items")
+	command.Flags().IntP("concurrency", "", 100, "--concurrency=500 | concurrency exection items")
 
 	return command
 }

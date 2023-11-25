@@ -2,7 +2,6 @@ package ds
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/scrapnode/kanthor/domain/entities"
 	"gorm.io/gorm"
@@ -12,17 +11,18 @@ type SqlResponse struct {
 	client *gorm.DB
 }
 
-func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string) (map[string]entities.Response, error) {
+func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string) (map[string]ResponseStatusRow, error) {
 	if len(msgIds) == 0 {
-		return map[string]entities.Response{}, nil
+		return map[string]ResponseStatusRow{}, nil
 	}
 
-	records := map[string]entities.Response{}
+	records := map[string]ResponseStatusRow{}
 
 	rows, err := sql.client.
 		Table(entities.TableRes).
 		Where("app_id = ? AND msg_id IN ?", appId, msgIds).
-		Select(entities.ResponseProps).
+		Order("app_id ASC, msg_id ASC, id ASC ").
+		Select([]string{"app_id", "msg_id", "id", "ep_id", "status"}).
 		Rows()
 
 	if err != nil {
@@ -35,25 +35,13 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string)
 		}
 	}()
 	for rows.Next() {
-		record := entities.Response{}
-		var metadata string
-		var headers string
-
+		record := ResponseStatusRow{}
 		err := rows.Scan(
-			&record.Id,
-			&record.Timestamp,
-			&record.MsgId,
-			&record.EpId,
-			&record.ReqId,
-			&record.Tier,
 			&record.AppId,
-			&record.Type,
-			&metadata,
-			&headers,
-			&record.Body,
-			&record.Uri,
+			&record.MsgId,
+			&record.Id,
+			&record.EpId,
 			&record.Status,
-			&record.Error,
 		)
 
 		// we don't accept partial success, if we got any error
@@ -61,13 +49,6 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string)
 		if err != nil {
 			return nil, err
 		}
-		if err := json.Unmarshal([]byte(metadata), &record.Metadata); err != nil {
-			return nil, err
-		}
-		if err := json.Unmarshal([]byte(headers), &record.Headers); err != nil {
-			return nil, err
-		}
-
 		records[record.Id] = record
 	}
 

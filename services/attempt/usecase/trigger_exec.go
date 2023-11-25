@@ -14,6 +14,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
+	"github.com/scrapnode/kanthor/services/attempt/repositories/ds"
 	"github.com/sourcegraph/conc"
 )
 
@@ -169,6 +170,7 @@ func (uc *trigger) consume(
 			out.Error[k] = v
 		}
 		out.Scheduled = append(out.Scheduled, scheduledok.Data()...)
+
 		createdok, createdko := uc.create(ctx, delay, requests)
 		out.Success = append(out.Success, createdok.Data()...)
 		for k, v := range createdko.Data() {
@@ -197,6 +199,7 @@ func (uc *trigger) examine(
 		return nil, nil, err
 	}
 
+	// got duplicate rows
 	responses, err := uc.repositories.Datastore().Response().Scan(ctx, appId, msgIds)
 	if err != nil {
 		return nil, nil, err
@@ -208,14 +211,14 @@ func (uc *trigger) examine(
 	status := uc.hash(requests, responses)
 	for _, message := range messages {
 		for _, ep := range applicable.EndpointMap {
-			reqId, hasReq := status[reqkey(message.Id, ep.Id)]
+			reqId, hasReq := status[ds.ReqKey(message.Id, ep.Id)]
 			if !hasReq {
 				// no request -> must schedule message again -> don't create any attempt
 				schedulable = append(schedulable, message)
 				continue
 			}
 
-			_, hasRes := status[reskey(message.Id, ep.Id)]
+			_, hasRes := status[ds.ResKey(message.Id, ep.Id)]
 			if !hasRes {
 				// has request + no success response -> create an attempt
 				attemptable = append(attemptable, requests[reqId])
@@ -251,18 +254,18 @@ func (uc *trigger) applicable(ctx context.Context, appId string) (*assessor.Asse
 	})
 }
 
-func (uc *trigger) hash(requests map[string]entities.Request, responses map[string]entities.Response) map[string]string {
+func (uc *trigger) hash(requests map[string]entities.Request, responses map[string]ds.ResponseStatusRow) map[string]string {
 	returning := map[string]string{}
 
 	for _, request := range requests {
 		// for checking whether we have scheduled a request for an endpoint or not
 		// if no request was scheduled, we should schedule it instead of create an attempt
-		key := reqkey(request.MsgId, request.EpId)
+		key := ds.ReqKey(request.MsgId, request.EpId)
 		returning[key] = request.Id
 	}
 
 	for _, response := range responses {
-		key := reskey(response.MsgId, response.EpId)
+		key := ds.ResKey(response.MsgId, response.EpId)
 
 		// we already recognized that the endpoint had success status, don't need to check any more
 		if _, has := returning[key]; has {
@@ -276,14 +279,6 @@ func (uc *trigger) hash(requests map[string]entities.Request, responses map[stri
 	}
 
 	return returning
-}
-
-func reqkey(msgId, epId string) string {
-	return fmt.Sprintf("%s/%s/req", msgId, epId)
-}
-
-func reskey(msgId, epId string) string {
-	return fmt.Sprintf("%s/%s/res", msgId, epId)
 }
 
 // schedule messages
