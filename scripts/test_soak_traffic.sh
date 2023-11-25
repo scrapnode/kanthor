@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 TEST_VUS=${TEST_VUS:-"1"}

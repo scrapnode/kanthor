@@ -1,12 +1,13 @@
-#!/usr/bin/env bash
+#!/bin/sh
 set -e
 
 OPENAPI_DIR=openapi
 CLIENTS_DIR=clients
 
-CLIENT_DIRS=("$CLIENTS_DIR/javascript")
+# delimited strings is used as array
+CLIENT_DIRS="$CLIENTS_DIR/javascript"
 
-for CLIENT_DIR in "${CLIENT_DIRS[@]}"
+for CLIENT_DIR in $CLIENT_DIRS
 do
     echo "--> $CLIENT_DIR"
     rm -rf "$CLIENT_DIR/src/openapi"
