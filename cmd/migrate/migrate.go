@@ -7,8 +7,7 @@ import (
 
 func New(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
-		Use:   "migrate",
-		Short: "migrate data",
+		Use: "migrate",
 	}
 
 	command.AddCommand(NewDatabase(provider))

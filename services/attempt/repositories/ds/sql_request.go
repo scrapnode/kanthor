@@ -98,7 +98,7 @@ func (sql *SqlRequest) ListByIds(ctx context.Context, maps map[string]map[string
 			p.Go(func() {
 				rows, err := sql.client.
 					Table(entities.TableReq).
-					Where("app_id = ? AND msg_id = ? id IN ?", appId, msgId, reqIds).
+					Where("app_id = ? AND msg_id = ? AND id IN ?", appId, msgId, reqIds).
 					Select([]string{"id", "timestamp", "msg_id", "ep_id", "tier", "app_id", "type", "metadata", "headers", "body", "uri", "method"}).
 					Rows()
 

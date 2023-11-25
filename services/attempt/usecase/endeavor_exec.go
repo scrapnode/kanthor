@@ -55,6 +55,9 @@ func (in *EndeavorExecIn) Validate() error {
 type EndeavorExecOut struct {
 	Success []string
 	Error   map[string]error
+
+	Rescheduled []string
+	Completed   []string
 }
 
 func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExecOut, error) {
@@ -68,6 +71,8 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 
 	ok := safe.Slice[string]{}
 	ko := safe.Map[error]{}
+	rescheduled := safe.Slice[string]{}
+	completed := safe.Slice[string]{}
 
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
@@ -85,11 +90,12 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 				next := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(uc.conf.Endeavor.Executor.RescheduleDelay))
 				err := uc.repositories.Datastore().Attempt().MarkReschedule(ctx, response.ReqId, next.UnixMilli())
 				if err != nil {
-					ko.Set(reqId, err)
+					ko.Set(refId, err)
 					return
 				}
 
-				ok.Append(reqId)
+				rescheduled.Append(reqId)
+				ok.Append(refId)
 				return
 			}
 
@@ -100,6 +106,7 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 				return
 			}
 
+			completed.Append(reqId)
 			ok.Append(refId)
 
 		})
@@ -124,7 +131,13 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 		uc.logger.Errorw("unable to publish response event of request", "req_id", reqId, "err", err.Error())
 	}
 
-	return &EndeavorExecOut{Success: ok.Data(), Error: ko.Data()}, nil
+	out := &EndeavorExecOut{
+		Success:     ok.Data(),
+		Error:       ko.Data(),
+		Rescheduled: rescheduled.Data(),
+		Completed:   completed.Data(),
+	}
+	return out, nil
 }
 
 func (uc *endeavor) reference(ctx context.Context, in *EndeavorExecIn) map[string]string {

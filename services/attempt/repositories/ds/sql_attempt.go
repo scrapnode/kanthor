@@ -99,9 +99,11 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64,
 	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
 
 	go func() {
+		defer close(ch)
+
 		var cursor string
 		for {
-			var attempts []entities.Attempt
+			var records []entities.Attempt
 
 			tx := sql.client.
 				Table(entities.TableAtt).
@@ -116,22 +118,21 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64,
 				tx = tx.Where("req_id > ?", cursor)
 			}
 
-			if tx = tx.Find(&attempts); tx.Error != nil {
-				ch <- &ScanResults[[]entities.Attempt]{Error: tx.Error}
+			if tx = tx.Find(&records); tx.Error != nil {
 
-				close(ch)
-				break
+				ch <- &ScanResults[[]entities.Attempt]{Error: tx.Error}
+				return
 			}
 
-			ch <- &ScanResults[[]entities.Attempt]{Data: attempts}
+			ch <- &ScanResults[[]entities.Attempt]{Data: records}
 
 			// if we found less than request size, that mean we were in last page
-			if len(attempts) < limit {
-				close(ch)
-				break
+			if len(records) < limit {
+				return
 			}
 
-			cursor = attempts[len(attempts)-1].ReqId
+			// IMPORTANT: always update cursor
+			cursor = records[len(records)-1].ReqId
 		}
 	}()
 

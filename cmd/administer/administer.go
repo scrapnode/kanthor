@@ -11,6 +11,7 @@ func New(provider configuration.Provider) *cobra.Command {
 	}
 
 	command.AddCommand(NewAttemptTrigger(provider))
+	command.AddCommand(NewAttemptEndeavor(provider))
 
 	command.PersistentFlags().Int64P("timeout", "", 60000, "--timeout=600000 | default timeout in milliseconds")
 	return command

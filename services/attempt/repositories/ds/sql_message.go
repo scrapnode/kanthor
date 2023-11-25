@@ -36,6 +36,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 
 	go func() {
 		defer close(ch)
+
 		var cursor string
 		for {
 			records := map[string]entities.Message{}
@@ -97,6 +98,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 				}
 
 				records[record.Id] = record
+				// IMPORTANT: always update cursor
 				cursor = record.Id
 			}
 

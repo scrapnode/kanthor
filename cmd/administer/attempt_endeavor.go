@@ -2,6 +2,7 @@ package administer
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/scrapnode/kanthor/configuration"
@@ -10,20 +11,17 @@ import (
 	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
-	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/services/attempt/config"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 	"github.com/spf13/cobra"
 )
 
-func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
+func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
-		Use:  "attempt-trigger",
-		Args: cobra.MatchAll(cobra.MinimumNArgs(1), isValidAppIdArg),
+		Use:  "attempt-endeavor",
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			appId := args[0]
-
 			from, to, err := daterange(cmd)
 			if err != nil {
 				return err
@@ -82,39 +80,52 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 			}
 
 			repos := repositories.New(logger, db, ds)
-			app, err := repos.Database().Application().Get(ctx, appId)
-			if err != nil {
-				return err
-			}
-
 			uc := usecase.New(conf, logger, infra, repos)
-			in := &usecase.TriggerExecIn{
-				Concurrency:  concurrency,
-				ArrangeDelay: 0,
-				Triggers: map[string]*entities.AttemptTrigger{
-					suid.New("atttr"): {
-						AppId: app.Id,
-						Tier:  app.Workspace.Tier,
-						From:  from.UnixMilli(),
-						To:    to.UnixMilli(),
-					},
-				},
-			}
 
-			out, err := uc.Trigger().Exec(ctx, in)
-			if err != nil {
-				return err
-			}
+			ch := repos.Datastore().Attempt().Scan(ctx, *from, *to, time.Now().UTC().UnixMilli(), concurrency)
+			for r := range ch {
+				if r.Error != nil {
+					return r.Error
+				}
 
-			logger.Infow(
-				"administer attempt trigger",
-				"from", from.Format(time.RFC3339),
-				"to", to.Format(time.RFC3339),
-				"ok_count", len(out.Success),
-				"scheduled_count", len(out.Scheduled),
-				"created_count", len(out.Created),
-				"ko_count", len(out.Error),
-			)
+				strive, err := uc.Endeavor().Evaluate(ctx, r.Data)
+				if err != nil {
+					return err
+				}
+				if err := repos.Datastore().Attempt().MarkIgnore(ctx, strive.Ignore); err != nil {
+					logger.Errorw("unable to ignore attempts", "req_ids", strive.Ignore)
+				}
+
+				in := &usecase.EndeavorExecIn{
+					Concurrency: concurrency,
+					Attempts:    map[string]*entities.Attempt{},
+				}
+
+				// The iteration variables may be declared by the "range" clause using a form of short variable declaration (:=).
+				// In this case their types are set to the types of the respective iteration values and their scope is the block of the "for" statement;
+				// **they are re-used in each iteration**. If the iteration variables are declared outside the "for" statement,
+				// after execution their values will be those of the last iteration.
+				for i := 0; i < len(strive.Attemptable); i++ {
+					in.Attempts[strive.Attemptable[i].ReqId] = &strive.Attemptable[i]
+				}
+
+				out, err := uc.Endeavor().Exec(ctx, in)
+				if err != nil {
+					return err
+				}
+
+				log.Printf("out.Success -> %d", len(out.Success))
+				logger.Infow(
+					"administer attempt trigger",
+					"from", from.Format(time.RFC3339),
+					"to", to.Format(time.RFC3339),
+					"ok_count", len(out.Success),
+					"rescheduled_count", len(out.Rescheduled),
+					"completed_count", len(out.Completed),
+					"ko_count", len(out.Error),
+				)
+
+			}
 
 			return nil
 		},

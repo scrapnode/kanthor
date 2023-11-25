@@ -81,11 +81,9 @@ func (uc *endeavor) Evaluate(ctx context.Context, attempts []entities.Attempt) (
 	returning := &entities.AttemptStrive{Attemptable: []entities.Attempt{}, Ignore: []string{}}
 
 	for _, attempt := range attempts {
-		// ignore
 		if attempt.Status == status.ErrIgnore {
 			continue
 		}
-		// or Ignore
 		if attempt.Complete() {
 			continue
 		}
