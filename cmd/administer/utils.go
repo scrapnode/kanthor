@@ -1,7 +1,6 @@
 package administer
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -39,17 +38,6 @@ func daterange(cmd *cobra.Command) (*time.Time, *time.Time, error) {
 	}
 
 	return &from, &to, nil
-}
-
-func timeout(cmd *cobra.Command) (context.Context, context.CancelFunc, error) {
-	ctx := cmd.Context()
-	t, err := cmd.Flags().GetInt64("timeout")
-	if err != nil {
-		return ctx, func() {}, err
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(t))
-	return ctx, cancel, nil
 }
 
 func isValidAppIdArg(cmd *cobra.Command, args []string) error {

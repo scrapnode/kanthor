@@ -1,11 +1,10 @@
-package executor
+package consumer
 
 import (
 	"context"
 	"errors"
 	"sync"
 
-	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -14,43 +13,40 @@ import (
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
-	"github.com/scrapnode/kanthor/services/attempt/config"
-	"github.com/scrapnode/kanthor/services/attempt/usecase"
+	"github.com/scrapnode/kanthor/services/storage/config"
+	"github.com/scrapnode/kanthor/services/storage/usecase"
 )
 
 func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	db database.Database,
 	ds datastore.Datastore,
-	uc usecase.Attempt,
+	uc usecase.Storage,
 ) patterns.Runnable {
-	logger = logger.With("service", "attempt.trigger.executor")
-	return &executor{
+	logger = logger.With("service", "storage")
+	return &storage{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("attempt_trigger_executor"),
+		subscriber: infra.Stream.Subscriber("storage"),
 		infra:      infra,
-		db:         db,
 		ds:         ds,
 		uc:         uc,
 
 		healthcheck: background.NewServer(
-			healthcheck.DefaultConfig("attempt.trigger.executor"),
+			healthcheck.DefaultConfig("storage"),
 			logger.With("healthcheck", "background"),
 		),
 	}
 }
 
-type executor struct {
+type storage struct {
 	conf       *config.Config
 	logger     logging.Logger
 	subscriber streaming.Subscriber
 	infra      *infrastructure.Infrastructure
-	db         database.Database
 	ds         datastore.Datastore
-	uc         usecase.Attempt
+	uc         usecase.Storage
 
 	healthcheck healthcheck.Server
 
@@ -58,16 +54,12 @@ type executor struct {
 	status int
 }
 
-func (service *executor) Start(ctx context.Context) error {
+func (service *storage) Start(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
-	}
-
-	if err := service.db.Connect(ctx); err != nil {
-		return err
 	}
 
 	if err := service.ds.Connect(ctx); err != nil {
@@ -91,7 +83,7 @@ func (service *executor) Start(ctx context.Context) error {
 	return nil
 }
 
-func (service *executor) Stop(ctx context.Context) error {
+func (service *storage) Stop(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
@@ -114,10 +106,6 @@ func (service *executor) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
-	if err := service.db.Disconnect(ctx); err != nil {
-		returning = errors.Join(returning, err)
-	}
-
 	if err := service.ds.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
@@ -125,8 +113,12 @@ func (service *executor) Stop(ctx context.Context) error {
 	return returning
 }
 
-func (service *executor) Run(ctx context.Context) error {
-	topic := constants.TopicTrigger
+func (service *storage) Run(ctx context.Context) error {
+	topic := constants.TopicPublic
+	if service.conf.Topic != "" {
+		topic = service.conf.Topic
+	}
+
 	if err := service.subscriber.Sub(ctx, topic, Handler(service)); err != nil {
 		return err
 	}
@@ -144,10 +136,6 @@ func (service *executor) Run(ctx context.Context) error {
 			}
 
 			if err := service.infra.Liveness(); err != nil {
-				return err
-			}
-
-			if err := service.db.Liveness(); err != nil {
 				return err
 			}
 
@@ -172,7 +160,7 @@ func (service *executor) Run(ctx context.Context) error {
 	}
 }
 
-func (service *executor) readiness() error {
+func (service *storage) readiness() error {
 	return service.healthcheck.Readiness(func() error {
 		service.logger.Debug("checking readiness")
 
@@ -181,10 +169,6 @@ func (service *executor) readiness() error {
 		}
 
 		if err := service.infra.Readiness(); err != nil {
-			return err
-		}
-
-		if err := service.db.Readiness(); err != nil {
 			return err
 		}
 

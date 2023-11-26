@@ -24,7 +24,7 @@ func Scheduler(provider configuration.Provider) (patterns.Runnable, error) {
 		database.New,
 		repositories.New,
 		usecase.New,
-		entrypoint.New,
+		entrypoint.Consumer,
 	)
 	return nil, nil
 }

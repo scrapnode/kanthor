@@ -12,8 +12,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6061",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "sdk"],
       "preLaunchTask": "make"
@@ -26,8 +26,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6062",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "portal"],
       "preLaunchTask": "make"
@@ -40,8 +40,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6063",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "scheduler"],
       "preLaunchTask": "make"
@@ -54,8 +54,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6064",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "dispatcher"],
       "preLaunchTask": "make"
@@ -68,8 +68,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6065",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "storage"],
       "preLaunchTask": "make"
@@ -82,8 +82,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "attempt.trigger.planner"],
       "preLaunchTask": "make"
@@ -96,8 +96,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "attempt.trigger.executor"],
       "preLaunchTask": "make"
@@ -110,8 +110,8 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "attempt.endeavor.planner"],
       "preLaunchTask": "make"
@@ -124,24 +124,42 @@
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
+        "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-        "KANTHOR_ENV": "development"
       },
       "args": ["serve", "attempt.endeavor.executor"],
       "preLaunchTask": "make"
     },
     {
-      "name": "config.validate.storage",
+      "name": "administer.attempt-trigger.id",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceRoot}",
       "showLog": true,
       "env": {
-        "KANTHOR_ENV": "development"
+        "KANTHOR_ENV": "development",
+        "KANTHOR_HOME": "${input:KANTHOR_HOME}",
       },
-      "args": ["config", "validate", "storage"],
+      "args": ["administer", "attempt-trigger", "-f", "2023-11-01", "${input:KANTHOR_APP_ID}", "--msg-id", "${input:KANTHOR_MESSAGE_ID}"],
       "preLaunchTask": "make"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "KANTHOR_HOME",
+      "type": "promptString",
+      "description": "home directory to loop up for configs.yaml",
+    },
+    {
+      "id": "KANTHOR_APP_ID",
+      "type": "promptString",
+      "description": "selected app id"
+    },
+    {
+      "id": "KANTHOR_MESSAGE_ID",
+      "type": "promptString",
+      "description": "selected message id"
     }
   ]
 }

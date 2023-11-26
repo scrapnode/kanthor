@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/sdk/config"
-	entrypoint "github.com/scrapnode/kanthor/services/sdk/entrypoint/rest"
+	"github.com/scrapnode/kanthor/services/sdk/entrypoint"
 	"github.com/scrapnode/kanthor/services/sdk/repositories"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
@@ -24,7 +24,7 @@ func Sdk(provider configuration.Provider) (patterns.Runnable, error) {
 		database.New,
 		repositories.New,
 		usecase.New,
-		entrypoint.New,
+		entrypoint.Rest,
 	)
 	return nil, nil
 }

@@ -1,6 +1,7 @@
 package administer
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -22,26 +23,14 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 		Use:  "attempt-trigger",
 		Args: cobra.MatchAll(cobra.MinimumNArgs(1), isValidAppIdArg),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			appId := args[0]
-
-			from, to, err := daterange(cmd)
-			if err != nil {
-				return err
-			}
-			ctx, cancel, err := timeout(cmd)
-			defer cancel()
-			if err != nil {
-				return err
-			}
-			concurrency, err := cmd.Flags().GetInt("concurrency")
-			if err != nil {
-				return err
-			}
-
 			conf, err := config.New(provider)
 			if err != nil {
 				return err
 			}
+
+			ctx, cancel := context.WithTimeout(cmd.Context(), time.Millisecond*time.Duration(conf.Trigger.Executor.Timeout))
+			defer cancel()
+
 			logger, err := logging.New(provider)
 			if err != nil {
 				return err
@@ -82,41 +71,24 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 			}
 
 			repos := repositories.New(logger, db, ds)
+			uc := usecase.New(conf, logger, infra, repos)
+
+			appId := args[0]
 			app, err := repos.Database().Application().Get(ctx, appId)
 			if err != nil {
 				return err
 			}
 
-			uc := usecase.New(conf, logger, infra, repos)
-			in := &usecase.TriggerExecIn{
-				Concurrency:  concurrency,
-				ArrangeDelay: 0,
-				Triggers: map[string]*entities.AttemptTrigger{
-					suid.New("atttr"): {
-						AppId: app.Id,
-						Tier:  app.Workspace.Tier,
-						From:  from.UnixMilli(),
-						To:    to.UnixMilli(),
-					},
-				},
-			}
-
-			out, err := uc.Trigger().Exec(ctx, in)
+			// for selected message ids
+			msgIds, err := cmd.Flags().GetStringArray("msg-id")
 			if err != nil {
 				return err
 			}
+			if len(msgIds) > 0 {
+				return attemptTriggerWithMessageIds(cmd, ctx, conf, logger, uc, app, repos, msgIds)
+			}
 
-			logger.Infow(
-				"administer attempt trigger",
-				"from", from.Format(time.RFC3339),
-				"to", to.Format(time.RFC3339),
-				"ok_count", len(out.Success),
-				"scheduled_count", len(out.Scheduled),
-				"created_count", len(out.Created),
-				"ko_count", len(out.Error),
-			)
-
-			return nil
+			return attemptTriggerWithDatetimeRange(cmd, ctx, conf, logger, infra, uc, app)
 		},
 	}
 
@@ -126,7 +98,100 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 	t := time.Now().UTC().Add(time.Hour * 24).Format(format)
 	command.Flags().StringP("to", "t", t, fmt.Sprintf("--to=%s (UTC +00:00) | end of scan time", t))
 
-	command.Flags().IntP("concurrency", "", 100, "--concurrency=500 | concurrency exection items")
+	command.Flags().IntP("concurrency", "", 500, "--concurrency=500 | concurrency exection items")
+	command.Flags().StringArrayP("msg-id", "", []string{}, fmt.Sprintf("--msg-id=%s | select message to plan a trigger", entities.MsgId()))
 
 	return command
+}
+
+func attemptTriggerWithMessageIds(
+	cmd *cobra.Command,
+	ctx context.Context,
+	conf *config.Config,
+	logger logging.Logger,
+	uc usecase.Attempt,
+	app *entities.ApplicationWithRelationship,
+	repos repositories.Repositories,
+	ids []string,
+) error {
+	messages, err := repos.Datastore().Message().ListByIds(ctx, app.Id, ids)
+	if err != nil {
+		return err
+	}
+	applicable, err := uc.Trigger().Applicable(ctx, app.Id)
+	if err != nil {
+		return err
+	}
+
+	out, err := uc.Trigger().Perform(ctx, app.Id, messages, applicable, conf.Trigger.Executor.ArrangeDelay)
+	if err != nil {
+		return err
+	}
+
+	logger.Infow(
+		"administer attempt trigger",
+		"ids", ids,
+		"ok_count", len(out.Success),
+		"scheduled_count", len(out.Scheduled),
+		"created_count", len(out.Created),
+		"ko_count", len(out.Error),
+	)
+
+	if len(out.Error) > 0 {
+		for key, err := range out.Error {
+			logger.Errorw(err.Error(), "key", key)
+		}
+	}
+
+	return nil
+}
+
+func attemptTriggerWithDatetimeRange(
+	cmd *cobra.Command,
+	ctx context.Context,
+	conf *config.Config,
+	logger logging.Logger,
+	infra *infrastructure.Infrastructure,
+	uc usecase.Attempt,
+	app *entities.ApplicationWithRelationship,
+) error {
+	concurrency, err := cmd.Flags().GetInt("concurrency")
+	if err != nil {
+		return err
+	}
+
+	from, to, err := daterange(cmd)
+	if err != nil {
+		return err
+	}
+
+	in := &usecase.TriggerExecIn{
+		Concurrency:  concurrency,
+		ArrangeDelay: 0,
+		Triggers: map[string]*entities.AttemptTrigger{
+			suid.New("atttr"): {
+				AppId: app.Id,
+				Tier:  app.Workspace.Tier,
+				From:  from.UnixMilli(),
+				To:    to.UnixMilli(),
+			},
+		},
+	}
+
+	out, err := uc.Trigger().Exec(ctx, in)
+	if err != nil {
+		return err
+	}
+
+	logger.Infow(
+		"administer attempt trigger",
+		"from", from.Format(time.RFC3339),
+		"to", to.Format(time.RFC3339),
+		"ok_count", len(out.Success),
+		"scheduled_count", len(out.Scheduled),
+		"created_count", len(out.Created),
+		"ko_count", len(out.Error),
+	)
+
+	return nil
 }

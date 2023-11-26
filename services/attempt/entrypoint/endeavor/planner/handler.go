@@ -13,7 +13,7 @@ import (
 // @TODO: remove hardcode
 var key = "attempt.endeavor.cron"
 
-func RegisterCron(service *planner, schedule *cron.SpecSchedule) func() {
+func Handler(service *planner, schedule *cron.SpecSchedule) func() {
 	return func() {
 		ttl := schedule.Second + schedule.Minute + schedule.Hour + schedule.Dom + schedule.Month + schedule.Dow
 		// lock longger than timeout
@@ -49,5 +49,6 @@ func RegisterCron(service *planner, schedule *cron.SpecSchedule) func() {
 		}
 
 		service.logger.Infow("planned attempt endeavors", "count", len(out.Success), "from", out.From.Format(time.RFC3339), "to", out.To.Format(time.RFC3339))
+		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(time.Now().UTC()).Format(time.RFC3339))
 	}
 }

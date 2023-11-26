@@ -1,12 +1,10 @@
-package executor
+package consumer
 
 import (
 	"context"
 	"errors"
 	"sync"
 
-	"github.com/scrapnode/kanthor/database"
-	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/domain/constants"
@@ -14,43 +12,37 @@ import (
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
-	"github.com/scrapnode/kanthor/services/attempt/config"
-	"github.com/scrapnode/kanthor/services/attempt/usecase"
+	"github.com/scrapnode/kanthor/services/dispatcher/config"
+	"github.com/scrapnode/kanthor/services/dispatcher/usecase"
 )
 
 func New(
 	conf *config.Config,
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
-	db database.Database,
-	ds datastore.Datastore,
-	uc usecase.Attempt,
+	uc usecase.Dispatcher,
 ) patterns.Runnable {
-	logger = logger.With("service", "attempt.trigger.executor")
-	return &executor{
+	logger = logger.With("service", "dispatcher")
+	return &dispatcher{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("attempt_trigger_executor"),
+		subscriber: infra.Stream.Subscriber("dispatcher"),
 		infra:      infra,
-		db:         db,
-		ds:         ds,
 		uc:         uc,
 
 		healthcheck: background.NewServer(
-			healthcheck.DefaultConfig("attempt.trigger.executor"),
+			healthcheck.DefaultConfig("dispatcher"),
 			logger.With("healthcheck", "background"),
 		),
 	}
 }
 
-type executor struct {
+type dispatcher struct {
 	conf       *config.Config
 	logger     logging.Logger
 	subscriber streaming.Subscriber
 	infra      *infrastructure.Infrastructure
-	db         database.Database
-	ds         datastore.Datastore
-	uc         usecase.Attempt
+	uc         usecase.Dispatcher
 
 	healthcheck healthcheck.Server
 
@@ -58,20 +50,12 @@ type executor struct {
 	status int
 }
 
-func (service *executor) Start(ctx context.Context) error {
+func (service *dispatcher) Start(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
-	}
-
-	if err := service.db.Connect(ctx); err != nil {
-		return err
-	}
-
-	if err := service.ds.Connect(ctx); err != nil {
-		return err
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {
@@ -91,7 +75,7 @@ func (service *executor) Start(ctx context.Context) error {
 	return nil
 }
 
-func (service *executor) Stop(ctx context.Context) error {
+func (service *dispatcher) Stop(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
@@ -114,19 +98,11 @@ func (service *executor) Stop(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 
-	if err := service.db.Disconnect(ctx); err != nil {
-		returning = errors.Join(returning, err)
-	}
-
-	if err := service.ds.Disconnect(ctx); err != nil {
-		returning = errors.Join(returning, err)
-	}
-
 	return returning
 }
 
-func (service *executor) Run(ctx context.Context) error {
-	topic := constants.TopicTrigger
+func (service *dispatcher) Run(ctx context.Context) error {
+	topic := constants.TopicRequest
 	if err := service.subscriber.Sub(ctx, topic, Handler(service)); err != nil {
 		return err
 	}
@@ -146,15 +122,6 @@ func (service *executor) Run(ctx context.Context) error {
 			if err := service.infra.Liveness(); err != nil {
 				return err
 			}
-
-			if err := service.db.Liveness(); err != nil {
-				return err
-			}
-
-			if err := service.ds.Liveness(); err != nil {
-				return err
-			}
-
 			return nil
 		})
 		if err != nil {
@@ -172,7 +139,7 @@ func (service *executor) Run(ctx context.Context) error {
 	}
 }
 
-func (service *executor) readiness() error {
+func (service *dispatcher) readiness() error {
 	return service.healthcheck.Readiness(func() error {
 		service.logger.Debug("checking readiness")
 
@@ -181,14 +148,6 @@ func (service *executor) readiness() error {
 		}
 
 		if err := service.infra.Readiness(); err != nil {
-			return err
-		}
-
-		if err := service.db.Readiness(); err != nil {
-			return err
-		}
-
-		if err := service.ds.Readiness(); err != nil {
 			return err
 		}
 

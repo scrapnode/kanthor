@@ -14,90 +14,31 @@ import (
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/attempt/config"
-	"github.com/scrapnode/kanthor/services/attempt/entrypoint/endeavor/executor"
-	"github.com/scrapnode/kanthor/services/attempt/entrypoint/endeavor/planner"
-	executor2 "github.com/scrapnode/kanthor/services/attempt/entrypoint/trigger/executor"
-	planner2 "github.com/scrapnode/kanthor/services/attempt/entrypoint/trigger/planner"
+	"github.com/scrapnode/kanthor/services/attempt/entrypoint"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 	config2 "github.com/scrapnode/kanthor/services/dispatcher/config"
-	"github.com/scrapnode/kanthor/services/dispatcher/entrypoint"
+	entrypoint2 "github.com/scrapnode/kanthor/services/dispatcher/entrypoint"
 	usecase2 "github.com/scrapnode/kanthor/services/dispatcher/usecase"
 	config3 "github.com/scrapnode/kanthor/services/portal/config"
-	"github.com/scrapnode/kanthor/services/portal/entrypoint/rest"
+	entrypoint3 "github.com/scrapnode/kanthor/services/portal/entrypoint"
 	repositories2 "github.com/scrapnode/kanthor/services/portal/repositories"
 	usecase3 "github.com/scrapnode/kanthor/services/portal/usecase"
 	config4 "github.com/scrapnode/kanthor/services/scheduler/config"
-	entrypoint2 "github.com/scrapnode/kanthor/services/scheduler/entrypoint"
+	entrypoint4 "github.com/scrapnode/kanthor/services/scheduler/entrypoint"
 	repositories3 "github.com/scrapnode/kanthor/services/scheduler/repositories"
 	usecase4 "github.com/scrapnode/kanthor/services/scheduler/usecase"
 	config5 "github.com/scrapnode/kanthor/services/sdk/config"
-	rest2 "github.com/scrapnode/kanthor/services/sdk/entrypoint/rest"
+	entrypoint5 "github.com/scrapnode/kanthor/services/sdk/entrypoint"
 	repositories4 "github.com/scrapnode/kanthor/services/sdk/repositories"
 	usecase5 "github.com/scrapnode/kanthor/services/sdk/usecase"
 	config6 "github.com/scrapnode/kanthor/services/storage/config"
-	entrypoint3 "github.com/scrapnode/kanthor/services/storage/entrypoint"
+	entrypoint6 "github.com/scrapnode/kanthor/services/storage/entrypoint"
 	repositories5 "github.com/scrapnode/kanthor/services/storage/repositories"
 	usecase6 "github.com/scrapnode/kanthor/services/storage/usecase"
 )
 
-// Injectors from wire_attempt_endeavor.go:
-
-func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable, error) {
-	configConfig, err := config.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	logger, err := logging.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	infrastructureInfrastructure, err := infrastructure.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	databaseDatabase, err := database.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	datastoreDatastore, err := datastore.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
-	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := planner.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
-	return runnable, nil
-}
-
-func AttemptEndeavorExecutor(provider configuration.Provider) (patterns.Runnable, error) {
-	configConfig, err := config.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	logger, err := logging.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	infrastructureInfrastructure, err := infrastructure.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	databaseDatabase, err := database.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	datastoreDatastore, err := datastore.New(provider)
-	if err != nil {
-		return nil, err
-	}
-	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
-	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := executor.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
-	return runnable, nil
-}
-
-// Injectors from wire_attempt_trigger.go:
+// Injectors from wire_attempt.go:
 
 func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, error) {
 	configConfig, err := config.New(provider)
@@ -122,7 +63,7 @@ func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, 
 	}
 	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := planner2.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	runnable := entrypoint.TriggerPlanner(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
 }
 
@@ -149,7 +90,61 @@ func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable,
 	}
 	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := executor2.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	runnable := entrypoint.TriggerExecutor(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	return runnable, nil
+}
+
+func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint.EndeavorPlanner(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	return runnable, nil
+}
+
+func AttemptEndeavorExecutor(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint.EndeavorExecutor(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
 }
 
@@ -169,7 +164,7 @@ func Dispatcher(provider configuration.Provider) (patterns.Runnable, error) {
 		return nil, err
 	}
 	dispatcher := usecase2.New(configConfig, logger, infrastructureInfrastructure)
-	runnable := entrypoint.New(configConfig, logger, infrastructureInfrastructure, dispatcher)
+	runnable := entrypoint2.Consumer(configConfig, logger, infrastructureInfrastructure, dispatcher)
 	return runnable, nil
 }
 
@@ -194,7 +189,7 @@ func Portal(provider configuration.Provider) (patterns.Runnable, error) {
 	}
 	repositoriesRepositories := repositories2.New(logger, databaseDatabase)
 	portal := usecase3.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := rest.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, portal)
+	runnable := entrypoint3.Rest(configConfig, logger, infrastructureInfrastructure, databaseDatabase, portal)
 	return runnable, nil
 }
 
@@ -219,7 +214,7 @@ func Scheduler(provider configuration.Provider) (patterns.Runnable, error) {
 	}
 	repositoriesRepositories := repositories3.New(logger, databaseDatabase)
 	scheduler := usecase4.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := entrypoint2.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, scheduler)
+	runnable := entrypoint4.Consumer(configConfig, logger, infrastructureInfrastructure, databaseDatabase, scheduler)
 	return runnable, nil
 }
 
@@ -244,7 +239,7 @@ func Sdk(provider configuration.Provider) (patterns.Runnable, error) {
 	}
 	repositoriesRepositories := repositories4.New(logger, databaseDatabase)
 	sdk := usecase5.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := rest2.New(configConfig, logger, infrastructureInfrastructure, databaseDatabase, sdk)
+	runnable := entrypoint5.Rest(configConfig, logger, infrastructureInfrastructure, databaseDatabase, sdk)
 	return runnable, nil
 }
 
@@ -269,6 +264,6 @@ func Storage(provider configuration.Provider) (patterns.Runnable, error) {
 	}
 	repositoriesRepositories := repositories5.New(logger, datastoreDatastore)
 	storage := usecase6.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := entrypoint3.New(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, storage)
+	runnable := entrypoint6.Consumer(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, storage)
 	return runnable, nil
 }

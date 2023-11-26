@@ -20,12 +20,24 @@ func New(ns string) string {
 }
 
 func Parse(id string) (ns string, suid string) {
+	if id == "" {
+		return "", ""
+	}
 	segments := strings.Split(id, "_")
+	if len(segments) == 0 {
+		return "", ""
+	}
 	return segments[0], segments[1]
 }
 
 func Ns(id string) string {
+	if id == "" {
+		return ""
+	}
 	segments := strings.Split(id, "_")
+	if len(segments) == 0 {
+		return ""
+	}
 	return segments[0]
 }
 

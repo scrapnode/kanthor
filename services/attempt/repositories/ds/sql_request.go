@@ -26,7 +26,7 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string) 
 		Table(entities.TableReq).
 		Where("app_id = ? AND msg_id IN ?", appId, msgIds).
 		// the order is important because it's not only sort as primary key order
-		// but also use to only fetch the first row of duplicated rows
+		// but also use to only fetch the latest row of duplicated rows
 		Order("app_id ASC, msg_id ASC, id ASC ").
 		Select(entities.RequestProps).
 		Rows()

@@ -1,4 +1,4 @@
-package entrypoint
+package consumer
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/services/storage/usecase"
 )
 
-func NewConsumer(service *storage) streaming.SubHandler {
+func Handler(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {

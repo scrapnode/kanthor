@@ -24,7 +24,7 @@ func Storage(provider configuration.Provider) (patterns.Runnable, error) {
 		datastore.New,
 		repositories.New,
 		usecase.New,
-		entrypoint.New,
+		entrypoint.Consumer,
 	)
 	return nil, nil
 }

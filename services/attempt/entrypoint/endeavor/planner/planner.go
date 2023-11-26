@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/robfig/cron/v3"
 	"github.com/scrapnode/kanthor/database"
@@ -129,7 +130,7 @@ func (service *planner) Run(ctx context.Context) error {
 		return err
 	}
 
-	id, err := service.cron.AddFunc(service.conf.Trigger.Planner.Schedule, RegisterCron(service, schedule.(*cron.SpecSchedule)))
+	id, err := service.cron.AddFunc(service.conf.Trigger.Planner.Schedule, Handler(service, schedule.(*cron.SpecSchedule)))
 	if err != nil {
 		return err
 	}
@@ -138,6 +139,8 @@ func (service *planner) Run(ctx context.Context) error {
 	if project.IsDev() {
 		service.logger.Debug("starting immediately because of development env")
 		service.cron.Entry(id).Job.Run()
+	} else {
+		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(time.Now().UTC()).Format(time.RFC3339))
 	}
 
 	if err := service.readiness(); err != nil {

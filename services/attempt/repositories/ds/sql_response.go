@@ -21,6 +21,8 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string)
 	rows, err := sql.client.
 		Table(entities.TableRes).
 		Where("app_id = ? AND msg_id IN ?", appId, msgIds).
+		// the order is important because it's not only sort as primary key order
+		// but also use to only fetch the latest row of duplicated rows
 		Order("app_id ASC, msg_id ASC, id ASC ").
 		Select([]string{"app_id", "msg_id", "id", "ep_id", "status"}).
 		Rows()

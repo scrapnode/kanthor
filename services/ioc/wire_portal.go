@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/portal/config"
-	entrypoint "github.com/scrapnode/kanthor/services/portal/entrypoint/rest"
+	"github.com/scrapnode/kanthor/services/portal/entrypoint"
 	"github.com/scrapnode/kanthor/services/portal/repositories"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
@@ -24,7 +24,7 @@ func Portal(provider configuration.Provider) (patterns.Runnable, error) {
 		database.New,
 		repositories.New,
 		usecase.New,
-		entrypoint.New,
+		entrypoint.Rest,
 	)
 	return nil, nil
 }

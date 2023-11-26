@@ -31,7 +31,7 @@ func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]s
 	tableName := fmt.Sprintf(`"%s"`, entities.TableAtt)
 	cols := fmt.Sprintf(`"%s"`, strings.Join(m.Names(), `","`))
 	unnest := strings.Join(m.Casters(), ",")
-	query := `INSERT INTO %s (%s) (SELECT * FROM UNNEST(%s)) ON CONFLICT (req_id) DO NOTHING;`
+	query := `INSERT INTO %s (%s) (SELECT * FROM UNNEST(%s)) ON CONFLICT (req_id) DO NOTHING RETURNING id;`
 	statement := fmt.Sprintf(query, tableName, cols, unnest)
 
 	if tx := sql.client.Exec(statement, m.Values()...); tx.Error != nil {
@@ -109,6 +109,8 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64,
 				Table(entities.TableAtt).
 				Where("req_id < ?", high).
 				Where("schedule_next <= ?", next).
+				// the order is important because it's not only sort as primary key order
+				// but also use to only fetch the latest row of duplicated rows
 				Order("req_id ASC").
 				Limit(limit)
 

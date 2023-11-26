@@ -26,11 +26,7 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ctx, cancel, err := timeout(cmd)
-			defer cancel()
-			if err != nil {
-				return err
-			}
+
 			concurrency, err := cmd.Flags().GetInt("concurrency")
 			if err != nil {
 				return err
@@ -40,6 +36,9 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			ctx := cmd.Context()
+
 			logger, err := logging.New(provider)
 			if err != nil {
 				return err
@@ -137,7 +136,7 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 	t := time.Now().UTC().Add(time.Hour * 24).Format(format)
 	command.Flags().StringP("to", "t", t, fmt.Sprintf("--to=%s (UTC +00:00) | end of scan time", t))
 
-	command.Flags().IntP("concurrency", "", 100, "--concurrency=500 | concurrency exection items")
+	command.Flags().IntP("concurrency", "", 500, "--concurrency=500 | concurrency exection items")
 
 	return command
 }

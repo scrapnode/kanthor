@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
 
-func RegisterConsumer(service *executor) streaming.SubHandler {
+func Handler(service *executor) streaming.SubHandler {
 	return func(events map[string]*streaming.Event) map[string]error {
 		in := &usecase.EndeavorExecIn{
 			Concurrency: service.conf.Endeavor.Executor.Concurrency,

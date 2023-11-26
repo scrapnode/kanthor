@@ -27,7 +27,6 @@ go.work
 *.log
 
 # project stuff
-.tmp/**/*
 .kanthor
 !.kanthor/.gitignore
 !docker/.kanthor/configs.yaml

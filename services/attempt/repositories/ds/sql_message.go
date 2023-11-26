@@ -28,6 +28,7 @@ func (sql *SqlMessage) Count(ctx context.Context, appId string, from, to time.Ti
 	return count, tx.Error
 
 }
+
 func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time, limit int) chan *ScanResults[map[string]entities.Message] {
 	ch := make(chan *ScanResults[map[string]entities.Message], 1)
 	// convert timestamp to safe id, so we can the table efficiently with primary key
@@ -45,6 +46,8 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 				Table(entities.TableMsg).
 				Where("app_id = ?", appId).
 				Where("id < ?", high).
+				// the order is important because it's not only sort as primary key order
+				// but also use to only fetch the latest row of duplicated rows
 				Order("app_id ASC, id ASC").
 				Select(entities.MessageProps).
 				Limit(limit)
@@ -111,4 +114,59 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 	}()
 
 	return ch
+}
+
+func (sql *SqlMessage) ListByIds(ctx context.Context, appId string, ids []string) (map[string]entities.Message, error) {
+	records := map[string]entities.Message{}
+
+	tx := sql.client.
+		Table(entities.TableMsg).
+		Where("app_id = ?", appId).
+		Where("id in ?", ids).
+		// IMPORTANT: without this order, you may got weird behavior
+		Order("app_id ASC, id ASC").
+		Select(entities.MessageProps)
+
+	rows, err := tx.Rows()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			sql.client.Logger.Error(ctx, err.Error())
+		}
+	}()
+
+	for rows.Next() {
+		record := entities.Message{}
+		var metadata string
+		var headers string
+
+		err := rows.Scan(
+			&record.Id,
+			&record.Timestamp,
+			&record.Tier,
+			&record.AppId,
+			&record.Type,
+			&metadata,
+			&headers,
+			&record.Body,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if err := json.Unmarshal([]byte(metadata), &record.Metadata); err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal([]byte(headers), &record.Headers); err != nil {
+			return nil, err
+		}
+
+		records[record.Id] = record
+	}
+
+	return records, nil
 }
