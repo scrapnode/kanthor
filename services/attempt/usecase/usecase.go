@@ -12,6 +12,7 @@ import (
 type Attempt interface {
 	Trigger() Trigger
 	Endeavor() Endeavor
+	Cli() Cli
 }
 
 func New(
@@ -38,6 +39,7 @@ type attempt struct {
 
 	trigger  *trigger
 	endeavor *endeavor
+	cli      *cli
 
 	mu sync.Mutex
 }
@@ -71,4 +73,24 @@ func (uc *attempt) Endeavor() Endeavor {
 		}
 	}
 	return uc.endeavor
+}
+
+func (uc *attempt) Cli() Cli {
+	trigger := uc.Trigger()
+	endeavor := uc.Endeavor()
+
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.cli == nil {
+		uc.cli = &cli{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
+			trigger:      trigger,
+			endeavor:     endeavor,
+		}
+	}
+	return uc.cli
 }

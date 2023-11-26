@@ -2,12 +2,11 @@ package serve
 
 import (
 	"context"
-	"errors"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
+	"github.com/scrapnode/kanthor/cmd/utils"
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/internal/debugging"
 	"github.com/scrapnode/kanthor/logging"
@@ -16,9 +15,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var example = `
+	# serve one service
+	kanthor serve sdk
+	# serve multiple services
+	kanthor serve sdk portal schedule dispatcher storage
+`
+
 func New(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "serve",
+		Example:   example,
 		ValidArgs: append(services.SERVICES, services.ALL),
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -34,15 +41,15 @@ func New(provider configuration.Provider) *cobra.Command {
 	return command
 }
 
-func single(provider configuration.Provider, name string) (err error) {
+func single(provider configuration.Provider, name string) error {
 	logger, err := logging.New(provider)
 	if err != nil {
-		return
+		return err
 	}
 
 	service, err := Service(provider, name)
 	if err != nil {
-		return
+		return err
 	}
 	debug := debugging.NewServer()
 
@@ -50,11 +57,17 @@ func single(provider configuration.Provider, name string) (err error) {
 	defer stop()
 
 	if err = service.Start(ctx); err != nil {
-		return
+		return err
 	}
 	if err = debug.Start(ctx); err != nil {
-		return
+		return err
 	}
+
+	defer func() {
+		if err := utils.Stop(service, debug); err != nil {
+			logger.Error(err)
+		}
+	}()
 
 	go func() {
 		if err = service.Run(ctx); err != nil {
@@ -67,68 +80,30 @@ func single(provider configuration.Provider, name string) (err error) {
 		}
 	}()
 
-	defer func() {
-		// wait a little to stop our service
-		errc := make(chan error)
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		go func() {
-			var returning error
-			if err := service.Stop(ctx); err != nil {
-				returning = errors.Join(returning, err)
-			}
-			if err := debug.Stop(ctx); err != nil {
-				returning = errors.Join(returning, err)
-			}
-
-			errc <- returning
-		}()
-
-		select {
-		case err = <-errc:
-			return
-		case <-ctx.Done():
-			err = ctx.Err()
-		}
-	}()
-
 	// listen for the interrupt signal.
 	<-ctx.Done()
 	logger.Warnw("SYSTEM.SIGNAL.INTERRUPT", "error", ctx.Err())
-	return
+	return nil
 }
 
-func multiple(provider configuration.Provider) (err error) {
+func multiple(provider configuration.Provider) error {
 	logger, err := logging.New(provider)
 	if err != nil {
-		return
+		return err
 	}
 
 	instances, err := Services(provider)
 	if err != nil {
-		return
+		return err
 	}
 
 	defer func() {
-		// wait a little to stop our service
-		errc := make(chan error)
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		go func() {
-			var returning error
-			for _, instance := range instances {
-				if err := instance.Stop(ctx); err != nil {
-					returning = errors.Join(returning, err)
-				}
-			}
-			errc <- returning
-		}()
-
-		select {
-		case err = <-errc:
-			return
-		case <-ctx.Done():
-			err = ctx.Err()
+		var items []utils.Stoppable
+		for _, instance := range instances {
+			items = append(items, instance.(utils.Stoppable))
+		}
+		if err := utils.Stop(items...); err != nil {
+			logger.Error(err)
 		}
 	}()
 
@@ -136,7 +111,7 @@ func multiple(provider configuration.Provider) (err error) {
 	defer stop()
 	for _, instance := range instances {
 		if err = instance.Start(ctx); err != nil {
-			return
+			return err
 		}
 		go func(service patterns.Runnable) {
 			if err = service.Run(ctx); err != nil {
@@ -148,5 +123,5 @@ func multiple(provider configuration.Provider) (err error) {
 	// listen for the interrupt signal.
 	<-ctx.Done()
 	logger.Warnw("SYSTEM.SIGNAL.INTERRUPT", "error", ctx.Err())
-	return
+	return nil
 }

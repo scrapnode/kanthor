@@ -19,7 +19,7 @@ func (in *WorkspaceSetupIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.PointerNotNil("wokrspace", in.Workspace),
-		validator.Array(in.Applications, func(i int, item *entities.Application) error {
+		validator.Slice(in.Applications, func(i int, item *entities.Application) error {
 			prefix := fmt.Sprintf("in.applications[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
@@ -30,7 +30,7 @@ func (in *WorkspaceSetupIn) Validate() error {
 				validator.StringRequired(prefix+".name", item.Name),
 			)
 		}),
-		validator.Array(in.Endpoints, func(i int, item *entities.Endpoint) error {
+		validator.Slice(in.Endpoints, func(i int, item *entities.Endpoint) error {
 			prefix := fmt.Sprintf("in.endpoints[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,
@@ -44,7 +44,7 @@ func (in *WorkspaceSetupIn) Validate() error {
 				validator.StringUri(prefix+".uri", item.Uri),
 			)
 		}),
-		validator.Array(in.EndpointRules, func(i int, item *entities.EndpointRule) error {
+		validator.Slice(in.EndpointRules, func(i int, item *entities.EndpointRule) error {
 			prefix := fmt.Sprintf("in.endpoint_rules[%d]", i)
 			return validator.Validate(
 				validator.DefaultConfig,

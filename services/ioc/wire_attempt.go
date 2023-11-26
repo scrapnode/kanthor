@@ -45,6 +45,19 @@ func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable,
 	return nil, nil
 }
 
+func AttemptTriggerCli(provider configuration.Provider) (patterns.CommandLine, error) {
+	wire.Build(
+		config.New,
+		logging.New,
+		infrastructure.New,
+		database.New,
+		datastore.New,
+		repositories.New,
+		usecase.New,
+		entrypoint.TriggerCli,
+	)
+	return nil, nil
+}
 func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable, error) {
 	wire.Build(
 		config.New,

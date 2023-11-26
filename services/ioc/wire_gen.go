@@ -94,6 +94,33 @@ func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable,
 	return runnable, nil
 }
 
+func AttemptTriggerCli(provider configuration.Provider) (patterns.CommandLine, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	commandLine := entrypoint.TriggerCli(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	return commandLine, nil
+}
+
 func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable, error) {
 	configConfig, err := config.New(provider)
 	if err != nil {

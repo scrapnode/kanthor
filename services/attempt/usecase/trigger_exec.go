@@ -52,15 +52,6 @@ type TriggerExecOut struct {
 	Created   []string
 }
 
-func (out *TriggerExecOut) Merge(o *TriggerExecOut) {
-	out.Success = append(out.Success, o.Success...)
-	for k, v := range o.Error {
-		out.Error[k] = v
-	}
-	out.Scheduled = append(out.Scheduled, o.Scheduled...)
-	out.Created = append(out.Created, o.Created...)
-}
-
 func (uc *trigger) Exec(ctx context.Context, in *TriggerExecIn) (*TriggerExecOut, error) {
 	outs := &safe.Slice[*TriggerExecOut]{}
 
@@ -94,7 +85,7 @@ func (uc *trigger) Exec(ctx context.Context, in *TriggerExecIn) (*TriggerExecOut
 			Created:   []string{},
 		}
 		for _, o := range outs.Data() {
-			out.Merge(o)
+			out.merge(o)
 		}
 		return out, nil
 	case <-ctx.Done():
@@ -158,7 +149,7 @@ func (uc *trigger) consume(
 
 		o, err := uc.Perform(ctx, trigger.AppId, r.Data, applicable, delay)
 		if err == nil {
-			out.Merge(o)
+			out.merge(o)
 		} else {
 			uc.logger.Error(err)
 		}
@@ -167,4 +158,13 @@ func (uc *trigger) consume(
 	}
 
 	return out, nil
+}
+
+func (out *TriggerExecOut) merge(o *TriggerExecOut) {
+	out.Success = append(out.Success, o.Success...)
+	for k, v := range o.Error {
+		out.Error[k] = v
+	}
+	out.Scheduled = append(out.Scheduled, o.Scheduled...)
+	out.Created = append(out.Created, o.Created...)
 }

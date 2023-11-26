@@ -29,7 +29,7 @@ func (in *WarehousePutIn) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(in.Messages, func(i int, item *entities.Message) error {
+		validator.Slice(in.Messages, func(i int, item *entities.Message) error {
 			prefix := fmt.Sprintf("messages[%d]", i)
 			return ValidateWarehousePutInMessage(prefix, item)
 		}),
@@ -40,7 +40,7 @@ func (in *WarehousePutIn) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(in.Requests, func(i int, item *entities.Request) error {
+		validator.Slice(in.Requests, func(i int, item *entities.Request) error {
 			prefix := fmt.Sprintf("requests[%d]", i)
 			return ValidateWarehousePutInRequest(prefix, item)
 		}),
@@ -51,7 +51,7 @@ func (in *WarehousePutIn) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Array(in.Responses, func(i int, item *entities.Response) error {
+		validator.Slice(in.Responses, func(i int, item *entities.Response) error {
 			prefix := fmt.Sprintf("responses[%d]", i)
 			return ValidateWarehousePutInResponse(prefix, item)
 		}),
