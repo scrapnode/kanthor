@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scrapnode/kanthor/domain/constants"
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/internal/domain/constants"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/transformation"
 	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services/storage/usecase"
 )

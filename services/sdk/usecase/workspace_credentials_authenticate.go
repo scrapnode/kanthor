@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 

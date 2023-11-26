@@ -1,8 +1,8 @@
 package config
 
 import (
-	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
@@ -15,25 +15,50 @@ import (
 	storage "github.com/scrapnode/kanthor/services/storage/config"
 )
 
-func Service(provider configuration.Provider, name string) (validator.Validator, error) {
-	if name == services.SDK {
-		return sdk.New(provider)
+func Services(provider configuration.Provider, name string) (map[string]validator.Validator, error) {
+	returning := map[string]validator.Validator{}
+	if name == services.SDK || name == services.ALL {
+		s, err := sdk.New(provider)
+		if err != nil {
+			return nil, err
+		}
+		returning[services.SDK] = s
 	}
-	if name == services.PORTAL {
-		return portal.New(provider)
+	if name == services.PORTAL || name == services.ALL {
+		s, err := portal.New(provider)
+		if err != nil {
+			return nil, err
+		}
+		returning[services.PORTAL] = s
 	}
-	if name == services.SCHEDULER {
-		return scheduler.New(provider)
+	if name == services.SCHEDULER || name == services.ALL {
+		s, err := scheduler.New(provider)
+		if err != nil {
+			return nil, err
+		}
+		returning[services.SCHEDULER] = s
 	}
-	if name == services.DISPATCHER {
-		return dispatcher.New(provider)
+	if name == services.DISPATCHER || name == services.ALL {
+		s, err := dispatcher.New(provider)
+		if err != nil {
+			return nil, err
+		}
+		returning[services.DISPATCHER] = s
 	}
-	if name == services.STORAGE {
-		return storage.New(provider)
+	if name == services.STORAGE || name == services.ALL {
+		s, err := storage.New(provider)
+		if err != nil {
+			return nil, err
+		}
+		returning[services.STORAGE] = s
 	}
-	if slices.Contains(services.ATTEMPTS, name) {
-		return attempt.New(provider)
+	if slices.Contains(services.ATTEMPTS, name) || name == services.ALL {
+		s, err := attempt.New(provider)
+		if err != nil {
+			return nil, err
+		}
+		returning[strings.Join(services.ATTEMPTS, "/")] = s
 	}
 
-	return nil, fmt.Errorf("SYSTEM.SERVICE.UNKNOWN: %s", name)
+	return returning, nil
 }

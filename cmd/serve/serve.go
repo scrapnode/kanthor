@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/configuration"
-	"github.com/scrapnode/kanthor/debugging"
+	"github.com/scrapnode/kanthor/internal/debugging"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services"

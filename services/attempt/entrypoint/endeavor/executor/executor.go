@@ -7,9 +7,9 @@ import (
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/datastore"
-	"github.com/scrapnode/kanthor/domain/constants"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/internal/domain/constants"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"

@@ -3,7 +3,7 @@ package ds
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 )
 
 type Request interface {

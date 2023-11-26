@@ -3,9 +3,9 @@ package executor
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/transformation"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
 

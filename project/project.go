@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/scrapnode/kanthor/domain/constants"
+	"github.com/scrapnode/kanthor/internal/domain/constants"
 )
 
 func Namespace() string {

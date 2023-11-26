@@ -3,7 +3,7 @@ package assessor
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/signature"
 	"github.com/scrapnode/kanthor/pkg/timer"
 )

@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/authenticator"
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 )
 
 func UseAuthz(authz authorizator.Authorizator) gin.HandlerFunc {

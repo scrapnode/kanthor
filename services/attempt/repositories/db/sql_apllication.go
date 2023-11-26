@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/database"
-	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"gorm.io/gorm"
 )
 

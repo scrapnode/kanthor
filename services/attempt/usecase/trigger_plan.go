@@ -5,16 +5,15 @@ import (
 	"errors"
 	"time"
 
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/transformation"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/transformation"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type TriggerPlanIn struct {
-	Timeout int64
-	Size    int
+	Size int
 
 	ScanStart int64
 	ScanEnd   int64
@@ -23,7 +22,6 @@ type TriggerPlanIn struct {
 func (req *TriggerPlanIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("timeout", int(req.Timeout), 1000),
 		validator.NumberGreaterThan("size", req.Size, 0),
 		validator.NumberLessThan("scan_start", req.ScanStart, req.ScanEnd),
 	)
@@ -36,9 +34,6 @@ type TriggerPlanOut struct {
 }
 
 func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanIn) (*TriggerPlanOut, error) {
-	timeout, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(req.Timeout))
-	defer cancel()
-
 	from := uc.infra.Timer.Now().Add(time.Duration(req.ScanStart) * time.Millisecond)
 	to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
 	ok := []string{}
@@ -92,8 +87,8 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanIn) (*TriggerPlanOu
 	select {
 	case err := <-errc:
 		return &TriggerPlanOut{Success: ok, From: from, To: to}, err
-	case <-timeout.Done():
-		return &TriggerPlanOut{Success: ok, From: from, To: to}, timeout.Err()
+	case <-ctx.Done():
+		return &TriggerPlanOut{Success: ok, From: from, To: to}, ctx.Err()
 	}
 }
 

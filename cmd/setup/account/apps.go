@@ -8,7 +8,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/scrapnode/kanthor/data/interchange"
-	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )

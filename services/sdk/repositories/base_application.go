@@ -3,8 +3,8 @@ package repositories
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/domain/entities"
-	"github.com/scrapnode/kanthor/domain/structure"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/structure"
 )
 
 type Application interface {

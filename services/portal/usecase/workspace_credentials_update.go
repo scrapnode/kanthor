@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/domain/entities"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 

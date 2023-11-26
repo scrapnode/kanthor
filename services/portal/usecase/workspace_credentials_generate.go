@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/scrapnode/kanthor/domain/constants"
-	"github.com/scrapnode/kanthor/domain/entities"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
+	"github.com/scrapnode/kanthor/internal/domain/constants"
+	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )

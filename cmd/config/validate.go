@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/scrapnode/kanthor/configuration"
@@ -13,7 +14,7 @@ import (
 func NewValidate(provider configuration.Provider) *cobra.Command {
 	command := &cobra.Command{
 		Use:       "validate",
-		ValidArgs: services.SERVICES,
+		ValidArgs: append([]string{services.ALL}, services.SERVICES...),
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			infra, err := infrastructure.New(provider)
@@ -24,25 +25,31 @@ func NewValidate(provider configuration.Provider) *cobra.Command {
 				return err
 			}
 
-			serviceName := args[0]
-			service, err := Service(provider, serviceName)
+			confs, err := Services(provider, args[0])
 			if err != nil {
 				return err
 			}
 
-			if err := service.Validate(); err != nil {
-				return err
+			var returning error
+			for _, conf := range confs {
+				if err := conf.Validate(); err != nil {
+					returning = errors.Join(returning, err)
+				}
 			}
 
-			if verbose, err := cmd.Flags().GetBool("verbose"); err == nil && verbose {
-				fmt.Println("--- infrastructure ---")
-				fmt.Println(utils.StringifyIndent(infra))
+			defer func() {
+				if verbose, err := cmd.Flags().GetBool("verbose"); err == nil && verbose {
+					fmt.Println("--- infrastructure ---")
+					fmt.Println(utils.StringifyIndent(infra))
 
-				fmt.Println("--- " + serviceName + " ---")
-				fmt.Println(utils.StringifyIndent(service))
-			}
+					for name, conf := range confs {
+						fmt.Println("--- " + name + " ---")
+						fmt.Println(utils.StringifyIndent(conf))
+					}
+				}
+			}()
 
-			return nil
+			return returning
 		},
 	}
 	return command
