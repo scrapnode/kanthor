@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/attempt/config"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
@@ -104,16 +105,16 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 				// In this case their types are set to the types of the respective iteration values and their scope is the block of the "for" statement;
 				// **they are re-used in each iteration**. If the iteration variables are declared outside the "for" statement,
 				// after execution their values will be those of the last iteration.
-				for i := 0; i < len(strive.Attemptable); i++ {
-					in.Attempts[strive.Attemptable[i].ReqId] = &strive.Attemptable[i]
+				for reqId, attempt := range strive.Attemptable {
+					in.Attempts[reqId] = attempt
 				}
+				log.Printf("in.Attempts -> %s", utils.StringifyIndent(in.Attempts))
 
 				out, err := uc.Endeavor().Exec(ctx, in)
 				if err != nil {
 					return err
 				}
 
-				log.Printf("out.Success -> %d", len(out.Success))
 				logger.Infow(
 					"administer attempt trigger",
 					"from", from.Format(time.RFC3339),

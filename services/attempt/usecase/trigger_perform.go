@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -11,17 +12,56 @@ import (
 	"github.com/scrapnode/kanthor/internal/domain/transformation"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/services/attempt/repositories/ds"
+	"github.com/sourcegraph/conc/pool"
 )
 
-func (uc *trigger) Perform(
-	ctx context.Context,
-	appId string,
-	msgs map[string]entities.Message,
-	applicable *assessor.Assets,
-	attemptDelay int64,
-) (*TriggerExecOut, error) {
-	messages, requests, err := uc.examine(ctx, appId, applicable, msgs)
+type TriggerPerformIn struct {
+	AppId        string
+	Concurrency  int
+	ArrangeDelay int64
+
+	Applicable *assessor.Assets
+	Messages   map[string]*entities.Message
+}
+
+func (in *TriggerPerformIn) Validate() error {
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
+		validator.NumberGreaterThan("concurrency", in.Concurrency, 0),
+		validator.NumberGreaterThan("arrange_delay", in.ArrangeDelay, 60000),
+		validator.PointerNotNil("applicable", in.Applicable),
+		validator.MapRequired("messages", in.Messages),
+	)
+	if err != nil {
+		return err
+	}
+
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.Map(in.Messages, func(id string, item *entities.Message) error {
+			prefix := fmt.Sprintf("messages.%s", id)
+			return ValidateWarehousePutInMessage(prefix, item)
+		}),
+	)
+}
+
+func ValidateWarehousePutInMessage(prefix string, message *entities.Message) error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith(prefix+".id", message.Id, entities.IdNsMsg),
+		validator.NumberGreaterThan(prefix+".timestamp", message.Timestamp, 0),
+		validator.StringRequired(prefix+".tier", message.Tier),
+		validator.StringStartsWith(prefix+".app_id", message.AppId, entities.IdNsApp),
+		validator.StringRequired(prefix+".type", message.Type),
+		validator.StringRequired(prefix+".body", message.Body),
+	)
+}
+
+func (uc *trigger) Perform(ctx context.Context, in *TriggerPerformIn) (*TriggerExecOut, error) {
+	messages, requests, err := uc.examine(ctx, in.AppId, in.Applicable, in.Messages)
 	if err != nil {
 		return nil, err
 	}
@@ -33,14 +73,14 @@ func (uc *trigger) Perform(
 		Created:   []string{},
 	}
 
-	scheduledok, scheduledko := uc.schedule(ctx, messages, applicable)
+	scheduledok, scheduledko := uc.schedule(ctx, messages, in)
 	out.Success = append(out.Success, scheduledok.Data()...)
 	for k, v := range scheduledko.Data() {
 		out.Error[k] = v
 	}
 	out.Scheduled = append(out.Scheduled, scheduledok.Data()...)
 
-	createdok, createdko := uc.create(ctx, requests, attemptDelay)
+	createdok, createdko := uc.create(ctx, requests, in)
 	out.Success = append(out.Success, createdok.Data()...)
 	for k, v := range createdko.Data() {
 		out.Error[k] = v
@@ -55,8 +95,8 @@ func (uc *trigger) examine(
 	ctx context.Context,
 	appId string,
 	applicable *assessor.Assets,
-	messages map[string]entities.Message,
-) ([]entities.Message, []entities.Request, error) {
+	messages map[string]*entities.Message,
+) (map[string]*entities.Message, map[string]*entities.Request, error) {
 	var msgIds []string
 	for id := range messages {
 		msgIds = append(msgIds, id)
@@ -73,8 +113,8 @@ func (uc *trigger) examine(
 		return nil, nil, err
 	}
 
-	schedulable := []entities.Message{}
-	attemptable := []entities.Request{}
+	schedulable := map[string]*entities.Message{}
+	attemptable := map[string]*entities.Request{}
 
 	status := uc.hash(requests, responses)
 	for _, message := range messages {
@@ -82,14 +122,14 @@ func (uc *trigger) examine(
 			reqId, hasReq := status[ds.ReqKey(message.Id, ep.Id)]
 			if !hasReq {
 				// no request -> must schedule message again -> don't create any attempt
-				schedulable = append(schedulable, message)
+				schedulable[message.Id] = message
 				continue
 			}
 
 			_, hasRes := status[ds.ResKey(message.Id, ep.Id)]
 			if !hasRes {
 				// has request + no success response -> create an attempt
-				attemptable = append(attemptable, requests[reqId])
+				attemptable[reqId] = requests[reqId]
 				continue
 			}
 
@@ -100,7 +140,7 @@ func (uc *trigger) examine(
 	return schedulable, attemptable, nil
 }
 
-func (uc *trigger) hash(requests map[string]entities.Request, responses map[string]ds.ResponseStatusRow) map[string]string {
+func (uc *trigger) hash(requests map[string]*entities.Request, responses map[string]*ds.ResponseStatusRow) map[string]string {
 	returning := map[string]string{}
 
 	for _, request := range requests {
@@ -128,13 +168,13 @@ func (uc *trigger) hash(requests map[string]entities.Request, responses map[stri
 }
 
 // schedule messages
-func (uc *trigger) schedule(ctx context.Context, messages []entities.Message, applicable *assessor.Assets) (*safe.Slice[string], *safe.Map[error]) {
+func (uc *trigger) schedule(ctx context.Context, messages map[string]*entities.Message, in *TriggerPerformIn) (*safe.Slice[string], *safe.Map[error]) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 	requests := []entities.Request{}
 
 	for _, message := range messages {
-		ins, logs := assessor.Requests(&message, applicable, uc.infra.Timer)
+		ins, logs := assessor.Requests(message, in.Applicable, uc.infra.Timer)
 		if len(logs) > 0 {
 			for _, l := range logs {
 				uc.logger.Warnw(l[0].(string), l[1:]...)
@@ -173,13 +213,13 @@ func (uc *trigger) schedule(ctx context.Context, messages []entities.Message, ap
 }
 
 // create attempts
-func (uc *trigger) create(ctx context.Context, requests []entities.Request, delay int64) (*safe.Slice[string], *safe.Map[error]) {
+func (uc *trigger) create(ctx context.Context, requests map[string]*entities.Request, in *TriggerPerformIn) (*safe.Slice[string], *safe.Map[error]) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
 	attempts := []entities.Attempt{}
 
 	now := uc.infra.Timer.Now()
-	next := now.Add(time.Duration(delay) * time.Millisecond)
+	next := now.Add(time.Duration(in.ArrangeDelay) * time.Millisecond)
 
 	for _, request := range requests {
 		attempts = append(attempts, entities.Attempt{
@@ -198,14 +238,24 @@ func (uc *trigger) create(ctx context.Context, requests []entities.Request, dela
 		})
 	}
 
-	ids, err := uc.repositories.Datastore().Attempt().Create(ctx, attempts)
-	if err != nil {
-		for _, attempt := range attempts {
-			ko.Set(attempt.ReqId, err)
-		}
-	}
+	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
+	p := pool.New().WithMaxGoroutines(1)
+	for i := 0; i < len(attempts); i += in.Concurrency {
+		j := utils.ChunkNext(i, len(attempts), in.Concurrency)
 
-	ok.Append(ids...)
+		items := attempts[i:j]
+		p.Go(func() {
+			ids, err := uc.repositories.Datastore().Attempt().Create(ctx, items)
+			if err != nil {
+				for _, attempt := range attempts {
+					ko.Set(attempt.ReqId, err)
+				}
+			}
+
+			ok.Append(ids...)
+		})
+	}
+	p.Wait()
 
 	return ok, ko
 }

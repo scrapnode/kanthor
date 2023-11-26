@@ -13,5 +13,5 @@ type ResponseStatusRow struct {
 }
 
 type Response interface {
-	Scan(ctx context.Context, appId string, msgIds []string) (map[string]ResponseStatusRow, error)
+	Scan(ctx context.Context, appId string, msgIds []string) (map[string]*ResponseStatusRow, error)
 }

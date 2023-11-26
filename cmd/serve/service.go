@@ -2,6 +2,7 @@ package serve
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/patterns"
@@ -41,9 +42,14 @@ func Service(provider configuration.Provider, name string) (patterns.Runnable, e
 	return nil, fmt.Errorf("serve.service: unknown service [%s]", name)
 }
 
-func Services(provider configuration.Provider) ([]patterns.Runnable, error) {
+func Services(provider configuration.Provider, names []string) ([]patterns.Runnable, error) {
 	instances := []patterns.Runnable{}
+
 	for _, name := range services.SERVICES {
+		if !slices.Contains(names, name) {
+			continue
+		}
+
 		instance, err := Service(provider, name)
 		if err != nil {
 			return nil, err

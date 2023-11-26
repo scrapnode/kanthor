@@ -11,12 +11,11 @@ type SqlResponse struct {
 	client *gorm.DB
 }
 
-func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string) (map[string]ResponseStatusRow, error) {
+func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string) (map[string]*ResponseStatusRow, error) {
+	records := map[string]*ResponseStatusRow{}
 	if len(msgIds) == 0 {
-		return map[string]ResponseStatusRow{}, nil
+		return records, nil
 	}
-
-	records := map[string]ResponseStatusRow{}
 
 	rows, err := sql.client.
 		Table(entities.TableRes).
@@ -37,7 +36,7 @@ func (sql *SqlResponse) Scan(ctx context.Context, appId string, msgIds []string)
 		}
 	}()
 	for rows.Next() {
-		record := ResponseStatusRow{}
+		record := &ResponseStatusRow{}
 		err := rows.Scan(
 			&record.AppId,
 			&record.MsgId,

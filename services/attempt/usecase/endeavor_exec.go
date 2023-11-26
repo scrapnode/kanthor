@@ -36,7 +36,7 @@ func ValidateEndeavorExecInAttempt(prefix string, item *entities.Attempt) error 
 func (in *EndeavorExecIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("concurrency", in.Concurrency, 1),
+		validator.NumberGreaterThan("concurrency", in.Concurrency, 0),
 		validator.MapRequired("attempts", in.Attempts),
 	)
 	if err != nil {
@@ -82,7 +82,7 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 		request := v
 		refId := refs[reqId]
 		p.Go(func() {
-			response := uc.send(ctx, &request)
+			response := uc.send(ctx, request)
 			responses.Set(reqId, response)
 
 			// reschedule for certaintly response type
@@ -148,7 +148,7 @@ func (uc *endeavor) reference(ctx context.Context, in *EndeavorExecIn) map[strin
 	return returning
 }
 
-func (uc *endeavor) requests(ctx context.Context, in *EndeavorExecIn) (map[string]entities.Request, error) {
+func (uc *endeavor) requests(ctx context.Context, in *EndeavorExecIn) (map[string]*entities.Request, error) {
 	maps := map[string]map[string][]string{}
 	for _, attempt := range in.Attempts {
 		if _, ok := maps[attempt.AppId]; !ok {

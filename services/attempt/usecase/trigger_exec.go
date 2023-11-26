@@ -21,7 +21,7 @@ type TriggerExecIn struct {
 func (in *TriggerExecIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("concurrency", in.Concurrency, 1),
+		validator.NumberGreaterThan("concurrency", in.Concurrency, 0),
 		validator.NumberGreaterThan("arrange_delay", in.ArrangeDelay, 60000),
 		validator.MapRequired("triggers", in.Triggers),
 	)
@@ -138,23 +138,37 @@ func (uc *trigger) consume(
 		Created:   []string{},
 	}
 
-	startdur := time.Now()
 	var scanned int64
 	ch := uc.repositories.Datastore().Message().Scan(ctx, trigger.AppId, from, to, concurrency)
 	for r := range ch {
+		startdur := time.Now()
 		scanned += int64(len(r.Data))
 		if r.Error != nil {
 			return nil, r.Error
 		}
 
-		o, err := uc.Perform(ctx, trigger.AppId, r.Data, applicable, delay)
+		i := &TriggerPerformIn{
+			AppId:        trigger.AppId,
+			Concurrency:  concurrency,
+			ArrangeDelay: delay,
+			Applicable:   applicable,
+			Messages:     r.Data,
+		}
+		o, err := uc.Perform(ctx, i)
 		if err == nil {
 			out.merge(o)
 		} else {
 			uc.logger.Error(err)
 		}
 
-		uc.logger.Infof("app_id:%s scanned %.2f%% (%d/%d rows, %v)", trigger.AppId, float64(scanned*100)/float64(count), scanned, count, time.Since(startdur))
+		log := fmt.Sprintf("app_id:%s scanned %.2f%% (%d/%d rows, %v)", trigger.AppId, float64(scanned*100)/float64(count), scanned, count, time.Since(startdur))
+		uc.logger.Infow(
+			log,
+			"ok_count", len(out.Success),
+			"scheduled_count", len(out.Scheduled),
+			"created_count", len(out.Created),
+			"ko_count", len(out.Error),
+		)
 	}
 
 	return out, nil

@@ -80,7 +80,7 @@ func (uc *endeavor) trigger(ctx context.Context, s *entities.AttemptStrive) []st
 	events := map[string]*streaming.Event{}
 	for _, att := range s.Attemptable {
 		refId := att.ReqId
-		event, err := transformation.EventFromAttempt(&att)
+		event, err := transformation.EventFromAttempt(att)
 		if err != nil {
 			// un-recoverable error
 			uc.logger.Errorw("could not transform attempt to event", "attempt", att.String())

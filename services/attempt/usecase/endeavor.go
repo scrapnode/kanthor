@@ -14,7 +14,7 @@ import (
 type Endeavor interface {
 	Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlanOut, error)
 	Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExecOut, error)
-	Evaluate(ctx context.Context, attempts []entities.Attempt) (*entities.AttemptStrive, error)
+	Evaluate(ctx context.Context, attempts map[string]*entities.Attempt) (*entities.AttemptStrive, error)
 }
 
 type endeavor struct {

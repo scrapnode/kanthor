@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/internal/domain/status"
 	"github.com/scrapnode/kanthor/pkg/suid"
@@ -18,62 +17,42 @@ type SqlAttempt struct {
 }
 
 func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]string, error) {
-	var ids []string
+	returning := []string{}
+
 	if len(docs) == 0 {
-		return ids, nil
+		return returning, nil
 	}
 
-	m := sql.mapper()
-	if err := m.Parse(docs); err != nil {
-		return nil, err
+	names := []string{}
+	values := map[string]interface{}{}
+	for i := 0; i < len(docs); i++ {
+		doc := &docs[i]
+		returning = append(returning, doc.ReqId)
+
+		keys := []string{}
+		for _, col := range entities.AttemptProps {
+			key := fmt.Sprintf("%s_%d", col, i)
+			keys = append(keys, "@"+key)
+			values[key] = entities.AttemptMappers[col](doc)
+		}
+
+		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 	}
 
 	tableName := fmt.Sprintf(`"%s"`, entities.TableAtt)
-	cols := fmt.Sprintf(`"%s"`, strings.Join(m.Names(), `","`))
-	unnest := strings.Join(m.Casters(), ",")
-	query := `INSERT INTO %s (%s) (SELECT * FROM UNNEST(%s)) ON CONFLICT (req_id) DO NOTHING RETURNING id;`
-	statement := fmt.Sprintf(query, tableName, cols, unnest)
+	columns := fmt.Sprintf(`"%s"`, strings.Join(entities.AttemptProps, `","`))
+	statement := fmt.Sprintf(
+		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(req_id) DO NOTHING;",
+		tableName,
+		columns,
+		strings.Join(names, ","),
+	)
 
-	if tx := sql.client.Exec(statement, m.Values()...); tx.Error != nil {
+	if tx := sql.client.Exec(statement, values); tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	for _, doc := range docs {
-		ids = append(ids, doc.ReqId)
-	}
-	return ids, nil
-}
-
-func (sql *SqlAttempt) mapper() *datastore.Mapper[entities.Attempt] {
-	return datastore.NewMapper[entities.Attempt](
-		map[string]func(doc entities.Attempt) any{
-			"req_id":           func(doc entities.Attempt) any { return doc.ReqId },
-			"msg_id":           func(doc entities.Attempt) any { return doc.MsgId },
-			"app_id":           func(doc entities.Attempt) any { return doc.AppId },
-			"tier":             func(doc entities.Attempt) any { return doc.Tier },
-			"status":           func(doc entities.Attempt) any { return doc.Status },
-			"res_id":           func(doc entities.Attempt) any { return doc.ResId },
-			"schedule_counter": func(doc entities.Attempt) any { return doc.ScheduleCounter },
-			"schedule_next":    func(doc entities.Attempt) any { return doc.ScheduleNext },
-			"scheduled_at":     func(doc entities.Attempt) any { return doc.ScheduledAt },
-			"completed_at":     func(doc entities.Attempt) any { return doc.CompletedAt },
-		},
-		map[string]string{
-			// cast timestamp as int8[]
-			"timestamp": "int8[]",
-			// cast status as int2[]
-			"status": "int2[]",
-			// cast schedule_counter as int2[]
-			"schedule_counter": "int2[]",
-			// cast schedule_next as int8[]
-			"schedule_next": "int8[]",
-			// cast scheduled_at as int8[]
-			"scheduled_at": "int8[]",
-			// cast completed_at as int8[]
-			"completed_at": "int8[]",
-			// others will be varchar[] by default
-		},
-	)
+	return returning, nil
 }
 
 func (sql *SqlAttempt) Count(ctx context.Context, appId string, from, to time.Time, next int64) (int64, error) {
@@ -91,8 +70,8 @@ func (sql *SqlAttempt) Count(ctx context.Context, appId string, from, to time.Ti
 	return count, tx.Error
 }
 
-func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64, limit int) chan *ScanResults[[]entities.Attempt] {
-	ch := make(chan *ScanResults[[]entities.Attempt], 1)
+func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64, limit int) chan *ScanResults[map[string]*entities.Attempt] {
+	ch := make(chan *ScanResults[map[string]*entities.Attempt], 1)
 
 	// convert timestamp to safe id, so we can the table efficiently with primary key
 	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
@@ -103,7 +82,7 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64,
 
 		var cursor string
 		for {
-			var records []entities.Attempt
+			records := map[string]*entities.Attempt{}
 
 			tx := sql.client.
 				Table(entities.TableAtt).
@@ -112,6 +91,7 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64,
 				// the order is important because it's not only sort as primary key order
 				// but also use to only fetch the latest row of duplicated rows
 				Order("req_id ASC").
+				Select(entities.AttemptProps).
 				Limit(limit)
 
 			if cursor == "" {
@@ -120,21 +100,50 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64,
 				tx = tx.Where("req_id > ?", cursor)
 			}
 
-			if tx = tx.Find(&records); tx.Error != nil {
-
-				ch <- &ScanResults[[]entities.Attempt]{Error: tx.Error}
+			rows, err := tx.Rows()
+			if err != nil {
+				ch <- &ScanResults[map[string]*entities.Attempt]{Error: err}
 				return
 			}
 
-			ch <- &ScanResults[[]entities.Attempt]{Data: records}
+			defer func() {
+				if err := rows.Close(); err != nil {
+					sql.client.Logger.Error(ctx, err.Error())
+				}
+			}()
+
+			for rows.Next() {
+				record := &entities.Attempt{}
+
+				err := rows.Scan(
+					&record.ReqId,
+					&record.MsgId,
+					&record.AppId,
+					&record.Tier,
+					&record.Status,
+					&record.ResId,
+					&record.ScheduleCounter,
+					&record.ScheduleNext,
+					&record.ScheduledAt,
+					&record.CompletedAt,
+				)
+
+				if err != nil {
+					ch <- &ScanResults[map[string]*entities.Attempt]{Error: err}
+					return
+				}
+
+				records[record.ReqId] = record
+				// IMPORTANT: always update cursor
+				cursor = record.ReqId
+			}
+
+			ch <- &ScanResults[map[string]*entities.Attempt]{Data: records}
 
 			// if we found less than request size, that mean we were in last page
 			if len(records) < limit {
 				return
 			}
-
-			// IMPORTANT: always update cursor
-			cursor = records[len(records)-1].ReqId
 		}
 	}()
 

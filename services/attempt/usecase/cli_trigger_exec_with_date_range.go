@@ -22,7 +22,7 @@ func (in *TriggerExecWithDateRangeIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
-		validator.NumberGreaterThan("concurrency", in.Concurrency, 1),
+		validator.NumberGreaterThan("concurrency", in.Concurrency, 0),
 		validator.NumberGreaterThan("arrange_delay", in.ArrangeDelay, 60000),
 		validator.NumberLessThan("from", in.From, in.To),
 		validator.NumberLessThanOrEqual("from", in.To, time.Now().UTC().UnixMilli()),
@@ -35,7 +35,7 @@ func (uc *cli) TriggerExecWithDateRange(ctx context.Context, in *TriggerExecWith
 		return nil, err
 	}
 
-	tin := &TriggerExecIn{
+	i := &TriggerExecIn{
 		Concurrency:  in.Concurrency,
 		ArrangeDelay: in.ArrangeDelay,
 		Triggers: map[string]*entities.AttemptTrigger{
@@ -47,6 +47,9 @@ func (uc *cli) TriggerExecWithDateRange(ctx context.Context, in *TriggerExecWith
 			},
 		},
 	}
+	if err := i.Validate(); err != nil {
+		return nil, err
+	}
 
-	return uc.trigger.Exec(ctx, tin)
+	return uc.trigger.Exec(ctx, i)
 }

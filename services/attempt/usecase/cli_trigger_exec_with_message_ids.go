@@ -42,5 +42,15 @@ func (uc *cli) TriggerExecWithMessageIds(ctx context.Context, in *TriggerExecWit
 		return nil, err
 	}
 
-	return uc.trigger.Perform(ctx, app.Id, messages, applicable, in.ArrangeDelay)
+	i := &TriggerPerformIn{
+		AppId:        app.Id,
+		Concurrency:  len(messages),
+		ArrangeDelay: in.ArrangeDelay,
+		Applicable:   applicable,
+		Messages:     messages,
+	}
+	if err := i.Validate(); err != nil {
+		return nil, err
+	}
+	return uc.trigger.Perform(ctx, i)
 }

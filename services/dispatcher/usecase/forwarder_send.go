@@ -42,7 +42,7 @@ func (in *ForwarderSendIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.MapRequired("requests", in.Requests),
-		validator.NumberGreaterThan("concurrency", in.Concurrency, 1),
+		validator.NumberGreaterThan("concurrency", in.Concurrency, 0),
 	)
 	if err != nil {
 		return err

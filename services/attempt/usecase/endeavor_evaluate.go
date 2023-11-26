@@ -7,8 +7,11 @@ import (
 	"github.com/scrapnode/kanthor/internal/domain/status"
 )
 
-func (uc *endeavor) Evaluate(ctx context.Context, attempts []entities.Attempt) (*entities.AttemptStrive, error) {
-	returning := &entities.AttemptStrive{Attemptable: []entities.Attempt{}, Ignore: []string{}}
+func (uc *endeavor) Evaluate(ctx context.Context, attempts map[string]*entities.Attempt) (*entities.AttemptStrive, error) {
+	returning := &entities.AttemptStrive{
+		Attemptable: map[string]*entities.Attempt{},
+		Ignore:      []string{},
+	}
 
 	for _, attempt := range attempts {
 		if attempt.Status == status.ErrIgnore {
@@ -19,17 +22,17 @@ func (uc *endeavor) Evaluate(ctx context.Context, attempts []entities.Attempt) (
 		}
 
 		if attempt.Status == status.ErrUnknown {
-			returning.Attemptable = append(returning.Attemptable, attempt)
+			returning.Attemptable[attempt.ReqId] = attempt
 			continue
 		}
 
 		if attempt.Status == status.None {
-			returning.Attemptable = append(returning.Attemptable, attempt)
+			returning.Attemptable[attempt.ReqId] = attempt
 			continue
 		}
 
 		if status.Is5xx(attempt.Status) {
-			returning.Attemptable = append(returning.Attemptable, attempt)
+			returning.Attemptable[attempt.ReqId] = attempt
 			continue
 		}
 

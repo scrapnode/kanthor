@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/textproto"
 )
@@ -71,4 +72,9 @@ func (h Header) FromHTTP(headers http.Header) {
 			h.Add(key, value)
 		}
 	}
+}
+
+func (h Header) String() string {
+	data, _ := json.Marshal(h)
+	return string(data)
 }

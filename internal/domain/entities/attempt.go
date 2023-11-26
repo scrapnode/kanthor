@@ -62,6 +62,31 @@ func (noti *AttemptTrigger) String() string {
 }
 
 type AttemptStrive struct {
-	Attemptable []Attempt
+	Attemptable map[string]*Attempt
 	Ignore      []string
+}
+
+var AttemptProps = []string{
+	"req_id",
+	"msg_id",
+	"app_id",
+	"tier",
+	"status",
+	"res_id",
+	"schedule_counter",
+	"schedule_next",
+	"scheduled_at",
+	"completed_at",
+}
+var AttemptMappers = map[string]func(doc *Attempt) any{
+	"req_id":           func(doc *Attempt) any { return doc.ReqId },
+	"msg_id":           func(doc *Attempt) any { return doc.MsgId },
+	"app_id":           func(doc *Attempt) any { return doc.AppId },
+	"tier":             func(doc *Attempt) any { return doc.Tier },
+	"status":           func(doc *Attempt) any { return doc.Status },
+	"res_id":           func(doc *Attempt) any { return doc.ResId },
+	"schedule_counter": func(doc *Attempt) any { return doc.ScheduleCounter },
+	"schedule_next":    func(doc *Attempt) any { return doc.ScheduleNext },
+	"scheduled_at":     func(doc *Attempt) any { return doc.ScheduledAt },
+	"completed_at":     func(doc *Attempt) any { return doc.CompletedAt },
 }

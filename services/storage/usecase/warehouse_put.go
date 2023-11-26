@@ -116,7 +116,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		return &WarehousePutOut{Success: []string{}, Error: map[string]error{}}, nil
 	}
 
-	ok := safe.Map[string]{}
+	ok := safe.Slice[string]{}
 	ko := safe.Map[error]{}
 
 	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
@@ -126,7 +126,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 		messages := in.Messages[i:j]
 		p.Go(func() {
-			records, err := uc.repositories.Message().Create(ctx, messages)
+			ids, err := uc.repositories.Message().Create(ctx, messages)
 			if err != nil {
 				for _, message := range messages {
 					ko.Set(message.Id, err)
@@ -134,9 +134,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 				return
 			}
 
-			for _, record := range records {
-				ok.Set(record.Id, record.Id)
-			}
+			ok.Append(ids...)
 		})
 	}
 
@@ -145,7 +143,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 		requests := in.Requests[i:j]
 		p.Go(func() {
-			records, err := uc.repositories.Request().Create(ctx, requests)
+			ids, err := uc.repositories.Request().Create(ctx, requests)
 			if err != nil {
 				for _, request := range requests {
 					ko.Set(request.Id, err)
@@ -153,9 +151,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 				return
 			}
 
-			for _, record := range records {
-				ok.Set(record.Id, record.Id)
-			}
+			ok.Append(ids...)
 		})
 	}
 
@@ -164,7 +160,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 		responses := in.Responses[i:j]
 		p.Go(func() {
-			records, err := uc.repositories.Response().Create(ctx, responses)
+			ids, err := uc.repositories.Response().Create(ctx, responses)
 			if err != nil {
 				for _, response := range responses {
 					ko.Set(response.Id, err)
@@ -172,9 +168,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 				return
 			}
 
-			for _, record := range records {
-				ok.Set(record.Id, record.Id)
-			}
+			ok.Append(ids...)
 		})
 	}
 
@@ -188,15 +182,10 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 	select {
 	case <-c:
-		return &WarehousePutOut{Success: ok.Keys(), Error: ko.Data()}, nil
+		return &WarehousePutOut{Success: ok.Data(), Error: ko.Data()}, nil
 	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages
 		for _, message := range in.Messages {
-			if _, success := ok.Get(message.Id); success {
-				// already success, should not retry it
-				continue
-			}
-
 			// no error, should add context deadline error
 			if _, has := ko.Get(message.Id); !has {
 				ko.Set(message.Id, ctx.Err())
@@ -205,11 +194,6 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 		// context deadline exceeded, should set that error to remain requests
 		for _, request := range in.Requests {
-			if _, success := ok.Get(request.Id); success {
-				// already success, should not retry it
-				continue
-			}
-
 			// no error, should add context deadline error
 			if _, has := ko.Get(request.Id); !has {
 				ko.Set(request.Id, ctx.Err())
@@ -218,17 +202,12 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 		// context deadline exceeded, should set that error to remain responses
 		for _, response := range in.Responses {
-			if _, success := ok.Get(response.Id); success {
-				// already success, should not retry it
-				continue
-			}
-
 			// no error, should add context deadline error
 			if _, has := ko.Get(response.Id); !has {
 				ko.Set(response.Id, ctx.Err())
 			}
 		}
 
-		return &WarehousePutOut{Success: ok.Keys(), Error: ko.Data()}, nil
+		return &WarehousePutOut{Success: []string{}, Error: ko.Data()}, nil
 	}
 }

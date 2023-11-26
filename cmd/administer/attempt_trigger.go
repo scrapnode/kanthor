@@ -63,7 +63,7 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 					MsgIds:       ids,
 				}
 
-				out, err := uc.TriggerExecWithMessageIds(context.Background(), in)
+				out, err := uc.TriggerExecWithMessageIds(ctx, in)
 				if err != nil {
 					return err
 				}
@@ -91,7 +91,7 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 				From:         from.UnixMilli(),
 				To:           to.UnixMilli(),
 			}
-			out, err := uc.TriggerExecWithDateRange(context.Background(), in)
+			out, err := uc.TriggerExecWithDateRange(ctx, in)
 			if err != nil {
 				return err
 			}

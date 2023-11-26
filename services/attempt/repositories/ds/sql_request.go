@@ -14,12 +14,12 @@ type SqlRequest struct {
 	client *gorm.DB
 }
 
-func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string) (map[string]entities.Request, error) {
+func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string) (map[string]*entities.Request, error) {
+	records := map[string]*entities.Request{}
 	if len(msgIds) == 0 {
-		return map[string]entities.Request{}, nil
+		return records, nil
 	}
 
-	records := map[string]entities.Request{}
 	seen := map[string]bool{}
 
 	rows, err := sql.client.
@@ -41,7 +41,7 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string) 
 		}
 	}()
 	for rows.Next() {
-		record := entities.Request{}
+		record := &entities.Request{}
 		var metadata string
 		var headers string
 
@@ -84,8 +84,8 @@ func (sql *SqlRequest) Scan(ctx context.Context, appId string, msgIds []string) 
 	return records, nil
 }
 
-func (sql *SqlRequest) ListByIds(ctx context.Context, maps map[string]map[string][]string) (map[string]entities.Request, error) {
-	returning := safe.Map[entities.Request]{}
+func (sql *SqlRequest) ListByIds(ctx context.Context, maps map[string]map[string][]string) (map[string]*entities.Request, error) {
+	returning := safe.Map[*entities.Request]{}
 
 	// IMPORTANT: we are not sure about how many goroutine can be spinned up here
 	// so we have to use hard limit of the pool size here to prevent too many connection is created
@@ -113,7 +113,7 @@ func (sql *SqlRequest) ListByIds(ctx context.Context, maps map[string]map[string
 					}
 				}()
 				for rows.Next() {
-					record := entities.Request{}
+					record := &entities.Request{}
 					var metadata string
 					var headers string
 					var body string

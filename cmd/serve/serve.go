@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"slices"
 	"syscall"
 
 	"github.com/scrapnode/kanthor/cmd/utils"
@@ -30,11 +31,11 @@ func New(provider configuration.Provider) *cobra.Command {
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
-			if name != services.ALL {
+			if slices.Contains(args, services.ALL) {
 				return single(provider, name)
 			}
 
-			return multiple(provider)
+			return multiple(provider, args)
 		},
 	}
 
@@ -86,13 +87,13 @@ func single(provider configuration.Provider, name string) error {
 	return nil
 }
 
-func multiple(provider configuration.Provider) error {
+func multiple(provider configuration.Provider, names []string) error {
 	logger, err := logging.New(provider)
 	if err != nil {
 		return err
 	}
 
-	instances, err := Services(provider)
+	instances, err := Services(provider, names)
 	if err != nil {
 		return err
 	}

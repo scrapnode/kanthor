@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -15,56 +13,41 @@ type SqlRequest struct {
 	client *gorm.DB
 }
 
-func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]entities.TSEntity, error) {
-	var records []entities.TSEntity
+func (sql *SqlRequest) Create(ctx context.Context, docs []entities.Request) ([]string, error) {
+	returning := []string{}
+
 	if len(docs) == 0 {
-		return records, nil
+		return returning, nil
 	}
 
-	m := sql.mapper()
-	if err := m.Parse(docs); err != nil {
-		return nil, err
+	names := []string{}
+	values := map[string]interface{}{}
+	for i := 0; i < len(docs); i++ {
+		doc := &docs[i]
+		returning = append(returning, doc.Id)
+
+		keys := []string{}
+		for _, col := range entities.RequestProps {
+			key := fmt.Sprintf("%s_%d", col, i)
+			keys = append(keys, "@"+key)
+			values[key] = entities.RequestMappers[col](doc)
+		}
+
+		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 	}
 
 	tableName := fmt.Sprintf(`"%s"`, entities.TableReq)
-	cols := fmt.Sprintf(`"%s"`, strings.Join(m.Names(), `","`))
-	unnest := strings.Join(m.Casters(), ",")
-	query := `INSERT INTO %s (%s) (SELECT * FROM UNNEST(%s)) ON CONFLICT (app_id, msg_id, id) DO NOTHING;`
-	statement := fmt.Sprintf(query, tableName, cols, unnest)
+	columns := fmt.Sprintf(`"%s"`, strings.Join(entities.RequestProps, `","`))
+	statement := fmt.Sprintf(
+		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(app_id, msg_id, id) DO NOTHING;",
+		tableName,
+		columns,
+		strings.Join(names, ","),
+	)
 
-	if tx := sql.client.Exec(statement, m.Values()...); tx.Error != nil {
+	if tx := sql.client.Exec(statement, values); tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	for _, doc := range docs {
-		record := entities.TSEntity{}
-		record.Id = doc.Id
-		record.Timestamp = doc.Timestamp
-		records = append(records, record)
-	}
-	return records, nil
-}
-
-func (sql *SqlRequest) mapper() *datastore.Mapper[entities.Request] {
-	return datastore.NewMapper[entities.Request](
-		map[string]func(doc entities.Request) any{
-			"id":        func(doc entities.Request) any { return doc.Id },
-			"timestamp": func(doc entities.Request) any { return doc.Timestamp },
-			"msg_id":    func(doc entities.Request) any { return doc.MsgId },
-			"ep_id":     func(doc entities.Request) any { return doc.EpId },
-			"tier":      func(doc entities.Request) any { return doc.Tier },
-			"app_id":    func(doc entities.Request) any { return doc.AppId },
-			"type":      func(doc entities.Request) any { return doc.Type },
-			"metadata":  func(doc entities.Request) any { return utils.Stringify(doc.Metadata) },
-			"headers":   func(doc entities.Request) any { return utils.Stringify(doc.Headers) },
-			"body":      func(doc entities.Request) any { return doc.Body },
-			"uri":       func(doc entities.Request) any { return doc.Uri },
-			"method":    func(doc entities.Request) any { return doc.Method },
-		},
-		map[string]string{
-			// cast timestamp as int8[]
-			"timestamp": "int8[]",
-			// others will be varchar[] by default
-		},
-	)
+	return returning, nil
 }

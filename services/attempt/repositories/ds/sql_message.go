@@ -29,8 +29,8 @@ func (sql *SqlMessage) Count(ctx context.Context, appId string, from, to time.Ti
 
 }
 
-func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time, limit int) chan *ScanResults[map[string]entities.Message] {
-	ch := make(chan *ScanResults[map[string]entities.Message], 1)
+func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time, limit int) chan *ScanResults[map[string]*entities.Message] {
+	ch := make(chan *ScanResults[map[string]*entities.Message], 1)
 	// convert timestamp to safe id, so we can the table efficiently with primary key
 	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
 	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
@@ -40,7 +40,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 
 		var cursor string
 		for {
-			records := map[string]entities.Message{}
+			records := map[string]*entities.Message{}
 
 			tx := sql.client.
 				Table(entities.TableMsg).
@@ -60,7 +60,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 
 			rows, err := tx.Rows()
 			if err != nil {
-				ch <- &ScanResults[map[string]entities.Message]{Error: err}
+				ch <- &ScanResults[map[string]*entities.Message]{Error: err}
 				return
 			}
 
@@ -71,7 +71,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 			}()
 
 			for rows.Next() {
-				record := entities.Message{}
+				record := &entities.Message{}
 				var metadata string
 				var headers string
 
@@ -87,16 +87,16 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 				)
 
 				if err != nil {
-					ch <- &ScanResults[map[string]entities.Message]{Error: err}
+					ch <- &ScanResults[map[string]*entities.Message]{Error: err}
 					return
 				}
 
 				if err := json.Unmarshal([]byte(metadata), &record.Metadata); err != nil {
-					ch <- &ScanResults[map[string]entities.Message]{Error: err}
+					ch <- &ScanResults[map[string]*entities.Message]{Error: err}
 					return
 				}
 				if err := json.Unmarshal([]byte(headers), &record.Headers); err != nil {
-					ch <- &ScanResults[map[string]entities.Message]{Error: err}
+					ch <- &ScanResults[map[string]*entities.Message]{Error: err}
 					return
 				}
 
@@ -105,7 +105,7 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 				cursor = record.Id
 			}
 
-			ch <- &ScanResults[map[string]entities.Message]{Data: records}
+			ch <- &ScanResults[map[string]*entities.Message]{Data: records}
 
 			if len(records) < limit {
 				return
@@ -116,8 +116,11 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Tim
 	return ch
 }
 
-func (sql *SqlMessage) ListByIds(ctx context.Context, appId string, ids []string) (map[string]entities.Message, error) {
-	records := map[string]entities.Message{}
+func (sql *SqlMessage) ListByIds(ctx context.Context, appId string, ids []string) (map[string]*entities.Message, error) {
+	records := map[string]*entities.Message{}
+	if len(ids) == 0 {
+		return records, nil
+	}
 
 	tx := sql.client.
 		Table(entities.TableMsg).
@@ -139,7 +142,7 @@ func (sql *SqlMessage) ListByIds(ctx context.Context, appId string, ids []string
 	}()
 
 	for rows.Next() {
-		record := entities.Message{}
+		record := &entities.Message{}
 		var metadata string
 		var headers string
 
