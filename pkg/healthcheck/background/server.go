@@ -82,18 +82,26 @@ func (server *server) check(conf *healthcheck.CheckConfig, check func() error) e
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(conf.Timeout))
 	defer cancel()
 
-	var err error
-	for i := 0; i < conf.MaxTry; i++ {
-		if server.terminated {
-			return nil
-		}
+	var errc chan error
+	go func() {
+		for i := 0; i < conf.MaxTry; i++ {
+			if server.terminated {
+				errc <- nil
+				return
+			}
 
-		if err = check(); err == nil {
-			return nil
+			if err := check(); err != nil {
+				errc <- err
+				return
+			}
 		}
+	}()
+	select {
+	case err := <-errc:
+		return err
+	case <-ctx.Done():
+		return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR: %v | timeout:%d max_try:%d", ctx.Err(), conf.Timeout, conf.MaxTry)
 	}
-	<-ctx.Done()
-	return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR: %v | timeout:%d max_try:%d", ctx.Err(), conf.Timeout, conf.MaxTry)
 }
 
 func (server *server) write(name string) error {
