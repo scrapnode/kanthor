@@ -21,7 +21,6 @@ func Handler(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
-		log.Printf("counter -------------------------------------------> %v", counter.Add(uint64(len(events))))
 		in := &usecase.WarehousePutIn{
 			Size:      service.conf.Warehouse.Put.Size,
 			Messages:  map[string]*entities.Message{},
@@ -86,6 +85,8 @@ func Handler(service *storage) streaming.SubHandler {
 			err := fmt.Errorf("unrecognized event %s", event.Id)
 			service.logger.Warnw(err.Error(), "event", event.String())
 		}
+
+		log.Printf("counter -------------------------------------------> %v", counter.Add(uint64(len(in.Requests))))
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Warehouse.Put.Timeout))
 		defer cancel()

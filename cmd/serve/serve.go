@@ -30,12 +30,11 @@ func New(provider configuration.Provider) *cobra.Command {
 		ValidArgs: append(services.SERVICES, services.ALL),
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			name := args[0]
-			if slices.Contains(args, services.ALL) {
-				return single(provider, name)
+			if slices.Contains(args, services.ALL) || len(args) > 1 {
+				return multiple(provider, args)
 			}
 
-			return multiple(provider, args)
+			return single(provider, args[0])
 		},
 	}
 
@@ -110,6 +109,7 @@ func multiple(provider configuration.Provider, names []string) error {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
 	for _, instance := range instances {
 		if err = instance.Start(ctx); err != nil {
 			return err
