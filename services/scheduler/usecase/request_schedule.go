@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/samber/lo"
@@ -107,10 +106,6 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			}
 		}
 
-		if len(in.Messages)*3 != len(requests) {
-			log.Printf("msg_count:%d req_count:%d event_count:%d", len(in.Messages), len(requests), len(events))
-		}
-
 		errc <- nil
 	}()
 
@@ -127,13 +122,9 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 
 			// no error, should add context deadline error
 			if _, has := ko.Get(message.Id); !has {
-				log.Printf("message.Id --> %s", message.Id)
 				ko.Set(message.Id, ctx.Err())
 				continue
 			}
-
-			v, _ := ko.Get(message.Id)
-			log.Printf("message.Id --> %v", v)
 		}
 		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, nil
 	}

@@ -2,7 +2,6 @@ package administer
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/scrapnode/kanthor/configuration"
@@ -11,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/logging"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/attempt/config"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
@@ -104,7 +102,6 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 				for reqId, attempt := range strive.Attemptable {
 					in.Attempts[reqId] = attempt
 				}
-				log.Printf("in.Attempts -> %s", utils.StringifyIndent(in.Attempts))
 
 				out, err := uc.Endeavor().Exec(ctx, in)
 				if err != nil {
