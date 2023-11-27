@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/samber/lo"
@@ -59,9 +58,14 @@ type RequestScheduleOut struct {
 
 func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*RequestScheduleOut, error) {
 	ok := &safe.Map[[]string]{}
-	// ko must be map of message id and their error
-	// so we can retry it if schedule requests of message got any error
 	ko := &safe.Map[error]{}
+
+	// we have to store a ref map of messages.id and the key
+	// so if we got any error, we can report back to the call that a key has a error
+	eventIdRefs := map[string]string{}
+	for eventId, msg := range in.Messages {
+		eventIdRefs[msg.Id] = eventId
+	}
 
 	errc := make(chan error)
 	defer close(errc)
@@ -73,28 +77,28 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			return
 		}
 
-		maps := map[string]string{}
+		msgrefs := map[string]string{}
 		events := map[string]*streaming.Event{}
 		for _, request := range requests {
-			key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
+			msgRefId := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
 			event, err := transformation.EventFromRequest(request)
 			if err != nil {
 				// un-recoverable error
 				uc.logger.Errorw("could not transform request to event", "request", request.String())
 				continue
 			}
-			events[key] = event
-			maps[key] = request.MsgId
+			events[msgRefId] = event
+			msgrefs[msgRefId] = request.MsgId
 		}
 
 		errs := uc.publisher.Pub(ctx, events)
-		for refId := range events {
+		for msgRefId := range events {
 			// map key back to message id
-			// to let system retry the message if any error was happen
-			msgId := maps[refId]
+			msgId := msgrefs[msgRefId]
+			eventRef := eventIdRefs[msgId]
 
-			if err, ok := errs[refId]; ok {
-				ko.Set(msgId, err)
+			if err, ok := errs[msgRefId]; ok {
+				ko.Set(eventRef, err)
 				continue
 			}
 
@@ -103,7 +107,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 				if !has {
 					ids = []string{}
 				}
-				ok.Set(msgId, append(ids, msgId))
+				ok.Set(eventRef, append(ids, msgRefId))
 			}
 		}
 
@@ -115,19 +119,20 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, err
 	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages
-		for _, message := range in.Messages {
-			if _, success := ok.Get(message.Id); success {
+		for _, msg := range in.Messages {
+			eventRef := eventIdRefs[msg.Id]
+
+			if _, success := ok.Get(msg.Id); success {
 				// already success, should not retry it
 				continue
 			}
 
 			// no error, should add context deadline error
-			if _, has := ko.Get(message.Id); !has {
-				ko.Set(message.Id, ctx.Err())
+			if _, has := ko.Get(msg.Id); !has {
+				ko.Set(eventRef, ctx.Err())
 				continue
 			}
 		}
-		log.Println("-------------------------------------------------------------- timeout")
 		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, nil
 	}
 }

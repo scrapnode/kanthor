@@ -51,6 +51,11 @@ func Handler(service *scheduler) streaming.SubHandler {
 		}
 
 		service.logger.Infow("scheduled requests for messages", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
+		if len(out.Error) > 0 {
+			for ref, err := range out.Error {
+				service.logger.Errorw("schedule got error", "ref", ref, "error", err.Error())
+			}
+		}
 
 		return out.Error
 	}

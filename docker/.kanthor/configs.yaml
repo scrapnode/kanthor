@@ -81,7 +81,6 @@ infrastructure:
       rate_limit: 300
     subscriber:
       max_retry: 1
-      timeout: 60000 # 60s
       concurrency: 1000
       throughput: 30000
 

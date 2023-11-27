@@ -63,7 +63,11 @@ type EndeavorExecOut struct {
 func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExecOut, error) {
 	responses := safe.Map[*entities.Response]{}
 
-	refs := uc.reference(ctx, in)
+	eventIdRefs := map[string]string{}
+	for eventId, attempt := range in.Attempts {
+		eventIdRefs[attempt.ReqId] = eventId
+	}
+
 	requests, err := uc.requests(ctx, in)
 	if err != nil {
 		return nil, err
@@ -80,7 +84,7 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 	for k, v := range requests {
 		reqId := k
 		request := v
-		refId := refs[reqId]
+		refId := eventIdRefs[reqId]
 		p.Go(func() {
 			response := uc.send(ctx, request)
 			responses.Set(reqId, response)
@@ -118,7 +122,7 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 	for reqId, response := range kv {
 		event, err := transformation.EventFromResponse(response)
 		if err != nil {
-			// un-recoverable error
+			// un-recoverable error, don't need to regconize it with KO map
 			uc.logger.Errorw("could not transform response to event", "response", response.String())
 			continue
 		}
@@ -128,6 +132,9 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 
 	errs := uc.publisher.Pub(ctx, events)
 	for reqId, err := range errs {
+		refId := eventIdRefs[reqId]
+		ko.Set(refId, err)
+
 		uc.logger.Errorw("unable to publish response event of request", "req_id", reqId, "err", err.Error())
 	}
 
@@ -138,14 +145,6 @@ func (uc *endeavor) Exec(ctx context.Context, in *EndeavorExecIn) (*EndeavorExec
 		Completed:   completed.Data(),
 	}
 	return out, nil
-}
-
-func (uc *endeavor) reference(ctx context.Context, in *EndeavorExecIn) map[string]string {
-	returning := map[string]string{}
-	for key, attempt := range in.Attempts {
-		returning[attempt.ReqId] = key
-	}
-	return returning
 }
 
 func (uc *endeavor) requests(ctx context.Context, in *EndeavorExecIn) (map[string]*entities.Request, error) {

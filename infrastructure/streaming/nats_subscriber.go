@@ -130,7 +130,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 				}
 
 				if !errors.Is(err, natscore.ErrTimeout) {
-					subscriber.logger.Errorw(err.Error(), "timeout", fmt.Sprintf("%dms", subscriber.conf.Subscriber.Timeout))
+					subscriber.logger.Errorw(err.Error(), "wait_time", fmt.Sprintf("%dms", consumer.Config.AckWait))
 				}
 				continue
 			}
@@ -151,6 +151,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 
 			var wg conc.WaitGroup
 			for _, msg := range messages {
+				// MetaId is event.Id
 				event := events[msg.Header.Get(MetaId)]
 				message := msg
 				wg.Go(func() {
@@ -175,7 +176,6 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 
 	subscriber.logger.Infow("subscribed",
 		"max_retry", subscriber.conf.Subscriber.MaxRetry,
-		"timeout", subscriber.conf.Subscriber.Timeout,
 		"concurrency", subscriber.conf.Subscriber.Concurrency,
 	)
 	return nil
@@ -190,7 +190,7 @@ func (subscriber *NatsSubscriber) consumer(ctx context.Context, name, topic stri
 		// advance config
 		MaxDeliver: subscriber.conf.Subscriber.MaxRetry + 1,
 		// buffer 25% of timeout to make sure we have time to do other stuffs
-		AckWait: time.Millisecond * time.Duration(subscriber.conf.Subscriber.Timeout*125/100),
+		AckWait: time.Minute,
 		// if MaxRequestBatch is 1, and we are going to request 2, we will get an error
 		MaxRequestBatch: subscriber.conf.Subscriber.Concurrency,
 		// if MaxAckPending is 30000, and we are processing 29999 message already

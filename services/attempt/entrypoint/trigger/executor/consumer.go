@@ -44,8 +44,8 @@ func Handler(service *executor) streaming.SubHandler {
 		if len(out.Error) > 0 {
 			// basically we will not try to retry an attempt trigger
 			// because it could be retry later by cronjob
-			for key, err := range out.Error {
-				service.logger.Errorw("consume an attempt trigger got some errors", "key", key, "err", err.Error())
+			for ref, err := range out.Error {
+				service.logger.Errorw("consume an attempt trigger got some errors", "ref", ref, "err", err.Error())
 			}
 		}
 

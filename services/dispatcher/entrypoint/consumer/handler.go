@@ -49,6 +49,11 @@ func Handler(service *dispatcher) streaming.SubHandler {
 		}
 
 		service.logger.Infow("dispatched requests", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
+		if len(out.Error) > 0 {
+			for ref, err := range out.Error {
+				service.logger.Errorw("dispatch got error", "ref", ref, "error", err.Error())
+			}
+		}
 
 		return out.Error
 	}

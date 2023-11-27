@@ -82,17 +82,15 @@ func (conf *PublisherConfig) Validate() error {
 
 type SubscriberConfig struct {
 	// MaxRetry is how many times we should try to re-deliver message if we get any error
-	MaxRetry    int   `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
-	Timeout     int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	Concurrency int   `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
-	Throughput  int   `json:"throughput" yaml:"throughput" mapstructure:"throughput"`
+	MaxRetry    int `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
+	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
+	Throughput  int `json:"throughput" yaml:"throughput" mapstructure:"throughput"`
 }
 
 func (conf *SubscriberConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.SUBSCRIBER.MAX_RETRY", conf.MaxRetry, 1),
-		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.SUBSCRIBER.TIMEOUT", conf.Timeout, 1000),
 		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.SUBSCRIBER.CONCURRENCY", conf.Concurrency, 0),
 		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.STREAMING.SUBSCRIBER.THOUGHPUT", conf.Throughput, conf.Concurrency),
 	)
