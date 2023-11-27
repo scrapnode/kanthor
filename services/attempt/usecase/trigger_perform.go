@@ -171,16 +171,18 @@ func (uc *trigger) hash(requests map[string]*entities.Request, responses map[str
 func (uc *trigger) schedule(ctx context.Context, messages map[string]*entities.Message, in *TriggerPerformIn) (*safe.Slice[string], *safe.Map[error]) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
-	requests := []entities.Request{}
+	requests := map[string]*entities.Request{}
 
 	for _, message := range messages {
-		ins, logs := assessor.Requests(message, in.Applicable, uc.infra.Timer)
+		reqs, logs := assessor.Requests(message, in.Applicable, uc.infra.Timer)
 		if len(logs) > 0 {
 			for _, l := range logs {
 				uc.logger.Warnw(l[0].(string), l[1:]...)
 			}
 		}
-		requests = append(requests, ins...)
+		for reqId, req := range reqs {
+			requests[reqId] = req
+		}
 	}
 
 	if len(requests) == 0 {
@@ -190,7 +192,7 @@ func (uc *trigger) schedule(ctx context.Context, messages map[string]*entities.M
 	events := map[string]*streaming.Event{}
 	for _, request := range requests {
 		key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
-		event, err := transformation.EventFromRequest(&request)
+		event, err := transformation.EventFromRequest(request)
 		if err != nil {
 			// un-recoverable error
 			uc.logger.Errorw("could not transform request to event", "request", request.String())

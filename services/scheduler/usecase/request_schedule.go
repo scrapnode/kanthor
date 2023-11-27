@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/samber/lo"
@@ -76,7 +77,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 		events := map[string]*streaming.Event{}
 		for _, request := range requests {
 			key := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
-			event, err := transformation.EventFromRequest(&request)
+			event, err := transformation.EventFromRequest(request)
 			if err != nil {
 				// un-recoverable error
 				uc.logger.Errorw("could not transform request to event", "request", request.String())
@@ -106,6 +107,10 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			}
 		}
 
+		if len(in.Messages)*3 != len(requests) {
+			log.Printf("msg_count:%d req_count:%d event_count:%d", len(in.Messages), len(requests), len(events))
+		}
+
 		errc <- nil
 	}()
 
@@ -129,7 +134,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 	}
 }
 
-func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Message) []entities.Request {
+func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Message) map[string]*entities.Request {
 	apps := map[string]string{}
 	for _, message := range messages {
 		apps[message.AppId] = message.AppId
@@ -137,7 +142,7 @@ func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Me
 	appIds := lo.Keys(apps)
 	applicables := uc.applicables(ctx, appIds)
 
-	requests := []entities.Request{}
+	returning := map[string]*entities.Request{}
 	for _, message := range messages {
 		app, ok := applicables[message.AppId]
 		if !ok {
@@ -151,14 +156,16 @@ func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Me
 				uc.logger.Warnw(l[0].(string), l[1:]...)
 			}
 		}
-		requests = append(requests, reqs...)
+		for reqId, req := range reqs {
+			returning[reqId] = req
+		}
 	}
 
-	if len(requests) == 0 {
+	if len(returning) == 0 {
 		uc.logger.Warnw("no request was arranged", "app_id", appIds)
 	}
 
-	return requests
+	return returning
 }
 
 func (uc *request) applicables(ctx context.Context, appIds []string) map[string]*assessor.Assets {

@@ -13,8 +13,9 @@ type Assets struct {
 	Rules       []entities.EndpointRule
 }
 
-func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) ([]entities.Request, [][]interface{}) {
-	requests := []entities.Request{}
+// @TODO: return pointer
+func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[string]*entities.Request, [][]interface{}) {
+	requests := map[string]*entities.Request{}
 	logs := [][]interface{}{}
 	seen := map[string]bool{}
 
@@ -64,15 +65,15 @@ func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) ([]entit
 
 		ep := assets.EndpointMap[epr.EpId]
 		req := Request(msg, &ep, &epr, timer)
-		requests = append(requests, req)
+		requests[req.Id] = req
 	}
 
 	return requests, logs
 }
 
-func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.EndpointRule, timer timer.Timer) entities.Request {
+func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.EndpointRule, timer timer.Timer) *entities.Request {
 	// construct request
-	req := entities.Request{
+	req := &entities.Request{
 		MsgId:    msg.Id,
 		EpId:     ep.Id,
 		Tier:     msg.Tier,

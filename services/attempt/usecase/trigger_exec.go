@@ -35,10 +35,10 @@ func (in *TriggerExecIn) Validate() error {
 			prefix := fmt.Sprintf("triggers.%s", key)
 			return validator.Validate(
 				validator.DefaultConfig,
-				validator.StringStartsWith(prefix+".app.id", in.Triggers[key].AppId, entities.IdNsApp),
-				validator.StringRequired(prefix+".tier", in.Triggers[key].Tier),
-				validator.NumberGreaterThan(prefix+".from", in.Triggers[key].From, 0),
-				validator.NumberGreaterThan(prefix+".to", int(in.Triggers[key].To), 0),
+				validator.StringStartsWith(prefix+".app.id", item.AppId, entities.IdNsApp),
+				validator.StringRequired(prefix+".tier", item.Tier),
+				validator.NumberGreaterThan(prefix+".from", item.From, 0),
+				validator.NumberGreaterThan(prefix+".to", int(item.To), 0),
 			)
 		}),
 	)

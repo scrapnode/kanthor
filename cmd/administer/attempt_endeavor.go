@@ -101,10 +101,6 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 					Attempts:    map[string]*entities.Attempt{},
 				}
 
-				// The iteration variables may be declared by the "range" clause using a form of short variable declaration (:=).
-				// In this case their types are set to the types of the respective iteration values and their scope is the block of the "for" statement;
-				// **they are re-used in each iteration**. If the iteration variables are declared outside the "for" statement,
-				// after execution their values will be those of the last iteration.
 				for reqId, attempt := range strive.Attemptable {
 					in.Attempts[reqId] = attempt
 				}
