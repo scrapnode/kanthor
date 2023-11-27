@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/samber/lo"
@@ -126,6 +127,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 				continue
 			}
 		}
+		log.Println("-------------------------------------------------------------- timeout")
 		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, nil
 	}
 }

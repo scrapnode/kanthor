@@ -70,14 +70,12 @@ func (conf *NatsConfig) Validate() error {
 }
 
 type PublisherConfig struct {
-	Timeout   int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	RateLimit int   `json:"rate_limit" yaml:"rate_limit" mapstructure:"rate_limit"`
+	RateLimit int `json:"rate_limit" yaml:"rate_limit" mapstructure:"rate_limit"`
 }
 
 func (conf *PublisherConfig) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.PUBLISHER.TIMEOUT", conf.Timeout, 1000),
 		validator.NumberGreaterThan("CONFIG.INFRA.STREAMING.PUBLISHER.RATE_LIMIT", conf.RateLimit, 0),
 	)
 }

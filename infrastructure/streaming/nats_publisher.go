@@ -2,7 +2,6 @@ package streaming
 
 import (
 	"context"
-	"time"
 
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/logging"
@@ -24,9 +23,6 @@ func (publisher *NatsPublisher) Name() string {
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Event) map[string]error {
 	returning := safe.Map[error]{}
-
-	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(publisher.conf.Publisher.Timeout))
-	defer cancel()
 
 	p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
 	for refId, event := range events {

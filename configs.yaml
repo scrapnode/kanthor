@@ -78,7 +78,6 @@ infrastructure:
         msg_count: 300000 # 300k per subject
         msg_age: 259200000 # 3d
     publisher:
-      timeout: 30000 # 30s
       rate_limit: 300
     subscriber:
       max_retry: 1
