@@ -13,11 +13,12 @@ import (
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 )
 
+var Readiness = "readiness"
+var Liveness = "liveness"
+
 func NewServer(conf *healthcheck.Config, logger logging.Logger) healthcheck.Server {
 	return &server{conf: conf, logger: logger, dest: path.Join(Dest, conf.Dest)}
 }
-
-var ()
 
 type server struct {
 	conf       *healthcheck.Config
@@ -36,10 +37,10 @@ func (server *server) Disconnect(ctx context.Context) error {
 }
 
 func (server *server) Readiness(check func() error) error {
-	if err := server.check(&server.conf.Readiness, check); err != nil {
+	if err := server.check(Readiness, &server.conf.Readiness, check); err != nil {
 		return err
 	}
-	if err := server.write("readiness"); err != nil {
+	if err := server.write(Readiness); err != nil {
 		return err
 	}
 
@@ -65,11 +66,11 @@ func (server *server) Liveness(check func() error) (err error) {
 			return
 		}
 
-		if err = server.check(&server.conf.Liveness, check); err != nil {
+		if err = server.check(Liveness, &server.conf.Liveness, check); err != nil {
 			return
 		}
 
-		if err = server.write("liveness"); err != nil {
+		if err = server.write(Liveness); err != nil {
 			return
 		}
 
@@ -78,30 +79,20 @@ func (server *server) Liveness(check func() error) (err error) {
 	}
 }
 
-func (server *server) check(conf *healthcheck.CheckConfig, check func() error) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(conf.Timeout))
-	defer cancel()
+func (server *server) check(name string, conf *healthcheck.CheckConfig, check func() error) error {
+	for i := 0; i < conf.MaxTry; i++ {
+		time.Sleep(time.Millisecond * time.Duration(conf.Timeout/conf.MaxTry))
 
-	var errc chan error
-	go func() {
-		for i := 0; i < conf.MaxTry; i++ {
-			if server.terminated {
-				errc <- nil
-				return
-			}
-
-			if err := check(); err != nil {
-				errc <- err
-				return
-			}
+		if server.terminated {
+			return nil
 		}
-	}()
-	select {
-	case err := <-errc:
-		return err
-	case <-ctx.Done():
-		return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR: %v | timeout:%d max_try:%d", ctx.Err(), conf.Timeout, conf.MaxTry)
+		err := check()
+		if err == nil {
+			return nil
+		}
 	}
+
+	return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR| timeout:%d max_try:%d", conf.Timeout, conf.MaxTry)
 }
 
 func (server *server) write(name string) error {

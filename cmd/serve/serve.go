@@ -54,7 +54,7 @@ func single(provider configuration.Provider, name string) error {
 	}
 	debug := debugging.NewServer()
 
-	ctx, stop := utils.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	if err = service.Start(ctx); err != nil {
@@ -83,7 +83,7 @@ func single(provider configuration.Provider, name string) error {
 
 	// listen for the interrupt signal.
 	<-ctx.Done()
-	logger.Warnw("SYSTEM.SIGNAL.INTERRUPT", "error", ctx.Err(), "signal", fmt.Sprintf("%v", ctx.(*utils.SignalCtx).Fired))
+	logger.Warnw("SYSTEM.SIGNAL.INTERRUPT", "error", ctx.Err(), "signal", fmt.Sprintf("%v", ctx))
 	return nil
 }
 
