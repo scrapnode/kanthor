@@ -16,7 +16,7 @@ type SqlAttempt struct {
 	client *gorm.DB
 }
 
-func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]string, error) {
+func (sql *SqlAttempt) Create(ctx context.Context, docs []*entities.Attempt) ([]string, error) {
 	returning := []string{}
 
 	if len(docs) == 0 {
@@ -26,7 +26,7 @@ func (sql *SqlAttempt) Create(ctx context.Context, docs []entities.Attempt) ([]s
 	names := []string{}
 	values := map[string]interface{}{}
 	for i := 0; i < len(docs); i++ {
-		doc := &docs[i]
+		doc := docs[i]
 		returning = append(returning, doc.ReqId)
 
 		keys := []string{}

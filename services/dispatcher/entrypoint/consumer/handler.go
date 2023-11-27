@@ -14,7 +14,7 @@ func Handler(service *dispatcher) streaming.SubHandler {
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
 		requests := map[string]*entities.Request{}
-		for _, event := range events {
+		for id, event := range events {
 			request, err := transformation.EventToRequest(event)
 			if err != nil {
 				service.logger.Errorw(err.Error(), "event", event.String())
@@ -29,7 +29,7 @@ func Handler(service *dispatcher) streaming.SubHandler {
 				continue
 			}
 
-			requests[event.Id] = request
+			requests[id] = request
 		}
 
 		ctx := context.Background()
@@ -40,6 +40,8 @@ func Handler(service *dispatcher) streaming.SubHandler {
 		// we alreay validated messages of request, don't need to validate again
 		out, err := service.uc.Forwarder().Send(ctx, in)
 		if err != nil {
+			service.logger.Errorw("unable to dispatch requests", "error", err.Error())
+
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
 			for refId := range in.Requests {

@@ -15,7 +15,7 @@ func Handler(service *scheduler) streaming.SubHandler {
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
 		messages := map[string]*entities.Message{}
-		for _, event := range events {
+		for id, event := range events {
 			message, err := transformation.EventToMessage(event)
 			if err != nil {
 				service.logger.Errorw(err.Error(), "event", event.String())
@@ -30,7 +30,7 @@ func Handler(service *scheduler) streaming.SubHandler {
 				continue
 			}
 
-			messages[event.Id] = message
+			messages[id] = message
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Request.Schedule.Timeout))
@@ -42,6 +42,8 @@ func Handler(service *scheduler) streaming.SubHandler {
 		// we alreay validated messages of request, don't need to validate again
 		out, err := service.uc.Request().Schedule(ctx, in)
 		if err != nil {
+			service.logger.Errorw("unable to schedule requests", "error", err.Error())
+
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
 			for _, event := range events {

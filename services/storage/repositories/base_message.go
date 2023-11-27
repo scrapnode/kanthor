@@ -7,5 +7,5 @@ import (
 )
 
 type Message interface {
-	Create(ctx context.Context, docs []entities.Message) ([]string, error)
+	Create(ctx context.Context, docs []*entities.Message) ([]string, error)
 }

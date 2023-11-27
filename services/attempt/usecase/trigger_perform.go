@@ -218,13 +218,13 @@ func (uc *trigger) schedule(ctx context.Context, messages map[string]*entities.M
 func (uc *trigger) create(ctx context.Context, requests map[string]*entities.Request, in *TriggerPerformIn) (*safe.Slice[string], *safe.Map[error]) {
 	ok := &safe.Slice[string]{}
 	ko := &safe.Map[error]{}
-	attempts := []entities.Attempt{}
+	attempts := []*entities.Attempt{}
 
 	now := uc.infra.Timer.Now()
 	next := now.Add(time.Duration(in.ArrangeDelay) * time.Millisecond)
 
 	for _, request := range requests {
-		attempts = append(attempts, entities.Attempt{
+		attempts = append(attempts, &entities.Attempt{
 			ReqId: request.Id,
 			MsgId: request.MsgId,
 			AppId: request.AppId,
@@ -247,14 +247,14 @@ func (uc *trigger) create(ctx context.Context, requests map[string]*entities.Req
 
 		items := attempts[i:j]
 		p.Go(func() {
-			ids, err := uc.repositories.Datastore().Attempt().Create(ctx, items)
+			reqIds, err := uc.repositories.Datastore().Attempt().Create(ctx, items)
 			if err != nil {
 				for _, attempt := range attempts {
 					ko.Set(attempt.ReqId, err)
 				}
 			}
 
-			ok.Append(ids...)
+			ok.Append(reqIds...)
 		})
 	}
 	p.Wait()

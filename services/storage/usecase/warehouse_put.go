@@ -13,9 +13,9 @@ import (
 
 type WarehousePutIn struct {
 	Size      int
-	Messages  []entities.Message
-	Requests  []entities.Request
-	Responses []entities.Response
+	Messages  map[string]*entities.Message
+	Requests  map[string]*entities.Request
+	Responses map[string]*entities.Response
 }
 
 func (in *WarehousePutIn) Validate() error {
@@ -29,8 +29,8 @@ func (in *WarehousePutIn) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Slice(in.Messages, func(i int, item *entities.Message) error {
-			prefix := fmt.Sprintf("messages[%d]", i)
+		validator.Map(in.Messages, func(refId string, item *entities.Message) error {
+			prefix := fmt.Sprintf("messages.%s", item.Id)
 			return ValidateWarehousePutInMessage(prefix, item)
 		}),
 	)
@@ -40,8 +40,8 @@ func (in *WarehousePutIn) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Slice(in.Requests, func(i int, item *entities.Request) error {
-			prefix := fmt.Sprintf("requests[%d]", i)
+		validator.Map(in.Requests, func(refId string, item *entities.Request) error {
+			prefix := fmt.Sprintf("requests.%s", item.Id)
 			return ValidateWarehousePutInRequest(prefix, item)
 		}),
 	)
@@ -51,8 +51,8 @@ func (in *WarehousePutIn) Validate() error {
 
 	err = validator.Validate(
 		validator.DefaultConfig,
-		validator.Slice(in.Responses, func(i int, item *entities.Response) error {
-			prefix := fmt.Sprintf("responses[%d]", i)
+		validator.Map(in.Responses, func(refId string, item *entities.Response) error {
+			prefix := fmt.Sprintf("responses.%s", item.Id)
 			return ValidateWarehousePutInResponse(prefix, item)
 		}),
 	)
@@ -111,64 +111,71 @@ type WarehousePutOut struct {
 }
 
 func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutOut, error) {
-	count := len(in.Messages) + len(in.Requests) + len(in.Responses)
-	if count == 0 {
-		return &WarehousePutOut{Success: []string{}, Error: map[string]error{}}, nil
-	}
-
 	ok := safe.Slice[string]{}
 	ko := safe.Map[error]{}
+	count := len(in.Messages) + len(in.Requests) + len(in.Responses)
+	if count == 0 {
+		return &WarehousePutOut{Success: ok.Data(), Error: ko.Data()}, nil
+	}
+
+	refs, messages, requests, responses := uc.references(in)
 
 	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
 	p := pool.New().WithMaxGoroutines(1)
-	for i := 0; i < len(in.Messages); i += in.Size {
-		j := utils.ChunkNext(i, len(in.Messages), in.Size)
+	for i := 0; i < len(messages); i += in.Size {
+		j := utils.ChunkNext(i, len(messages), in.Size)
 
-		messages := in.Messages[i:j]
+		msgs := messages[i:j]
 		p.Go(func() {
-			ids, err := uc.repositories.Message().Create(ctx, messages)
+			ids, err := uc.repositories.Message().Create(ctx, msgs)
 			if err != nil {
-				for _, message := range messages {
-					ko.Set(message.Id, err)
+				for _, msg := range msgs {
+					ko.Set(refs[msg.Id], err)
 				}
 				return
 			}
 
-			ok.Append(ids...)
+			for _, msgId := range ids {
+				ok.Append(refs[msgId])
+			}
 		})
 	}
 
-	for i := 0; i < len(in.Requests); i += in.Size {
-		j := utils.ChunkNext(i, len(in.Requests), in.Size)
+	for i := 0; i < len(requests); i += in.Size {
+		j := utils.ChunkNext(i, len(requests), in.Size)
 
-		requests := in.Requests[i:j]
+		reqs := requests[i:j]
 		p.Go(func() {
-			ids, err := uc.repositories.Request().Create(ctx, requests)
+			ids, err := uc.repositories.Request().Create(ctx, reqs)
 			if err != nil {
-				for _, request := range requests {
-					ko.Set(request.Id, err)
+				for _, req := range reqs {
+					ko.Set(refs[req.Id], err)
 				}
 				return
 			}
 
-			ok.Append(ids...)
+			for _, reqId := range ids {
+				ok.Append(refs[reqId])
+			}
 		})
 	}
 
-	for i := 0; i < len(in.Responses); i += in.Size {
-		j := utils.ChunkNext(i, len(in.Responses), in.Size)
+	for i := 0; i < len(responses); i += in.Size {
+		j := utils.ChunkNext(i, len(responses), in.Size)
 
-		responses := in.Responses[i:j]
+		resps := responses[i:j]
 		p.Go(func() {
-			ids, err := uc.repositories.Response().Create(ctx, responses)
+			ids, err := uc.repositories.Response().Create(ctx, resps)
 			if err != nil {
-				for _, response := range responses {
-					ko.Set(response.Id, err)
+				for _, resp := range resps {
+					ko.Set(refs[resp.Id], err)
 				}
 				return
 			}
 
-			ok.Append(ids...)
+			for _, resp := range ids {
+				ok.Append(refs[resp])
+			}
 		})
 	}
 
@@ -210,4 +217,29 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 		return &WarehousePutOut{Success: []string{}, Error: ko.Data()}, nil
 	}
+}
+
+func (uc *warehose) references(in *WarehousePutIn) (map[string]string, []*entities.Message, []*entities.Request, []*entities.Response) {
+	refs := map[string]string{}
+
+	var messages []*entities.Message
+	var requests []*entities.Request
+	var responses []*entities.Response
+
+	for eventId, msg := range in.Messages {
+		refs[msg.Id] = eventId
+		messages = append(messages, msg)
+	}
+
+	for eventId, req := range in.Requests {
+		refs[req.Id] = eventId
+		requests = append(requests, req)
+	}
+
+	for eventId, res := range in.Responses {
+		refs[res.Id] = eventId
+		responses = append(responses, res)
+	}
+
+	return refs, messages, requests, responses
 }

@@ -13,7 +13,7 @@ type SqlResponse struct {
 	client *gorm.DB
 }
 
-func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([]string, error) {
+func (sql *SqlResponse) Create(ctx context.Context, docs []*entities.Response) ([]string, error) {
 	returning := []string{}
 
 	if len(docs) == 0 {
@@ -23,7 +23,7 @@ func (sql *SqlResponse) Create(ctx context.Context, docs []entities.Response) ([
 	names := []string{}
 	values := map[string]interface{}{}
 	for i := 0; i < len(docs); i++ {
-		doc := &docs[i]
+		doc := docs[i]
 		returning = append(returning, doc.Id)
 
 		keys := []string{}

@@ -16,7 +16,7 @@ func Handler(service *executor) streaming.SubHandler {
 			Attempts:    map[string]*entities.Attempt{},
 		}
 
-		for _, event := range events {
+		for id, event := range events {
 			attempt, err := transformation.EventToAttempt(event)
 			if err != nil {
 				service.logger.Errorw("unable to transform event to attempt endeavor", "err", err.Error(), "event", event.String())
@@ -25,7 +25,7 @@ func Handler(service *executor) streaming.SubHandler {
 				continue
 			}
 
-			in.Attempts[event.Id] = attempt
+			in.Attempts[id] = attempt
 		}
 
 		ctx := context.Background()

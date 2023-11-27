@@ -3,6 +3,8 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log"
+	"sync/atomic"
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -14,19 +16,17 @@ import (
 )
 
 func Handler(service *storage) streaming.SubHandler {
+	var counter atomic.Uint64
+
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
-		retruning := map[string]error{}
-
-		// create a map of events & entities so we can generate error map later
-		maps := map[string]string{}
-
+		log.Printf("counter -------------------------------------------> %v", counter.Add(uint64(len(events))))
 		in := &usecase.WarehousePutIn{
 			Size:      service.conf.Warehouse.Put.Size,
-			Messages:  []entities.Message{},
-			Requests:  []entities.Request{},
-			Responses: []entities.Response{},
+			Messages:  map[string]*entities.Message{},
+			Requests:  map[string]*entities.Request{},
+			Responses: map[string]*entities.Response{},
 		}
 
 		for id, event := range events {
@@ -39,14 +39,13 @@ func Handler(service *storage) streaming.SubHandler {
 					service.logger.Errorw("could not transform message to event", "event", event.String(), "err", err.Error())
 					continue
 				}
-				maps[message.Id] = event.Id
 
 				if err := usecase.ValidateWarehousePutInMessage(prefix, message); err != nil {
 					// un-recoverable error
 					service.logger.Errorw("could not validate message", "event", event.String(), "message", message.String(), "err", err.Error())
 					continue
 				}
-				in.Messages = append(in.Messages, *message)
+				in.Messages[id] = message
 				continue
 			}
 
@@ -57,14 +56,13 @@ func Handler(service *storage) streaming.SubHandler {
 					service.logger.Errorw("could not transform request to event", "event", event.String(), "err", err.Error())
 					continue
 				}
-				maps[request.Id] = event.Id
 
 				if err := usecase.ValidateWarehousePutInRequest(prefix, request); err != nil {
 					// un-recoverable error
 					service.logger.Errorw("could not validate request", "event", event.String(), "request", request.String(), "err", err.Error())
 					continue
 				}
-				in.Requests = append(in.Requests, *request)
+				in.Requests[id] = request
 				continue
 			}
 
@@ -75,19 +73,17 @@ func Handler(service *storage) streaming.SubHandler {
 					service.logger.Errorw("could not transform response to event", "event", event.String(), "err", err.Error())
 					continue
 				}
-				maps[response.Id] = event.Id
 
 				if err := usecase.ValidateWarehousePutInResponse(prefix, response); err != nil {
 					// un-recoverable error
 					service.logger.Errorw("could not validate response", "event", event.String(), "response", response.String(), "err", err.Error())
 					continue
 				}
-				in.Responses = append(in.Responses, *response)
+				in.Responses[id] = response
 				continue
 			}
 
 			err := fmt.Errorf("unrecognized event %s", event.Id)
-			retruning[event.Id] = err
 			service.logger.Warnw(err.Error(), "event", event.String())
 		}
 
@@ -97,6 +93,9 @@ func Handler(service *storage) streaming.SubHandler {
 		// we alreay validated messages, request and response, don't need to validate again
 		out, err := service.uc.Warehouse().Put(ctx, in)
 		if err != nil {
+			service.logger.Errorw("unable to store entities", "error", err.Error())
+
+			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
 			for _, event := range events {
 				retruning[event.Id] = err
@@ -104,17 +103,14 @@ func Handler(service *storage) streaming.SubHandler {
 			return retruning
 		}
 
-		// out.Error contain a map of entity id and error
-		// should convert it to a map of event id and error so our streaming service can retry it
 		if len(out.Error) > 0 {
-			for entId, err := range out.Error {
-				eventId := maps[entId]
-				retruning[eventId] = err
+			for ref, err := range out.Error {
+				service.logger.Errorw("unable to store entities", "ref", ref, "error", err.Error())
 			}
 		}
 
 		service.logger.Infow("put entities", "ok_count", len(out.Success), "ko_count", len(out.Error))
 
-		return retruning
+		return out.Error
 	}
 }
