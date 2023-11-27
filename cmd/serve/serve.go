@@ -2,6 +2,7 @@ package serve
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"slices"
@@ -53,7 +54,7 @@ func single(provider configuration.Provider, name string) error {
 	}
 	debug := debugging.NewServer()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := utils.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	if err = service.Start(ctx); err != nil {
@@ -82,7 +83,7 @@ func single(provider configuration.Provider, name string) error {
 
 	// listen for the interrupt signal.
 	<-ctx.Done()
-	logger.Warnw("SYSTEM.SIGNAL.INTERRUPT", "error", ctx.Err())
+	logger.Warnw("SYSTEM.SIGNAL.INTERRUPT", "error", ctx.Err(), "signal", fmt.Sprintf("%v", ctx.(*utils.SignalCtx).Fired))
 	return nil
 }
 
