@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/samber/lo"
@@ -81,13 +80,6 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 		msgrefs := map[string]string{}
 		events := map[string]*streaming.Event{}
 		for _, request := range requests {
-			if count, ok := uc.duplicated.Get(request.Id); ok {
-				log.Println("fuckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
-				uc.duplicated.Set(request.Id, count+1)
-			} else {
-				uc.duplicated.Set(request.Id, 1)
-			}
-
 			msgRefId := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
 			event, err := transformation.EventFromRequest(request)
 			if err != nil {

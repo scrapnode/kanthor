@@ -5,7 +5,6 @@ import (
 
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
-	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/services/scheduler/config"
 	"github.com/scrapnode/kanthor/services/scheduler/repositories"
 )
@@ -52,7 +51,6 @@ func (uc *scheduler) Request() Request {
 			infra:        uc.infra,
 			publisher:    uc.infra.Stream.Publisher("scheduler_request"),
 			repositories: uc.repositories,
-			duplicated:   &safe.Map[int]{},
 		}
 	}
 	return uc.request
