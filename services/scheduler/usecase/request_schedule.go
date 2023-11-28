@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/samber/lo"
@@ -76,11 +77,14 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			errc <- nil
 			return
 		}
+		if len(in.Messages)*3 != len(requests) {
+			log.Printf("in.Messages:%d # requests:%d", len(in.Messages)*3, len(requests))
+		}
 
 		msgrefs := map[string]string{}
 		events := map[string]*streaming.Event{}
 		for _, request := range requests {
-			msgRefId := utils.Key(request.AppId, request.MsgId, request.EpId, request.Id)
+			msgRefId := utils.Key(request.AppId, request.MsgId, request.Id)
 			event, err := transformation.EventFromRequest(request)
 			if err != nil {
 				// un-recoverable error
@@ -89,6 +93,10 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			}
 			events[msgRefId] = event
 			msgrefs[msgRefId] = request.MsgId
+		}
+
+		if len(events) != len(requests) {
+			log.Printf("events:%d # requests:%d", len(events), len(requests))
 		}
 
 		errs := uc.publisher.Pub(ctx, events)

@@ -57,7 +57,7 @@ func Handler(service *scheduler) streaming.SubHandler {
 			log.Printf("events:%d # messages:%d", len(events), len(messages))
 		}
 
-		if len(events)*3 != len(out.Success) {
+		if len(events) != len(out.Success) {
 			log.Printf("events:%d # out.Success:%d", len(events)*3, len(out.Success))
 		}
 
