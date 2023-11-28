@@ -77,9 +77,6 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			errc <- nil
 			return
 		}
-		if len(in.Messages)*3 != len(requests) {
-			log.Printf("in.Messages:%d # requests:%d", len(in.Messages)*3, len(requests))
-		}
 
 		msgrefs := map[string]string{}
 		events := map[string]*streaming.Event{}
@@ -95,11 +92,9 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			msgrefs[msgRefId] = request.MsgId
 		}
 
-		if len(events) != len(requests) {
-			log.Printf("events:%d # requests:%d", len(events), len(requests))
-		}
-
 		errs := uc.publisher.Pub(ctx, events)
+		log.Printf("errs:%d", len(errs))
+
 		for msgRefId := range events {
 			// map key back to message id
 			msgId := msgrefs[msgRefId]
@@ -124,8 +119,15 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 
 	select {
 	case err := <-errc:
+		if len(in.Messages) != len(ok.Keys()) {
+			log.Printf("events:%d # requests:%d", len(in.Messages), len(ok.Keys()))
+		}
+
 		return &RequestScheduleOut{Success: ok.Keys(), Error: ko.Data()}, err
 	case <-ctx.Done():
+		if len(in.Messages) != len(ok.Keys()) {
+			log.Printf("<-ctx.Done() events:%d # requests:%d", len(in.Messages), len(ok.Keys()))
+		}
 		// context deadline exceeded, should set that error to remain messages
 		for _, msg := range in.Messages {
 			eventRef := eventIdRefs[msg.Id]

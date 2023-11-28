@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
@@ -51,14 +50,6 @@ func Handler(service *scheduler) streaming.SubHandler {
 				retruning[event.Id] = err
 			}
 			return retruning
-		}
-
-		if len(events) != len(messages) {
-			log.Printf("events:%d # messages:%d", len(events), len(messages))
-		}
-
-		if len(events) != len(out.Success) {
-			log.Printf("events:%d # out.Success:%d", len(events)*3, len(out.Success))
 		}
 
 		service.logger.Infow("scheduled requests for messages", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
