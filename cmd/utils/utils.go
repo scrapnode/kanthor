@@ -12,9 +12,10 @@ type Stoppable interface {
 
 func Stop(instances ...Stoppable) error {
 	// wait a little to stop our service
-	errc := make(chan error)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	errc := make(chan error, 1)
 	go func() {
 		var returning error
 		for _, instance := range instances {

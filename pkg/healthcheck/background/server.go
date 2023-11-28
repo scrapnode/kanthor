@@ -3,10 +3,10 @@ package background
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"os"
 	"path"
-	"runtime/debug"
 	"time"
 
 	"github.com/scrapnode/kanthor/logging"
@@ -17,22 +17,30 @@ var Readiness = "readiness"
 var Liveness = "liveness"
 
 func NewServer(conf *healthcheck.Config, logger logging.Logger) healthcheck.Server {
-	return &server{conf: conf, logger: logger, dest: path.Join(Dest, conf.Dest)}
+	return &server{
+		conf:       conf,
+		logger:     logger,
+		dest:       path.Join(Dest, conf.Dest),
+		terminated: make(chan int64, 1),
+	}
 }
 
 type server struct {
-	conf       *healthcheck.Config
-	logger     logging.Logger
-	dest       string
-	terminated bool
+	conf   *healthcheck.Config
+	logger logging.Logger
+	dest   string
+
+	terminated chan int64
 }
 
 func (server *server) Connect(ctx context.Context) error {
+	server.logger.Info("HEALTHCHECK.BACKGROUND.SERVER.CONNECTED")
 	return nil
 }
 
 func (server *server) Disconnect(ctx context.Context) error {
-	server.terminated = true
+	server.terminated <- time.Now().UTC().UnixMilli()
+	server.logger.Info("HEALTHCHECK.BACKGROUND.SERVER.DISCONNECTED")
 	return nil
 }
 
@@ -48,51 +56,54 @@ func (server *server) Readiness(check func() error) error {
 	return nil
 }
 
-func (server *server) Liveness(check func() error) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			server.logger.Errorf("healthcheck.background.liveness.recover: %v", r)
-			server.logger.Errorf("healthcheck.background.liveness.recover.trace: %s", debug.Stack())
-
-			if rerr, ok := r.(error); ok {
-				err = rerr
-				return
-			}
-		}
-	}()
+func (server *server) Liveness(check func() error) error {
+	ticker := time.NewTicker(time.Millisecond * time.Duration(server.conf.Liveness.Timeout))
+	defer ticker.Stop()
 
 	for {
-		if server.terminated {
-			return
+		select {
+		case <-server.terminated:
+			return nil
+		case <-ticker.C:
+			if err := server.check(Liveness, &server.conf.Liveness, check); err != nil {
+				return err
+			}
+			if err := server.write(Liveness); err != nil {
+				return err
+			}
+			server.logger.Debug("live")
 		}
-
-		if err = server.check(Liveness, &server.conf.Liveness, check); err != nil {
-			return
-		}
-
-		if err = server.write(Liveness); err != nil {
-			return
-		}
-
-		server.logger.Debugw("live", "timeout", server.conf.Liveness.Timeout)
-		time.Sleep(time.Millisecond * time.Duration(server.conf.Liveness.Timeout))
 	}
 }
 
 func (server *server) check(name string, conf *healthcheck.CheckConfig, check func() error) error {
-	for i := 0; i < conf.MaxTry; i++ {
-		time.Sleep(time.Millisecond * time.Duration(conf.Timeout/conf.MaxTry))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(conf.Timeout))
+	defer cancel()
 
-		if server.terminated {
-			return nil
+	errc := make(chan error, 1)
+	go func() {
+		var returning error
+		for i := 0; i < conf.MaxTry; i++ {
+			err := check()
+			if err == nil {
+				errc <- nil
+				return
+			}
+
+			returning = errors.Join(returning, err)
 		}
-		err := check()
-		if err == nil {
-			return nil
-		}
+
+		errc <- fmt.Errorf("HEALTHCHECK.BACKGROUND.SERVER.ERROR: %v", returning)
+	}()
+
+	select {
+	case <-server.terminated:
+		return nil
+	case err := <-errc:
+		return err
+	case <-ctx.Done():
+		return fmt.Errorf("HEALTHCHECK.BACKGROUND.SERVER.ERROR: %v | timeout:%d max_try:%d", ctx.Err(), conf.Timeout, conf.MaxTry)
 	}
-
-	return fmt.Errorf("HEALTHCHECK.BACKGROUND.ERROR| timeout:%d max_try:%d", conf.Timeout, conf.MaxTry)
 }
 
 func (server *server) write(name string) error {

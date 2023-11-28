@@ -68,7 +68,7 @@ func (uc *trigger) Exec(ctx context.Context, in *TriggerExecIn) (*TriggerExecOut
 		})
 	}
 
-	c := make(chan bool)
+	c := make(chan bool, 1)
 	defer close(c)
 
 	go func() {

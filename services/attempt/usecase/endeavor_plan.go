@@ -38,8 +38,9 @@ func (uc *endeavor) Plan(ctx context.Context, in *EndeavorPlanIn) (*EndeavorPlan
 
 	less := uc.infra.Timer.Now().UnixMilli()
 
-	errc := make(chan error)
+	errc := make(chan error, 1)
 	defer close(errc)
+
 	go func() {
 		ch := uc.repositories.Datastore().Attempt().Scan(ctx, from, to, less, in.Size)
 

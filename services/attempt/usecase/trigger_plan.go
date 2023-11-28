@@ -38,7 +38,7 @@ func (uc *trigger) Plan(ctx context.Context, req *TriggerPlanIn) (*TriggerPlanOu
 	to := uc.infra.Timer.Now().Add(time.Duration(req.ScanEnd) * time.Millisecond)
 	ok := []string{}
 
-	errc := make(chan error)
+	errc := make(chan error, 1)
 	defer close(errc)
 
 	go func() {

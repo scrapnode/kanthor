@@ -179,7 +179,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		})
 	}
 
-	c := make(chan bool)
+	c := make(chan bool, 1)
 	defer close(c)
 
 	go func() {

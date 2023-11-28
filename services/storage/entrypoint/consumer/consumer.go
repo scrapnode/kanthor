@@ -151,7 +151,7 @@ func (service *storage) Run(ctx context.Context) error {
 	}()
 
 	service.logger.Infow("running", "topic", topic)
-	forever := make(chan bool)
+	forever := make(chan bool, 1)
 	select {
 	case <-forever:
 		return nil

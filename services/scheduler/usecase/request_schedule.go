@@ -67,7 +67,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 		eventIdRefs[msg.Id] = eventId
 	}
 
-	errc := make(chan error)
+	errc := make(chan error, 1)
 	defer close(errc)
 
 	go func() {
