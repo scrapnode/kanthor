@@ -23,7 +23,7 @@ func TriggerPlanner(
 	ds datastore.Datastore,
 	uc usecase.Attempt,
 ) patterns.Runnable {
-	return triggere.New(conf, logger, infra, db, ds, uc)
+	return triggerp.New(conf, logger, infra, db, ds, uc)
 }
 
 func TriggerExecutor(
@@ -34,7 +34,7 @@ func TriggerExecutor(
 	ds datastore.Datastore,
 	uc usecase.Attempt,
 ) patterns.Runnable {
-	return triggerp.New(conf, logger, infra, db, ds, uc)
+	return triggere.New(conf, logger, infra, db, ds, uc)
 }
 
 func TriggerCli(
