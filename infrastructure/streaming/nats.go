@@ -72,8 +72,11 @@ func (streaming *nats) Readiness() error {
 		return ErrNotConnected
 	}
 
-	_, err := streaming.conn.RTT()
-	return err
+	if !streaming.conn.IsConnected() {
+		return ErrNotConnected
+	}
+
+	return nil
 }
 
 func (streaming *nats) Liveness() error {
@@ -84,8 +87,11 @@ func (streaming *nats) Liveness() error {
 		return ErrNotConnected
 	}
 
-	_, err := streaming.conn.RTT()
-	return err
+	if !streaming.conn.IsConnected() {
+		return ErrNotConnected
+	}
+
+	return nil
 }
 
 func (streaming *nats) Connect(ctx context.Context) error {

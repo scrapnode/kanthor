@@ -32,8 +32,11 @@ func (w *watcher) Readiness() error {
 		return ErrNotConnected
 	}
 
-	_, err := w.conn.RTT()
-	return err
+	if !w.conn.IsConnected() {
+		return ErrNotConnected
+	}
+
+	return nil
 }
 
 func (w *watcher) Liveness() error {
@@ -44,8 +47,11 @@ func (w *watcher) Liveness() error {
 		return ErrNotConnected
 	}
 
-	_, err := w.conn.RTT()
-	return err
+	if !w.conn.IsConnected() {
+		return ErrNotConnected
+	}
+
+	return nil
 }
 
 func (w *watcher) Connect(ctx context.Context) error {
