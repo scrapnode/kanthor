@@ -23,7 +23,7 @@ func NewCasbin(conf *Config, logger logging.Logger) (Authorizator, error) {
 	w := &watcher{
 		conf:    &conf.Casbin.Watcher,
 		logger:  logger.With("casbin.watcher", "nats"),
-		subject: project.SubjectInternal("infrastructure.casbin.watcher"),
+		subject: project.Subject("infrastructure.casbin.watcher"),
 		nodeid:  suid.New("casbinw"),
 	}
 	return &casbin{conf: conf, logger: logger, watcher: w}, nil

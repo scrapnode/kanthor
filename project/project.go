@@ -3,8 +3,7 @@ package project
 import (
 	"fmt"
 	"os"
-
-	"github.com/scrapnode/kanthor/internal/domain/constants"
+	"strings"
 )
 
 func Namespace() string {
@@ -43,10 +42,14 @@ func Key(key string) string {
 	return fmt.Sprintf("%s/%s/%s", Namespace(), Tier(), key)
 }
 
+func Topic(segments ...string) string {
+	return strings.Join(segments, ".")
+}
+
 func Subject(topic string) string {
 	return fmt.Sprintf("%s.%s.%s", Namespace(), Tier(), topic)
 }
 
-func SubjectInternal(topic string) string {
-	return fmt.Sprintf("%s.%s.%s", Namespace(), constants.TypeInternal, topic)
+func IsTopic(subject, topic string) bool {
+	return strings.HasPrefix(subject, Subject(topic))
 }

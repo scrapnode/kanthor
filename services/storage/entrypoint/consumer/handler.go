@@ -29,9 +29,9 @@ func Handler(service *storage) streaming.SubHandler {
 		}
 
 		for id, event := range events {
-			prefix := fmt.Sprintf("event[%s]", id)
+			prefix := fmt.Sprintf("event.%s", id)
 
-			if event.Is(project.Namespace(), constants.TopicMessage) {
+			if project.IsTopic(event.Subject, constants.TopicMessage) {
 				message, err := transformation.EventToMessage(event)
 				if err != nil {
 					// un-recoverable error
@@ -48,7 +48,7 @@ func Handler(service *storage) streaming.SubHandler {
 				continue
 			}
 
-			if event.Is(project.Namespace(), constants.TopicRequest) {
+			if project.IsTopic(event.Subject, constants.TopicRequest) {
 				request, err := transformation.EventToRequest(event)
 				if err != nil {
 					// un-recoverable error
@@ -65,7 +65,7 @@ func Handler(service *storage) streaming.SubHandler {
 				continue
 			}
 
-			if event.Is(project.Namespace(), constants.TopicResponse) {
+			if project.IsTopic(event.Subject, constants.TopicResponse) {
 				response, err := transformation.EventToResponse(event)
 				if err != nil {
 					// un-recoverable error

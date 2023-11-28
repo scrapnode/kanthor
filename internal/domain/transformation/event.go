@@ -46,13 +46,7 @@ func EventFromMessage(msg *entities.Message) (*streaming.Event, error) {
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = streaming.Subject(
-		project.Namespace(),
-		msg.Tier,
-		constants.TopicMessage,
-		event.AppId,
-		event.Type,
-	)
+	event.Subject = project.Subject(project.Topic(constants.TopicMessage, event.AppId, event.Type))
 
 	return event, nil
 }
@@ -70,13 +64,7 @@ func EventFromRequest(req *entities.Request) (*streaming.Event, error) {
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = streaming.Subject(
-		project.Namespace(),
-		req.Tier,
-		constants.TopicRequest,
-		event.AppId,
-		event.Type,
-	)
+	event.Subject = project.Subject(project.Topic(constants.TopicRequest, event.AppId, event.Type))
 
 	return event, nil
 }
@@ -94,13 +82,7 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = streaming.Subject(
-		project.Namespace(),
-		res.Tier,
-		constants.TopicResponse,
-		event.AppId,
-		event.Type,
-	)
+	event.Subject = project.Subject(project.Topic(constants.TopicResponse, event.AppId, event.Type))
 
 	return event, nil
 }
@@ -118,12 +100,7 @@ func EventFromTrigger(trigger *entities.AttemptTrigger) (*streaming.Event, error
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = streaming.Subject(
-		project.Namespace(),
-		trigger.Tier,
-		constants.TopicTrigger,
-		event.AppId,
-	)
+	event.Subject = project.Subject(project.Topic(constants.TopicTrigger, event.AppId, event.Type))
 
 	return event, nil
 }
@@ -150,13 +127,7 @@ func EventFromAttempt(attempt *entities.Attempt) (*streaming.Event, error) {
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = streaming.Subject(
-		project.Namespace(),
-		attempt.Tier,
-		constants.TopicEndeavor,
-		event.AppId,
-		event.Type,
-	)
+	event.Subject = project.Subject(project.Topic(constants.TopicEndeavor, event.AppId, event.Type))
 
 	return event, nil
 }

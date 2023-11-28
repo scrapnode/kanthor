@@ -2,9 +2,6 @@ package streaming
 
 import (
 	"encoding/json"
-	"fmt"
-	"regexp"
-	"strings"
 
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -40,13 +37,4 @@ func (e *Event) Validate() error {
 func (e *Event) String() string {
 	bytes, _ := json.Marshal(e)
 	return string(bytes)
-}
-
-func (e *Event) Is(ns, topic string) bool {
-	r := regexp.MustCompile(fmt.Sprintf("%s.([a-zA-z0-9]+).%s", ns, topic))
-	return r.MatchString(e.Subject)
-}
-
-func Subject(ns, tier, topic string, segments ...string) string {
-	return strings.Join(append([]string{ns, tier, topic}, segments...), ".")
 }
