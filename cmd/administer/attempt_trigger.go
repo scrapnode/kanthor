@@ -12,6 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/services"
 	"github.com/scrapnode/kanthor/services/attempt/config"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
@@ -114,7 +115,7 @@ func NewAttemptTrigger(provider configuration.Provider) *cobra.Command {
 	t := time.Now().UTC().Add(time.Hour * 24).Format(format)
 	command.Flags().StringP("to", "t", t, fmt.Sprintf("--to=%s (UTC +00:00) | end of scan time", t))
 
-	command.Flags().StringSliceP("msg-id", "", []string{}, fmt.Sprintf("--msg-id=%s | select message to plan", entities.MsgId()))
+	command.Flags().StringSliceP("msg-id", "", []string{}, fmt.Sprintf("--msg-id=%s | select message to plan", suid.New(entities.IdNsMsg)))
 
 	return command
 }

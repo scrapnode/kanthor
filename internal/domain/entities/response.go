@@ -29,12 +29,6 @@ func (entity *Response) TableName() string {
 	return TableRes
 }
 
-func (entity *Response) GenId() {
-	if entity.Id == "" {
-		entity.Id = ResId()
-	}
-}
-
 func (entity *Response) Marshal() ([]byte, error) {
 	return json.Marshal(entity)
 }

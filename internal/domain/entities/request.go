@@ -26,12 +26,6 @@ func (entity *Request) TableName() string {
 	return TableReq
 }
 
-func (entity *Request) GenId() {
-	if entity.Id == "" {
-		entity.Id = ReqId()
-	}
-}
-
 func (entity *Request) Marshal() ([]byte, error) {
 	return json.Marshal(entity)
 }

@@ -15,8 +15,8 @@ type SqlMessage struct {
 }
 
 func (sql *SqlMessage) Count(ctx context.Context, appId string, from, to time.Time) (int64, error) {
-	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
-	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
+	low := suid.Id(entities.IdNsMsg, suid.BeforeTime(from))
+	high := suid.Id(entities.IdNsMsg, suid.AfterTime(to))
 
 	var count int64
 	tx := sql.client.
@@ -32,8 +32,8 @@ func (sql *SqlMessage) Count(ctx context.Context, appId string, from, to time.Ti
 func (sql *SqlMessage) Scan(ctx context.Context, appId string, from, to time.Time, limit int) chan *ScanResults[map[string]*entities.Message] {
 	ch := make(chan *ScanResults[map[string]*entities.Message], 1)
 	// convert timestamp to safe id, so we can the table efficiently with primary key
-	low := entities.Id(entities.IdNsMsg, suid.BeforeTime(from))
-	high := entities.Id(entities.IdNsMsg, suid.AfterTime(to))
+	low := suid.Id(entities.IdNsMsg, suid.BeforeTime(from))
+	high := suid.Id(entities.IdNsMsg, suid.AfterTime(to))
 
 	go func() {
 		defer close(ch)

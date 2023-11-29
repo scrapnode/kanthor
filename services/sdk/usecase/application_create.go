@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -25,8 +26,11 @@ type ApplicationCreateOut struct {
 }
 
 func (uc *application) Create(ctx context.Context, in *ApplicationCreateIn) (*ApplicationCreateOut, error) {
-	doc := &entities.Application{WsId: in.WsId, Name: in.Name}
-	doc.GenId()
+	doc := &entities.Application{
+		WsId: in.WsId,
+		Name: in.Name,
+	}
+	doc.Id = suid.New(entities.IdNsApp)
 	doc.SetAT(uc.infra.Timer.Now())
 
 	app, err := uc.repositories.Application().Create(ctx, doc)

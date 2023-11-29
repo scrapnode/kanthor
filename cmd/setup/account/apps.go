@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/data/interchange"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/safe"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
@@ -57,7 +58,7 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 
 	for _, app := range ws.Applications {
 		application := entities.Application{WsId: doc.Id, Name: app.Name}
-		application.GenId()
+		application.Id = suid.New(entities.IdNsApp)
 		application.SetAT(now)
 		applications = append(applications, application)
 
@@ -73,7 +74,7 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 				Method: ep.Method,
 				Uri:    ep.Uri,
 			}
-			endpoint.GenId()
+			endpoint.Id = suid.New(entities.IdNsEp)
 			endpoint.SetAT(now)
 			endpoint.GenSecretKey()
 			endpoints = append(endpoints, endpoint)
@@ -92,7 +93,7 @@ func mapping(doc *entities.Workspace, ws *interchange.Workspace) ([]entities.App
 					ConditionSource:     epr.ConditionSource,
 					ConditionExpression: epr.ConditionExpression,
 				}
-				rule.GenId()
+				rule.Id = suid.New(entities.IdNsEpr)
 				rule.SetAT(now)
 				rules = append(rules, rule)
 

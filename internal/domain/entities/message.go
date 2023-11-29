@@ -19,12 +19,6 @@ func (entity *Message) TableName() string {
 	return TableMsg
 }
 
-func (entity *Message) GenId() {
-	if entity.Id == "" {
-		entity.Id = MsgId()
-	}
-}
-
 func (entity *Message) Marshal() ([]byte, error) {
 	return json.Marshal(entity)
 }

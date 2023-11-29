@@ -3,7 +3,6 @@ FROM kanthorlabs/base:latest as build
 WORKDIR /app
 
 COPY . .
-RUN ls -la ./scripts/gen_ioc.sh
 RUN make
 RUN go build -mod vendor -o ./.kanthor/kanthor -buildvcs=false
 

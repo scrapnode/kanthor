@@ -17,48 +17,66 @@ type SqlAttempt struct {
 }
 
 func (sql *SqlAttempt) Create(ctx context.Context, docs []*entities.Attempt) ([]string, error) {
-	returning := []string{}
-
 	if len(docs) == 0 {
-		return returning, nil
+		return []string{}, nil
 	}
 
-	names := []string{}
-	values := map[string]interface{}{}
-	for i := 0; i < len(docs); i++ {
-		doc := docs[i]
-		returning = append(returning, doc.ReqId)
+	datac := make(chan []string, 1)
+	defer close(datac)
 
-		keys := []string{}
-		for _, col := range entities.AttemptProps {
-			key := fmt.Sprintf("%s_%d", col, i)
-			keys = append(keys, "@"+key)
-			values[key] = entities.AttemptMappers[col](doc)
+	errc := make(chan error, 1)
+	defer close(errc)
+
+	go func() {
+		returning := []string{}
+
+		names := []string{}
+		values := map[string]interface{}{}
+		for i := 0; i < len(docs); i++ {
+			doc := docs[i]
+			returning = append(returning, doc.ReqId)
+
+			keys := []string{}
+			for _, col := range entities.AttemptProps {
+				key := fmt.Sprintf("%s_%d", col, i)
+				keys = append(keys, "@"+key)
+				values[key] = entities.AttemptMappers[col](doc)
+			}
+
+			names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 		}
 
-		names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
+		tableName := fmt.Sprintf(`"%s"`, entities.TableAtt)
+		columns := fmt.Sprintf(`"%s"`, strings.Join(entities.AttemptProps, `","`))
+		statement := fmt.Sprintf(
+			"INSERT INTO %s(%s) VALUES %s ON CONFLICT(req_id) DO NOTHING;",
+			tableName,
+			columns,
+			strings.Join(names, ","),
+		)
+
+		if tx := sql.client.Exec(statement, values); tx.Error != nil {
+			errc <- tx.Error
+			return
+		}
+
+		datac <- returning
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case data := <-datac:
+		return data, nil
+	case err := <-errc:
+		return nil, err
 	}
-
-	tableName := fmt.Sprintf(`"%s"`, entities.TableAtt)
-	columns := fmt.Sprintf(`"%s"`, strings.Join(entities.AttemptProps, `","`))
-	statement := fmt.Sprintf(
-		"INSERT INTO %s(%s) VALUES %s ON CONFLICT(req_id) DO NOTHING;",
-		tableName,
-		columns,
-		strings.Join(names, ","),
-	)
-
-	if tx := sql.client.Exec(statement, values); tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return returning, nil
 }
 
 func (sql *SqlAttempt) Count(ctx context.Context, appId string, from, to time.Time, next int64) (int64, error) {
 	// convert timestamp to safe id, so we can the table efficiently with primary key
-	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
-	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
+	low := suid.Id(entities.IdNsReq, suid.BeforeTime(from))
+	high := suid.Id(entities.IdNsReq, suid.AfterTime(to))
 
 	var count int64
 	tx := sql.client.
@@ -74,8 +92,8 @@ func (sql *SqlAttempt) Scan(ctx context.Context, from, to time.Time, next int64,
 	ch := make(chan *ScanResults[map[string]*entities.Attempt], 1)
 
 	// convert timestamp to safe id, so we can the table efficiently with primary key
-	low := entities.Id(entities.IdNsReq, suid.BeforeTime(from))
-	high := entities.Id(entities.IdNsReq, suid.AfterTime(to))
+	low := suid.Id(entities.IdNsReq, suid.BeforeTime(from))
+	high := suid.Id(entities.IdNsReq, suid.AfterTime(to))
 
 	go func() {
 		defer close(ch)

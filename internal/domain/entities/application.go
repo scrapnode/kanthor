@@ -16,12 +16,6 @@ func (entity *Application) TableName() string {
 	return TableApp
 }
 
-func (entity *Application) GenId() {
-	if entity.Id == "" {
-		entity.Id = AppId()
-	}
-}
-
 func (entity *Application) Marshal() ([]byte, error) {
 	return json.Marshal(entity)
 }

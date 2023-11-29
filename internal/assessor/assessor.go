@@ -5,6 +5,7 @@ import (
 
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/signature"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/timer"
 )
 
@@ -13,7 +14,6 @@ type Assets struct {
 	Rules       []entities.EndpointRule
 }
 
-// @TODO: return pointer
 func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[string]*entities.Request, [][]interface{}) {
 	requests := map[string]*entities.Request{}
 	logs := [][]interface{}{}
@@ -88,7 +88,7 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 	// must use merge function otherwise you will edit the original data
 	req.Headers.Merge(msg.Headers)
 	req.Metadata.Merge(msg.Metadata)
-	req.GenId()
+	req.Id = suid.New(entities.IdNsReq)
 	req.SetTS(timer.Now())
 
 	req.Metadata.Set(entities.MetaEprId, epr.Id)

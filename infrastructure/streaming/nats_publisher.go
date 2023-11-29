@@ -22,29 +22,49 @@ func (publisher *NatsPublisher) Name() string {
 }
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Event) map[string]error {
-	returning := safe.Map[error]{}
+	datac := make(chan map[string]error, 1)
+	defer close(datac)
 
-	p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
-	for refId, event := range events {
-		if err := event.Validate(); err != nil {
-			publisher.logger.Errorw("invalid event", "subject", event.Subject, "event_id", event.Id, "event", event.String())
-			returning.Set(refId, err)
-			continue
-		}
-
-		msg := NatsMsgFromEvent(event.Subject, event)
-		p.Go(func() {
-			ack, err := publisher.nats.js.PublishMsg(msg, natscore.Context(ctx), natscore.MsgId(event.Id))
-			if err != nil {
-				publisher.logger.Errorw("unable to publish message", "subject", event.Subject, "event_id", event.Id)
+	go func() {
+		returning := safe.Map[error]{}
+		p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
+		for refId, e := range events {
+			if err := e.Validate(); err != nil {
+				publisher.logger.Errorw("invalid event", "subject", e.Subject, "event_id", e.Id, "event", e.String())
 				returning.Set(refId, err)
-				return
+				continue
 			}
 
-			publisher.logger.Debugw("published message", "subject", event.Subject, "event_id", event.Id, "msg_seq", ack.Sequence)
-		})
-	}
-	p.Wait()
+			// store the value to use in p.Go, otherwise we got the same value
+			event := e
+			msg := NatsMsgFromEvent(e.Subject, e)
+			p.Go(func() {
+				ack, err := publisher.nats.js.PublishMsg(msg, natscore.Context(ctx), natscore.MsgId(event.Id))
+				if err != nil {
+					publisher.logger.Errorw("unable to publish message", "subject", event.Subject, "event_id", event.Id)
+					returning.Set(refId, err)
+					return
+				}
 
-	return returning.Data()
+				if ack.Duplicate {
+					publisher.logger.Warnw("found duplicated message", "subject", event.Subject, "event_id", event.Id)
+				}
+				publisher.logger.Debugw("published message", "subject", event.Subject, "event_id", event.Id, "msg_seq", ack.Sequence)
+			})
+		}
+		p.Wait()
+
+		datac <- returning.Data()
+	}()
+
+	select {
+	case data := <-datac:
+		return data
+	case <-ctx.Done():
+		data := map[string]error{}
+		for refId := range events {
+			data[refId] = ctx.Err()
+		}
+		return data
+	}
 }

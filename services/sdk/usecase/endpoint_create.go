@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -48,7 +49,7 @@ func (uc *endpoint) Create(ctx context.Context, in *EndpointCreateIn) (*Endpoint
 		Method:    in.Method,
 		Uri:       in.Uri,
 	}
-	doc.GenId()
+	doc.Id = suid.New(entities.IdNsEp)
 	doc.SetAT(uc.infra.Timer.Now())
 	doc.GenSecretKey()
 

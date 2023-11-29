@@ -13,6 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/internal/domain/status"
 	"github.com/scrapnode/kanthor/internal/domain/transformation"
 	"github.com/scrapnode/kanthor/pkg/safe"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/sourcegraph/conc/pool"
 )
@@ -192,7 +193,7 @@ func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entiti
 		},
 	)
 
-	response := &entities.Response{
+	doc := &entities.Response{
 		MsgId:    request.MsgId,
 		EpId:     request.EpId,
 		ReqId:    request.Id,
@@ -203,24 +204,24 @@ func (uc *endeavor) send(ctx context.Context, request *entities.Request) *entiti
 		Metadata: entities.Metadata{},
 	}
 	// must use merge function otherwise you will edit the original data
-	response.Metadata.Merge(request.Metadata)
-	response.GenId()
-	response.SetTS(uc.infra.Timer.Now())
+	doc.Metadata.Merge(request.Metadata)
+	doc.Id = suid.New(entities.IdNsRes)
+	doc.SetTS(uc.infra.Timer.Now())
 
 	// IMPORTANT: we have an anti-pattern response that returns both error && response to trigger circuit breaker
 	// so we should test both error and response seperately
 	if err != nil {
 		uc.logger.Errorw(err.Error(), "req_id", request.Id, "ep_id", request.EpId)
-		response.Error = err.Error()
-		response.Status = status.Code(err.Error())
+		doc.Error = err.Error()
+		doc.Status = status.Code(err.Error())
 	}
 
 	if res != nil {
-		response.Status = res.Status
-		response.Uri = res.Uri
-		response.Headers.FromHTTP(res.Headers)
-		response.Body = string(res.Body)
+		doc.Status = res.Status
+		doc.Uri = res.Uri
+		doc.Headers.FromHTTP(res.Headers)
+		doc.Body = string(res.Body)
 	}
 
-	return response
+	return doc
 }

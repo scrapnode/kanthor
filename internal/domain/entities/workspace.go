@@ -13,12 +13,6 @@ func (entity *Workspace) TableName() string {
 	return TableWs
 }
 
-func (entity *Workspace) GenId() {
-	if entity.Id == "" {
-		entity.Id = WsId()
-	}
-}
-
 type WorkspaceCredentials struct {
 	Entity
 	AuditTime
@@ -31,10 +25,4 @@ type WorkspaceCredentials struct {
 
 func (entity *WorkspaceCredentials) TableName() string {
 	return TableWsc
-}
-
-func (entity *WorkspaceCredentials) GenId() {
-	if entity.Id == "" {
-		entity.Id = WscId()
-	}
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/project"
 )
@@ -34,8 +35,12 @@ func (uc *account) Setup(ctx context.Context, in *AccountSetupIn) (*AccountSetup
 				return nil, err
 			}
 
-			ws = &entities.Workspace{OwnerId: in.AccountId, Name: project.DefaultWorkspaceName(), Tier: project.Tier()}
-			ws.GenId()
+			ws = &entities.Workspace{
+				OwnerId: in.AccountId,
+				Name:    project.DefaultWorkspaceName(),
+				Tier:    project.Tier(),
+			}
+			ws.Id = suid.New(entities.IdNsWs)
 			ws.SetAT(uc.infra.Timer.Now())
 			if _, err := uc.repositories.Workspace().Create(ctx, ws); err != nil {
 				return nil, err

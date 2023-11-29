@@ -27,12 +27,6 @@ func (entity *Endpoint) TableName() string {
 	return TableEp
 }
 
-func (entity *Endpoint) GenId() {
-	if entity.Id == "" {
-		entity.Id = EpId()
-	}
-}
-
 func (entity *Endpoint) GenSecretKey() {
 	if entity.SecretKey == "" {
 		entity.SecretKey = fmt.Sprintf("epsk_%s", utils.RandomString(32))
@@ -67,10 +61,4 @@ type EndpointRule struct {
 
 func (entity *EndpointRule) TableName() string {
 	return TableEpr
-}
-
-func (entity *EndpointRule) GenId() {
-	if entity.Id == "" {
-		entity.Id = EprId()
-	}
 }
