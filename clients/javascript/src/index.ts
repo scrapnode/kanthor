@@ -1,7 +1,13 @@
-import { PromiseMiddleware as Middleware } from "./openapi/middleware";
-import { RequestContext, ResponseContext } from "./openapi/http/http";
-import { ServerConfiguration } from "./openapi/servers";
-import { Configuration, createConfiguration } from "./openapi/configuration";
+import {
+  Middleware,
+  RequestContext,
+  ResponseContext,
+  ServerConfiguration,
+  createConfiguration,
+  AuthMethodsConfiguration,
+  BasicAuthAuthentication
+} from "./openapi";
+import { Account, Application } from "./kanthor";
 import { version } from "./metadata.json";
 
 class UserAgentMiddleware implements Middleware {
@@ -18,22 +24,45 @@ class UserAgentMiddleware implements Middleware {
   }
 }
 
-// @TODO: define cloud server endpoint
+export interface Options {
+  endpoint: string;
+}
+
+export interface Option {
+  (opts: Options): void;
+}
+
+export function withEndpoint(endpoint: string): Option {
+  return function (opts: Options) {
+    opts.endpoint = endpoint;
+  };
+}
 
 export class Kanthor {
-  public readonly configuration: Configuration;
+  public readonly account: Account;
+  public readonly application: Application;
 
-  public constructor(endpoint: string, token: string) {
+  public constructor(token: string, ...options: Option[]) {
+    const opts: Options = {
+      // @TODO: define cloud server endpoint
+      endpoint: "",
+    };
+    for (let option of options) {
+      option(opts);
+    }
+
     const credentials = token.split(":");
-    this.configuration = createConfiguration({
-      baseServer: new ServerConfiguration<any>(endpoint, {}),
+    const authMethods: AuthMethodsConfiguration = {
+      default: new BasicAuthAuthentication(credentials[0], credentials[1]),
+    };
+
+    const conf = createConfiguration({
+      baseServer: new ServerConfiguration<any>(opts.endpoint, {}),
       promiseMiddleware: [new UserAgentMiddleware()],
-      authMethods: {
-        BasicAuth: {
-          username: credentials[0],
-          password: credentials[1],
-        },
-      },
+      authMethods: authMethods,
     });
+
+    this.account = new Account(conf);
+    this.application = new Application(conf);
   }
 }

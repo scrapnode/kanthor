@@ -4,7 +4,8 @@
   "description": "Open-source Webhook Gateway: Delivery your message with precision and ease",
   "main": "./dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "cleanup": "rm -rf dist",
+    "build": "npm run cleanup && tsc"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,14 @@
   },
   "homepage": "https://github.com/scrapnode/kanthor#readme",
   "dependencies": {
-    "whatwg-fetch": "^3.6.19"
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.7.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.1",
+    "@types/node-fetch": "^2.6.9",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.2"
   }
 }

@@ -99,7 +99,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationListReq"
+                            "$ref": "#/definitions/rest.ApplicationListRes"
                         }
                     },
                     "default": {
@@ -1014,7 +1014,7 @@
                 }
             }
         },
-        "rest.ApplicationListReq": {
+        "rest.ApplicationListRes": {
             "type": "object",
             "properties": {
                 "cursor": {

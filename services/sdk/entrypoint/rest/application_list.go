@@ -12,7 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 
-type ApplicationListReq struct {
+type ApplicationListRes struct {
 	*structure.ListRes[entities.Application]
 }
 
@@ -23,7 +23,7 @@ type ApplicationListReq struct {
 // @Param		_q					query		string					false	"search keyword" 						minlength(2)  maxlength(32)
 // @Param		_limit				query		int						false	"limit returning records"				minimum(5)    maximum(30)
 // @Param		_id					query		[]string				false	"only return records with selected ids"
-// @Success		200					{object}	ApplicationListReq
+// @Success		200					{object}	ApplicationListRes
 // @Failure		default				{object}	gateway.Error
 // @Security	BasicAuth
 func UseApplicationList(service *sdk) gin.HandlerFunc {
@@ -43,7 +43,7 @@ func UseApplicationList(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &ApplicationListReq{ListRes: out.ListRes}
+		res := &ApplicationListRes{ListRes: out.ListRes}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

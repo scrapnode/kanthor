@@ -1,7 +1,9 @@
-// TODO: better import syntax?
+import {v4 as uuidv4} from 'uuid'
 import {BaseAPIRequestFactory, RequiredError, COLLECTION_FORMATS} from './baseapi';
 import {Configuration} from '../configuration';
 import {RequestContext, HttpMethod, ResponseContext, HttpFile, HttpInfo} from '../http/http';
+import  FormData from "form-data";
+import { URLSearchParams } from 'url';
 import {ObjectSerializer} from '../models/ObjectSerializer';
 import {ApiException} from './exception';
 import {canConsumeForm, isCodeInRange} from '../util';
@@ -13,7 +15,7 @@ import { RestApplicationCreateReq } from '../models/RestApplicationCreateReq';
 import { RestApplicationCreateRes } from '../models/RestApplicationCreateRes';
 import { RestApplicationDeleteRes } from '../models/RestApplicationDeleteRes';
 import { RestApplicationGetRes } from '../models/RestApplicationGetRes';
-import { RestApplicationListReq } from '../models/RestApplicationListReq';
+import { RestApplicationListRes } from '../models/RestApplicationListRes';
 import { RestApplicationUpdateReq } from '../models/RestApplicationUpdateReq';
 import { RestApplicationUpdateRes } from '../models/RestApplicationUpdateRes';
 
@@ -41,6 +43,8 @@ export class ApplicationApiRequestFactory extends BaseAPIRequestFactory {
         // Make Request Context
         const requestContext = _config.baseServer.makeRequestContext(localVarPath, HttpMethod.DELETE);
         requestContext.setHeaderParam("Accept", "application/json, */*;q=0.8")
+        requestContext.setHeaderParam("Idempotency-Key", uuidv4()) 
+
 
 
         let authMethod: SecurityAuthentication | undefined;
@@ -77,6 +81,8 @@ export class ApplicationApiRequestFactory extends BaseAPIRequestFactory {
         // Make Request Context
         const requestContext = _config.baseServer.makeRequestContext(localVarPath, HttpMethod.GET);
         requestContext.setHeaderParam("Accept", "application/json, */*;q=0.8")
+        requestContext.setHeaderParam("Idempotency-Key", uuidv4()) 
+
 
 
         let authMethod: SecurityAuthentication | undefined;
@@ -120,6 +126,8 @@ export class ApplicationApiRequestFactory extends BaseAPIRequestFactory {
         // Make Request Context
         const requestContext = _config.baseServer.makeRequestContext(localVarPath, HttpMethod.PUT);
         requestContext.setHeaderParam("Accept", "application/json, */*;q=0.8")
+        requestContext.setHeaderParam("Idempotency-Key", uuidv4()) 
+
 
 
         // Body Params
@@ -167,6 +175,8 @@ export class ApplicationApiRequestFactory extends BaseAPIRequestFactory {
         // Make Request Context
         const requestContext = _config.baseServer.makeRequestContext(localVarPath, HttpMethod.GET);
         requestContext.setHeaderParam("Accept", "application/json, */*;q=0.8")
+        requestContext.setHeaderParam("Idempotency-Key", uuidv4()) 
+
 
         // Query Params
         if (cursor !== undefined) {
@@ -222,6 +232,8 @@ export class ApplicationApiRequestFactory extends BaseAPIRequestFactory {
         // Make Request Context
         const requestContext = _config.baseServer.makeRequestContext(localVarPath, HttpMethod.POST);
         requestContext.setHeaderParam("Accept", "application/json, */*;q=0.8")
+        requestContext.setHeaderParam("Idempotency-Key", uuidv4()) 
+
 
 
         // Body Params
@@ -287,7 +299,7 @@ export class ApplicationApiResponseProcessor {
             return new HttpInfo(response.httpStatusCode, response.headers, response.body, body);
         }
 
-        throw new ApiException<string | Blob | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
+        throw new ApiException<string | Buffer | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
     }
 
     /**
@@ -323,7 +335,7 @@ export class ApplicationApiResponseProcessor {
             return new HttpInfo(response.httpStatusCode, response.headers, response.body, body);
         }
 
-        throw new ApiException<string | Blob | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
+        throw new ApiException<string | Buffer | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
     }
 
     /**
@@ -359,7 +371,7 @@ export class ApplicationApiResponseProcessor {
             return new HttpInfo(response.httpStatusCode, response.headers, response.body, body);
         }
 
-        throw new ApiException<string | Blob | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
+        throw new ApiException<string | Buffer | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
     }
 
     /**
@@ -369,13 +381,13 @@ export class ApplicationApiResponseProcessor {
      * @params response Response returned by the server for a request to applicationGet
      * @throws ApiException if the response code was not in [200, 299]
      */
-     public async applicationGetWithHttpInfo(response: ResponseContext): Promise<HttpInfo<RestApplicationListReq >> {
+     public async applicationGetWithHttpInfo(response: ResponseContext): Promise<HttpInfo<RestApplicationListRes >> {
         const contentType = ObjectSerializer.normalizeMediaType(response.headers["content-type"]);
         if (isCodeInRange("200", response.httpStatusCode)) {
-            const body: RestApplicationListReq = ObjectSerializer.deserialize(
+            const body: RestApplicationListRes = ObjectSerializer.deserialize(
                 ObjectSerializer.parse(await response.body.text(), contentType),
-                "RestApplicationListReq", ""
-            ) as RestApplicationListReq;
+                "RestApplicationListRes", ""
+            ) as RestApplicationListRes;
             return new HttpInfo(response.httpStatusCode, response.headers, response.body, body);
         }
         if (isCodeInRange("0", response.httpStatusCode)) {
@@ -388,14 +400,14 @@ export class ApplicationApiResponseProcessor {
 
         // Work around for missing responses in specification, e.g. for petstore.yaml
         if (response.httpStatusCode >= 200 && response.httpStatusCode <= 299) {
-            const body: RestApplicationListReq = ObjectSerializer.deserialize(
+            const body: RestApplicationListRes = ObjectSerializer.deserialize(
                 ObjectSerializer.parse(await response.body.text(), contentType),
-                "RestApplicationListReq", ""
-            ) as RestApplicationListReq;
+                "RestApplicationListRes", ""
+            ) as RestApplicationListRes;
             return new HttpInfo(response.httpStatusCode, response.headers, response.body, body);
         }
 
-        throw new ApiException<string | Blob | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
+        throw new ApiException<string | Buffer | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
     }
 
     /**
@@ -431,7 +443,7 @@ export class ApplicationApiResponseProcessor {
             return new HttpInfo(response.httpStatusCode, response.headers, response.body, body);
         }
 
-        throw new ApiException<string | Blob | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
+        throw new ApiException<string | Buffer | undefined>(response.httpStatusCode, "Unknown API Status Code!", await response.getBodyAsAny(), response.headers);
     }
 
 }

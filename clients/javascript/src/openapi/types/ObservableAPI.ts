@@ -13,7 +13,7 @@ import { RestApplicationCreateReq } from '../models/RestApplicationCreateReq';
 import { RestApplicationCreateRes } from '../models/RestApplicationCreateRes';
 import { RestApplicationDeleteRes } from '../models/RestApplicationDeleteRes';
 import { RestApplicationGetRes } from '../models/RestApplicationGetRes';
-import { RestApplicationListReq } from '../models/RestApplicationListReq';
+import { RestApplicationListRes } from '../models/RestApplicationListRes';
 import { RestApplicationUpdateReq } from '../models/RestApplicationUpdateReq';
 import { RestApplicationUpdateRes } from '../models/RestApplicationUpdateRes';
 import { RestEndpointCreateReq } from '../models/RestEndpointCreateReq';
@@ -189,7 +189,7 @@ export class ObservableApplicationApi {
      * @param limit limit returning records
      * @param id only return records with selected ids
      */
-    public applicationGetWithHttpInfo(cursor?: string, q?: string, limit?: number, id?: Array<string>, _options?: Configuration): Observable<HttpInfo<RestApplicationListReq>> {
+    public applicationGetWithHttpInfo(cursor?: string, q?: string, limit?: number, id?: Array<string>, _options?: Configuration): Observable<HttpInfo<RestApplicationListRes>> {
         const requestContextPromise = this.requestFactory.applicationGet(cursor, q, limit, id, _options);
 
         // build promise chain
@@ -214,8 +214,8 @@ export class ObservableApplicationApi {
      * @param limit limit returning records
      * @param id only return records with selected ids
      */
-    public applicationGet(cursor?: string, q?: string, limit?: number, id?: Array<string>, _options?: Configuration): Observable<RestApplicationListReq> {
-        return this.applicationGetWithHttpInfo(cursor, q, limit, id, _options).pipe(map((apiResponse: HttpInfo<RestApplicationListReq>) => apiResponse.data));
+    public applicationGet(cursor?: string, q?: string, limit?: number, id?: Array<string>, _options?: Configuration): Observable<RestApplicationListRes> {
+        return this.applicationGetWithHttpInfo(cursor, q, limit, id, _options).pipe(map((apiResponse: HttpInfo<RestApplicationListRes>) => apiResponse.data));
     }
 
     /**

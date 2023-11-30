@@ -1,7 +1,7 @@
 import { HttpLibrary } from "./http/http";
 import { Middleware, PromiseMiddleware, PromiseMiddlewareWrapper } from "./middleware";
 import { IsomorphicFetchHttpLibrary as DefaultHttpLibrary } from "./http/isomorphic-fetch";
-import { BaseServerConfiguration } from "./servers";
+import { BaseServerConfiguration, server1 } from "./servers";
 import { configureAuthMethods, AuthMethods, AuthMethodsConfiguration } from "./auth/auth";
 
 export interface Configuration {
@@ -58,6 +58,7 @@ export interface ConfigurationParameters {
  * for each request individually).
  *
  * If a property is not included in conf, a default is used:
+ *    - baseServer: server1
  *    - httpApi: IsomorphicFetchHttpLibrary
  *    - middleware: []
  *    - promiseMiddleware: []
@@ -66,10 +67,8 @@ export interface ConfigurationParameters {
  * @param conf partial configuration
  */
 export function createConfiguration(conf: ConfigurationParameters = {}): Configuration {
-    if (!conf.baseServer) throw new Error("baseServer must be set")
-
     const configuration: Configuration = {
-        baseServer: conf.baseServer,
+        baseServer: conf.baseServer !== undefined ? conf.baseServer : server1,
         httpApi: conf.httpApi || new DefaultHttpLibrary(),
         middleware: conf.middleware || [],
         authMethods: configureAuthMethods(conf.authMethods)

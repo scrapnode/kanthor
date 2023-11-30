@@ -9,7 +9,7 @@ export * from '../models/RestApplicationCreateReq';
 export * from '../models/RestApplicationCreateRes';
 export * from '../models/RestApplicationDeleteRes';
 export * from '../models/RestApplicationGetRes';
-export * from '../models/RestApplicationListReq';
+export * from '../models/RestApplicationListRes';
 export * from '../models/RestApplicationUpdateReq';
 export * from '../models/RestApplicationUpdateRes';
 export * from '../models/RestEndpointCreateReq';
@@ -40,7 +40,7 @@ import { RestApplicationCreateReq } from '../models/RestApplicationCreateReq';
 import { RestApplicationCreateRes } from '../models/RestApplicationCreateRes';
 import { RestApplicationDeleteRes } from '../models/RestApplicationDeleteRes';
 import { RestApplicationGetRes } from '../models/RestApplicationGetRes';
-import { RestApplicationListReq } from '../models/RestApplicationListReq';
+import { RestApplicationListRes } from '../models/RestApplicationListRes';
 import { RestApplicationUpdateReq } from '../models/RestApplicationUpdateReq';
 import { RestApplicationUpdateRes } from '../models/RestApplicationUpdateRes';
 import { RestEndpointCreateReq, RestEndpointCreateReqMethodEnum      } from '../models/RestEndpointCreateReq';
@@ -98,7 +98,7 @@ let typeMap: {[index: string]: any} = {
     "RestApplicationCreateRes": RestApplicationCreateRes,
     "RestApplicationDeleteRes": RestApplicationDeleteRes,
     "RestApplicationGetRes": RestApplicationGetRes,
-    "RestApplicationListReq": RestApplicationListReq,
+    "RestApplicationListRes": RestApplicationListRes,
     "RestApplicationUpdateReq": RestApplicationUpdateReq,
     "RestApplicationUpdateRes": RestApplicationUpdateRes,
     "RestEndpointCreateReq": RestEndpointCreateReq,

@@ -182,7 +182,7 @@ definitions:
       ws_id:
         type: string
     type: object
-  rest.ApplicationListReq:
+  rest.ApplicationListRes:
     properties:
       cursor:
         type: string
@@ -621,7 +621,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.ApplicationListReq'
+            $ref: '#/definitions/rest.ApplicationListRes'
         default:
           description: ""
           schema:

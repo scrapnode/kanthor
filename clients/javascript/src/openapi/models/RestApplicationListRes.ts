@@ -13,7 +13,7 @@
 import { EntitiesApplication } from '../models/EntitiesApplication';
 import { HttpFile } from '../http/http';
 
-export class RestApplicationListReq {
+export class RestApplicationListRes {
     'cursor'?: string;
     'data'?: Array<EntitiesApplication>;
 
@@ -34,7 +34,7 @@ export class RestApplicationListReq {
         }    ];
 
     static getAttributeTypeMap() {
-        return RestApplicationListReq.attributeTypeMap;
+        return RestApplicationListRes.attributeTypeMap;
     }
 
     public constructor() {

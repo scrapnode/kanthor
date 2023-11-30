@@ -12,7 +12,7 @@ import { RestApplicationCreateReq } from '../models/RestApplicationCreateReq';
 import { RestApplicationCreateRes } from '../models/RestApplicationCreateRes';
 import { RestApplicationDeleteRes } from '../models/RestApplicationDeleteRes';
 import { RestApplicationGetRes } from '../models/RestApplicationGetRes';
-import { RestApplicationListReq } from '../models/RestApplicationListReq';
+import { RestApplicationListRes } from '../models/RestApplicationListRes';
 import { RestApplicationUpdateReq } from '../models/RestApplicationUpdateReq';
 import { RestApplicationUpdateRes } from '../models/RestApplicationUpdateRes';
 import { RestEndpointCreateReq } from '../models/RestEndpointCreateReq';
@@ -185,14 +185,14 @@ export class ObjectApplicationApi {
     /**
      * @param param the request object
      */
-    public applicationGetWithHttpInfo(param: ApplicationApiApplicationGetRequest = {}, options?: Configuration): Promise<HttpInfo<RestApplicationListReq>> {
+    public applicationGetWithHttpInfo(param: ApplicationApiApplicationGetRequest = {}, options?: Configuration): Promise<HttpInfo<RestApplicationListRes>> {
         return this.api.applicationGetWithHttpInfo(param.cursor, param.q, param.limit, param.id,  options).toPromise();
     }
 
     /**
      * @param param the request object
      */
-    public applicationGet(param: ApplicationApiApplicationGetRequest = {}, options?: Configuration): Promise<RestApplicationListReq> {
+    public applicationGet(param: ApplicationApiApplicationGetRequest = {}, options?: Configuration): Promise<RestApplicationListRes> {
         return this.api.applicationGet(param.cursor, param.q, param.limit, param.id,  options).toPromise();
     }
 

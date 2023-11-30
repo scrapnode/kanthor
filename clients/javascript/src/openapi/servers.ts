@@ -49,3 +49,7 @@ export class ServerConfiguration<T extends { [key: string]: string }> implements
         return new RequestContext(this.getUrl() + endpoint, httpMethod);
     }
 }
+
+export const server1 = new ServerConfiguration<{  }>("/api", {  })
+
+export const servers = [server1];
