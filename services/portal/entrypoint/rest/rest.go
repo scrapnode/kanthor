@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
@@ -65,6 +66,13 @@ func (service *portal) Start(ctx context.Context) error {
 	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
+	// register authenticator
+	for _, auth := range service.conf.Authenticator {
+		if auth.Engine == authenticator.EngineAsk {
+			service.infra.Authenticator.Register(auth.Engine, authenticator.NewAsk(auth.Ask))
+		}
+		// @TODO: implement forward auth
+	}
 
 	router, err := service.router()
 	if err != nil {
@@ -107,7 +115,6 @@ func (service *portal) router() (*gin.Engine, error) {
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)
-		RegisterWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials"), service)
 		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
 	}
 

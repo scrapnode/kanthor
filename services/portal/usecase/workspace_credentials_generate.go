@@ -48,7 +48,7 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, in *WorkspaceCrede
 
 	password := fmt.Sprintf("wsck_%s", utils.RandomString(constants.PasswordLength))
 	// once we got error, reject entirely request instead of do a partial success request
-	hash, err := uc.infra.Cryptography.KDF().StringHash(password)
+	hash, err := utils.PasswordHash(password)
 	if err != nil {
 		return nil, err
 	}

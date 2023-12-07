@@ -8,6 +8,10 @@ import (
 	"github.com/scrapnode/kanthor/patterns"
 )
 
+var (
+	HeaderAuthWorkspace = "x-authorization-workspace"
+)
+
 func New(conf *Config, logger logging.Logger) (Authorizator, error) {
 	if conf.Engine == EngineCasbin {
 		return NewCasbin(conf, logger)

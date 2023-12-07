@@ -1,8 +1,12 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/gateway"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 // @TODO: mapstructure with env
@@ -23,12 +27,20 @@ func (conf *Wrapper) Validate() error {
 }
 
 type Config struct {
-	Gateway gateway.Config `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
+	Gateway       gateway.Config         `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
+	Authenticator []authenticator.Config `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator"`
 }
 
 func (conf *Config) Validate() error {
 	if err := conf.Gateway.Validate("CONFIG.SDK"); err != nil {
 		return err
 	}
-	return nil
+
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.SliceRequired("CONFIG.SDK.AUTHENTICATOR", conf.Authenticator),
+		validator.Slice(conf.Authenticator, func(i int, item *authenticator.Config) error {
+			return item.Validate(fmt.Sprintf("CONFIG.SDK.AUTHENTICATOR.%d", i))
+		}),
+	)
 }

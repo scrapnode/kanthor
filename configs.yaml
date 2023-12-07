@@ -21,11 +21,6 @@ datastore:
  
 # infrastructure
 infrastructure:
-  cryptography:
-    kdf: {}
-    symmetric:
-      key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
-
   sender:
     trace: true
     timeout: 5000 # 5s
@@ -55,12 +50,6 @@ infrastructure:
   cache:
     uri: *redis_uri
     time_to_live: 43200000 # 12h
-
-  authentication:
-    basic:
-      key: alonglongkey
-    bearer:
-      secret: alonglongsecrets
 
   authorizator:
     engine: casbin
@@ -92,11 +81,23 @@ infrastructure:
 
 # services
 sdk:
+  authenticator:
+    - engine: ask
+      ask:
+        access_key: kanthor_root_key
+        secret_key: kanthor_root_password
+        # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
   gateway:
     addr: :8180
     timeout: 60000
 
 portal:
+  authenticator:
+    - engine: ask
+      ask:
+        access_key: kanthor_root_key
+        secret_key: kanthor_root_password
+        # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
   gateway:
     addr: :8280
     timeout: 60000

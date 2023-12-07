@@ -4,14 +4,11 @@ import (
 	"context"
 	"fmt"
 	"sync"
-
-	"github.com/scrapnode/kanthor/logging"
 )
 
 var (
-	HeaderAuth          = "authorization"
-	HeaderAuthScheme    = "x-authorization-scheme"
-	HeaderAuthWorkspace = "x-authorization-workspace"
+	HeaderAuthCredentials = "authorization"
+	HeaderAuthEngine      = "x-authorization-engine"
 )
 
 type Request struct {
@@ -19,46 +16,41 @@ type Request struct {
 	Metadata    map[string]string
 }
 
-type Authenticate func(ctx context.Context, request *Request) (*Account, error)
-
-type Authenticator interface {
-	Register(scheme string, authenticate Authenticate) error
-	Authenticate(ctx context.Context, scheme string, request *Request) (*Account, error)
+type Verifier interface {
+	Verify(ctx context.Context, request *Request) (*Account, error)
 }
 
-func New(conf *Config, logger logging.Logger) (Authenticator, error) {
-	return &authenticator{
-		conf:       conf,
-		logger:     logger,
-		strategies: map[string]Authenticate{},
-	}, nil
+type Authenticator interface {
+	Register(engine string, verifier Verifier) error
+	Authenticate(engine string, ctx context.Context, request *Request) (*Account, error)
+}
+
+func New() (Authenticator, error) {
+	return &authenticator{strategies: map[string]Verifier{}}, nil
 }
 
 type authenticator struct {
-	conf   *Config
-	logger logging.Logger
-
 	mu         sync.Mutex
-	strategies map[string]Authenticate
+	strategies map[string]Verifier
 }
 
-func (instance *authenticator) Register(scheme string, authenticate Authenticate) error {
+func (instance *authenticator) Register(engine string, verifier Verifier) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
-	if _, has := instance.strategies[scheme]; has {
+	if _, has := instance.strategies[engine]; has {
 		return fmt.Errorf("AUTHENTICATOR.SCHEME.ALREADY_REGISTERED")
 	}
 
-	instance.strategies[scheme] = authenticate
+	instance.strategies[engine] = verifier
 	return nil
 }
 
-func (instance *authenticator) Authenticate(ctx context.Context, scheme string, request *Request) (*Account, error) {
-	authenticate, has := instance.strategies[scheme]
+func (instance *authenticator) Authenticate(engine string, ctx context.Context, request *Request) (*Account, error) {
+	verifier, has := instance.strategies[engine]
 	if !has {
 		return nil, fmt.Errorf("AUTHENTICATOR.SCHEME.UNKNOWN")
 	}
 
-	return authenticate(ctx, request)
+	return verifier.Verify(ctx, request)
 }

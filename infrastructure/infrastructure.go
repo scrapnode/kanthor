@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/config"
-	"github.com/scrapnode/kanthor/infrastructure/cryptography"
 	"github.com/scrapnode/kanthor/infrastructure/dlm"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
 	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
@@ -31,10 +30,6 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 	}
 
 	t := timer.New()
-	crypt, err := cryptography.New(&conf.Cryptography)
-	if err != nil {
-		return nil, err
-	}
 	send, err := sender.New(&conf.Sender, logger)
 	if err != nil {
 		return nil, err
@@ -47,7 +42,7 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
-	auth, err := authenticator.New(&conf.Authenticator, logger)
+	auth, err := authenticator.New()
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +72,6 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 		logger: logger,
 
 		Timer:                  t,
-		Cryptography:           crypt,
 		Send:                   send,
 		Idempotency:            idemp,
 		CircuitBreaker:         cb,
@@ -96,7 +90,6 @@ type Infrastructure struct {
 	logger logging.Logger
 
 	Timer                  timer.Timer
-	Cryptography           cryptography.Cryptography
 	Send                   sender.Send
 	Idempotency            idempotency.Idempotency
 	CircuitBreaker         circuitbreaker.CircuitBreaker

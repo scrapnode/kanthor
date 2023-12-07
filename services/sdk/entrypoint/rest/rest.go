@@ -66,7 +66,15 @@ func (service *sdk) Start(ctx context.Context) error {
 	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
-	err := service.infra.Authenticator.Register(authenticator.SchemeBasic, RegisterBasicAuthenticate(service.uc))
+	// register authenticator
+	for _, auth := range service.conf.Authenticator {
+		if auth.Engine == authenticator.EngineAsk {
+			service.infra.Authenticator.Register(auth.Engine, authenticator.NewAsk(auth.Ask))
+		}
+		// @TODO: implement forward auth
+	}
+	// register the SDK internal authenticator
+	err := service.infra.Authenticator.Register(Engineinternal, &internal{uc: service.uc})
 	if err != nil {
 		return err
 	}
