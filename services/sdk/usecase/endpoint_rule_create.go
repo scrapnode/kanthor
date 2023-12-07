@@ -3,13 +3,13 @@ package usecase
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointRuleCreateIn struct {
+	Ws   *entities.Workspace
 	EpId string
 	Name string
 
@@ -22,6 +22,7 @@ type EndpointRuleCreateIn struct {
 func (in *EndpointRuleCreateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.PointerNotNil("ws", in.Ws),
 		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
 		validator.StringRequired("name", in.Name),
 		validator.NumberGreaterThan("priority", in.Priority, 0),
@@ -35,9 +36,7 @@ type EndpointRuleCreateOut struct {
 }
 
 func (uc *endpointRule) Create(ctx context.Context, in *EndpointRuleCreateIn) (*EndpointRuleCreateOut, error) {
-	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
-
-	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, in.EpId)
+	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, in.Ws, in.EpId)
 	if err != nil {
 		return nil, err
 	}

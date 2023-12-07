@@ -24,12 +24,11 @@ func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency) gin.H
 
 		key := ginctx.GetHeader(HeaderIdempotencyKey)
 		if key == "" {
-			logger.Warnw("no idempotency key", "method", method)
-			ginctx.Next()
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("no idempotency key"))
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ok, err := engine.Validate(ctx, key)
 		if err != nil {
 			logger.Error(err)

@@ -29,7 +29,7 @@ type EndpointListRes struct {
 // @Security	BasicAuth
 func UseEndpointList(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		appId := ginctx.Param("app_id")
 
 		in := &usecase.EndpointListIn{

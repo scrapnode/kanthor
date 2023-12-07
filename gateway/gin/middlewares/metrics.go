@@ -15,7 +15,7 @@ func UseMetric(metrics metric.Metric, service string) gin.HandlerFunc {
 
 		ginctx.Next()
 
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		duration := time.Since(start)
 		metrics.Observe(ctx, service, metric.HttpRequestDuration, duration.Seconds())
 

@@ -28,10 +28,10 @@ infrastructure:
 
   sender:
     trace: true
-    timeout: 10000 # 10s
+    timeout: 5000 # 5s
     retry:
       count: 1
-      wait_time: 5000 # 5s
+      wait_time: 100 # 100ms
       
   circuit_breaker:
     close:

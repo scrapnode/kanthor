@@ -25,7 +25,7 @@ type EndpointGetRes struct {
 // @Security	BasicAuth
 func UseEndpointGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
 		in := &usecase.EndpointGetIn{AppId: appId, Id: id}

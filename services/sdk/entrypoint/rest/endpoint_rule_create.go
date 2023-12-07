@@ -41,10 +41,11 @@ func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		epId := ginctx.Param("ep_id")
 
 		in := &usecase.EndpointRuleCreateIn{
+			Ws:                  ctx.Value(gateway.CtxWorkspace).(*entities.Workspace),
 			EpId:                epId,
 			Name:                req.Name,
 			Priority:            req.Priority,

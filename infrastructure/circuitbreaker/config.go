@@ -77,3 +77,12 @@ func (conf *OpenConditions) Validate() error {
 		validator.NumberLessThan("CONFIG.INFRA.CIRCUIT_BREAKER.OPEN.CONDITION.ERROR_RATIO", conf.ErrorRatio, 1.0),
 	)
 }
+
+var DefaultConfig = &Config{
+	Close: Close{CleanupInterval: 600000},
+	Half:  Half{PassthroughRequests: 10},
+	Open: Open{
+		Duration:   1800000,
+		Conditions: OpenConditions{ErrorConsecutive: 10, ErrorRatio: 0.5},
+	},
+}

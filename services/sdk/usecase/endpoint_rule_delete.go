@@ -3,12 +3,12 @@ package usecase
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointRuleDeleteIn struct {
+	Ws   *entities.Workspace
 	EpId string
 	Id   string
 }
@@ -16,6 +16,7 @@ type EndpointRuleDeleteIn struct {
 func (in *EndpointRuleDeleteIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.PointerNotNil("ws", in.Ws),
 		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
 		validator.StringStartsWith("id", in.EpId, entities.IdNsEpr),
 	)
@@ -26,10 +27,8 @@ type EndpointRuleDeleteOut struct {
 }
 
 func (uc *endpointRule) Delete(ctx context.Context, in *EndpointRuleDeleteIn) (*EndpointRuleDeleteOut, error) {
-	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
-
 	epr, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, ws, in.EpId)
+		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, in.Ws, in.EpId)
 		if err != nil {
 			return nil, err
 		}

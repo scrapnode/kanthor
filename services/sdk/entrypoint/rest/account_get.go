@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/authenticator"
 	"github.com/scrapnode/kanthor/gateway"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 )
 
@@ -27,8 +27,8 @@ type AccountGetRes struct {
 // @Security	BearerAuth
 func UseAccountGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
 		var req AccountGetReq
 		if err := ginctx.BindQuery(&req); err != nil {

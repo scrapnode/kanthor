@@ -9,13 +9,13 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/database"
-	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
+	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/sdk/config"
-	"github.com/scrapnode/kanthor/services/sdk/entrypoint/rest/middlewares"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
@@ -66,6 +66,10 @@ func (service *sdk) Start(ctx context.Context) error {
 	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
+	err := service.infra.Authenticator.Register(authenticator.SchemeBasic, RegisterBasicAuthenticate(service.uc))
+	if err != nil {
+		return err
+	}
 
 	service.server = &http.Server{
 		Addr:    service.conf.Gateway.Addr,
@@ -95,18 +99,21 @@ func (service *sdk) router() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		api.Use(ginmw.UseStartup(&service.conf.Gateway))
-		api.Use(ginmw.UseMetric(service.infra.Metric, "sdk"))
-		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
-		api.Use(middlewares.UseAuth(service.infra.Authorizator, service.uc))
-		api.Use(ginmw.UseAuthz(service.infra.Authorizator))
-		api.Use(ginmw.UsePaging(service.logger, 5, 30))
+		api.Use(middlewares.UseStartup(&service.conf.Gateway))
+		api.Use(middlewares.UseMetric(service.infra.Metric, "sdk"))
+		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
+		api.Use(middlewares.UsePaging(service.logger, 5, 30))
 
+		api.Use(middlewares.UseAuth(service.infra.Authenticator))
+		api.Use(middlewares.UseWorkspace(RegisterWorkspaceResolver(service.uc)))
+		api.Use(middlewares.UseAuthz(service.infra.Authorizator))
+
+		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)
-		RegisterApplicationRoutes(api.Group("/application"), service)
-		RegisterEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
 		RegisterEndpointRuleRoutes(api.Group("/application/:app_id/endpoint/:ep_id/rule"), service)
+		RegisterEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
 		RegisterMessageRoutes(api.Group("/application/:app_id/message"), service)
+		RegisterApplicationRoutes(api.Group("/application"), service)
 	}
 
 	return router

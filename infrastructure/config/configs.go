@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -50,6 +51,7 @@ type Config struct {
 	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
 	Cache                  cache.Config          `json:"cache" yaml:"cache" mapstructure:"cache"`
 	Metric                 metric.Config         `json:"metric" yaml:"metric" mapstructure:"metric"`
+	Authenticator          authenticator.Config  `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator"`
 	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
 	Streaming              streaming.Config      `json:"streaming" yaml:"streaming" mapstructure:"streaming"`
 }
@@ -75,6 +77,9 @@ func (conf *Config) Validate() error {
 	}
 	if err := conf.Metric.Validate(); err != nil {
 		return fmt.Errorf("infrastructure.metric: %v", err)
+	}
+	if err := conf.Authenticator.Validate(); err != nil {
+		return fmt.Errorf("infrastructure.authenticator: %v", err)
 	}
 	if err := conf.Authorizator.Validate(); err != nil {
 		return fmt.Errorf("infrastructure.authorizator: %v", err)

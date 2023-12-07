@@ -28,10 +28,10 @@ infrastructure:
 
   sender:
     trace: true
-    timeout: 10000 # 10s
+    timeout: 5000 # 5s
     retry:
       count: 1
-      wait_time: 5000 # 5s
+      wait_time: 100 # 100ms
       
   circuit_breaker:
     close:
@@ -55,6 +55,12 @@ infrastructure:
   cache:
     uri: *redis_uri
     time_to_live: 43200000 # 12h
+
+  authentication:
+    basic:
+      key: alonglongkey
+    bearer:
+      secret: alonglongsecrets
 
   authorizator:
     engine: casbin
@@ -89,18 +95,11 @@ sdk:
   gateway:
     addr: :8180
     timeout: 60000
-  # the sdk has internal authenticator
 
 portal:
   gateway:
     addr: :8280
     timeout: 60000
-  authenticator:
-    engine: ask
-    ask:
-      access_key: kanthor_root_key
-      secret_key: kanthor_root_password
-      # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
       
 scheduler:
   request:

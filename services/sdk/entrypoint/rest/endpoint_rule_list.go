@@ -29,10 +29,11 @@ type EndpointRuleListRes struct {
 // @Security	BasicAuth
 func UseEndpointRuleList(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		epId := ginctx.Param("ep_id")
 
 		in := &usecase.EndpointRuleListIn{
+			Ws:      ctx.Value(gateway.CtxWorkspace).(*entities.Workspace),
 			EpId:    epId,
 			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
 		}

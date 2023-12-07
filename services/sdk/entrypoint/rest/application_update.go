@@ -36,7 +36,7 @@ func UseApplicationUpdate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		id := ginctx.Param("app_id")
 		in := &usecase.ApplicationUpdateIn{Id: id, Name: req.Name}
 		if err := in.Validate(); err != nil {

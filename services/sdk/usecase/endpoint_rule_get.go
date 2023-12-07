@@ -4,22 +4,23 @@ import (
 	"context"
 	"time"
 
-	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointRuleGetIn struct {
+	Ws   *entities.Workspace
 	EpId string
 	Id   string
 }
 
-func (req *EndpointRuleGetIn) Validate() error {
+func (in *EndpointRuleGetIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("ep_id", req.EpId, entities.IdNsEp),
-		validator.StringStartsWith("id", req.EpId, entities.IdNsEpr),
+		validator.PointerNotNil("ws", in.Ws),
+		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
+		validator.StringStartsWith("id", in.EpId, entities.IdNsEpr),
 	)
 }
 
@@ -27,17 +28,15 @@ type EndpointRuleGetOut struct {
 	Doc *entities.EndpointRule
 }
 
-func (uc *endpointRule) Get(ctx context.Context, req *EndpointRuleGetIn) (*EndpointRuleGetOut, error) {
-	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
-
-	key := CacheKeyEpr(req.EpId, req.Id)
+func (uc *endpointRule) Get(ctx context.Context, in *EndpointRuleGetIn) (*EndpointRuleGetOut, error) {
+	key := CacheKeyEpr(in.EpId, in.Id)
 	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*EndpointRuleGetOut, error) {
-		ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, ws, req.EpId)
+		ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, in.Ws, in.EpId)
 		if err != nil {
 			return nil, err
 		}
 
-		epr, err := uc.repositories.EndpointRule().Get(ctx, ep, req.Id)
+		epr, err := uc.repositories.EndpointRule().Get(ctx, ep, in.Id)
 		if err != nil {
 			return nil, err
 		}

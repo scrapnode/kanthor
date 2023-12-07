@@ -22,8 +22,8 @@ type WorkspaceGetRes struct {
 // @Security	WsId
 func UseWorkspaceGet() gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		res := &WorkspaceGetRes{Workspace: ws}
 		ginctx.JSON(http.StatusOK, res)

@@ -32,3 +32,12 @@ func (conf *Retry) Validate() error {
 		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.SENDER.RETRY.WAIT_TIME", conf.WaitTime, 500),
 	)
 }
+
+var DefaultConfig = &Config{
+	Trace:   false,
+	Timeout: 5000,
+	Retry: Retry{
+		Count:    3,
+		WaitTime: 100,
+	},
+}

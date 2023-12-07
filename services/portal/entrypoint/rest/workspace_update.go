@@ -36,8 +36,8 @@ func UseWorkspaceUpdate(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.WorkspaceUpdateIn{Id: ws.Id, Name: req.Name}
 		if err := in.Validate(); err != nil {

@@ -9,11 +9,12 @@ import (
 	"github.com/scrapnode/kanthor/services/sdk/repositories"
 )
 
-type WorkspaceCredentials interface {
-	Authenticate(ctx context.Context, req *WorkspaceCredentialsAuthenticateIn) (*WorkspaceCredentialsAuthenticateOut, error)
+type Workspace interface {
+	Authenticate(ctx context.Context, req *WorkspaceAuthenticateIn) (*WorkspaceAuthenticateOut, error)
+	Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error)
 }
 
-type workspaceCredentials struct {
+type workspace struct {
 	conf         *config.Config
 	logger       logging.Logger
 	infra        *infrastructure.Infrastructure

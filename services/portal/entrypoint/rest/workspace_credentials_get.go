@@ -25,8 +25,8 @@ type WorkspaceCredentialsGetRes struct {
 // @Security	WsId
 func UseWorkspaceCredentialsGet(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		id := ginctx.Param("wsc_id")
 		in := &usecase.WorkspaceCredentialsGetIn{

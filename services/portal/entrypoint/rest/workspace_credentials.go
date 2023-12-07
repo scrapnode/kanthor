@@ -2,11 +2,14 @@ package rest
 
 import (
 	"github.com/gin-gonic/gin"
-	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
+	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 )
 
 func RegisterWorkspaceCredentialsRoutes(router gin.IRoutes, service *portal) {
-	router = router.Use(ginmw.UseAuthz(service.infra.Authorizator))
+	router = router.
+		Use(middlewares.UseWorkspace(RegisterWorkspaceResolver(service.uc))).
+		Use(middlewares.UseAuthz(service.infra.Authorizator))
+
 	router.GET("", UseWorkspaceCredentialsList(service))
 	router.POST("", UseWorkspaceCredentialsCreate(service))
 	router.GET("/:wsc_id", UseWorkspaceCredentialsGet(service))

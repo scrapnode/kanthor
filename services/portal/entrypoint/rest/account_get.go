@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/authenticator"
 	"github.com/scrapnode/kanthor/gateway"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 )
 
 type AccountGetRes struct {
@@ -22,8 +22,8 @@ type AccountGetRes struct {
 // @Security	WsId
 func UseAccountGet() gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
 		res := &AccountGetRes{Account: acc}
 		ginctx.JSON(http.StatusOK, res)

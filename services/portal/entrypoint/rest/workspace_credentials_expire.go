@@ -38,8 +38,8 @@ func UseWorkspaceCredentialsExpire(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		id := ginctx.Param("wsc_id")
 		in := &usecase.WorkspaceCredentialsExpireIn{

@@ -29,7 +29,8 @@ type WorkspaceCredentialsListRes struct {
 // @Security	WsId
 func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+
 		in := &usecase.WorkspaceCredentialsListIn{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))

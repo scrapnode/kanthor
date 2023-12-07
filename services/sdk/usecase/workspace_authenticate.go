@@ -10,12 +10,12 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type WorkspaceCredentialsAuthenticateIn struct {
+type WorkspaceAuthenticateIn struct {
 	User string
 	Pass string
 }
 
-func (in *WorkspaceCredentialsAuthenticateIn) Validate() error {
+func (in *WorkspaceAuthenticateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("user", in.User, entities.IdNsWsc),
@@ -23,21 +23,21 @@ func (in *WorkspaceCredentialsAuthenticateIn) Validate() error {
 	)
 }
 
-type WorkspaceCredentialsAuthenticateOut struct {
-	Workspace            *entities.Workspace
-	WorkspaceCredentials *entities.WorkspaceCredentials
+type WorkspaceAuthenticateOut struct {
+	Credentials *entities.WorkspaceCredentials
+	Workspace   *entities.Workspace
 }
 
-func (uc *workspaceCredentials) Authenticate(ctx context.Context, in *WorkspaceCredentialsAuthenticateIn) (*WorkspaceCredentialsAuthenticateOut, error) {
+func (uc *workspace) Authenticate(ctx context.Context, in *WorkspaceAuthenticateIn) (*WorkspaceAuthenticateOut, error) {
 	key := CacheKeyWsAuthenticate(in.User)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*1, func() (*WorkspaceCredentialsAuthenticateOut, error) {
-		res := &WorkspaceCredentialsAuthenticateOut{}
+	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*1, func() (*WorkspaceAuthenticateOut, error) {
+		res := &WorkspaceAuthenticateOut{}
 
 		credentials, err := uc.repositories.WorkspaceCredentials().Get(ctx, in.User)
 		if err != nil {
 			return nil, err
 		}
-		res.WorkspaceCredentials = credentials
+		res.Credentials = credentials
 
 		expired := credentials.ExpiredAt > 0 && credentials.ExpiredAt < uc.infra.Timer.Now().UnixMilli()
 		if expired {

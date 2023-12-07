@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/authenticator"
 	"github.com/scrapnode/kanthor/gateway"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
@@ -29,8 +29,8 @@ type AccountSetupRes struct {
 // @Security	BearerAuth
 func UseAccountSetup(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
-		acc := ctx.Value(authenticator.CtxAcc).(*authenticator.Account)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
 		in := &usecase.AccountSetupIn{AccountId: acc.Sub}
 		if err := in.Validate(); err != nil {

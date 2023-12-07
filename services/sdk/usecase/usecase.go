@@ -10,7 +10,7 @@ import (
 )
 
 type Sdk interface {
-	WorkspaceCredentials() WorkspaceCredentials
+	Workspace() Workspace
 	Application() Application
 	Endpoint() Endpoint
 	EndpointRule() EndpointRule
@@ -39,28 +39,28 @@ type sdk struct {
 	infra        *infrastructure.Infrastructure
 	repositories repositories.Repositories
 
-	workspaceCredentials *workspaceCredentials
-	application          *application
-	endpoint             *endpoint
-	endpointRule         *endpointRule
-	message              *message
+	workspace    *workspace
+	application  *application
+	endpoint     *endpoint
+	endpointRule *endpointRule
+	message      *message
 
 	mu sync.Mutex
 }
 
-func (uc *sdk) WorkspaceCredentials() WorkspaceCredentials {
+func (uc *sdk) Workspace() Workspace {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if uc.workspaceCredentials == nil {
-		uc.workspaceCredentials = &workspaceCredentials{
+	if uc.workspace == nil {
+		uc.workspace = &workspace{
 			conf:         uc.conf,
 			logger:       uc.logger,
 			infra:        uc.infra,
 			repositories: uc.repositories,
 		}
 	}
-	return uc.workspaceCredentials
+	return uc.workspace
 }
 
 func (uc *sdk) Application() Application {

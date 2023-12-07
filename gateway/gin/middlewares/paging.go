@@ -18,7 +18,7 @@ type paging struct {
 	Ids []string `form:"_id"`
 }
 
-func UsePaging(logger logging.Logger, minLimit, maxLimit int) gin.HandlerFunc {
+func UsePaging(logger logging.Logger, min, max int) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		if ginctx.Request.Method != http.MethodGet {
 			ginctx.Next()
@@ -31,7 +31,7 @@ func UsePaging(logger logging.Logger, minLimit, maxLimit int) gin.HandlerFunc {
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to parse your request query"))
 			return
 		}
-		p.Limit = utils.MinInt(utils.MaxInt(minLimit, p.Limit), maxLimit)
+		p.Limit = utils.MinInt(utils.MaxInt(min, p.Limit), max)
 
 		ginctx.Set("list_req", &structure.ListReq{Cursor: p.Cursor, Search: p.Search, Limit: p.Limit, Ids: p.Ids})
 		ginctx.Next()

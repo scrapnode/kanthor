@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/scrapnode/kanthor/authenticator"
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/gateway"
 )
@@ -31,15 +30,11 @@ func (conf *Wrapper) Validate() error {
 }
 
 type Config struct {
-	Gateway       gateway.Config       `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
-	Authenticator authenticator.Config `json:"authenticator" yaml:"authenticator" mapstructure:"authenticator"`
+	Gateway gateway.Config `json:"gateway" yaml:"gateway" mapstructure:"gateway"`
 }
 
 func (conf *Config) Validate() error {
 	if err := conf.Gateway.Validate("CONFIG.PORTAL"); err != nil {
-		return err
-	}
-	if err := conf.Authenticator.Validate("CONFIG.PORTAL"); err != nil {
 		return err
 	}
 	return nil

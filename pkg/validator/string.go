@@ -71,11 +71,36 @@ func StringOneOf(prop, value string, oneOf []string) Fn {
 			return err
 		}
 
-		if b, has := m[value]; has && b {
-			return nil
+		if _, has := m[value]; !has {
+			return fmt.Errorf("%s (value:%s) must be one of %q", prop, value, oneOf)
 		}
 
-		return fmt.Errorf("%s (value:%s) must be one of %q", prop, value, oneOf)
+		return nil
+	}
+}
+
+func StringIn(prop string, values []string, in []string) Fn {
+	m := map[string]bool{}
+	for _, o := range in {
+		m[o] = true
+	}
+
+	return func() error {
+		for _, value := range values {
+			if err := StringRequired(prop, value)(); err != nil {
+				return err
+			}
+
+			if _, has := m[value]; has {
+				return nil
+			}
+
+			if _, has := m[value]; !has {
+				return fmt.Errorf("%s contains unrecognized %q (expected:%v)", prop, value, in)
+			}
+		}
+
+		return nil
 	}
 }
 

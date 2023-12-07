@@ -1,9 +1,10 @@
 package gateway
 
+var Ctx = "kanthor.gateway.context"
+
 type ctxkey string
 
-var (
-	KeyContext        = "kanthor.gateway.context"
-	CtxWs      ctxkey = "kanthor.gateway.context.workspace"
-	CtxAuhzOk  ctxkey = "kanthor.gateway.context.authz.ok"
+const (
+	CtxAccount   ctxkey = "kanthor.gateway.context.account"
+	CtxWorkspace ctxkey = "kanthor.gateway.context.workspace"
 )

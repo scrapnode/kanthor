@@ -3,12 +3,12 @@ package usecase
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointRuleUpdateIn struct {
+	Ws   *entities.Workspace
 	EpId string
 	Id   string
 	Name string
@@ -17,6 +17,7 @@ type EndpointRuleUpdateIn struct {
 func (in *EndpointRuleUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.PointerNotNil("ws", in.Ws),
 		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
 		validator.StringStartsWith("id", in.EpId, entities.IdNsEpr),
 		validator.StringRequired("name", in.Name),
@@ -28,10 +29,8 @@ type EndpointRuleUpdateOut struct {
 }
 
 func (uc *endpointRule) Update(ctx context.Context, in *EndpointRuleUpdateIn) (*EndpointRuleUpdateOut, error) {
-	ws := ctx.Value(gateway.CtxWs).(*entities.Workspace)
-
 	epr, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, ws, in.EpId)
+		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, in.Ws, in.EpId)
 		if err != nil {
 			return nil, err
 		}

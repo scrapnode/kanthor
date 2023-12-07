@@ -25,10 +25,14 @@ type EndpointRuleGetRes struct {
 // @Security	BasicAuth
 func UseEndpointRuleGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.KeyContext).(context.Context)
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		epId := ginctx.Param("ep_id")
 		id := ginctx.Param("epr_id")
-		in := &usecase.EndpointRuleGetIn{EpId: epId, Id: id}
+		in := &usecase.EndpointRuleGetIn{
+			Ws:   ctx.Value(gateway.CtxWorkspace).(*entities.Workspace),
+			EpId: epId,
+			Id:   id,
+		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))

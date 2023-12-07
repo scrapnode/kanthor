@@ -8,15 +8,13 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/scrapnode/kanthor/authenticator"
 	"github.com/scrapnode/kanthor/database"
-	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
+	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/services/portal/config"
-	"github.com/scrapnode/kanthor/services/portal/entrypoint/rest/middlewares"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 	swaggerfiles "github.com/swaggo/files"
 	ginswagger "github.com/swaggo/gin-swagger"
@@ -100,19 +98,17 @@ func (service *portal) router() (*gin.Engine, error) {
 
 	api := router.Group("/api")
 	{
-		api.Use(ginmw.UseStartup(&service.conf.Gateway))
-		api.Use(ginmw.UseMetric(service.infra.Metric, "portal"))
-		api.Use(ginmw.UseIdempotency(service.logger, service.infra.Idempotency))
-		api.Use(ginmw.UsePaging(service.logger, 5, 30))
-		auth, err := authenticator.New(&service.conf.Authenticator, service.logger)
-		if err != nil {
-			return nil, err
-		}
-		api.Use(middlewares.UseAuth(auth, service.uc))
+		api.Use(middlewares.UseStartup(&service.conf.Gateway))
+		api.Use(middlewares.UseMetric(service.infra.Metric, "portal"))
+		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
+		api.Use(middlewares.UsePaging(service.logger, 5, 30))
 
+		api.Use(middlewares.UseAuth(service.infra.Authenticator))
+
+		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)
-		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
 		RegisterWorkspaceCredentialsRoutes(api.Group("/workspace/me/credentials"), service)
+		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
 	}
 
 	return router, nil

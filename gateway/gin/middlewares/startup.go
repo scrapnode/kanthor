@@ -15,7 +15,7 @@ func UseStartup(conf *gateway.Config) gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(conf.Timeout))
 		defer cancel()
 
-		ginctx.Set(gateway.KeyContext, ctx)
+		ginctx.Set(gateway.Ctx, ctx)
 		ginctx.Next()
 	}
 }

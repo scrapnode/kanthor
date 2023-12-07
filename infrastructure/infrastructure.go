@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -46,6 +47,10 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
+	auth, err := authenticator.New(&conf.Authenticator, logger)
+	if err != nil {
+		return nil, err
+	}
 	authz, err := authorizator.New(&conf.Authorizator, logger)
 	if err != nil {
 		return nil, err
@@ -76,6 +81,7 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 		Send:                   send,
 		Idempotency:            idemp,
 		CircuitBreaker:         cb,
+		Authenticator:          auth,
 		Authorizator:           authz,
 		DistributedLockManager: lock,
 		Stream:                 s,
@@ -95,6 +101,7 @@ type Infrastructure struct {
 	Idempotency            idempotency.Idempotency
 	CircuitBreaker         circuitbreaker.CircuitBreaker
 	DistributedLockManager dlm.Factory
+	Authenticator          authenticator.Authenticator
 	Authorizator           authorizator.Authorizator
 	Stream                 streaming.Stream
 	Cache                  cache.Cache
