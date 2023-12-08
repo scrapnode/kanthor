@@ -24,7 +24,7 @@ func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency) gin.H
 
 		key := ginctx.GetHeader(HeaderIdempotencyKey)
 		if key == "" {
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("no idempotency key"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("no idempotency key"))
 			return
 		}
 

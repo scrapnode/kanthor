@@ -17,12 +17,15 @@ func UseWorkspace(resolve func(ctx context.Context, id string) (*entities.Worksp
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
 		id := ginctx.Request.Header.Get(authorizator.HeaderAuthWorkspace)
-		// fallback to default workspace id
-		if id == "" {
-			if ws, has := acc.Metadata[string(gateway.CtxWorkspace)]; has {
-				id = ws
-			}
+		// fallback to default workspace id of request account
+		if ws, has := acc.Metadata[string(gateway.CtxWorkspace)]; has && id == "" {
+			id = ws
 		}
+		if id == "" {
+			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown selected workspace"})
+			return
+		}
+
 		workspace, err := resolve(ctx, id)
 		if err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
