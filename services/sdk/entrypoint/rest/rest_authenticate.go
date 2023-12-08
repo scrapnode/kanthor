@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 
+	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/internal/domain/entities"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
@@ -23,7 +24,7 @@ func RegisterWorkspaceResolver(uc usecase.Sdk) func(ctx context.Context, id stri
 	}
 }
 
-var Engineinternal = "internal"
+var EngineInternal = "sdk.internal"
 
 type internal struct {
 	uc usecase.Sdk
@@ -48,6 +49,9 @@ func (verifier *internal) Verify(ctx context.Context, request *authenticator.Req
 	account := &authenticator.Account{
 		Sub:  out.Credentials.Id,
 		Name: out.Credentials.Name,
+		Metadata: map[string]string{
+			string(gateway.CtxWorkspace): out.Credentials.WsId,
+		},
 	}
 	return account, nil
 }

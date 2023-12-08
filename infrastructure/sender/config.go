@@ -29,7 +29,7 @@ func (conf *Retry) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.SENDER.RETRY.COUNT", conf.Count, 0),
-		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.SENDER.RETRY.WAIT_TIME", conf.WaitTime, 500),
+		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.SENDER.RETRY.WAIT_TIME", conf.WaitTime, 100),
 	)
 }
 

@@ -17,8 +17,9 @@ REQUEST_ID=$(uuidgen)
 echo "sleep $REQUEST_WAIT_TIME second(s)"
 sleep $REQUEST_WAIT_TIME
 
-curl -X PUT "$API_ENDPOINT/api/application/$TEST_APP_ID/message" \
+curl --verbose -X PUT "$API_ENDPOINT/api/application/$TEST_APP_ID/message" \
     -H "Content-Type: application/json" \
     -H "Idempotency-Key: $REQUEST_ID" \
+    -H "X-Authorization-Engine: sdk.internal" \
     -H "Authorization: Basic $AUTH_TOKEN" \
     --data-raw '{"type":"testing.traffic.request","body":{"hello":"world"},"headers":{"x-client":"curl"}}'

@@ -26,9 +26,15 @@ type EndpointDeleteRes struct {
 func UseEndpointDelete(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
+
 		appId := ginctx.Param("app_id")
 		id := ginctx.Param("ep_id")
-		in := &usecase.EndpointDeleteIn{AppId: appId, Id: id}
+		in := &usecase.EndpointDeleteIn{
+			WsId:  ws.Id,
+			AppId: appId,
+			Id:    id,
+		}
 		if err := in.Validate(); err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))

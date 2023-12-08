@@ -35,7 +35,12 @@ func UseApplicationCreate(service *sdk) gin.HandlerFunc {
 		}
 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
-		in := &usecase.ApplicationCreateIn{Name: req.Name}
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
+
+		in := &usecase.ApplicationCreateIn{
+			WsId: ws.Id,
+			Name: req.Name,
+		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))

@@ -74,7 +74,7 @@ func (service *sdk) Start(ctx context.Context) error {
 		// @TODO: implement forward auth
 	}
 	// register the SDK internal authenticator
-	err := service.infra.Authenticator.Register(Engineinternal, &internal{uc: service.uc})
+	err := service.infra.Authenticator.Register(EngineInternal, &internal{uc: service.uc})
 	if err != nil {
 		return err
 	}
@@ -113,11 +113,10 @@ func (service *sdk) router() *gin.Engine {
 		api.Use(middlewares.UsePaging(service.logger, 5, 30))
 
 		api.Use(middlewares.UseAuth(service.infra.Authenticator))
-		api.Use(middlewares.UseWorkspace(RegisterWorkspaceResolver(service.uc)))
-		api.Use(middlewares.UseAuthz(service.infra.Authorizator))
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)
+
 		RegisterEndpointRuleRoutes(api.Group("/application/:app_id/endpoint/:ep_id/rule"), service)
 		RegisterEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
 		RegisterMessageRoutes(api.Group("/application/:app_id/message"), service)

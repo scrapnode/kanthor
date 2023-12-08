@@ -1,5 +1,9 @@
 package validator
 
-type Config struct{}
+type Config struct {
+	StopAtFirstError bool
+}
 
-var DefaultConfig = &Config{}
+var DefaultConfig = &Config{
+	StopAtFirstError: false,
+}

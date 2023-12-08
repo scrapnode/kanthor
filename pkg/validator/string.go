@@ -21,7 +21,7 @@ func StringStartsWith(prop, value, prefix string) Fn {
 			return err
 		}
 		if !strings.HasPrefix(strings.Trim(value, " "), prefix) {
-			return fmt.Errorf("%s (value:%s) is must be started with %s", prop, value, prefix)
+			return fmt.Errorf("%s (value:%s) must be started with %s", prop, value, prefix)
 		}
 		return nil
 	}

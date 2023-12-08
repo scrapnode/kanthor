@@ -7,16 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 )
 
 type AccountGetReq struct {
-	WorkspcaeId string `form:"ws_id" binding:"required,startswith=ws_"`
 }
 
 type AccountGetRes struct {
-	Account     *authenticator.Account    `json:"account"`
-	Permissions []authorizator.Permission `json:"permissions"`
+	Account *authenticator.Account `json:"account"`
 }
 
 // UseAccountGet
@@ -29,22 +26,7 @@ func UseAccountGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
-
-		var req AccountGetReq
-		if err := ginctx.BindQuery(&req); err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to parse your request query"))
-			return
-		}
-
-		permissions, err := service.infra.Authorizator.UserPermissionsInTenant(req.WorkspcaeId, acc.Sub)
-		if err != nil {
-			service.logger.Errorw(err.Error(), "worksapce_id", req.WorkspcaeId)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to get your permissions"))
-			return
-		}
-
-		res := &AccountGetRes{Account: acc, Permissions: permissions}
+		res := &AccountGetRes{Account: acc}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

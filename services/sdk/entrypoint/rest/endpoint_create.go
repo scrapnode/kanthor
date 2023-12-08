@@ -41,8 +41,11 @@ func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 		}
 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
+
 		appId := ginctx.Param("app_id")
 		in := &usecase.EndpointCreateIn{
+			WsId:      ws.Id,
 			AppId:     appId,
 			Name:      req.Name,
 			SecretKey: req.SecretKey,

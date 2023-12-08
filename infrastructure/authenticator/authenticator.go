@@ -39,7 +39,7 @@ func (instance *authenticator) Register(engine string, verifier Verifier) error 
 	defer instance.mu.Unlock()
 
 	if _, has := instance.strategies[engine]; has {
-		return fmt.Errorf("AUTHENTICATOR.SCHEME.ALREADY_REGISTERED")
+		return fmt.Errorf("AUTHENTICATOR.ENGINE.ALREADY_REGISTERED")
 	}
 
 	instance.strategies[engine] = verifier
@@ -49,7 +49,7 @@ func (instance *authenticator) Register(engine string, verifier Verifier) error 
 func (instance *authenticator) Authenticate(engine string, ctx context.Context, request *Request) (*Account, error) {
 	verifier, has := instance.strategies[engine]
 	if !has {
-		return nil, fmt.Errorf("AUTHENTICATOR.SCHEME.UNKNOWN")
+		return nil, fmt.Errorf("AUTHENTICATOR.ENGINE.UNKNOWN")
 	}
 
 	return verifier.Verify(ctx, request)

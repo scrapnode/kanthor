@@ -1,6 +1,10 @@
 package authenticator
 
-import "github.com/scrapnode/kanthor/pkg/validator"
+import (
+	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
+	"github.com/scrapnode/kanthor/pkg/validator"
+)
 
 type Config struct {
 	Engine  string   `json:"engine" yaml:"engine" mapstructure:"engine"`
@@ -8,21 +12,21 @@ type Config struct {
 	Forward *Forward `json:"forward" yaml:"forward" mapstructure:"forward"`
 }
 
-func (conf *Config) Validate(prefix string) error {
+func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringOneOf(prefix+".AUTHENTICATOR.SCHEME", conf.Engine, []string{EngineAsk, EngineForward}),
+		validator.StringOneOf("AUTHENTICATOR.SCHEME", conf.Engine, []string{EngineAsk, EngineForward}),
 	)
 	if err != nil {
 		return err
 	}
 
 	if conf.Engine == EngineAsk {
-		return conf.Ask.Validate(prefix)
+		return conf.Ask.Validate()
 	}
 
 	if conf.Engine == EngineForward {
-		return conf.Forward.Validate(prefix)
+		return conf.Forward.Validate()
 	}
 
 	return nil
@@ -33,22 +37,37 @@ type Ask struct {
 	SecretKey string `json:"secret_key" yaml:"secret_key" mapstructure:"secret_key"`
 }
 
-func (conf *Ask) Validate(prefix string) error {
+func (conf *Ask) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired(prefix+"AUTHENTICATOR.ASK.ACCESS_KEY", conf.AccessKey),
-		validator.StringRequired(prefix+"AUTHENTICATOR.ASK.SECRET_KEY", conf.SecretKey),
+		validator.StringRequired("UTHENTICATOR.ASK.ACCESS_KEY", conf.AccessKey),
+		validator.StringRequired("UTHENTICATOR.ASK.SECRET_KEY", conf.SecretKey),
 	)
 }
 
 type Forward struct {
-	Uri     string   `json:"uri" yaml:"uri" mapstructure:"uri"`
-	Headers []string `json:"headers" yaml:"headers" mapstructure:"headers"`
+	Uri            string                `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Headers        []string              `json:"headers" yaml:"headers" mapstructure:"headers"`
+	Sender         sender.Config         `json:"sender" yaml:"sender" mapstructure:"sender"`
+	CircuitBreaker circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
 }
 
-func (conf *Forward) Validate(prefix string) error {
-	return validator.Validate(
+func (conf *Forward) Validate() error {
+	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri(prefix+"AUTHENTICATOR.FORWARD.URI", conf.Uri),
+		validator.StringUri("UTHENTICATOR.FORWARD.URI", conf.Uri),
 	)
+	if err != nil {
+		return err
+	}
+
+	if err := conf.Sender.Validate(); err != nil {
+		return err
+	}
+
+	if err := conf.CircuitBreaker.Validate(); err != nil {
+		return err
+	}
+
+	return nil
 }

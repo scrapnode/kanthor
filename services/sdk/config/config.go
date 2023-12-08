@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
@@ -40,7 +38,7 @@ func (conf *Config) Validate() error {
 		validator.DefaultConfig,
 		validator.SliceRequired("CONFIG.SDK.AUTHENTICATOR", conf.Authenticator),
 		validator.Slice(conf.Authenticator, func(i int, item *authenticator.Config) error {
-			return item.Validate(fmt.Sprintf("CONFIG.SDK.AUTHENTICATOR.%d", i))
+			return item.Validate()
 		}),
 	)
 }

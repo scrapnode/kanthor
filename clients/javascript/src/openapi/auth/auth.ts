@@ -42,7 +42,6 @@ export class BasicAuthAuthentication implements SecurityAuthentication {
 
     public applySecurityAuthentication(context: RequestContext) {
         let comb = Buffer.from(this.username + ":" + this.password, 'binary').toString('base64');
-        console.log("-------------------------",comb)
         context.setHeaderParam("Authorization", "Basic " + comb);
     }
 }

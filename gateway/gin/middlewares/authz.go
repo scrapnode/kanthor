@@ -14,13 +14,14 @@ import (
 func UseAuthz(authz authorizator.Authorizator) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+
 		acc, ok := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 		if !ok {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown account"})
 			return
 		}
 
-		workspace, ok := ctx.Value(gateway.CtxAccount).(*entities.Workspace)
+		workspace, ok := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 		if !ok {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown workspace"})
 			return

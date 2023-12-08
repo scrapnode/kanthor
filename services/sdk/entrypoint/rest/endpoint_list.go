@@ -30,9 +30,12 @@ type EndpointListRes struct {
 func UseEndpointList(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
+
 		appId := ginctx.Param("app_id")
 
 		in := &usecase.EndpointListIn{
+			WsId:    ws.Id,
 			AppId:   appId,
 			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
 		}

@@ -58,7 +58,7 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 		}
 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
-		ws := ctx.Value(gateway.Ctx).(*entities.Workspace)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 		in := &usecase.MessagePutIn{
 			WsId:     ws.Id,
 			Tier:     ws.Tier,

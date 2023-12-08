@@ -37,8 +37,14 @@ func UseApplicationUpdate(service *sdk) gin.HandlerFunc {
 		}
 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
+
 		id := ginctx.Param("app_id")
-		in := &usecase.ApplicationUpdateIn{Id: id, Name: req.Name}
+		in := &usecase.ApplicationUpdateIn{
+			WsId: ws.Id,
+			Id:   id,
+			Name: req.Name,
+		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
