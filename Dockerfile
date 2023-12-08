@@ -3,7 +3,7 @@ FROM kanthorlabs/base:latest as build
 WORKDIR /app
 
 COPY . .
-RUN make
+RUN make ioc swagger
 RUN go build -mod vendor -o ./.kanthor/kanthor -buildvcs=false
 
 FROM alpine:3
