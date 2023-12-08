@@ -1,5 +1,4 @@
 export * from '../models/AuthenticatorAccount'
-export * from '../models/AuthorizatorPermission'
 export * from '../models/EntitiesApplication'
 export * from '../models/EntitiesEndpoint'
 export * from '../models/EntitiesEndpointRule'

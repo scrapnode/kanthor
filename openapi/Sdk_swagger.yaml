@@ -4,28 +4,13 @@ consumes:
 definitions:
   authenticator.Account:
     properties:
-      aud:
-        type: string
-      email:
-        type: string
-      iss:
-        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
       name:
         type: string
-      phone:
-        type: string
-      picture:
-        type: string
       sub:
-        type: string
-    type: object
-  authorizator.Permission:
-    properties:
-      action:
-        type: string
-      object:
-        type: string
-      role:
         type: string
     type: object
   entities.Application:
@@ -119,10 +104,6 @@ definitions:
     properties:
       account:
         $ref: '#/definitions/authenticator.Account'
-      permissions:
-        items:
-          $ref: '#/definitions/authorizator.Permission'
-        type: array
     type: object
   rest.ApplicationCreateReq:
     properties:

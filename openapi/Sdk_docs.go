@@ -796,39 +796,16 @@ const docTemplateSdk = `{
         "authenticator.Account": {
             "type": "object",
             "properties": {
-                "aud": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "iss": {
-                    "type": "string"
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "name": {
                     "type": "string"
                 },
-                "phone": {
-                    "type": "string"
-                },
-                "picture": {
-                    "type": "string"
-                },
                 "sub": {
-                    "type": "string"
-                }
-            }
-        },
-        "authorizator.Permission": {
-            "type": "object",
-            "properties": {
-                "action": {
-                    "type": "string"
-                },
-                "object": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 }
             }
@@ -938,12 +915,6 @@ const docTemplateSdk = `{
             "properties": {
                 "account": {
                     "$ref": "#/definitions/authenticator.Account"
-                },
-                "permissions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/authorizator.Permission"
-                    }
                 }
             }
         },

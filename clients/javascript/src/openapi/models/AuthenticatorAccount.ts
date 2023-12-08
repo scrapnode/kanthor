@@ -13,50 +13,22 @@
 import { HttpFile } from '../http/http';
 
 export class AuthenticatorAccount {
-    'aud'?: string;
-    'email'?: string;
-    'iss'?: string;
+    'metadata'?: { [key: string]: string; };
     'name'?: string;
-    'phone'?: string;
-    'picture'?: string;
     'sub'?: string;
 
     static readonly discriminator: string | undefined = undefined;
 
     static readonly attributeTypeMap: Array<{name: string, baseName: string, type: string, format: string}> = [
         {
-            "name": "aud",
-            "baseName": "aud",
-            "type": "string",
-            "format": ""
-        },
-        {
-            "name": "email",
-            "baseName": "email",
-            "type": "string",
-            "format": ""
-        },
-        {
-            "name": "iss",
-            "baseName": "iss",
-            "type": "string",
+            "name": "metadata",
+            "baseName": "metadata",
+            "type": "{ [key: string]: string; }",
             "format": ""
         },
         {
             "name": "name",
             "baseName": "name",
-            "type": "string",
-            "format": ""
-        },
-        {
-            "name": "phone",
-            "baseName": "phone",
-            "type": "string",
-            "format": ""
-        },
-        {
-            "name": "picture",
-            "baseName": "picture",
             "type": "string",
             "format": ""
         },

@@ -11,12 +11,10 @@
  */
 
 import { AuthenticatorAccount } from '../models/AuthenticatorAccount';
-import { AuthorizatorPermission } from '../models/AuthorizatorPermission';
 import { HttpFile } from '../http/http';
 
 export class RestAccountGetRes {
     'account'?: AuthenticatorAccount;
-    'permissions'?: Array<AuthorizatorPermission>;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -25,12 +23,6 @@ export class RestAccountGetRes {
             "name": "account",
             "baseName": "account",
             "type": "AuthenticatorAccount",
-            "format": ""
-        },
-        {
-            "name": "permissions",
-            "baseName": "permissions",
-            "type": "Array<AuthorizatorPermission>",
             "format": ""
         }    ];
 

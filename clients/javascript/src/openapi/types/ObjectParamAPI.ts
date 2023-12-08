@@ -2,7 +2,6 @@ import { ResponseContext, RequestContext, HttpFile, HttpInfo } from '../http/htt
 import { Configuration} from '../configuration'
 
 import { AuthenticatorAccount } from '../models/AuthenticatorAccount';
-import { AuthorizatorPermission } from '../models/AuthorizatorPermission';
 import { EntitiesApplication } from '../models/EntitiesApplication';
 import { EntitiesEndpoint } from '../models/EntitiesEndpoint';
 import { EntitiesEndpointRule } from '../models/EntitiesEndpointRule';

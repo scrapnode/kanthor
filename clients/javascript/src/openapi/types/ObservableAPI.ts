@@ -3,7 +3,6 @@ import { Configuration} from '../configuration'
 import { Observable, of, from } from '../rxjsStub';
 import {mergeMap, map} from  '../rxjsStub';
 import { AuthenticatorAccount } from '../models/AuthenticatorAccount';
-import { AuthorizatorPermission } from '../models/AuthorizatorPermission';
 import { EntitiesApplication } from '../models/EntitiesApplication';
 import { EntitiesEndpoint } from '../models/EntitiesEndpoint';
 import { EntitiesEndpointRule } from '../models/EntitiesEndpointRule';

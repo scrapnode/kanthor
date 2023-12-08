@@ -1,5 +1,4 @@
 export * from '../models/AuthenticatorAccount';
-export * from '../models/AuthorizatorPermission';
 export * from '../models/EntitiesApplication';
 export * from '../models/EntitiesEndpoint';
 export * from '../models/EntitiesEndpointRule';
@@ -30,7 +29,6 @@ export * from '../models/RestMessagePutReq';
 export * from '../models/RestMessagePutRes';
 
 import { AuthenticatorAccount } from '../models/AuthenticatorAccount';
-import { AuthorizatorPermission } from '../models/AuthorizatorPermission';
 import { EntitiesApplication } from '../models/EntitiesApplication';
 import { EntitiesEndpoint } from '../models/EntitiesEndpoint';
 import { EntitiesEndpointRule } from '../models/EntitiesEndpointRule';
@@ -88,7 +86,6 @@ let enumsMap: Set<string> = new Set<string>([
 
 let typeMap: {[index: string]: any} = {
     "AuthenticatorAccount": AuthenticatorAccount,
-    "AuthorizatorPermission": AuthorizatorPermission,
     "EntitiesApplication": EntitiesApplication,
     "EntitiesEndpoint": EntitiesEndpoint,
     "EntitiesEndpointRule": EntitiesEndpointRule,

@@ -399,22 +399,13 @@ const docTemplatePortal = `{
         "authenticator.Account": {
             "type": "object",
             "properties": {
-                "aud": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "iss": {
-                    "type": "string"
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "picture": {
                     "type": "string"
                 },
                 "sub": {

@@ -4,17 +4,11 @@ consumes:
 definitions:
   authenticator.Account:
     properties:
-      aud:
-        type: string
-      email:
-        type: string
-      iss:
-        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
       name:
-        type: string
-      phone:
-        type: string
-      picture:
         type: string
       sub:
         type: string
