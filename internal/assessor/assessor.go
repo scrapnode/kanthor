@@ -93,14 +93,17 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 
 	req.Metadata.Set(entities.MetaEprId, epr.Id)
 
-	req.Headers.Set(entities.HeaderIdempotencyKey, req.Id)
-	req.Headers.Set(entities.HeaderMsgRef, fmt.Sprintf("%s/%s", msg.AppId, msg.Id))
-	req.Headers.Set(entities.HeaderReqTs, fmt.Sprintf("%d", req.Timestamp))
+	req.Headers.Set(entities.HeaderIdempotencyKey, msg.Id)
 
-	// signature
+	// https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md
+	req.Headers.Set(entities.HeaderWebhookId, msg.Id)
+	req.Headers.Set(entities.HeaderWebhookTs, fmt.Sprintf("%d", req.Timestamp))
 	sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, msg.Body)
 	signed := signature.Sign(sign, ep.SecretKey)
-	req.Headers.Set(entities.HeaderReqSig, fmt.Sprintf("v1=%s", signed))
+	req.Headers.Set(entities.HeaderWebhookSig, fmt.Sprintf("v1,%s", signed))
+
+	// custom headers
+	req.Headers.Set(entities.HeaderWebhookRef, fmt.Sprintf("%s/%s", msg.AppId, ep.Id))
 
 	return req
 }

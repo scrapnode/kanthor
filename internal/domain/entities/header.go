@@ -8,9 +8,10 @@ import (
 
 var (
 	HeaderIdempotencyKey = "idempotency-key"
-	HeaderMsgRef         = "x-kanthor-msg-ref"
-	HeaderReqTs          = "x-kanthor-req-ts"
-	HeaderReqSig         = "x-kanthor-req-signatures"
+	HeaderWebhookId      = "webhook-id"
+	HeaderWebhookTs      = "webhook-timestamp"
+	HeaderWebhookSig     = "webhook-signature"
+	HeaderWebhookRef     = "webhook-ref"
 )
 
 type Header map[string][]string
