@@ -46,16 +46,16 @@ func Services(provider configuration.Provider, names []string) ([]patterns.Runna
 	instances := []patterns.Runnable{}
 
 	for _, name := range services.SERVICES {
-		if !slices.Contains(names, name) {
-			continue
+		if slices.Contains(names, services.ALL) || slices.Contains(names, name) {
+			instance, err := Service(provider, name)
+			if err != nil {
+				return nil, err
+			}
+
+			instances = append(instances, instance)
 		}
 
-		instance, err := Service(provider, name)
-		if err != nil {
-			return nil, err
-		}
-
-		instances = append(instances, instance)
 	}
+
 	return instances, nil
 }
