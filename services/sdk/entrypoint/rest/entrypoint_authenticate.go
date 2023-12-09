@@ -24,7 +24,7 @@ func RegisterWorkspaceResolver(uc usecase.Sdk) func(ctx context.Context, id stri
 	}
 }
 
-var EngineInternal = "sdk.internal"
+var AuthzEngineInternal = "sdk.internal"
 
 type internal struct {
 	uc usecase.Sdk

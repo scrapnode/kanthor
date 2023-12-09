@@ -68,14 +68,30 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 
 func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
 	doc := &entities.Workspace{}
-	transaction := database.SqlClientFromContext(ctx, sql.client)
 
+	transaction := database.SqlClientFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&doc).
 		Where("owner_id = ?", owner).
+		Order("id asc").
 		First(doc)
 	if tx.Error != nil {
 		return nil, database.SqlError(tx.Error)
 	}
 
 	return doc, nil
+}
+
+func (sql *SqlWorkspace) ListOwned(ctx context.Context, owner string) ([]entities.Workspace, error) {
+	var docs []entities.Workspace
+
+	transaction := database.SqlClientFromContext(ctx, sql.client)
+	tx := transaction.WithContext(ctx).Model(&entities.Workspace{}).
+		Where("owner_id = ?", owner).
+		Order("id asc").
+		Find(&docs)
+	if tx.Error != nil {
+		return nil, database.SqlError(tx.Error)
+	}
+
+	return docs, nil
 }

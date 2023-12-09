@@ -13,6 +13,7 @@ type Workspace interface {
 	List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error)
 	Get(ctx context.Context, id string) (*entities.Workspace, error)
 	GetOwned(ctx context.Context, owner string) (*entities.Workspace, error)
+	ListOwned(ctx context.Context, owner string) ([]entities.Workspace, error)
 }
 
 type WorkspaceCredentials interface {

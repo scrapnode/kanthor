@@ -111,7 +111,7 @@ func (service *portal) router() (*gin.Engine, error) {
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(middlewares.UsePaging(service.logger, 5, 30))
 
-		api.Use(middlewares.UseAuth(service.infra.Authenticator))
+		api.Use(middlewares.UseAuth(service.infra.Authenticator, authenticator.EngineAsk))
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)

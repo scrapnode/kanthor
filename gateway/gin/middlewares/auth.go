@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 )
 
-func UseAuth(auth authenticator.Authenticator) gin.HandlerFunc {
+func UseAuth(auth authenticator.Authenticator, defaultEngine string) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 
@@ -19,7 +19,10 @@ func UseAuth(auth authenticator.Authenticator) gin.HandlerFunc {
 			request.Metadata[key] = value[0]
 		}
 
-		engine := ginctx.Request.Header.Get(authenticator.HeaderAuthEngine)
+		engine := defaultEngine
+		if selectEngine := ginctx.Request.Header.Get(authenticator.HeaderAuthEngine); selectEngine != "" {
+			engine = selectEngine
+		}
 		acc, err := auth.Authenticate(engine, ctx, request)
 		if err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})

@@ -13,6 +13,15 @@ definitions:
       sub:
         type: string
     type: object
+  authorizator.Permission:
+    properties:
+      action:
+        type: string
+      object:
+        type: string
+      role:
+        type: string
+    type: object
   entities.Workspace:
     properties:
       created_at:
@@ -176,6 +185,10 @@ definitions:
         type: string
       owner_id:
         type: string
+      permissions:
+        items:
+          $ref: '#/definitions/authorizator.Permission'
+        type: array
       tier:
         type: string
       updated_at:
@@ -260,6 +273,21 @@ paths:
       - BearerAuth: []
       tags:
       - account
+  /workspace:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.WorkspaceGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - BearerAuth: []
+      tags:
+      - workspace
   /workspace/me:
     get:
       responses:

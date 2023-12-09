@@ -94,6 +94,32 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "/workspace": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.WorkspaceGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/workspace/me": {
             "get": {
                 "security": [
@@ -413,6 +439,20 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "authorizator.Permission": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "object": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
         "entities.Workspace": {
             "type": "object",
             "properties": {
@@ -638,6 +678,12 @@ const docTemplatePortal = `{
                 },
                 "owner_id": {
                     "type": "string"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/authorizator.Permission"
+                    }
                 },
                 "tier": {
                     "type": "string"
