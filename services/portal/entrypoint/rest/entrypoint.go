@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -71,7 +72,9 @@ func (service *portal) Start(ctx context.Context) error {
 		if auth.Engine == authenticator.EngineAsk {
 			service.infra.Authenticator.Register(auth.Engine, authenticator.NewAsk(auth.Ask))
 		}
-		// @TODO: implement forward auth
+		if auth.Engine == authenticator.EngineForward {
+			service.infra.Authenticator.Register(auth.Engine, authenticator.NewForward(auth.Forward))
+		}
 	}
 
 	router, err := service.router()
@@ -91,7 +94,13 @@ func (service *portal) Start(ctx context.Context) error {
 func (service *portal) router() (*gin.Engine, error) {
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowCredentials: false,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Authorization-Engine", "X-Authorization-Workspace"},
+		MaxAge:           time.Hour * 12,
+	}))
 	// system routes
 	RegisterHealthcheck(router, service)
 
@@ -111,7 +120,7 @@ func (service *portal) router() (*gin.Engine, error) {
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
 		api.Use(middlewares.UsePaging(service.logger, 5, 30))
 
-		api.Use(middlewares.UseAuth(service.infra.Authenticator, authenticator.EngineAsk))
+		api.Use(middlewares.UseAuth(service.infra.Authenticator, service.conf.Authenticator[0].Engine))
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)

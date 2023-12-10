@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -71,7 +72,9 @@ func (service *sdk) Start(ctx context.Context) error {
 		if auth.Engine == authenticator.EngineAsk {
 			service.infra.Authenticator.Register(auth.Engine, authenticator.NewAsk(auth.Ask))
 		}
-		// @TODO: implement forward auth
+		if auth.Engine == authenticator.EngineForward {
+			service.infra.Authenticator.Register(auth.Engine, authenticator.NewForward(auth.Forward))
+		}
 	}
 	// register the SDK internal authenticator
 	err := service.infra.Authenticator.Register(AuthzEngineInternal, &internal{uc: service.uc})
@@ -92,7 +95,13 @@ func (service *sdk) Start(ctx context.Context) error {
 func (service *sdk) router() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowCredentials: false,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Authorization-Engine", "X-Authorization-Workspace"},
+		MaxAge:           time.Hour * 12,
+	}))
 	// system routes
 	RegisterHealthcheck(router, service)
 

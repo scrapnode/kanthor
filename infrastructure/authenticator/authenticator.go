@@ -21,6 +21,7 @@ type Verifier interface {
 }
 
 type Authenticator interface {
+	Engines() []string
 	Register(engine string, verifier Verifier) error
 	Authenticate(engine string, ctx context.Context, request *Request) (*Account, error)
 }
@@ -31,7 +32,12 @@ func New() (Authenticator, error) {
 
 type authenticator struct {
 	mu         sync.Mutex
+	engines    []string
 	strategies map[string]Verifier
+}
+
+func (instance *authenticator) Engines() []string {
+	return instance.engines
 }
 
 func (instance *authenticator) Register(engine string, verifier Verifier) error {
@@ -42,6 +48,7 @@ func (instance *authenticator) Register(engine string, verifier Verifier) error 
 		return fmt.Errorf("AUTHENTICATOR.ENGINE.ALREADY_REGISTERED")
 	}
 
+	instance.engines = append(instance.engines, engine)
 	instance.strategies[engine] = verifier
 	return nil
 }
@@ -49,7 +56,7 @@ func (instance *authenticator) Register(engine string, verifier Verifier) error 
 func (instance *authenticator) Authenticate(engine string, ctx context.Context, request *Request) (*Account, error) {
 	verifier, has := instance.strategies[engine]
 	if !has {
-		return nil, fmt.Errorf("AUTHENTICATOR.ENGINE.UNKNOWN")
+		return nil, fmt.Errorf("AUTHENTICATOR.ENGINE.UNKNOWN: %s (%v)", engine, instance.engines)
 	}
 
 	return verifier.Verify(ctx, request)

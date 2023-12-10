@@ -38,6 +38,9 @@ func (verifier *forward) Verify(ctx context.Context, request *Request) (*Account
 		Uri:     verifier.conf.Uri,
 	}
 
+	// add authorization header
+	req.Headers.Add(HeaderAuthCredentials, request.Credentials)
+	// then add others headers as well
 	for _, key := range verifier.conf.Headers {
 		if value, has := request.Metadata[key]; has {
 			req.Headers.Add(key, value)
@@ -60,6 +63,10 @@ func (verifier *forward) Verify(ctx context.Context, request *Request) (*Account
 
 	var acc Account
 	if err := json.Unmarshal(res.Body, &acc); err != nil {
+		return nil, err
+	}
+
+	if err := acc.Validate(); err != nil {
 		return nil, err
 	}
 

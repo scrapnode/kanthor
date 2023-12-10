@@ -40,12 +40,15 @@ func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceL
 	if err != nil {
 		return nil, err
 	}
-	cooperates, err := uc.repositories.Workspace().List(ctx, structure.WithListIds(tenants))
-	if err != nil {
-		return nil, err
-	}
-	for _, ws := range cooperates.Data {
-		out.Workspaces[ws.Id] = &ws
+	if len(tenants) > 0 {
+		cooperates, err := uc.repositories.Workspace().List(ctx, structure.WithListIds(tenants))
+		if err != nil {
+			return nil, err
+		}
+		for _, ws := range cooperates.Data {
+			out.Workspaces[ws.Id] = &ws
+		}
+
 	}
 
 	return out, nil
