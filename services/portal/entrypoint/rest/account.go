@@ -5,6 +5,6 @@ import (
 )
 
 func RegisterAccountRoutes(router gin.IRoutes, service *portal) {
-	router.PUT("/me", UseAccountSetup(service))
+	router.POST("/setup", UseAccountSetup(service))
 	router.GET("/me", UseAccountGet(service))
 }

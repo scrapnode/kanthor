@@ -13,11 +13,15 @@ import (
 var EngineForward = "forward"
 
 func NewForward(conf *Forward) Verifier {
-	send, err := sender.New(&conf.Sender, logging.NewNoop())
+	logger, err := logging.NewNoop()
 	if err != nil {
 		panic(err)
 	}
-	cb, err := circuitbreaker.New(&conf.CircuitBreaker, logging.NewNoop())
+	send, err := sender.New(&conf.Sender, logger)
+	if err != nil {
+		panic(err)
+	}
+	cb, err := circuitbreaker.New(&conf.CircuitBreaker, logger)
 	if err != nil {
 		panic(err)
 	}

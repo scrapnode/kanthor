@@ -49,8 +49,6 @@ func UseAccountGet(service *portal) gin.HandlerFunc {
 			res.Workspaces = append(res.Workspaces, *ws)
 		}
 
-		// 8h
-		ginctx.Writer.Header().Set("Cache-Control", "public, max-age=28800")
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

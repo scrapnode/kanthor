@@ -73,8 +73,15 @@ definitions:
     properties:
       account:
         $ref: '#/definitions/authenticator.Account'
+      workspaces:
+        items:
+          $ref: '#/definitions/entities.Workspace'
+        type: array
     type: object
   rest.AccountSetupReq:
+    properties:
+      workspace_name:
+        type: string
     type: object
   rest.AccountSetupRes:
     properties:
@@ -252,7 +259,8 @@ paths:
       - WsId: []
       tags:
       - account
-    put:
+  /account/setup:
+    post:
       parameters:
       - description: setup options
         in: body

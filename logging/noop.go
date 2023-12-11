@@ -11,8 +11,8 @@ func (logger *noop) With(args ...interface{}) Logger {
 	return logger
 }
 
-func NewNoop() Logger {
+func NewNoop() (Logger, error) {
 	return &noop{
 		SugaredLogger: zap.NewNop().Sugar(),
-	}
+	}, nil
 }

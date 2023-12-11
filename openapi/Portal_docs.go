@@ -57,8 +57,10 @@ const docTemplatePortal = `{
                         }
                     }
                 }
-            },
-            "put": {
+            }
+        },
+        "/account/setup": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -520,11 +522,22 @@ const docTemplatePortal = `{
             "properties": {
                 "account": {
                     "$ref": "#/definitions/authenticator.Account"
+                },
+                "workspaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Workspace"
+                    }
                 }
             }
         },
         "rest.AccountSetupReq": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "workspace_name": {
+                    "type": "string"
+                }
+            }
         },
         "rest.AccountSetupRes": {
             "type": "object",

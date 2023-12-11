@@ -5,9 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"sync"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
@@ -94,13 +92,7 @@ func (service *portal) Start(ctx context.Context) error {
 func (service *portal) router() (*gin.Engine, error) {
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(cors.New(cors.Config{
-		AllowAllOrigins:  true,
-		AllowCredentials: false,
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Authorization-Engine", "X-Authorization-Workspace"},
-		MaxAge:           time.Hour * 12,
-	}))
+	router.Use(middlewares.UseCors())
 	// system routes
 	RegisterHealthcheck(router, service)
 

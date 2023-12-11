@@ -12,7 +12,8 @@ import (
 )
 
 type AccountSetupIn struct {
-	AccountId string
+	AccountId     string
+	WorkspaceName string
 }
 
 func (in *AccountSetupIn) Validate() error {
@@ -37,9 +38,13 @@ func (uc *account) Setup(ctx context.Context, in *AccountSetupIn) (*AccountSetup
 
 			ws = &entities.Workspace{
 				OwnerId: in.AccountId,
-				Name:    project.DefaultWorkspaceName(),
+				Name:    in.WorkspaceName,
 				Tier:    project.Tier(),
 			}
+			if ws.Name == "" {
+				ws.Name = project.DefaultWorkspaceName()
+			}
+
 			ws.Id = suid.New(entities.IdNsWs)
 			ws.SetAT(uc.infra.Timer.Now())
 			if _, err := uc.repositories.Workspace().Create(ctx, ws); err != nil {
