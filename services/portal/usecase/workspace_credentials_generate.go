@@ -40,8 +40,9 @@ type WorkspaceCredentialsGenerateOut struct {
 func (uc *workspaceCredentials) Generate(ctx context.Context, in *WorkspaceCredentialsGenerateIn) (*WorkspaceCredentialsGenerateOut, error) {
 	now := uc.infra.Timer.Now()
 	doc := &entities.WorkspaceCredentials{
-		WsId: in.WsId,
-		Name: in.Name,
+		WsId:      in.WsId,
+		Name:      in.Name,
+		ExpiredAt: in.ExpiredAt,
 	}
 	doc.Id = suid.New(entities.IdNsWsc)
 	doc.SetAT(now)

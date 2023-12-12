@@ -30,8 +30,12 @@ type WorkspaceCredentialsListRes struct {
 func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		in := &usecase.WorkspaceCredentialsListIn{ListReq: ginctx.MustGet("list_req").(*structure.ListReq)}
+		in := &usecase.WorkspaceCredentialsListIn{
+			WsId:    ws.Id,
+			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
+		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))

@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/project"
+	"github.com/scrapnode/kanthor/services/permissions"
 )
 
 type AccountSetupIn struct {
@@ -48,6 +49,21 @@ func (uc *account) Setup(ctx context.Context, in *AccountSetupIn) (*AccountSetup
 			ws.Id = suid.New(entities.IdNsWs)
 			ws.SetAT(uc.infra.Timer.Now())
 			if _, err := uc.repositories.Workspace().Create(ctx, ws); err != nil {
+				return nil, err
+			}
+		}
+
+		// check permissions
+		access, err := uc.infra.Authorizator.UserPermissionsInTenant(ws.Id, in.AccountId)
+		if err != nil {
+			return nil, err
+		}
+		if len(access) == 0 {
+			if err := uc.infra.Authorizator.Grant(ws.Id, in.AccountId, permissions.PortalOwner, permissions.PortalOwnerPermissions); err != nil {
+				return nil, err
+			}
+
+			if err := uc.infra.Authorizator.Grant(ws.Id, in.AccountId, permissions.SdkOwner, permissions.SdkOwnerPermissions); err != nil {
 				return nil, err
 			}
 		}
