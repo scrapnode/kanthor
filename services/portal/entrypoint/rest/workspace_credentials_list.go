@@ -7,22 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
 type WorkspaceCredentialsListRes struct {
-	*structure.ListRes[entities.WorkspaceCredentials]
+	Data  []WorkspaceCredentials
+	Count int64
 }
 
 // UseWorkspaceCredentialsList
 // @Tags		workspace
 // @Router		/workspace/me/credentials	[get]
-// @Param		_cursor						query		string					false	"current query cursor"					minlength(29) maxlength(32)
-// @Param		_q							query		string					false	"search keyword" 						minlength(2)  maxlength(32)
-// @Param		_limit						query		int						false	"limit returning records"				minimum(5)    maximum(30)
-// @Param		_id							query		[]string				false	"only return records with selected ids"
+// @Param		_q							query		string						false	"search keyword" 			minlength(2)  maxlength(32)
+// @Param		_limit						query		int							false	"limit returning records"	minimum(5)    maximum(30)
+// @Param		_page						query		int							false	"requesting page"
 // @Success		200							{object}	WorkspaceCredentialsListRes
 // @Failure		default						{object}	gateway.Error
 // @Security	BearerAuth
@@ -32,9 +31,18 @@ func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
+		var query gateway.Query
+		if err := ginctx.BindQuery(&query); err != nil {
+			service.logger.Error(err)
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to parse your request query"))
+			return
+		}
+
 		in := &usecase.WorkspaceCredentialsListIn{
-			WsId:    ws.Id,
-			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
+			WsId:   ws.Id,
+			Search: query.Search,
+			Limit:  query.Limit,
+			Page:   query.Page,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
@@ -49,7 +57,17 @@ func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		res := &WorkspaceCredentialsListRes{ListRes: out.ListRes}
+		res := &WorkspaceCredentialsListRes{Count: out.Count}
+		for _, ws := range out.Data {
+			res.Data = append(res.Data, WorkspaceCredentials{
+				Id:        ws.Id,
+				CreatedAt: ws.CreatedAt,
+				UpdatedAt: ws.UpdatedAt,
+				WsId:      ws.WsId,
+				Name:      ws.Name,
+				ExpiredAt: ws.ExpiredAt,
+			})
+		}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

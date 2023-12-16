@@ -111,7 +111,6 @@ func (service *sdk) router() *gin.Engine {
 		api.Use(middlewares.UseStartup(&service.conf.Gateway))
 		api.Use(middlewares.UseMetric(service.infra.Metric, "sdk"))
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
-		api.Use(middlewares.UsePaging(service.logger, 5, 30))
 
 		api.Use(middlewares.UseAuth(service.infra.Authenticator, AuthzEngineInternal))
 

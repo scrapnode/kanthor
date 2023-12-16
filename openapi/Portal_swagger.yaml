@@ -41,27 +41,6 @@ definitions:
       updated_at:
         type: integer
     type: object
-  entities.WorkspaceCredentials:
-    properties:
-      created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
-        type: integer
-      expired_at:
-        type: integer
-      hash:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
   gateway.Error:
     properties:
       code:
@@ -89,6 +68,21 @@ definitions:
         $ref: '#/definitions/authenticator.Account'
       workspace:
         $ref: '#/definitions/entities.Workspace'
+    type: object
+  rest.WorkspaceCredentials:
+    properties:
+      created_at:
+        type: integer
+      expired_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
     type: object
   rest.WorkspaceCredentialsCreateReq:
     properties:
@@ -143,11 +137,11 @@ definitions:
     type: object
   rest.WorkspaceCredentialsListRes:
     properties:
-      cursor:
-        type: string
+      count:
+        type: integer
       data:
         items:
-          $ref: '#/definitions/entities.WorkspaceCredentials'
+          $ref: '#/definitions/rest.WorkspaceCredentials'
         type: array
     type: object
   rest.WorkspaceCredentialsUpdateReq:
@@ -337,12 +331,6 @@ paths:
   /workspace/me/credentials:
     get:
       parameters:
-      - description: current query cursor
-        in: query
-        maxLength: 32
-        minLength: 29
-        name: _cursor
-        type: string
       - description: search keyword
         in: query
         maxLength: 32
@@ -355,13 +343,10 @@ paths:
         minimum: 5
         name: _limit
         type: integer
-      - collectionFormat: csv
-        description: only return records with selected ids
+      - description: requesting page
         in: query
-        items:
-          type: string
-        name: _id
-        type: array
+        name: _page
+        type: integer
       responses:
         "200":
           description: OK

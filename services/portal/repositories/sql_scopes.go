@@ -10,38 +10,41 @@ import (
 func UseWsId(wsId, target string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		join := fmt.Sprintf(
-			`JOIN "%s" ON "%s"."id" = "%s"."ws_id" AND "%s"."ws_id" = ?`,
+			`JOIN "%s" ON "%s"."id" = "%s"."ws_id"`,
 			entities.TableWs,
 			entities.TableWs,
-			target,
 			target,
 		)
-		return db.Joins(join, wsId)
+		where := fmt.Sprintf(`"%s"."id" = ?`, entities.TableWs)
+
+		return db.Joins(join).Where(where, wsId)
 	}
 }
 
 func UseAppId(appId, target string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		join := fmt.Sprintf(
-			`JOIN "%s" ON "%s"."id" = "%s"."app_id" AND "%s"."app_id" = ?`,
+			`JOIN "%s" ON "%s"."id" = "%s"."app_id"`,
 			entities.TableApp,
 			entities.TableApp,
-			target,
 			target,
 		)
-		return db.Joins(join, appId)
+		where := fmt.Sprintf(`"%s"."id" = ?`, entities.TableApp)
+
+		return db.Joins(join).Where(where, appId)
 	}
 }
 
 func UseEpId(epId, target string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		join := fmt.Sprintf(
-			`JOIN "%s" ON "%s"."id" = "%s"."ep_id" AND "%s"."ep_id" = ?`,
+			`JOIN "%s" ON "%s"."id" = "%s"."ep_id"`,
 			entities.TableEp,
 			entities.TableEp,
-			target,
 			target,
 		)
-		return db.Joins(join, epId)
+		where := fmt.Sprintf(`"%s"."id" = ?`, entities.TableEp)
+
+		return db.Joins(join).Where(where, epId)
 	}
 }

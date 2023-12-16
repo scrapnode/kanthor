@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -41,11 +40,11 @@ func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceL
 		return nil, err
 	}
 	if len(tenants) > 0 {
-		cooperates, err := uc.repositories.Workspace().List(ctx, structure.WithListIds(tenants))
+		workspaces, err := uc.repositories.Workspace().ListByIds(ctx, tenants)
 		if err != nil {
 			return nil, err
 		}
-		for _, ws := range cooperates.Data {
+		for _, ws := range *workspaces {
 			out.Workspaces[ws.Id] = &ws
 		}
 

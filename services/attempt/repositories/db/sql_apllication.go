@@ -16,7 +16,7 @@ type SqlApplication struct {
 func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.ApplicationWithRelationship, error) {
 	doc := &entities.Application{}
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&doc).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
 		First(doc)

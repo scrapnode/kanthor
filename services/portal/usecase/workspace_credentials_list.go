@@ -4,43 +4,41 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type WorkspaceCredentialsListIn struct {
-	WsId string
-	*structure.ListReq
+	WsId   string
+	Search string
+	Limit  int
+	Page   int
 }
 
 func (in *WorkspaceCredentialsListIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
-		validator.PointerNotNil("list", in.ListReq),
 	)
 }
 
 type WorkspaceCredentialsListOut struct {
-	*structure.ListRes[entities.WorkspaceCredentials]
+	Data  []entities.WorkspaceCredentials
+	Count int64
 }
 
 func (uc *workspaceCredentials) List(ctx context.Context, in *WorkspaceCredentialsListIn) (*WorkspaceCredentialsListOut, error) {
-	listing, err := uc.repositories.WorkspaceCredentials().List(
-		ctx, in.WsId,
-		structure.WithListCursor(in.Cursor),
-		structure.WithListSearch(in.Search),
-		structure.WithListLimit(in.Limit),
-		structure.WithListIds(in.Ids),
+	data, err := uc.repositories.WorkspaceCredentials().List(ctx, in.WsId, in.Limit, in.Page, in.Search)
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := uc.repositories.WorkspaceCredentials().Count(
+		ctx, in.WsId, "",
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	for i, wsc := range listing.Data {
-		// IMPORTANT: don't return hash value
-		wsc.Hash = ""
-		listing.Data[i] = wsc
-	}
-	return &WorkspaceCredentialsListOut{ListRes: listing}, nil
+	out := &WorkspaceCredentialsListOut{Data: data, Count: count}
+	return out, nil
 }

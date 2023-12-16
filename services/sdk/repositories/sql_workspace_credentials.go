@@ -16,7 +16,7 @@ type SqlWorkspaceCredentials struct {
 func (sql *SqlWorkspaceCredentials) Get(ctx context.Context, id string) (*entities.WorkspaceCredentials, error) {
 	wsc := &entities.WorkspaceCredentials{}
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(wsc).
 		Where(fmt.Sprintf(`"%s".id = ?`, entities.TableWsc), id).
 		First(wsc)

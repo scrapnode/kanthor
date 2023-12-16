@@ -23,7 +23,7 @@ func (sql *SqlApplication) BulkCreate(ctx context.Context, docs []entities.Appli
 		docs[i] = doc
 	}
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	if tx := transaction.WithContext(ctx).Create(docs); tx.Error != nil {
 		return nil, tx.Error
 	}

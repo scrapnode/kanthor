@@ -16,7 +16,7 @@ type SqlWorkspace struct {
 func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
 	ws := &entities.Workspace{}
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&ws).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, entities.TableWs), id).
 		First(ws)

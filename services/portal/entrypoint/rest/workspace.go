@@ -5,6 +5,16 @@ import (
 	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 )
 
+type WorkspaceCredentials struct {
+	Id        string `json:"id"`
+	CreatedAt int64  `json:"created_at"`
+	UpdatedAt int64  `json:"updated_at"`
+
+	WsId      string `json:"ws_id"`
+	Name      string `json:"name"`
+	ExpiredAt int64  `json:"expired_at"`
+}
+
 func RegisterWorkspaceRoutes(router gin.IRoutes, service *portal) {
 	// exception: do not required selected workspace
 	router.GET("", UseWorkspaceList(service))

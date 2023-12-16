@@ -3,12 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +14,7 @@ type SqlWorkspace struct {
 }
 
 func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error) {
-	log.Println(utils.Stringify(doc))
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	if tx := transaction.Create(doc); tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -27,34 +23,31 @@ func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*
 }
 
 func (sql *SqlWorkspace) Update(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Updates(doc)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-	return doc, nil
+	return doc, tx.Error
 }
 
-func (sql *SqlWorkspace) List(ctx context.Context, opts ...structure.ListOps) (*structure.ListRes[entities.Workspace], error) {
-	req := structure.ListReqBuild(opts)
-	doc := &entities.Workspace{}
-
-	tx := sql.client.WithContext(ctx).Model(doc)
-	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
-
-	res := &structure.ListRes[entities.Workspace]{Data: []entities.Workspace{}}
-	if tx = tx.Find(&res.Data); tx.Error != nil {
-		return nil, fmt.Errorf("workspace.list: %w", tx.Error)
+func (sql *SqlWorkspace) ListByIds(ctx context.Context, ids []string) (*[]entities.Workspace, error) {
+	if len(ids) == 0 {
+		return nil, nil
 	}
 
-	return res, nil
+	var docs []entities.Workspace
+
+	tx := sql.client.WithContext(ctx).
+		Model(&entities.Workspace{}).
+		Where("id IN ?", ids).
+		Find(&docs)
+
+	return &docs, tx.Error
 }
 
 func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
 	doc := &entities.Workspace{}
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 
 	tx := transaction.WithContext(ctx).Model(&doc).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
@@ -69,7 +62,7 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
 	doc := &entities.Workspace{}
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&doc).
 		Where("owner_id = ?", owner).
 		Order("id asc").
@@ -84,14 +77,11 @@ func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.
 func (sql *SqlWorkspace) ListOwned(ctx context.Context, owner string) ([]entities.Workspace, error) {
 	var docs []entities.Workspace
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&entities.Workspace{}).
 		Where("owner_id = ?", owner).
 		Order("id asc").
 		Find(&docs)
-	if tx.Error != nil {
-		return nil, database.SqlError(tx.Error)
-	}
 
-	return docs, nil
+	return docs, database.SqlError(tx.Error)
 }

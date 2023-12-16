@@ -15,7 +15,7 @@ type SqlEndpoint struct {
 }
 
 func (sql *SqlEndpoint) Create(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	if tx := transaction.WithContext(ctx).Create(doc); tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -23,7 +23,7 @@ func (sql *SqlEndpoint) Create(ctx context.Context, doc *entities.Endpoint) (*en
 }
 
 func (sql *SqlEndpoint) Update(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Updates(doc)
@@ -34,7 +34,7 @@ func (sql *SqlEndpoint) Update(ctx context.Context, doc *entities.Endpoint) (*en
 }
 
 func (sql *SqlEndpoint) Delete(ctx context.Context, doc *entities.Endpoint) error {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Delete(doc)
@@ -64,7 +64,7 @@ func (sql *SqlEndpoint) Get(ctx context.Context, app *entities.Application, id s
 	doc := &entities.Endpoint{}
 	doc.Id = id
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
 		Scopes(UseAppId(app.Id, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
@@ -80,7 +80,7 @@ func (sql *SqlEndpoint) GetOfWorkspace(ctx context.Context, ws *entities.Workspa
 	doc := &entities.Endpoint{}
 	doc.Id = id
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
 		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."app_id"`, entities.TableApp, entities.TableApp, doc.TableName())).
 		Joins(fmt.Sprintf(`JOIN "%s" ON "%s"."id" = "%s"."ws_id" AND "%s" = ? `, entities.TableWs, entities.TableWs, entities.TableApp, entities.TableApp), ws.Id).

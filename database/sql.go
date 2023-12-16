@@ -130,10 +130,3 @@ func (db *sql) Disconnect(ctx context.Context) error {
 func (db *sql) Client() any {
 	return db.client
 }
-
-func SqlError(err error) error {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return ErrRecordNotFound
-	}
-	return err
-}

@@ -15,7 +15,7 @@ type SqlApplication struct {
 }
 
 func (sql *SqlApplication) Create(ctx context.Context, doc *entities.Application) (*entities.Application, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	if tx := transaction.WithContext(ctx).Create(doc); tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -23,7 +23,7 @@ func (sql *SqlApplication) Create(ctx context.Context, doc *entities.Application
 }
 
 func (sql *SqlApplication) Update(ctx context.Context, doc *entities.Application) (*entities.Application, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Updates(doc)
@@ -35,7 +35,7 @@ func (sql *SqlApplication) Update(ctx context.Context, doc *entities.Application
 }
 
 func (sql *SqlApplication) Delete(ctx context.Context, doc *entities.Application) error {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Delete(doc)
@@ -66,7 +66,7 @@ func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.
 	doc := &entities.Application{}
 	doc.Id = id
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&doc).
 		Scopes(UseWsId(wsId, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).

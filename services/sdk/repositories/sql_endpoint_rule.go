@@ -15,7 +15,7 @@ type SqlEndpointRule struct {
 }
 
 func (sql *SqlEndpointRule) Create(ctx context.Context, doc *entities.EndpointRule) (*entities.EndpointRule, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	if tx := transaction.WithContext(ctx).Create(doc); tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -23,7 +23,7 @@ func (sql *SqlEndpointRule) Create(ctx context.Context, doc *entities.EndpointRu
 }
 
 func (sql *SqlEndpointRule) Update(ctx context.Context, doc *entities.EndpointRule) (*entities.EndpointRule, error) {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Updates(doc)
@@ -34,7 +34,7 @@ func (sql *SqlEndpointRule) Update(ctx context.Context, doc *entities.EndpointRu
 }
 
 func (sql *SqlEndpointRule) Delete(ctx context.Context, doc *entities.EndpointRule) error {
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		Delete(doc)
@@ -64,7 +64,7 @@ func (sql *SqlEndpointRule) Get(ctx context.Context, ep *entities.Endpoint, id s
 	doc := &entities.EndpointRule{}
 	doc.Id = id
 
-	transaction := database.SqlClientFromContext(ctx, sql.client)
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
 		Scopes(UseEpId(ep.Id, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
