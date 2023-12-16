@@ -10,7 +10,7 @@ import (
 
 	"github.com/scrapnode/kanthor/cmd/utils"
 	"github.com/scrapnode/kanthor/configuration"
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/services"

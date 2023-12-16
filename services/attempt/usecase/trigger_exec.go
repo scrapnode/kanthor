@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/sourcegraph/conc"

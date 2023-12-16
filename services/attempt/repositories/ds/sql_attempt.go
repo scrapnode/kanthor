@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
-	"github.com/scrapnode/kanthor/internal/domain/status"
+	"github.com/scrapnode/kanthor/internal/entities"
+	"github.com/scrapnode/kanthor/internal/status"
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"gorm.io/gorm"
 )

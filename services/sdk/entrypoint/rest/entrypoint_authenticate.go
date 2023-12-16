@@ -5,7 +5,7 @@ import (
 
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 

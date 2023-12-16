@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
-	"github.com/scrapnode/kanthor/internal/domain/constants"
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/constants"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"

@@ -3,7 +3,7 @@ package rest
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 

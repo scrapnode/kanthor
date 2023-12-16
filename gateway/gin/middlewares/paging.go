@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
-	"github.com/scrapnode/kanthor/internal/domain/structure"
+	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )

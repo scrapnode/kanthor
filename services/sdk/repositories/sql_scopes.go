@@ -3,7 +3,7 @@ package repositories
 import (
 	"fmt"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"gorm.io/gorm"
 )
 

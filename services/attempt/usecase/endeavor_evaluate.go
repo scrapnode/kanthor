@@ -3,8 +3,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
-	"github.com/scrapnode/kanthor/internal/domain/status"
+	"github.com/scrapnode/kanthor/internal/entities"
+	"github.com/scrapnode/kanthor/internal/status"
 )
 
 func (uc *endeavor) Evaluate(ctx context.Context, attempts map[string]*entities.Attempt) (*entities.AttemptStrive, error) {

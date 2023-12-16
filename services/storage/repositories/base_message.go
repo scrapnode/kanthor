@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 )
 
 type Message interface {

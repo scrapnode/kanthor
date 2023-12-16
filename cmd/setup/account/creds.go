@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/services/permissions"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )

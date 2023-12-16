@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/scrapnode/kanthor/internal/domain/structure"
+	"github.com/scrapnode/kanthor/internal/structure"
 	"gorm.io/gorm"
 )
 

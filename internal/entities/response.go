@@ -3,7 +3,7 @@ package entities
 import (
 	"encoding/json"
 
-	"github.com/scrapnode/kanthor/internal/domain/status"
+	"github.com/scrapnode/kanthor/internal/status"
 )
 
 type Response struct {

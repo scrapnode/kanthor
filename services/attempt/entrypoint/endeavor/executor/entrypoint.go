@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/internal/domain/entities"
-	"github.com/scrapnode/kanthor/internal/domain/transformation"
+	"github.com/scrapnode/kanthor/internal/entities"
+	"github.com/scrapnode/kanthor/internal/transformation"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
 )
 

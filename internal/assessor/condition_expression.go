@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 )
 
 var (

@@ -6,8 +6,8 @@ import (
 	"log"
 
 	"github.com/scrapnode/kanthor/database"
-	"github.com/scrapnode/kanthor/internal/domain/entities"
-	"github.com/scrapnode/kanthor/internal/domain/structure"
+	"github.com/scrapnode/kanthor/internal/entities"
+	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )

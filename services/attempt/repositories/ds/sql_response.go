@@ -3,7 +3,7 @@ package ds
 import (
 	"context"
 
-	"github.com/scrapnode/kanthor/internal/domain/entities"
+	"github.com/scrapnode/kanthor/internal/entities"
 	"gorm.io/gorm"
 )
 

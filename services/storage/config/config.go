@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/scrapnode/kanthor/configuration"
-	"github.com/scrapnode/kanthor/internal/domain/constants"
+	"github.com/scrapnode/kanthor/internal/constants"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 

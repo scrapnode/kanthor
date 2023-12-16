@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/internal/domain/constants"
-	"github.com/scrapnode/kanthor/internal/domain/entities"
-	"github.com/scrapnode/kanthor/internal/domain/transformation"
+	"github.com/scrapnode/kanthor/internal/constants"
+	"github.com/scrapnode/kanthor/internal/entities"
+	"github.com/scrapnode/kanthor/internal/transformation"
 	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services/storage/usecase"
 )
