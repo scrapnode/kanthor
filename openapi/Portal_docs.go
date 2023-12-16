@@ -317,7 +317,7 @@ const docTemplatePortal = `{
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -625,9 +625,14 @@ const docTemplatePortal = `{
         "rest.WorkspaceCredentialsUpdateReq": {
             "type": "object",
             "required": [
+                "expired_at",
                 "name"
             ],
             "properties": {
+                "expired_at": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "name": {
                     "type": "string"
                 }
@@ -637,14 +642,10 @@ const docTemplatePortal = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "expired_at": {
                     "type": "integer"
-                },
-                "hash": {
-                    "type": "string"
                 },
                 "id": {
                     "type": "string"

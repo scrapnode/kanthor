@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
+	"github.com/scrapnode/kanthor/infrastructure/sender"
+	"github.com/scrapnode/kanthor/logging"
 )
 
 var (
@@ -26,8 +30,20 @@ type Authenticator interface {
 	Authenticate(engine string, ctx context.Context, request *Request) (*Account, error)
 }
 
-func New() (Authenticator, error) {
-	return &authenticator{strategies: map[string]Verifier{}}, nil
+func New(conf []Config, logger logging.Logger, send sender.Send, cb circuitbreaker.CircuitBreaker) (Authenticator, error) {
+	instance := &authenticator{strategies: map[string]Verifier{}}
+
+	for _, c := range conf {
+		if c.Engine == EngineAsk {
+			instance.Register(c.Engine, NewAsk(c.Ask))
+		}
+
+		if c.Engine == EngineForward {
+			instance.Register(c.Engine, NewForward(c.Forward, logger, send, cb))
+		}
+	}
+
+	return instance, nil
 }
 
 type authenticator struct {

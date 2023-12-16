@@ -12,16 +12,17 @@ import (
 )
 
 type WorkspaceCredentialsUpdateReq struct {
-	Name string `json:"name" binding:"required"`
+	Name      string `json:"name" binding:"required"`
+	ExpiredAt int64  `json:"expired_at" binding:"required,gte=0"`
 }
 
 type WorkspaceCredentialsUpdateRes struct {
-	*entities.WorkspaceCredentials
+	*WorkspaceCredentials
 }
 
 // UseWorkspaceCredentialsUpdate
 // @Tags		workspace
-// @Router		/workspace/me/credentials/{wsc_id}	[put]
+// @Router		/workspace/me/credentials/{wsc_id}	[patch]
 // @Param		wsc_id								path		string							true	"credentials id"
 // @Param		props								body		WorkspaceCredentialsUpdateReq	true	"credentials properties"
 // @Success		200									{object}	WorkspaceCredentialsUpdateRes
@@ -42,9 +43,10 @@ func UseWorkspaceCredentialsUpdate(service *portal) gin.HandlerFunc {
 
 		id := ginctx.Param("wsc_id")
 		in := &usecase.WorkspaceCredentialsUpdateIn{
-			WsId: ws.Id,
-			Id:   id,
-			Name: req.Name,
+			WsId:      ws.Id,
+			Id:        id,
+			Name:      req.Name,
+			ExpiredAt: req.ExpiredAt,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
@@ -59,7 +61,14 @@ func UseWorkspaceCredentialsUpdate(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		res := &WorkspaceCredentialsUpdateRes{out.Doc}
+		res := &WorkspaceCredentialsUpdateRes{&WorkspaceCredentials{
+			Id:        out.Doc.Id,
+			CreatedAt: out.Doc.CreatedAt,
+			UpdatedAt: out.Doc.UpdatedAt,
+			WsId:      out.Doc.WsId,
+			Name:      out.Doc.Name,
+			ExpiredAt: out.Doc.ExpiredAt,
+		}}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

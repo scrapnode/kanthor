@@ -8,9 +8,10 @@ import (
 )
 
 type WorkspaceCredentialsUpdateIn struct {
-	WsId string
-	Id   string
-	Name string
+	WsId      string
+	Id        string
+	Name      string
+	ExpiredAt int64
 }
 
 func (req *WorkspaceCredentialsUpdateIn) Validate() error {
@@ -34,6 +35,7 @@ func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCreden
 		}
 
 		wsc.Name = req.Name
+		wsc.ExpiredAt = req.ExpiredAt
 		wsc.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.WorkspaceCredentials().Update(txctx, wsc)
 	})
@@ -41,9 +43,6 @@ func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCreden
 		return nil, err
 	}
 
-	wsc := doc.(*entities.WorkspaceCredentials)
-	// IMPORTANT: don't return hash value
-	wsc.Hash = ""
-
-	return &WorkspaceCredentialsUpdateOut{Doc: wsc}, nil
+	out := &WorkspaceCredentialsUpdateOut{Doc: doc.(*entities.WorkspaceCredentials)}
+	return out, nil
 }

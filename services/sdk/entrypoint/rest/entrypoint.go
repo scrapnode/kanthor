@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
@@ -64,15 +63,6 @@ func (service *sdk) Start(ctx context.Context) error {
 
 	if err := service.infra.Connect(ctx); err != nil {
 		return err
-	}
-	// register authenticator
-	for _, auth := range service.conf.Authenticator {
-		if auth.Engine == authenticator.EngineAsk {
-			service.infra.Authenticator.Register(auth.Engine, authenticator.NewAsk(auth.Ask))
-		}
-		if auth.Engine == authenticator.EngineForward {
-			service.infra.Authenticator.Register(auth.Engine, authenticator.NewForward(auth.Forward))
-		}
 	}
 	// register the SDK internal authenticator
 	err := service.infra.Authenticator.Register(AuthzEngineInternal, &internal{uc: service.uc})

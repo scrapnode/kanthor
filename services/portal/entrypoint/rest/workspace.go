@@ -29,6 +29,6 @@ func RegisterWorkspaceRoutes(router gin.IRoutes, service *portal) {
 	router.GET("/me/credentials", UseWorkspaceCredentialsList(service))
 	router.POST("/me/credentials", UseWorkspaceCredentialsCreate(service))
 	router.GET("/me/credentials/:wsc_id", UseWorkspaceCredentialsGet(service))
-	router.PUT("/me/credentials/:wsc_id", UseWorkspaceCredentialsUpdate(service))
+	router.PATCH("/me/credentials/:wsc_id", UseWorkspaceCredentialsUpdate(service))
 	router.PUT("/me/credentials/:wsc_id/expiration", UseWorkspaceCredentialsExpire(service))
 }

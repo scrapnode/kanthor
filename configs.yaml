@@ -51,6 +51,29 @@ infrastructure:
     uri: *redis_uri
     time_to_live: 43200000 # 12h
 
+  authenticators:
+    - engine: forward
+      forward:
+        uri: https://asia-southeast1-scrapnode-iam.cloudfunctions.net/api/auth/jwt/debug
+        headers:
+          - Content-Type
+          - User-Agent
+        sender:
+          timeout: 5000
+          retry:
+            count: 3
+            wait_time: 100
+        circuit_breaker:
+          close:
+            cleanup_interval: 600000 # 10m
+          half:
+            passthrough_requests: 10
+          open:
+            duration: 1800000 # 30m
+            conditions:
+              error_consecutive: 10
+              error_ratio: 0.5
+
   authorizator:
     engine: casbin
     casbin:
@@ -81,57 +104,11 @@ infrastructure:
 
 # services
 sdk:
-  authenticator:
-    - engine: forward
-      forward:
-        uri: https://asia-southeast1-scrapnode-iam.cloudfunctions.net/api/auth/jwt/debug
-        headers:
-          - Content-Type
-          - User-Agent
-        sender:
-          timeout: 5000
-          retry:
-            count: 3
-            wait_time: 100
-        circuit_breaker:
-          close:
-            cleanup_interval: 600000 # 10m
-          half:
-            passthrough_requests: 10
-          open:
-            duration: 1800000 # 30m
-            conditions:
-              error_consecutive: 10
-              error_ratio: 0.5
-
   gateway:
     addr: :8180
     timeout: 60000
 
 portal:
-  authenticator:
-    - engine: forward
-      forward:
-        uri: https://asia-southeast1-scrapnode-iam.cloudfunctions.net/api/auth/jwt/debug
-        headers:
-          - Content-Type
-          - User-Agent
-        sender:
-          trace: true
-          timeout: 5000
-          retry:
-            count: 3
-            wait_time: 100
-        circuit_breaker:
-          close:
-            cleanup_interval: 600000 # 10m
-          half:
-            passthrough_requests: 10
-          open:
-            duration: 1800000 # 30m
-            conditions:
-              error_consecutive: 10
-              error_ratio: 0.5
   gateway:
     addr: :8280
     timeout: 60000

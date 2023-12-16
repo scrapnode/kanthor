@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/scrapnode/kanthor/configuration"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
@@ -42,14 +43,15 @@ func (conf *Wrapper) Validate() error {
 }
 
 type Config struct {
-	Sender                 sender.Config         `json:"sender" yaml:"sender" mapstructure:"sender"`
-	CircuitBreaker         circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
-	Idempotency            idempotency.Config    `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
-	DistributedLockManager dlm.Config            `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
-	Cache                  cache.Config          `json:"cache" yaml:"cache" mapstructure:"cache"`
-	Metric                 metric.Config         `json:"metric" yaml:"metric" mapstructure:"metric"`
-	Authorizator           authorizator.Config   `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
-	Streaming              streaming.Config      `json:"streaming" yaml:"streaming" mapstructure:"streaming"`
+	Sender                 sender.Config          `json:"sender" yaml:"sender" mapstructure:"sender"`
+	CircuitBreaker         circuitbreaker.Config  `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
+	Idempotency            idempotency.Config     `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
+	DistributedLockManager dlm.Config             `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
+	Cache                  cache.Config           `json:"cache" yaml:"cache" mapstructure:"cache"`
+	Metric                 metric.Config          `json:"metric" yaml:"metric" mapstructure:"metric"`
+	Authenticators         []authenticator.Config `json:"authenticators" yaml:"authenticators" mapstructure:"authenticators"`
+	Authorizator           authorizator.Config    `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
+	Streaming              streaming.Config       `json:"streaming" yaml:"streaming" mapstructure:"streaming"`
 }
 
 func (conf *Config) Validate() error {
@@ -71,6 +73,14 @@ func (conf *Config) Validate() error {
 	if err := conf.Metric.Validate(); err != nil {
 		return fmt.Errorf("infrastructure.metric: %v", err)
 	}
+	if len(conf.Authenticators) > 0 {
+		for i, authenticator := range conf.Authenticators {
+			if err := authenticator.Validate(); err != nil {
+				return fmt.Errorf("infrastructure.authenticator[%d]: %v", i, err)
+			}
+		}
+	}
+
 	if err := conf.Authorizator.Validate(); err != nil {
 		return fmt.Errorf("infrastructure.authorizator: %v", err)
 	}

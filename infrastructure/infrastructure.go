@@ -42,7 +42,7 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
-	auth, err := authenticator.New()
+	auth, err := authenticator.New(conf.Authenticators, logger, send, cb)
 	if err != nil {
 		return nil, err
 	}

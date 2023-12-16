@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
@@ -65,15 +64,6 @@ func (service *portal) Start(ctx context.Context) error {
 	if err := service.infra.Connect(ctx); err != nil {
 		return err
 	}
-	// register authenticator
-	for _, auth := range service.conf.Authenticator {
-		if auth.Engine == authenticator.EngineAsk {
-			service.infra.Authenticator.Register(auth.Engine, authenticator.NewAsk(auth.Ask))
-		}
-		if auth.Engine == authenticator.EngineForward {
-			service.infra.Authenticator.Register(auth.Engine, authenticator.NewForward(auth.Forward))
-		}
-	}
 
 	router, err := service.router()
 	if err != nil {
@@ -111,7 +101,7 @@ func (service *portal) router() (*gin.Engine, error) {
 		api.Use(middlewares.UseMetric(service.infra.Metric, "portal"))
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
 
-		api.Use(middlewares.UseAuth(service.infra.Authenticator, service.conf.Authenticator[0].Engine))
+		api.Use(middlewares.UseAuth(service.infra.Authenticator, service.infra.Authenticator.Engines()[0]))
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)

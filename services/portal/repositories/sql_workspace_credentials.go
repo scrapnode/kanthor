@@ -37,7 +37,9 @@ func (sql *SqlWorkspaceCredentials) Update(ctx context.Context, doc *entities.Wo
 func (sql *SqlWorkspaceCredentials) List(ctx context.Context, wsId string, limit, page int, q string) ([]entities.WorkspaceCredentials, error) {
 	tx := sql.client.WithContext(ctx).
 		Model(&entities.WorkspaceCredentials{}).
-		Scopes(UseWsId(wsId, entities.TableWsc))
+		Scopes(UseWsId(wsId, entities.TableWsc)).
+		Order(fmt.Sprintf("%s.id DESC", entities.TableWsc))
+
 	tx = database.ApplyListQuery(tx, limit, page, q, []string{fmt.Sprintf("%s.name", entities.TableWsc)})
 
 	var docs []entities.WorkspaceCredentials

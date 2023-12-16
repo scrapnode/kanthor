@@ -40,8 +40,8 @@ type Ask struct {
 func (conf *Ask) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("UTHENTICATOR.ASK.ACCESS_KEY", conf.AccessKey),
-		validator.StringRequired("UTHENTICATOR.ASK.SECRET_KEY", conf.SecretKey),
+		validator.StringRequired("AUTHENTICATOR.ASK.ACCESS_KEY", conf.AccessKey),
+		validator.StringRequired("AUTHENTICATOR.ASK.SECRET_KEY", conf.SecretKey),
 	)
 }
 
@@ -55,7 +55,7 @@ type Forward struct {
 func (conf *Forward) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("UTHENTICATOR.FORWARD.URI", conf.Uri),
+		validator.StringUri("AUTHENTICATOR.FORWARD.URI", conf.Uri),
 	)
 	if err != nil {
 		return err

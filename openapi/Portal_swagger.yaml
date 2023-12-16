@@ -146,23 +146,21 @@ definitions:
     type: object
   rest.WorkspaceCredentialsUpdateReq:
     properties:
+      expired_at:
+        minimum: 0
+        type: integer
       name:
         type: string
     required:
+    - expired_at
     - name
     type: object
   rest.WorkspaceCredentialsUpdateRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       expired_at:
         type: integer
-      hash:
-        type: string
       id:
         type: string
       name:
@@ -405,7 +403,7 @@ paths:
       - WsId: []
       tags:
       - workspace
-    put:
+    patch:
       parameters:
       - description: credentials id
         in: path

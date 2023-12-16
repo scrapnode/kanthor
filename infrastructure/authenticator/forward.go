@@ -12,20 +12,7 @@ import (
 
 var EngineForward = "forward"
 
-func NewForward(conf *Forward) Verifier {
-	logger, err := logging.NewNoop()
-	if err != nil {
-		panic(err)
-	}
-	send, err := sender.New(&conf.Sender, logger)
-	if err != nil {
-		panic(err)
-	}
-	cb, err := circuitbreaker.New(&conf.CircuitBreaker, logger)
-	if err != nil {
-		panic(err)
-	}
-
+func NewForward(conf *Forward, logger logging.Logger, send sender.Send, cb circuitbreaker.CircuitBreaker) Verifier {
 	return &forward{conf: conf, send: send, cb: cb}
 }
 

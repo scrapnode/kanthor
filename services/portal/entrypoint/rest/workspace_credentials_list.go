@@ -12,8 +12,8 @@ import (
 )
 
 type WorkspaceCredentialsListRes struct {
-	Data  []WorkspaceCredentials
-	Count int64
+	Data  []WorkspaceCredentials `json:"data"`
+	Count int64                  `json:"count"`
 }
 
 // UseWorkspaceCredentialsList
