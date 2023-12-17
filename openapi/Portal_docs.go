@@ -150,7 +150,7 @@ const docTemplatePortal = `{
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -585,14 +585,10 @@ const docTemplatePortal = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "expired_at": {
                     "type": "integer"
-                },
-                "hash": {
-                    "type": "string"
                 },
                 "id": {
                     "type": "string"
@@ -665,7 +661,6 @@ const docTemplatePortal = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -706,7 +701,6 @@ const docTemplatePortal = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {

@@ -8,7 +8,7 @@ var (
 
 var PortalOwnerPermissions = []authorizator.Permission{
 	{Object: "/api/workspace/me", Action: "GET"},
-	{Object: "/api/workspace/me", Action: "PUT"},
+	{Object: "/api/workspace/me", Action: "PATCH"},
 
 	{Object: "/api/workspace/me/credentials", Action: "POST"},
 	{Object: "/api/workspace/me/credentials", Action: "GET"},

@@ -16,12 +16,12 @@ type WorkspaceUpdateReq struct {
 }
 
 type WorkspaceUpdateRes struct {
-	*entities.Workspace
+	*Workspace
 }
 
 // UseWorkspaceUpdate
 // @Tags		workspace
-// @Router		/workspace/me			[put]
+// @Router		/workspace/me			[patch]
 // @Param		props					body		WorkspaceUpdateReq	true	"credentials properties"
 // @Success		200						{object}	WorkspaceUpdateRes
 // @Failure		default					{object}	gateway.Error
@@ -53,7 +53,7 @@ func UseWorkspaceUpdate(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		res := &WorkspaceUpdateRes{out.Doc}
+		res := &WorkspaceUpdateRes{ToWorkspace(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

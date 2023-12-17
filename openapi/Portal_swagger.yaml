@@ -117,15 +117,9 @@ definitions:
   rest.WorkspaceCredentialsGetRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       expired_at:
         type: integer
-      hash:
-        type: string
       id:
         type: string
       name:
@@ -173,10 +167,6 @@ definitions:
   rest.WorkspaceGetRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -203,10 +193,6 @@ definitions:
   rest.WorkspaceUpdateRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -304,7 +290,7 @@ paths:
       - WsId: []
       tags:
       - workspace
-    put:
+    patch:
       parameters:
       - description: credentials properties
         in: body

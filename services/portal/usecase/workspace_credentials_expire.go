@@ -41,7 +41,12 @@ func (uc *workspaceCredentials) Expire(ctx context.Context, in *WorkspaceCredent
 			return nil, errors.New("credentials was already expired")
 		}
 
-		wsc.ExpiredAt = uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(in.Duration)).UnixMilli()
+		expiredAt := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(in.Duration)).UnixMilli()
+		if wsc.ExpiredAt > 0 && expiredAt > wsc.ExpiredAt {
+			return nil, errors.New("credentials expired could not be extended with longer expire time")
+		}
+
+		wsc.ExpiredAt = expiredAt
 		wsc.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.WorkspaceCredentials().Update(txctx, wsc)
 	})

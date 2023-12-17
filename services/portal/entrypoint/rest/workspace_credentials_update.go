@@ -61,14 +61,7 @@ func UseWorkspaceCredentialsUpdate(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		res := &WorkspaceCredentialsUpdateRes{&WorkspaceCredentials{
-			Id:        out.Doc.Id,
-			CreatedAt: out.Doc.CreatedAt,
-			UpdatedAt: out.Doc.UpdatedAt,
-			WsId:      out.Doc.WsId,
-			Name:      out.Doc.Name,
-			ExpiredAt: out.Doc.ExpiredAt,
-		}}
+		res := &WorkspaceCredentialsUpdateRes{ToWorkspaceCredentials(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

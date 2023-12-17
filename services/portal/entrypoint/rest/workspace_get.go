@@ -12,7 +12,7 @@ import (
 )
 
 type WorkspaceGetRes struct {
-	*entities.Workspace
+	*Workspace
 	Permissions []authorizator.Permission `json:"permissions"`
 }
 
@@ -37,7 +37,7 @@ func UseWorkspaceGet(service *portal) gin.HandlerFunc {
 		}
 
 		res := &WorkspaceGetRes{
-			Workspace:   ws,
+			Workspace:   ToWorkspace(ws),
 			Permissions: permissions,
 		}
 		ginctx.JSON(http.StatusOK, res)

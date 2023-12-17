@@ -12,7 +12,7 @@ import (
 )
 
 type WorkspaceCredentialsGetRes struct {
-	*entities.WorkspaceCredentials
+	*WorkspaceCredentials
 }
 
 // UseWorkspaceCredentialsGet
@@ -46,7 +46,7 @@ func UseWorkspaceCredentialsGet(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		res := &WorkspaceCredentialsGetRes{out.Doc}
+		res := &WorkspaceCredentialsGetRes{ToWorkspaceCredentials(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }
