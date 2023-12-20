@@ -27,15 +27,15 @@ type WorkspaceCredentialsUpdateOut struct {
 	Doc *entities.WorkspaceCredentials
 }
 
-func (uc *workspaceCredentials) Update(ctx context.Context, req *WorkspaceCredentialsUpdateIn) (*WorkspaceCredentialsUpdateOut, error) {
+func (uc *workspaceCredentials) Update(ctx context.Context, in *WorkspaceCredentialsUpdateIn) (*WorkspaceCredentialsUpdateOut, error) {
 	doc, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		wsc, err := uc.repositories.WorkspaceCredentials().Get(txctx, req.WsId, req.Id)
+		wsc, err := uc.repositories.WorkspaceCredentials().Get(txctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		wsc.Name = req.Name
-		wsc.ExpiredAt = req.ExpiredAt
+		wsc.Name = in.Name
+		wsc.ExpiredAt = in.ExpiredAt
 		wsc.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.WorkspaceCredentials().Update(txctx, wsc)
 	})

@@ -58,21 +58,6 @@ infrastructure:
         headers:
           - Content-Type
           - User-Agent
-        sender:
-          timeout: 5000
-          retry:
-            count: 3
-            wait_time: 100
-        circuit_breaker:
-          close:
-            cleanup_interval: 600000 # 10m
-          half:
-            passthrough_requests: 10
-          open:
-            duration: 1800000 # 30m
-            conditions:
-              error_consecutive: 10
-              error_ratio: 0.5
 
   authorizator:
     engine: casbin
