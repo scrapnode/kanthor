@@ -18,7 +18,7 @@ func UseWorkspace(resolve func(ctx context.Context, id string) (*entities.Worksp
 
 		id := ginctx.Request.Header.Get(authorizator.HeaderAuthWorkspace)
 		// fallback to default workspace id of request account
-		if ws, has := acc.Metadata[string(gateway.CtxWorkspace)]; has && id == "" {
+		if ws, has := acc.Metadata[string(gateway.CtxWorkspaceId)]; has && id == "" {
 			id = ws
 		}
 		if id == "" {
