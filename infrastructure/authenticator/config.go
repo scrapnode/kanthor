@@ -1,8 +1,6 @@
 package authenticator
 
 import (
-	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
-	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -46,28 +44,13 @@ func (conf *Ask) Validate() error {
 }
 
 type Forward struct {
-	Uri            string                `json:"uri" yaml:"uri" mapstructure:"uri"`
-	Headers        []string              `json:"headers" yaml:"headers" mapstructure:"headers"`
-	Sender         sender.Config         `json:"sender" yaml:"sender" mapstructure:"sender"`
-	CircuitBreaker circuitbreaker.Config `json:"circuit_breaker" yaml:"circuit_breaker" mapstructure:"circuit_breaker"`
+	Uri     string   `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Headers []string `json:"headers" yaml:"headers" mapstructure:"headers"`
 }
 
 func (conf *Forward) Validate() error {
-	err := validator.Validate(
+	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringUri("AUTHENTICATOR.FORWARD.URI", conf.Uri),
 	)
-	if err != nil {
-		return err
-	}
-
-	if err := conf.Sender.Validate(); err != nil {
-		return err
-	}
-
-	if err := conf.CircuitBreaker.Validate(); err != nil {
-		return err
-	}
-
-	return nil
 }

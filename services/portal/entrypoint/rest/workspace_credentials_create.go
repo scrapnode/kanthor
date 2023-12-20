@@ -19,6 +19,7 @@ type WorkspaceCredentialsCreateReq struct {
 
 type WorkspaceCredentialsCreateRes struct {
 	Id       string `json:"id"`
+	Name     string `json:"name"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 }
@@ -71,6 +72,7 @@ func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 
 		res := &WorkspaceCredentialsCreateRes{
 			Id:       out.Credentials.Id,
+			Name:     out.Credentials.Name,
 			User:     out.Credentials.Id,
 			Password: out.Password,
 		}
