@@ -16,13 +16,13 @@ type WorkspaceCredentialsGetRes struct {
 }
 
 // UseWorkspaceCredentialsGet
-// @Tags		workspace
-// @Router		/workspace/me/credentials/{wsc_id}	[get]
-// @Param		wsc_id								path		string						true	"credentials id"
-// @Success		200									{object}	WorkspaceCredentialsGetRes
-// @Failure		default								{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Tags		credentials
+// @Router		/credentials/{wsc_id}	[get]
+// @Param		wsc_id					path		string						true	"credentials id"
+// @Success		200						{object}	WorkspaceCredentialsGetRes
+// @Failure		default					{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseWorkspaceCredentialsGet(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)

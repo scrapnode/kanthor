@@ -34,10 +34,10 @@ const docTemplatePortal = `{
             "get": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
                     },
                     {
-                        "WsId": []
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -63,7 +63,10 @@ const docTemplatePortal = `{
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -96,131 +99,36 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "/workspace": {
+        "/credentials": {
             "get": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
-                    "workspace"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/rest.WorkspaceGetRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/workspace/me": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    },
-                    {
-                        "WsId": []
-                    }
-                ],
-                "tags": [
-                    "workspace"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/rest.WorkspaceGetRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    },
-                    {
-                        "WsId": []
-                    }
-                ],
-                "tags": [
-                    "workspace"
+                    "credentials"
                 ],
                 "parameters": [
                     {
-                        "description": "credentials properties",
-                        "name": "props",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/rest.WorkspaceUpdateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/rest.WorkspaceUpdateRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/workspace/me/credentials": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    },
-                    {
-                        "WsId": []
-                    }
-                ],
-                "tags": [
-                    "workspace"
-                ],
-                "parameters": [
-                    {
-                        "maxLength": 32,
-                        "minLength": 2,
                         "type": "string",
                         "description": "search keyword",
                         "name": "_q",
                         "in": "query"
                     },
                     {
-                        "maximum": 30,
-                        "minimum": 5,
                         "type": "integer",
+                        "default": 10,
                         "description": "limit returning records",
                         "name": "_limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "default": 0,
                         "description": "requesting page",
                         "name": "_page",
                         "in": "query"
@@ -244,14 +152,14 @@ const docTemplatePortal = `{
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
                     },
                     {
-                        "WsId": []
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
-                    "workspace"
+                    "credentials"
                 ],
                 "parameters": [
                     {
@@ -280,18 +188,18 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "/workspace/me/credentials/{wsc_id}": {
+        "/credentials/{wsc_id}": {
             "get": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
                     },
                     {
-                        "WsId": []
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
-                    "workspace"
+                    "credentials"
                 ],
                 "parameters": [
                     {
@@ -320,14 +228,14 @@ const docTemplatePortal = `{
             "patch": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
                     },
                     {
-                        "WsId": []
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
-                    "workspace"
+                    "credentials"
                 ],
                 "parameters": [
                     {
@@ -363,18 +271,18 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "/workspace/me/credentials/{wsc_id}/expiration": {
+        "/credentials/{wsc_id}/expiration": {
             "put": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
                     },
                     {
-                        "WsId": []
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
-                    "workspace"
+                    "credentials"
                 ],
                 "parameters": [
                     {
@@ -399,6 +307,99 @@ const docTemplatePortal = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/rest.WorkspaceCredentialsExpireRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.WorkspaceGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/me": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.WorkspaceGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "parameters": [
+                    {
+                        "description": "credentials properties",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.WorkspaceUpdateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.WorkspaceUpdateRes"
                         }
                     },
                     "default": {
@@ -446,7 +447,7 @@ const docTemplatePortal = `{
         "entities.Workspace": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "createdAt": {
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
@@ -456,13 +457,13 @@ const docTemplatePortal = `{
                 "name": {
                     "type": "string"
                 },
-                "owner_id": {
+                "ownerId": {
                     "type": "string"
                 },
                 "tier": {
                     "type": "string"
                 },
-                "updated_at": {
+                "updatedAt": {
                     "type": "integer"
                 }
             }
@@ -507,7 +508,30 @@ const docTemplatePortal = `{
                     "$ref": "#/definitions/authenticator.Account"
                 },
                 "workspace": {
-                    "$ref": "#/definitions/entities.Workspace"
+                    "$ref": "#/definitions/rest.Workspace"
+                }
+            }
+        },
+        "rest.Workspace": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "tier": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
                 }
             }
         },
@@ -536,15 +560,14 @@ const docTemplatePortal = `{
         },
         "rest.WorkspaceCredentialsCreateReq": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
                 "expired_at": {
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1893456000000
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "swagger demo"
                 }
             }
         },
@@ -552,6 +575,9 @@ const docTemplatePortal = `{
             "type": "object",
             "properties": {
                 "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "password": {
@@ -566,7 +592,8 @@ const docTemplatePortal = `{
             "type": "object",
             "properties": {
                 "duration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1800000
                 }
             }
         },
@@ -620,17 +647,14 @@ const docTemplatePortal = `{
         },
         "rest.WorkspaceCredentialsUpdateReq": {
             "type": "object",
-            "required": [
-                "expired_at",
-                "name"
-            ],
             "properties": {
                 "expired_at": {
                     "type": "integer",
-                    "minimum": 0
+                    "default": 1893456000000
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "swagger demo update"
                 }
             }
         },
@@ -722,16 +746,16 @@ const docTemplatePortal = `{
         }
     },
     "securityDefinitions": {
-        "BearerAuth": {
-            "description": "[Bearer \u003cJWT token\u003e] or [Basic base64(key:secret)]",
+        "Authorization": {
+            "description": "[Bearer JWT_TOKEN] or [Basic base64(key:secret)]",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
         },
-        "WsId": {
+        "WorkspaceId": {
             "description": "The selected workspace id you are working with",
             "type": "apiKey",
-            "name": "kanthor-ws-id",
+            "name": "x-authorization-workspace",
             "in": "header"
         }
     },

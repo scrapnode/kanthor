@@ -12,28 +12,26 @@ import (
 )
 
 type EndpointDeleteRes struct {
-	*entities.Endpoint
+	*Endpoint
 }
 
 // UseEndpointDelete
 // @Tags		endpoint
-// @Router		/application/{app_id}/endpoint/{ep_id}	[delete]
-// @Param		app_id									path		string					true	"application id"
-// @Param		ep_id									path		string					true	"endpoint id"
-// @Success		200										{object}	EndpointDeleteRes
-// @Failure		default									{object}	gateway.Error
-// @Security	BasicAuth
+// @Router		/endpoint/{ep_id}	[delete]
+// @Param		app_id				query		string					true	"application id"
+// @Param		ep_id				path		string					true	"endpoint id"
+// @Success		200					{object}	EndpointDeleteRes
+// @Failure		default				{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseEndpointDelete(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		appId := ginctx.Param("app_id")
-		id := ginctx.Param("ep_id")
 		in := &usecase.EndpointDeleteIn{
-			WsId:  ws.Id,
-			AppId: appId,
-			Id:    id,
+			WsId: ws.Id,
+			Id:   ginctx.Param("ep_id"),
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Error(err)
@@ -48,7 +46,7 @@ func UseEndpointDelete(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointDeleteRes{out.Doc}
+		res := &EndpointDeleteRes{ToEndpoint(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

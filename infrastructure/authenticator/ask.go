@@ -24,5 +24,5 @@ func (verifier *ask) Verify(ctx context.Context, request *Request) (*Account, er
 		return nil, ErrInvalidCredentials
 	}
 
-	return &Account{Sub: user, Name: user}, nil
+	return &Account{Sub: user, Name: user, Metadata: make(map[string]string)}, nil
 }

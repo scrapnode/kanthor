@@ -21,17 +21,18 @@ type EndpointRuleCreateReq struct {
 }
 
 type EndpointRuleCreateRes struct {
-	*entities.EndpointRule
+	*EndpointRule
 }
 
 // UseEndpointRuleCreate
 // @Tags		endpoint rule
-// @Router		/endpoint/{ep_id}/rule	[post]
-// @Param		ep_id					path		string					true	"endpoint id"
-// @Param		props					body		EndpointRuleCreateReq	true	"rule properties"
-// @Success		201						{object}	EndpointRuleCreateRes
-// @Failure		default					{object}	gateway.Error
-// @Security	BasicAuth
+// @Router		/rule		[post]
+// @Param		ep_id		query		string					true	"endpoint id"
+// @Param		props		body		EndpointRuleCreateReq	true	"rule properties"
+// @Success		201			{object}	EndpointRuleCreateRes
+// @Failure		default		{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointRuleCreateReq
@@ -42,11 +43,11 @@ func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {
 		}
 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
-		epId := ginctx.Param("ep_id")
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.EndpointRuleCreateIn{
-			Ws:                  ctx.Value(gateway.CtxWorkspace).(*entities.Workspace),
-			EpId:                epId,
+			WsId:                ws.Id,
+			EpId:                ginctx.Query("ep_id"),
 			Name:                req.Name,
 			Priority:            req.Priority,
 			Exclusionary:        req.Exclusionary,
@@ -66,7 +67,7 @@ func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointRuleCreateRes{out.Doc}
+		res := &EndpointRuleCreateRes{ToEndpointRule(out.Doc)}
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

@@ -8,17 +8,15 @@ import (
 )
 
 type EndpointRuleDeleteIn struct {
-	Ws   *entities.Workspace
-	EpId string
+	WsId string
 	Id   string
 }
 
 func (in *EndpointRuleDeleteIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.PointerNotNil("ws", in.Ws),
-		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
-		validator.StringStartsWith("id", in.EpId, entities.IdNsEpr),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("id", in.Id, entities.IdNsEpr),
 	)
 }
 
@@ -28,12 +26,7 @@ type EndpointRuleDeleteOut struct {
 
 func (uc *endpointRule) Delete(ctx context.Context, in *EndpointRuleDeleteIn) (*EndpointRuleDeleteOut, error) {
 	epr, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, in.Ws, in.EpId)
-		if err != nil {
-			return nil, err
-		}
-
-		epr, err := uc.repositories.EndpointRule().Get(txctx, ep, in.Id)
+		epr, err := uc.repositories.EndpointRule().Get(ctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}

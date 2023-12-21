@@ -5,36 +5,29 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/scrapnode/kanthor/internal/structure"
 	"gorm.io/gorm"
 )
 
-func ApplyListQuery(tx *gorm.DB, limit, page int, q string, qcols []string) *gorm.DB {
+func ApplyListQuery(tx *gorm.DB, q string, qcols []string, limit, page int) *gorm.DB {
 	if len(q) >= 3 && len(qcols) > 0 {
 		for _, qcol := range qcols {
-			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), q)
+			// because dataset volume of database is often small, so we can use scanning here
+			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+q+"%")
 		}
 	}
 
 	return tx.Limit(limit).Offset(MaxInt((page-1)*limit, 0))
 }
 
-func SqlToListQuery(tx *gorm.DB, req *structure.ListReq, attr string) *gorm.DB {
-	if len(req.Ids) > 0 {
-		tx = tx.Where(fmt.Sprintf("%s IN ?", attr), req.Ids)
+func ApplyCountQuery(tx *gorm.DB, q string, qcols []string) *gorm.DB {
+	if len(q) >= 3 && len(qcols) > 0 {
+		for _, qcol := range qcols {
+			// because dataset volume of database is often small, so we can use scanning here
+			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+q+"%")
+		}
 	}
 
-	tx = tx.Order(fmt.Sprintf("%s DESC", attr))
-
-	if req.Limit > 0 {
-		tx = tx.Limit(req.Limit)
-	}
-
-	if req.Cursor == "" {
-		return tx
-	}
-
-	return tx.Where(fmt.Sprintf("%s < ?", attr), req.Cursor)
+	return tx
 }
 
 func SqlTxnFromContext(ctx context.Context, client *gorm.DB) *gorm.DB {

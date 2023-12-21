@@ -22,14 +22,14 @@ type AccountGetRes struct {
 // @Router		/account/me			[get]
 // @Success		200					{object}	AccountGetRes
 // @Failure		default				{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseAccountGet(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
-		res := &AccountGetRes{Account: acc}
+		res := &AccountGetRes{Account: acc, Workspaces: make([]entities.Workspace, 0)}
 
 		// we don't need to validate input here because we know it must be valid
 		in := &usecase.WorkspaceListIn{AccId: acc.Sub}

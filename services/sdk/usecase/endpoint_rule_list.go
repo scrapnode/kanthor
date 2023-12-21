@@ -4,45 +4,43 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointRuleListIn struct {
-	Ws   *entities.Workspace
+	*entities.Query
+	WsId string
 	EpId string
-	*structure.ListReq
 }
 
 func (in *EndpointRuleListIn) Validate() error {
+	if err := in.Query.Validate(); err != nil {
+		return err
+	}
+
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.PointerNotNil("ws", in.Ws),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
 		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
-		validator.PointerNotNil("list", in.ListReq),
 	)
 }
 
 type EndpointRuleListOut struct {
-	*structure.ListRes[entities.EndpointRule]
+	Data  []entities.EndpointRule
+	Count int64
 }
 
 func (uc *endpointRule) List(ctx context.Context, in *EndpointRuleListIn) (*EndpointRuleListOut, error) {
-	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, in.Ws, in.EpId)
-	if err != nil {
-		return nil, err
-	}
-	listing, err := uc.repositories.EndpointRule().List(
-		ctx,
-		ep,
-		structure.WithListCursor(in.Cursor),
-		structure.WithListSearch(in.Search),
-		structure.WithListLimit(in.Limit),
-		structure.WithListIds(in.Ids),
-	)
+	data, err := uc.repositories.EndpointRule().List(ctx, in.WsId, in.EpId, in.Search, in.Limit, in.Page)
 	if err != nil {
 		return nil, err
 	}
 
-	return &EndpointRuleListOut{ListRes: listing}, nil
+	count, err := uc.repositories.EndpointRule().Count(ctx, in.WsId, in.EpId, in.Search)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &EndpointRuleListOut{Data: data, Count: count}
+	return out, nil
 }

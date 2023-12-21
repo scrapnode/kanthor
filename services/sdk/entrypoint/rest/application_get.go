@@ -12,7 +12,7 @@ import (
 )
 
 type ApplicationGetRes struct {
-	*entities.Application
+	*Application
 }
 
 // UseApplicationGet
@@ -21,7 +21,8 @@ type ApplicationGetRes struct {
 // @Param		app_id					path		string					true	"application id"
 // @Success		200						{object}	ApplicationGetRes
 // @Failure		default					{object}	gateway.Error
-// @Security	BasicAuth
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseApplicationGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
@@ -45,7 +46,7 @@ func UseApplicationGet(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &ApplicationGetRes{out.Doc}
+		res := &ApplicationGetRes{ToApplication(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

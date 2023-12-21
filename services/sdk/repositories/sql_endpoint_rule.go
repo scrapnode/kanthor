@@ -6,7 +6,6 @@ import (
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"gorm.io/gorm"
 )
 
@@ -45,28 +44,59 @@ func (sql *SqlEndpointRule) Delete(ctx context.Context, doc *entities.EndpointRu
 	return nil
 }
 
-func (sql *SqlEndpointRule) List(ctx context.Context, ep *entities.Endpoint, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error) {
+func (sql *SqlEndpointRule) List(ctx context.Context, wsId, epId string, q string, limit, page int) ([]entities.EndpointRule, error) {
 	doc := &entities.EndpointRule{}
-	tx := sql.client.WithContext(ctx).Model(doc).Scopes(UseEpId(ep.Id, doc.TableName()))
+	tx := sql.client.WithContext(ctx).Model(doc).
+		Scopes(
+			UseEpId(epId, doc.TableName()),
+			UseApp(entities.IdNsEp),
+			UseWsId(wsId, entities.IdNsApp),
+		)
 
-	req := structure.ListReqBuild(opts)
-	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
+	qcols := []string{
+		fmt.Sprintf("%s.name", doc.TableName()),
+		fmt.Sprintf("%s.condition_source", doc.TableName()),
+	}
+	tx = database.ApplyListQuery(tx, q, qcols, limit, page)
 
-	res := &structure.ListRes[entities.EndpointRule]{Data: []entities.EndpointRule{}}
-	if tx = tx.Find(&res.Data); tx.Error != nil {
+	var docs []entities.EndpointRule
+	if tx = tx.Find(&docs); tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	return structure.ListResBuild(res, req), nil
+	return docs, nil
 }
 
-func (sql *SqlEndpointRule) Get(ctx context.Context, ep *entities.Endpoint, id string) (*entities.EndpointRule, error) {
+func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, epId string, q string) (int64, error) {
+	doc := &entities.EndpointRule{}
+	tx := sql.client.WithContext(ctx).Model(doc).
+		Scopes(
+			UseEpId(epId, doc.TableName()),
+			UseApp(entities.IdNsEp),
+			UseWsId(wsId, entities.IdNsApp),
+		)
+
+	qcols := []string{
+		fmt.Sprintf("%s.name", doc.TableName()),
+		fmt.Sprintf("%s.condition_source", doc.TableName()),
+	}
+	tx = database.ApplyCountQuery(tx, q, qcols)
+
+	var count int64
+	return count, tx.Count(&count).Error
+}
+
+func (sql *SqlEndpointRule) Get(ctx context.Context, wsId string, id string) (*entities.EndpointRule, error) {
 	doc := &entities.EndpointRule{}
 	doc.Id = id
 
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(doc).
-		Scopes(UseEpId(ep.Id, doc.TableName())).
+		Scopes(
+			UseEp(doc.TableName()),
+			UseApp(entities.IdNsEp),
+			UseWsId(wsId, entities.IdNsApp),
+		).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)
 	if tx.Error != nil {

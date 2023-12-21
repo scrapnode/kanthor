@@ -6,7 +6,6 @@ import (
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"gorm.io/gorm"
 )
 
@@ -46,20 +45,31 @@ func (sql *SqlApplication) Delete(ctx context.Context, doc *entities.Application
 	return nil
 }
 
-func (sql *SqlApplication) List(ctx context.Context, wsId string, opts ...structure.ListOps) (*structure.ListRes[entities.Application], error) {
+func (sql *SqlApplication) List(ctx context.Context, wsId string, q string, limit, page int) ([]entities.Application, error) {
 	doc := &entities.Application{}
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(UseWsId(wsId, doc.TableName()))
 
-	req := structure.ListReqBuild(opts)
-	tx = database.SqlToListQuery(tx, req, fmt.Sprintf(`"%s"."id"`, doc.TableName()))
+	tx = database.ApplyListQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())}, limit, page)
 
-	res := &structure.ListRes[entities.Application]{Data: []entities.Application{}}
-	if tx = tx.Find(&res.Data); tx.Error != nil {
+	var docs []entities.Application
+	if tx = tx.Find(&docs); tx.Error != nil {
 		return nil, tx.Error
 	}
 
-	return structure.ListResBuild(res, req), nil
+	return docs, nil
+}
+
+func (sql *SqlApplication) Count(ctx context.Context, wsId string, q string) (int64, error) {
+	doc := &entities.Application{}
+
+	tx := sql.client.WithContext(ctx).Model(doc).
+		Scopes(UseWsId(wsId, entities.TableWsc))
+
+	tx = database.ApplyCountQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())})
+
+	var count int64
+	return count, tx.Count(&count).Error
 }
 
 func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.Application, error) {

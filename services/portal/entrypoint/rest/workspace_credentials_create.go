@@ -13,8 +13,8 @@ import (
 )
 
 type WorkspaceCredentialsCreateReq struct {
-	Name      string `json:"name" binding:"required"`
-	ExpiredAt int64  `json:"expired_at"`
+	Name      string `json:"name" default:"swagger demo"`
+	ExpiredAt int64  `json:"expired_at" default:"1893456000000"`
 }
 
 type WorkspaceCredentialsCreateRes struct {
@@ -25,13 +25,13 @@ type WorkspaceCredentialsCreateRes struct {
 }
 
 // UseWorkspaceCredentialsCreate
-// @Tags		workspace
-// @Router		/workspace/me/credentials	[post]
-// @Param		props						body		WorkspaceCredentialsCreateReq	true	"credentials properties"
-// @Success		200							{object}	WorkspaceCredentialsCreateRes
-// @Failure		default						{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Tags		credentials
+// @Router		/credentials	[post]
+// @Param		props			body		WorkspaceCredentialsCreateReq	true	"credentials properties"
+// @Success		200				{object}	WorkspaceCredentialsCreateRes
+// @Failure		default			{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsCreateReq

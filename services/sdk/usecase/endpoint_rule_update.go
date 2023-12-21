@@ -8,8 +8,7 @@ import (
 )
 
 type EndpointRuleUpdateIn struct {
-	Ws   *entities.Workspace
-	EpId string
+	WsId string
 	Id   string
 	Name string
 }
@@ -17,9 +16,8 @@ type EndpointRuleUpdateIn struct {
 func (in *EndpointRuleUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.PointerNotNil("ws", in.Ws),
-		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
-		validator.StringStartsWith("id", in.EpId, entities.IdNsEpr),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
+		validator.StringStartsWith("id", in.Id, entities.IdNsEpr),
 		validator.StringRequired("name", in.Name),
 	)
 }
@@ -30,11 +28,7 @@ type EndpointRuleUpdateOut struct {
 
 func (uc *endpointRule) Update(ctx context.Context, in *EndpointRuleUpdateIn) (*EndpointRuleUpdateOut, error) {
 	epr, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ep, err := uc.repositories.Endpoint().GetOfWorkspace(txctx, in.Ws, in.EpId)
-		if err != nil {
-			return nil, err
-		}
-		epr, err := uc.repositories.EndpointRule().Get(txctx, ep, in.Id)
+		epr, err := uc.repositories.EndpointRule().Get(ctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}

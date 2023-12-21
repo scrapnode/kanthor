@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
@@ -18,7 +17,7 @@ type AccountSetupReq struct {
 
 type AccountSetupRes struct {
 	Account   *authenticator.Account `json:"account"`
-	Workspace *entities.Workspace    `json:"workspace"`
+	Workspace *Workspace             `json:"workspace"`
 }
 
 // UseAccountSetup
@@ -27,7 +26,8 @@ type AccountSetupRes struct {
 // @Param		props				body		AccountSetupReq	true	"setup options"
 // @Success		200					{object}	AccountSetupRes
 // @Failure		default				{object}	gateway.Error
-// @Security	BearerAuth
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseAccountSetup(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req AccountSetupReq
@@ -54,7 +54,7 @@ func UseAccountSetup(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		res := &AccountSetupRes{Account: acc, Workspace: out.Workspace}
+		res := &AccountSetupRes{Account: acc, Workspace: ToWorkspace(out.Workspace)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

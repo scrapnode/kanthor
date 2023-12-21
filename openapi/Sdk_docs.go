@@ -34,7 +34,7 @@ const docTemplateSdk = `{
             "get": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "Authorization": []
                     }
                 ],
                 "tags": [
@@ -60,7 +60,10 @@ const docTemplateSdk = `{
             "get": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -68,37 +71,23 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "maxLength": 32,
-                        "minLength": 29,
-                        "type": "string",
-                        "description": "current query cursor",
-                        "name": "_cursor",
-                        "in": "query"
-                    },
-                    {
-                        "maxLength": 32,
-                        "minLength": 2,
                         "type": "string",
                         "description": "search keyword",
                         "name": "_q",
                         "in": "query"
                     },
                     {
-                        "maximum": 30,
-                        "minimum": 5,
                         "type": "integer",
+                        "default": 10,
                         "description": "limit returning records",
                         "name": "_limit",
                         "in": "query"
                     },
                     {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "only return records with selected ids",
-                        "name": "_id",
+                        "type": "integer",
+                        "default": 0,
+                        "description": "current requesting page",
+                        "name": "_page",
                         "in": "query"
                     }
                 ],
@@ -120,7 +109,10 @@ const docTemplateSdk = `{
             "post": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -157,7 +149,10 @@ const docTemplateSdk = `{
             "get": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -190,7 +185,10 @@ const docTemplateSdk = `{
             "put": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -232,7 +230,10 @@ const docTemplateSdk = `{
             "delete": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -263,11 +264,14 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "/application/{app_id}/endpoint": {
+        "/endpoint": {
             "get": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -278,41 +282,27 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
-                        "maxLength": 32,
-                        "minLength": 29,
-                        "type": "string",
-                        "description": "current query cursor",
-                        "name": "_cursor",
-                        "in": "query"
-                    },
-                    {
-                        "maxLength": 32,
-                        "minLength": 2,
                         "type": "string",
                         "description": "search keyword",
                         "name": "_q",
                         "in": "query"
                     },
                     {
-                        "maximum": 30,
-                        "minimum": 5,
                         "type": "integer",
+                        "default": 10,
                         "description": "limit returning records",
                         "name": "_limit",
                         "in": "query"
                     },
                     {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "only return records with selected ids",
-                        "name": "_id",
+                        "type": "integer",
+                        "default": 0,
+                        "description": "current requesting page",
+                        "name": "_page",
                         "in": "query"
                     }
                 ],
@@ -334,7 +324,10 @@ const docTemplateSdk = `{
             "post": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -345,7 +338,7 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -374,11 +367,14 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "/application/{app_id}/endpoint/{ep_id}": {
+        "/endpoint/{ep_id}": {
             "get": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -389,7 +385,7 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -418,7 +414,10 @@ const docTemplateSdk = `{
             "put": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -427,16 +426,16 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
+                        "description": "endpoint id",
+                        "name": "ep_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
-                        "in": "path",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -467,7 +466,10 @@ const docTemplateSdk = `{
             "delete": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -478,7 +480,7 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -505,11 +507,14 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "/application/{app_id}/message": {
+        "/message": {
             "put": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -520,7 +525,7 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -549,11 +554,14 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "/endpoint/{ep_id}/rule": {
+        "/rule": {
             "get": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -564,41 +572,27 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
-                        "maxLength": 32,
-                        "minLength": 29,
-                        "type": "string",
-                        "description": "current query cursor",
-                        "name": "_cursor",
-                        "in": "query"
-                    },
-                    {
-                        "maxLength": 32,
-                        "minLength": 2,
                         "type": "string",
                         "description": "search keyword",
                         "name": "_q",
                         "in": "query"
                     },
                     {
-                        "maximum": 30,
-                        "minimum": 5,
                         "type": "integer",
+                        "default": 10,
                         "description": "limit returning records",
                         "name": "_limit",
                         "in": "query"
                     },
                     {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "only return records with selected ids",
-                        "name": "_id",
+                        "type": "integer",
+                        "default": 0,
+                        "description": "current requesting page",
+                        "name": "_page",
                         "in": "query"
                     }
                 ],
@@ -620,7 +614,10 @@ const docTemplateSdk = `{
             "post": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -631,7 +628,7 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -660,11 +657,14 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "/endpoint/{ep_id}/rule/{epr_id}": {
+        "/rule/{epr_id}": {
             "get": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -673,16 +673,16 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
+                        "description": "rule id",
+                        "name": "epr_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "rule id",
-                        "name": "epr_id",
-                        "in": "path",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -704,7 +704,10 @@ const docTemplateSdk = `{
             "put": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -713,16 +716,16 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
+                        "description": "rule id",
+                        "name": "epr_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "rule id",
-                        "name": "epr_id",
-                        "in": "path",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -753,7 +756,10 @@ const docTemplateSdk = `{
             "delete": {
                 "security": [
                     {
-                        "BasicAuth": []
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
                     }
                 ],
                 "tags": [
@@ -762,16 +768,16 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
+                        "description": "rule id",
+                        "name": "epr_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "rule id",
-                        "name": "epr_id",
-                        "in": "path",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -810,95 +816,6 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "entities.Application": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "ws_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "entities.Endpoint": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "method": {
-                    "description": "HTTP: POST/PUT/PATCH",
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "secret_key": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "uri": {
-                    "description": "format: scheme \":\" [\"//\" authority] path [\"?\" query] [\"#\" fragment]\nHTTP: https:://httpbin.org/post?app=kanthor.webhook\ngRPC: grpc:://app.kanthorlabs.com",
-                    "type": "string"
-                }
-            }
-        },
-        "entities.EndpointRule": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
-                    "type": "string"
-                },
-                "condition_source": {
-                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
-                    "type": "string"
-                },
-                "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
-                    "type": "integer"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                }
-            }
-        },
         "gateway.Error": {
             "type": "object",
             "properties": {
@@ -918,6 +835,26 @@ const docTemplateSdk = `{
                 }
             }
         },
+        "rest.Application": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "ws_id": {
+                    "type": "string"
+                }
+            }
+        },
         "rest.ApplicationCreateReq": {
             "type": "object",
             "required": [
@@ -933,7 +870,6 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -954,7 +890,6 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -975,7 +910,6 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -995,13 +929,13 @@ const docTemplateSdk = `{
         "rest.ApplicationListRes": {
             "type": "object",
             "properties": {
-                "cursor": {
-                    "type": "string"
+                "count": {
+                    "type": "integer"
                 },
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.Application"
+                        "$ref": "#/definitions/rest.Application"
                     }
                 }
             }
@@ -1021,7 +955,6 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
@@ -1034,6 +967,32 @@ const docTemplateSdk = `{
                     "type": "integer"
                 },
                 "ws_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.Endpoint": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "uri": {
                     "type": "string"
                 }
             }
@@ -1070,10 +1029,10 @@ const docTemplateSdk = `{
         "rest.EndpointCreateRes": {
             "type": "object",
             "properties": {
-                "app_id": {
+                "appId": {
                     "type": "string"
                 },
-                "created_at": {
+                "createdAt": {
                     "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
@@ -1087,10 +1046,10 @@ const docTemplateSdk = `{
                 "name": {
                     "type": "string"
                 },
-                "secret_key": {
+                "secretKey": {
                     "type": "string"
                 },
-                "updated_at": {
+                "updatedAt": {
                     "type": "integer"
                 },
                 "uri": {
@@ -1106,27 +1065,21 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
                 "method": {
-                    "description": "HTTP: POST/PUT/PATCH",
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "secret_key": {
                     "type": "string"
                 },
                 "updated_at": {
                     "type": "integer"
                 },
                 "uri": {
-                    "description": "format: scheme \":\" [\"//\" authority] path [\"?\" query] [\"#\" fragment]\nHTTP: https:://httpbin.org/post?app=kanthor.webhook\ngRPC: grpc:://app.kanthorlabs.com",
                     "type": "string"
                 }
             }
@@ -1138,27 +1091,21 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
                 "method": {
-                    "description": "HTTP: POST/PUT/PATCH",
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "secret_key": {
                     "type": "string"
                 },
                 "updated_at": {
                     "type": "integer"
                 },
                 "uri": {
-                    "description": "format: scheme \":\" [\"//\" authority] path [\"?\" query] [\"#\" fragment]\nHTTP: https:://httpbin.org/post?app=kanthor.webhook\ngRPC: grpc:://app.kanthorlabs.com",
                     "type": "string"
                 }
             }
@@ -1166,14 +1113,46 @@ const docTemplateSdk = `{
         "rest.EndpointListRes": {
             "type": "object",
             "properties": {
-                "cursor": {
-                    "type": "string"
+                "count": {
+                    "type": "integer"
                 },
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.Endpoint"
+                        "$ref": "#/definitions/rest.Endpoint"
                     }
+                }
+            }
+        },
+        "rest.EndpointRule": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
                 }
             }
         },
@@ -1206,22 +1185,18 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "condition_expression": {
-                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
                     "type": "string"
                 },
                 "condition_source": {
-                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
-                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
                     "type": "boolean"
                 },
                 "id": {
@@ -1242,22 +1217,18 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "condition_expression": {
-                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
                     "type": "string"
                 },
                 "condition_source": {
-                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
-                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
                     "type": "boolean"
                 },
                 "id": {
@@ -1278,22 +1249,18 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "condition_expression": {
-                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
                     "type": "string"
                 },
                 "condition_source": {
-                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
-                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
                     "type": "boolean"
                 },
                 "id": {
@@ -1313,13 +1280,13 @@ const docTemplateSdk = `{
         "rest.EndpointRuleListRes": {
             "type": "object",
             "properties": {
-                "cursor": {
-                    "type": "string"
+                "count": {
+                    "type": "integer"
                 },
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.EndpointRule"
+                        "$ref": "#/definitions/rest.EndpointRule"
                     }
                 }
             }
@@ -1339,22 +1306,18 @@ const docTemplateSdk = `{
             "type": "object",
             "properties": {
                 "condition_expression": {
-                    "description": "examples:\n\t- equal::orders.paid\n\t- regex::.*",
                     "type": "string"
                 },
                 "condition_source": {
-                    "description": "examples\n - app_id\n - type\n - body\n - metadata",
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
-                    "description": "the logic of not-false is true should be used here\nto guarantee default all rule will be on include mode",
                     "type": "boolean"
                 },
                 "id": {
@@ -1389,27 +1352,21 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
                 "method": {
-                    "description": "HTTP: POST/PUT/PATCH",
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "secret_key": {
                     "type": "string"
                 },
                 "updated_at": {
                     "type": "integer"
                 },
                 "uri": {
-                    "description": "format: scheme \":\" [\"//\" authority] path [\"?\" query] [\"#\" fragment]\nHTTP: https:://httpbin.org/post?app=kanthor.webhook\ngRPC: grpc:://app.kanthorlabs.com",
                     "type": "string"
                 }
             }
@@ -1447,8 +1404,17 @@ const docTemplateSdk = `{
         }
     },
     "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
+        "Authorization": {
+            "description": "[Bearer JWT_TOKEN] or [Basic base64(key:secret)]",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+        "WorkspaceId": {
+            "description": "The selected workspace id you are working with",
+            "type": "apiKey",
+            "name": "x-authorization-workspace",
+            "in": "header"
         }
     },
     "externalDocs": {

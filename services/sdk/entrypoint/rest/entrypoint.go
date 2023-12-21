@@ -13,6 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services/sdk/config"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 	swaggerfiles "github.com/swaggo/files"
@@ -100,16 +101,16 @@ func (service *sdk) router() *gin.Engine {
 	{
 		api.Use(middlewares.UseStartup(&service.conf.Gateway))
 		api.Use(middlewares.UseMetric(service.infra.Metric, "sdk"))
-		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
+		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency, project.IsDev()))
 
 		api.Use(middlewares.UseAuth(service.infra.Authenticator, AuthzEngineInternal))
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)
 
-		RegisterEndpointRuleRoutes(api.Group("/application/:app_id/endpoint/:ep_id/rule"), service)
-		RegisterEndpointRoutes(api.Group("/application/:app_id/endpoint"), service)
-		RegisterMessageRoutes(api.Group("/application/:app_id/message"), service)
+		RegisterEndpointRuleRoutes(api.Group("/rule"), service)
+		RegisterEndpointRoutes(api.Group("/endpoint"), service)
+		RegisterMessageRoutes(api.Group("/message"), service)
 		RegisterApplicationRoutes(api.Group("/application"), service)
 	}
 

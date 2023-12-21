@@ -5,19 +5,19 @@ import (
 )
 
 type Attempt struct {
-	ReqId string `json:"req_id"`
-	MsgId string `json:"msg_id"`
-	AppId string `json:"app_id"`
-	Tier  string `json:"tier"`
+	ReqId string
+	MsgId string
+	AppId string
+	Tier  string
 
-	ScheduledAt int64 `json:"scheduled_at"`
-	Status      int   `json:"status"`
+	ScheduledAt int64
+	Status      int
 
-	ResId       string `json:"res_id"`
-	CompletedAt int64  `json:"completed_at"`
+	ResId       string
+	CompletedAt int64
 
-	ScheduleCounter int   `json:"schedule_counter"`
-	ScheduleNext    int64 `json:"schedule_next"`
+	ScheduleCounter int
+	ScheduleNext    int64
 }
 
 func (entity *Attempt) TableName() string {
@@ -42,10 +42,10 @@ func (entity *Attempt) Complete() bool {
 }
 
 type AttemptTrigger struct {
-	AppId string `json:"app_id"`
-	Tier  string `json:"tier"`
-	From  int64  `json:"from"`
-	To    int64  `json:"to"`
+	AppId string
+	Tier  string
+	From  int64
+	To    int64
 }
 
 func (noti *AttemptTrigger) Marshal() ([]byte, error) {

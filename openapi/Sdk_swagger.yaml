@@ -13,86 +13,6 @@ definitions:
       sub:
         type: string
     type: object
-  entities.Application:
-    properties:
-      created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  entities.Endpoint:
-    properties:
-      app_id:
-        type: string
-      created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
-        type: integer
-      id:
-        type: string
-      method:
-        description: 'HTTP: POST/PUT/PATCH'
-        type: string
-      name:
-        type: string
-      secret_key:
-        type: string
-      updated_at:
-        type: integer
-      uri:
-        description: |-
-          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
-          HTTP: https:://httpbin.org/post?app=kanthor.webhook
-          gRPC: grpc:://app.kanthorlabs.com
-        type: string
-    type: object
-  entities.EndpointRule:
-    properties:
-      condition_expression:
-        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
-        type: string
-      condition_source:
-        description: |-
-          examples
-           - app_id
-           - type
-           - body
-           - metadata
-        type: string
-      created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
-        type: integer
-      ep_id:
-        type: string
-      exclusionary:
-        description: |-
-          the logic of not-false is true should be used here
-          to guarantee default all rule will be on include mode
-        type: boolean
-      id:
-        type: string
-      name:
-        type: string
-      priority:
-        type: integer
-      updated_at:
-        type: integer
-    type: object
   gateway.Error:
     properties:
       code:
@@ -105,6 +25,19 @@ definitions:
       account:
         $ref: '#/definitions/authenticator.Account'
     type: object
+  rest.Application:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
   rest.ApplicationCreateReq:
     properties:
       name:
@@ -115,10 +48,6 @@ definitions:
   rest.ApplicationCreateRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -132,10 +61,6 @@ definitions:
   rest.ApplicationDeleteRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -149,10 +74,6 @@ definitions:
   rest.ApplicationGetRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -165,11 +86,11 @@ definitions:
     type: object
   rest.ApplicationListRes:
     properties:
-      cursor:
-        type: string
+      count:
+        type: integer
       data:
         items:
-          $ref: '#/definitions/entities.Application'
+          $ref: '#/definitions/rest.Application'
         type: array
     type: object
   rest.ApplicationUpdateReq:
@@ -182,10 +103,6 @@ definitions:
   rest.ApplicationUpdateRes:
     properties:
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
@@ -194,6 +111,23 @@ definitions:
       updated_at:
         type: integer
       ws_id:
+        type: string
+    type: object
+  rest.Endpoint:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      uri:
         type: string
     type: object
   rest.EndpointCreateReq:
@@ -219,9 +153,9 @@ definitions:
     type: object
   rest.EndpointCreateRes:
     properties:
-      app_id:
+      appId:
         type: string
-      created_at:
+      createdAt:
         description: |-
           I didn't find a way to disable automatic fields modify yet
           so, I use a tag to disable this feature here
@@ -234,9 +168,9 @@ definitions:
         type: string
       name:
         type: string
-      secret_key:
+      secretKey:
         type: string
-      updated_at:
+      updatedAt:
         type: integer
       uri:
         description: |-
@@ -250,27 +184,16 @@ definitions:
       app_id:
         type: string
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
       method:
-        description: 'HTTP: POST/PUT/PATCH'
         type: string
       name:
-        type: string
-      secret_key:
         type: string
       updated_at:
         type: integer
       uri:
-        description: |-
-          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
-          HTTP: https:://httpbin.org/post?app=kanthor.webhook
-          gRPC: grpc:://app.kanthorlabs.com
         type: string
     type: object
   rest.EndpointGetRes:
@@ -278,37 +201,47 @@ definitions:
       app_id:
         type: string
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
       method:
-        description: 'HTTP: POST/PUT/PATCH'
         type: string
       name:
-        type: string
-      secret_key:
         type: string
       updated_at:
         type: integer
       uri:
-        description: |-
-          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
-          HTTP: https:://httpbin.org/post?app=kanthor.webhook
-          gRPC: grpc:://app.kanthorlabs.com
         type: string
     type: object
   rest.EndpointListRes:
     properties:
-      cursor:
-        type: string
+      count:
+        type: integer
       data:
         items:
-          $ref: '#/definitions/entities.Endpoint'
+          $ref: '#/definitions/rest.Endpoint'
         type: array
+    type: object
+  rest.EndpointRule:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      created_at:
+        type: integer
+      ep_id:
+        type: string
+      exclusionary:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
     type: object
   rest.EndpointRuleCreateReq:
     properties:
@@ -330,28 +263,14 @@ definitions:
   rest.EndpointRuleCreateRes:
     properties:
       condition_expression:
-        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
         type: string
       condition_source:
-        description: |-
-          examples
-           - app_id
-           - type
-           - body
-           - metadata
         type: string
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       ep_id:
         type: string
       exclusionary:
-        description: |-
-          the logic of not-false is true should be used here
-          to guarantee default all rule will be on include mode
         type: boolean
       id:
         type: string
@@ -365,28 +284,14 @@ definitions:
   rest.EndpointRuleDeleteRes:
     properties:
       condition_expression:
-        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
         type: string
       condition_source:
-        description: |-
-          examples
-           - app_id
-           - type
-           - body
-           - metadata
         type: string
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       ep_id:
         type: string
       exclusionary:
-        description: |-
-          the logic of not-false is true should be used here
-          to guarantee default all rule will be on include mode
         type: boolean
       id:
         type: string
@@ -400,28 +305,14 @@ definitions:
   rest.EndpointRuleGetRes:
     properties:
       condition_expression:
-        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
         type: string
       condition_source:
-        description: |-
-          examples
-           - app_id
-           - type
-           - body
-           - metadata
         type: string
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       ep_id:
         type: string
       exclusionary:
-        description: |-
-          the logic of not-false is true should be used here
-          to guarantee default all rule will be on include mode
         type: boolean
       id:
         type: string
@@ -434,11 +325,11 @@ definitions:
     type: object
   rest.EndpointRuleListRes:
     properties:
-      cursor:
-        type: string
+      count:
+        type: integer
       data:
         items:
-          $ref: '#/definitions/entities.EndpointRule'
+          $ref: '#/definitions/rest.EndpointRule'
         type: array
     type: object
   rest.EndpointRuleUpdateReq:
@@ -451,28 +342,14 @@ definitions:
   rest.EndpointRuleUpdateRes:
     properties:
       condition_expression:
-        description: "examples:\n\t- equal::orders.paid\n\t- regex::.*"
         type: string
       condition_source:
-        description: |-
-          examples
-           - app_id
-           - type
-           - body
-           - metadata
         type: string
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       ep_id:
         type: string
       exclusionary:
-        description: |-
-          the logic of not-false is true should be used here
-          to guarantee default all rule will be on include mode
         type: boolean
       id:
         type: string
@@ -495,27 +372,16 @@ definitions:
       app_id:
         type: string
       created_at:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
         type: integer
       id:
         type: string
       method:
-        description: 'HTTP: POST/PUT/PATCH'
         type: string
       name:
-        type: string
-      secret_key:
         type: string
       updated_at:
         type: integer
       uri:
-        description: |-
-          format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
-          HTTP: https:://httpbin.org/post?app=kanthor.webhook
-          gRPC: grpc:://app.kanthorlabs.com
         type: string
     type: object
   rest.MessagePutReq:
@@ -567,37 +433,26 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
+      - Authorization: []
       tags:
       - account
   /application:
     get:
       parameters:
-      - description: current query cursor
-        in: query
-        maxLength: 32
-        minLength: 29
-        name: _cursor
-        type: string
       - description: search keyword
         in: query
-        maxLength: 32
-        minLength: 2
         name: _q
         type: string
-      - description: limit returning records
+      - default: 10
+        description: limit returning records
         in: query
-        maximum: 30
-        minimum: 5
         name: _limit
         type: integer
-      - collectionFormat: csv
-        description: only return records with selected ids
+      - default: 0
+        description: current requesting page
         in: query
-        items:
-          type: string
-        name: _id
-        type: array
+        name: _page
+        type: integer
       responses:
         "200":
           description: OK
@@ -608,7 +463,8 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - application
     post:
@@ -629,7 +485,8 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - application
   /application/{app_id}:
@@ -650,7 +507,8 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - application
     get:
@@ -670,7 +528,8 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - application
     put:
@@ -696,42 +555,32 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - application
-  /application/{app_id}/endpoint:
+  /endpoint:
     get:
       parameters:
       - description: application id
-        in: path
+        in: query
         name: app_id
         required: true
         type: string
-      - description: current query cursor
-        in: query
-        maxLength: 32
-        minLength: 29
-        name: _cursor
-        type: string
       - description: search keyword
         in: query
-        maxLength: 32
-        minLength: 2
         name: _q
         type: string
-      - description: limit returning records
+      - default: 10
+        description: limit returning records
         in: query
-        maximum: 30
-        minimum: 5
         name: _limit
         type: integer
-      - collectionFormat: csv
-        description: only return records with selected ids
+      - default: 0
+        description: current requesting page
         in: query
-        items:
-          type: string
-        name: _id
-        type: array
+        name: _page
+        type: integer
       responses:
         "200":
           description: OK
@@ -742,13 +591,14 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint
     post:
       parameters:
       - description: application id
-        in: path
+        in: query
         name: app_id
         required: true
         type: string
@@ -768,14 +618,15 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint
-  /application/{app_id}/endpoint/{ep_id}:
+  /endpoint/{ep_id}:
     delete:
       parameters:
       - description: application id
-        in: path
+        in: query
         name: app_id
         required: true
         type: string
@@ -794,13 +645,14 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint
     get:
       parameters:
       - description: application id
-        in: path
+        in: query
         name: app_id
         required: true
         type: string
@@ -819,19 +671,20 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint
     put:
       parameters:
-      - description: application id
-        in: path
-        name: app_id
-        required: true
-        type: string
       - description: endpoint id
         in: path
         name: ep_id
+        required: true
+        type: string
+      - description: application id
+        in: query
+        name: app_id
         required: true
         type: string
       - description: endpoint properties
@@ -850,14 +703,15 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint
-  /application/{app_id}/message:
+  /message:
     put:
       parameters:
       - description: application id
-        in: path
+        in: query
         name: app_id
         required: true
         type: string
@@ -877,42 +731,32 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - message
-  /endpoint/{ep_id}/rule:
+  /rule:
     get:
       parameters:
       - description: endpoint id
-        in: path
+        in: query
         name: ep_id
         required: true
         type: string
-      - description: current query cursor
-        in: query
-        maxLength: 32
-        minLength: 29
-        name: _cursor
-        type: string
       - description: search keyword
         in: query
-        maxLength: 32
-        minLength: 2
         name: _q
         type: string
-      - description: limit returning records
+      - default: 10
+        description: limit returning records
         in: query
-        maximum: 30
-        minimum: 5
         name: _limit
         type: integer
-      - collectionFormat: csv
-        description: only return records with selected ids
+      - default: 0
+        description: current requesting page
         in: query
-        items:
-          type: string
-        name: _id
-        type: array
+        name: _page
+        type: integer
       responses:
         "200":
           description: OK
@@ -923,13 +767,14 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint rule
     post:
       parameters:
       - description: endpoint id
-        in: path
+        in: query
         name: ep_id
         required: true
         type: string
@@ -949,20 +794,21 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint rule
-  /endpoint/{ep_id}/rule/{epr_id}:
+  /rule/{epr_id}:
     delete:
       parameters:
-      - description: endpoint id
-        in: path
-        name: ep_id
-        required: true
-        type: string
       - description: rule id
         in: path
         name: epr_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: query
+        name: ep_id
         required: true
         type: string
       responses:
@@ -975,19 +821,20 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint rule
     get:
       parameters:
-      - description: endpoint id
-        in: path
-        name: ep_id
-        required: true
-        type: string
       - description: rule id
         in: path
         name: epr_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: query
+        name: ep_id
         required: true
         type: string
       responses:
@@ -1000,19 +847,20 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint rule
     put:
       parameters:
-      - description: endpoint id
-        in: path
-        name: ep_id
-        required: true
-        type: string
       - description: rule id
         in: path
         name: epr_id
+        required: true
+        type: string
+      - description: endpoint id
+        in: query
+        name: ep_id
         required: true
         type: string
       - description: rule properties
@@ -1031,12 +879,21 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BasicAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - endpoint rule
 produces:
 - application/json
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  Authorization:
+    description: '[Bearer JWT_TOKEN] or [Basic base64(key:secret)]'
+    in: header
+    name: Authorization
+    type: apiKey
+  WorkspaceId:
+    description: The selected workspace id you are working with
+    in: header
+    name: x-authorization-workspace
+    type: apiKey
 swagger: "2.0"

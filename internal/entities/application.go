@@ -6,10 +6,10 @@ type Application struct {
 	Entity
 	AuditTime
 	// @TODO: add deactivated_at
-	// DeactivatedAt int64 `json:"deactivated_at"`
+	// DeactivatedAt int64
 
-	WsId string `json:"ws_id"`
-	Name string `json:"name"`
+	WsId string
+	Name string
 }
 
 func (entity *Application) TableName() string {

@@ -16,18 +16,19 @@ type EndpointRuleUpdateReq struct {
 }
 
 type EndpointRuleUpdateRes struct {
-	*entities.EndpointRule
+	*EndpointRule
 }
 
 // UseEndpointRuleUpdate
 // @Tags		endpoint rule
-// @Router		/endpoint/{ep_id}/rule/{epr_id}	[put]
-// @Param		ep_id							path		string					true	"endpoint id"
-// @Param		epr_id							path		string					true	"rule id"
-// @Param		props							body		EndpointRuleUpdateReq	true	"rule properties"
-// @Success		200								{object}	EndpointRuleUpdateRes
-// @Failure		default							{object}	gateway.Error
-// @Security	BasicAuth
+// @Router		/rule/{epr_id}	[put]
+// @Param		epr_id			path		string					true	"rule id"
+// @Param		ep_id			query		string					true	"endpoint id"
+// @Param		props			body		EndpointRuleUpdateReq	true	"rule properties"
+// @Success		200				{object}	EndpointRuleUpdateRes
+// @Failure		default			{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseEndpointRuleUpdate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointRuleUpdateReq
@@ -38,12 +39,11 @@ func UseEndpointRuleUpdate(service *sdk) gin.HandlerFunc {
 		}
 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
-		epId := ginctx.Param("ep_id")
-		id := ginctx.Param("epr_id")
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
+
 		in := &usecase.EndpointRuleUpdateIn{
-			Ws:   ctx.Value(gateway.CtxWorkspace).(*entities.Workspace),
-			EpId: epId,
-			Id:   id,
+			WsId: ws.Id,
+			Id:   ginctx.Param("epr_id"),
 			Name: req.Name,
 		}
 		if err := in.Validate(); err != nil {
@@ -59,7 +59,7 @@ func UseEndpointRuleUpdate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointRuleUpdateRes{out.Doc}
+		res := &EndpointRuleUpdateRes{ToEndpointRule(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

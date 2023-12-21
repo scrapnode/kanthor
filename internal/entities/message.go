@@ -7,12 +7,12 @@ import (
 type Message struct {
 	TSEntity
 
-	Tier     string   `json:"tier"`
-	AppId    string   `json:"app_id"`
-	Type     string   `json:"type"`
-	Metadata Metadata `json:"metadata"`
-	Headers  Header   `json:"headers"`
-	Body     string   `json:"body"`
+	Tier     string
+	AppId    string
+	Type     string
+	Metadata Metadata
+	Headers  Header
+	Body     string
 }
 
 func (entity *Message) TableName() string {

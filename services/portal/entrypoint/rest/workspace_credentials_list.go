@@ -17,20 +17,17 @@ type WorkspaceCredentialsListRes struct {
 }
 
 // UseWorkspaceCredentialsList
-// @Tags		workspace
-// @Router		/workspace/me/credentials	[get]
-// @Param		_q							query		string						false	"search keyword" 			minlength(2)  maxlength(32)
-// @Param		_limit						query		int							false	"limit returning records"	minimum(5)    maximum(30)
-// @Param		_page						query		int							false	"requesting page"
-// @Success		200							{object}	WorkspaceCredentialsListRes
-// @Failure		default						{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Tags		credentials
+// @Router		/credentials	[get]
+// @Param		_q				query		string						false	"search keyword"
+// @Param		_limit			query		int							false	"limit returning records" 	default(10)
+// @Param		_page			query		int							false	"requesting page"			default(0)
+// @Success		200				{object}	WorkspaceCredentialsListRes
+// @Failure		default			{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
-		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
-
 		var query gateway.Query
 		if err := ginctx.BindQuery(&query); err != nil {
 			service.logger.Error(err)
@@ -38,11 +35,12 @@ func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 			return
 		}
 
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 		in := &usecase.WorkspaceCredentialsListIn{
-			WsId:   ws.Id,
-			Search: query.Search,
-			Limit:  query.Limit,
-			Page:   query.Page,
+			Query: &entities.Query{Search: query.Search, Page: query.Page, Limit: query.Limit},
+			WsId:  ws.Id,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))

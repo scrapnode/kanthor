@@ -12,26 +12,26 @@ import (
 )
 
 type EndpointRuleDeleteRes struct {
-	*entities.EndpointRule
+	*EndpointRule
 }
 
 // UseEndpointRuleDelete
 // @Tags		endpoint rule
-// @Router		/endpoint/{ep_id}/rule/{epr_id}	[delete]
-// @Param		ep_id							path		string					true	"endpoint id"
-// @Param		epr_id							path		string					true	"rule id"
-// @Success		200								{object}	EndpointRuleDeleteRes
-// @Failure		default							{object}	gateway.Error
-// @Security	BasicAuth
+// @Router		/rule/{epr_id}	[delete]
+// @Param		epr_id			path		string					true	"rule id"
+// @Param		ep_id			query		string					true	"endpoint id"
+// @Success		200				{object}	EndpointRuleDeleteRes
+// @Failure		default			{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseEndpointRuleDelete(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
-		epId := ginctx.Param("ep_id")
-		id := ginctx.Param("epr_id")
+		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
+
 		in := &usecase.EndpointRuleDeleteIn{
-			Ws:   ctx.Value(gateway.CtxWorkspace).(*entities.Workspace),
-			EpId: epId,
-			Id:   id,
+			WsId: ws.Id,
+			Id:   ginctx.Param("epr_id"),
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Error(err)
@@ -46,7 +46,7 @@ func UseEndpointRuleDelete(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointRuleDeleteRes{out.Doc}
+		res := &EndpointRuleDeleteRes{ToEndpointRule(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

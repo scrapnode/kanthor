@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 )
 
 type Endpoint interface {
@@ -12,9 +11,9 @@ type Endpoint interface {
 	Update(ctx context.Context, doc *entities.Endpoint) (*entities.Endpoint, error)
 	Delete(ctx context.Context, doc *entities.Endpoint) error
 
-	List(ctx context.Context, app *entities.Application, opts ...structure.ListOps) (*structure.ListRes[entities.Endpoint], error)
-	Get(ctx context.Context, app *entities.Application, id string) (*entities.Endpoint, error)
-	GetOfWorkspace(ctx context.Context, ws *entities.Workspace, id string) (*entities.Endpoint, error)
+	List(ctx context.Context, wsId, appId string, q string, limit, page int) ([]entities.Endpoint, error)
+	Count(ctx context.Context, wsId, appId string, q string) (int64, error)
+	Get(ctx context.Context, wsId string, id string) (*entities.Endpoint, error)
 }
 
 type EndpointRule interface {
@@ -22,6 +21,7 @@ type EndpointRule interface {
 	Update(ctx context.Context, doc *entities.EndpointRule) (*entities.EndpointRule, error)
 	Delete(ctx context.Context, doc *entities.EndpointRule) error
 
-	List(ctx context.Context, ep *entities.Endpoint, opts ...structure.ListOps) (*structure.ListRes[entities.EndpointRule], error)
-	Get(ctx context.Context, ep *entities.Endpoint, id string) (*entities.EndpointRule, error)
+	List(ctx context.Context, wsId, epId string, q string, limit, page int) ([]entities.EndpointRule, error)
+	Count(ctx context.Context, wsId, epId string, q string) (int64, error)
+	Get(ctx context.Context, wsId string, id string) (*entities.EndpointRule, error)
 }

@@ -3,6 +3,7 @@ set -e
 
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )";
 
+sh "$SCRIPT_DIR/gen_swagger_clients.sh"
 sh "$SCRIPT_DIR/gen_swagger.sh"
 sh "$SCRIPT_DIR/gen_ioc.sh"
 sh "$SCRIPT_DIR/ci_vet.sh"

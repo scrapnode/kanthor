@@ -7,19 +7,19 @@ import (
 type Request struct {
 	TSEntity
 
-	MsgId string `json:"msg_id"`
-	EpId  string `json:"ep_id"`
+	MsgId string
+	EpId  string
 
-	Tier     string   `json:"tier"`
-	AppId    string   `json:"app_id"`
-	Type     string   `json:"type"`
-	Metadata Metadata `json:"metadata"`
+	Tier     string
+	AppId    string
+	Type     string
+	Metadata Metadata
 
 	// HTTP: POST/PUT/PATCH
-	Headers Header `json:"headers"`
-	Body    string `json:"body"`
-	Uri     string `json:"uri"`
-	Method  string `json:"method"`
+	Headers Header
+	Body    string
+	Uri     string
+	Method  string
 }
 
 func (entity *Request) TableName() string {

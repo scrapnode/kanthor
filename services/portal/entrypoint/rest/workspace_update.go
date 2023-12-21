@@ -25,8 +25,8 @@ type WorkspaceUpdateRes struct {
 // @Param		props					body		WorkspaceUpdateReq	true	"credentials properties"
 // @Success		200						{object}	WorkspaceUpdateRes
 // @Failure		default					{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseWorkspaceUpdate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceUpdateReq

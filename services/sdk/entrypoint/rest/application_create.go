@@ -16,7 +16,7 @@ type ApplicationCreateReq struct {
 }
 
 type ApplicationCreateRes struct {
-	*entities.Application
+	*Application
 }
 
 // UseApplicationCreate
@@ -25,7 +25,8 @@ type ApplicationCreateRes struct {
 // @Param		props				body		ApplicationCreateReq	true	"application properties"
 // @Success		201					{object}	ApplicationCreateRes
 // @Failure		default				{object}	gateway.Error
-// @Security	BasicAuth
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseApplicationCreate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req ApplicationCreateReq
@@ -54,7 +55,7 @@ func UseApplicationCreate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &ApplicationCreateRes{out.Doc}
+		res := &ApplicationCreateRes{ToApplication(out.Doc)}
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

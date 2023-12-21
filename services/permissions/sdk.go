@@ -15,17 +15,17 @@ var SdkOwnerPermissions = []authorizator.Permission{
 	{Object: "/api/application", Action: "GET"},
 	{Object: "/api/application/:app_id", Action: "GET"},
 
-	{Object: "/api/application/:app_id/endpoint", Action: "POST"},
-	{Object: "/api/application/:app_id/endpoint/:ep_id", Action: "PUT"},
-	{Object: "/api/application/:app_id/endpoint/:ep_id", Action: "DELETE"},
-	{Object: "/api/application/:app_id/endpoint", Action: "GET"},
-	{Object: "/api/application/:app_id/endpoint/:ep_id", Action: "GET"},
+	{Object: "/api/endpoint", Action: "POST"},
+	{Object: "/api/endpoint/:ep_id", Action: "PUT"},
+	{Object: "/api/endpoint/:ep_id", Action: "DELETE"},
+	{Object: "/api/endpoint", Action: "GET"},
+	{Object: "/api/endpoint/:ep_id", Action: "GET"},
 
-	{Object: "/api/application/:app_id/endpoint/:ep_id/rule", Action: "POST"},
-	{Object: "/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", Action: "PUT"},
-	{Object: "/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", Action: "DELETE"},
-	{Object: "/api/application/:app_id/endpoint/:ep_id/rule", Action: "GET"},
-	{Object: "/api/application/:app_id/endpoint/:ep_id/rule/:epr_id", Action: "GET"},
+	{Object: "/api/rule", Action: "POST"},
+	{Object: "/api/rule/:epr_id", Action: "PUT"},
+	{Object: "/api/rule/:epr_id", Action: "DELETE"},
+	{Object: "/api/rule", Action: "GET"},
+	{Object: "/api/rule/:epr_id", Action: "GET"},
 
-	{Object: "/api/application/:app_id/message", Action: "PUT"},
+	{Object: "/api/message", Action: "PUT"},
 }

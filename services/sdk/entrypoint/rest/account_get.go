@@ -9,9 +9,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 )
 
-type AccountGetReq struct {
-}
-
 type AccountGetRes struct {
 	Account *authenticator.Account `json:"account"`
 }
@@ -21,11 +18,12 @@ type AccountGetRes struct {
 // @Router		/account/me			[get]
 // @Success		200					{object}	AccountGetRes
 // @Failure		default				{object}	gateway.Error
-// @Security	BearerAuth
+// @Security	Authorization
 func UseAccountGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
+
 		res := &AccountGetRes{Account: acc}
 		ginctx.JSON(http.StatusOK, res)
 	}

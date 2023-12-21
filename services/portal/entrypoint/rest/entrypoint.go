@@ -13,6 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/openapi"
 	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services/portal/config"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 	swaggerfiles "github.com/swaggo/files"
@@ -99,13 +100,14 @@ func (service *portal) router() (*gin.Engine, error) {
 	{
 		api.Use(middlewares.UseStartup(&service.conf.Gateway))
 		api.Use(middlewares.UseMetric(service.infra.Metric, "portal"))
-		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency))
+		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency, project.IsDev()))
 
 		api.Use(middlewares.UseAuth(service.infra.Authenticator, service.infra.Authenticator.Engines()[0]))
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAccountRoutes(api.Group("/account"), service)
 		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
+		RegisterWorkspaceCredentialsRoutes(api.Group("/credentials"), service)
 	}
 
 	return router, nil

@@ -4,39 +4,41 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type ApplicationListIn struct {
+	*entities.Query
 	WsId string
-	*structure.ListReq
 }
 
 func (in *ApplicationListIn) Validate() error {
+	if err := in.Query.Validate(); err != nil {
+		return err
+	}
+
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
-		validator.PointerNotNil("list", in.ListReq),
 	)
 }
 
 type ApplicationListOut struct {
-	*structure.ListRes[entities.Application]
+	Data  []entities.Application
+	Count int64
 }
 
 func (uc *application) List(ctx context.Context, in *ApplicationListIn) (*ApplicationListOut, error) {
-	listing, err := uc.repositories.Application().List(
-		ctx,
-		in.WsId,
-		structure.WithListCursor(in.Cursor),
-		structure.WithListSearch(in.Search),
-		structure.WithListLimit(in.Limit),
-		structure.WithListIds(in.Ids),
-	)
+	data, err := uc.repositories.Application().List(ctx, in.WsId, in.Search, in.Limit, in.Page)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ApplicationListOut{ListRes: listing}, nil
+	count, err := uc.repositories.Application().Count(ctx, in.WsId, in.Search)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &ApplicationListOut{Data: data, Count: count}
+	return out, nil
 }

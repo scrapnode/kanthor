@@ -25,12 +25,13 @@ type EndpointCreateRes struct {
 
 // UseEndpointCreate
 // @Tags		endpoint
-// @Router		/application/{app_id}/endpoint		[post]
-// @Param		app_id								path		string				true	"application id"
-// @Param		props								body		EndpointCreateReq	true	"endpoint properties"
-// @Success		201									{object}	EndpointCreateRes
-// @Failure		default								{object}	gateway.Error
-// @Security	BasicAuth
+// @Router		/endpoint	[post]
+// @Param		app_id		query		string					true	"application id"
+// @Param		props		body		EndpointCreateReq	true	"endpoint properties"
+// @Success		201			{object}	EndpointCreateRes
+// @Failure		default		{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointCreateReq

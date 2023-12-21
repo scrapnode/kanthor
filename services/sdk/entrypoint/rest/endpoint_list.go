@@ -7,37 +7,42 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 
 type EndpointListRes struct {
-	*structure.ListRes[entities.Endpoint]
+	Data  []Endpoint
+	Count int64
 }
 
 // UseEndpointList
 // @Tags		endpoint
-// @Router		/application/{app_id}/endpoint	[get]
-// @Param		app_id							path		string					true	"application id"
-// @Param		_cursor							query		string					false	"current query cursor"					minlength(29) maxlength(32)
-// @Param		_q								query		string					false	"search keyword" 						minlength(2)  maxlength(32)
-// @Param		_limit							query		int						false	"limit returning records"				minimum(5)    maximum(30)
-// @Param		_id								query		[]string				false	"only return records with selected ids"
-// @Success		200								{object}	EndpointListRes
-// @Failure		default							{object}	gateway.Error
-// @Security	BasicAuth
+// @Router		/endpoint	[get]
+// @Param		app_id		query		string					true	"application id"
+// @Param		_q			query		string					false	"search keyword"
+// @Param		_limit		query		int						false	"limit returning records"	default(10)
+// @Param		_page		query		int						false	"current requesting page"	default(0)
+// @Success		200			{object}	EndpointListRes
+// @Failure		default		{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseEndpointList(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
+		var query gateway.Query
+		if err := ginctx.BindQuery(&query); err != nil {
+			service.logger.Error(err)
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to parse your request query"))
+			return
+		}
+
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		appId := ginctx.Param("app_id")
-
 		in := &usecase.EndpointListIn{
-			WsId:    ws.Id,
-			AppId:   appId,
-			ListReq: ginctx.MustGet("list_req").(*structure.ListReq),
+			Query: &entities.Query{Search: query.Search, Page: query.Page, Limit: query.Limit},
+			WsId:  ws.Id,
+			AppId: ginctx.Query("app_id"),
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Error(err)
@@ -52,7 +57,10 @@ func UseEndpointList(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointListRes{ListRes: out.ListRes}
+		res := &EndpointListRes{Data: make([]Endpoint, 0), Count: out.Count}
+		for _, ep := range out.Data {
+			res.Data = append(res.Data, *ToEndpoint(&ep))
+		}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

@@ -24,7 +24,7 @@ definitions:
     type: object
   entities.Workspace:
     properties:
-      created_at:
+      createdAt:
         description: |-
           I didn't find a way to disable automatic fields modify yet
           so, I use a tag to disable this feature here
@@ -34,11 +34,11 @@ definitions:
         type: string
       name:
         type: string
-      owner_id:
+      ownerId:
         type: string
       tier:
         type: string
-      updated_at:
+      updatedAt:
         type: integer
     type: object
   gateway.Error:
@@ -67,7 +67,22 @@ definitions:
       account:
         $ref: '#/definitions/authenticator.Account'
       workspace:
-        $ref: '#/definitions/entities.Workspace'
+        $ref: '#/definitions/rest.Workspace'
+    type: object
+  rest.Workspace:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      tier:
+        type: string
+      updated_at:
+        type: integer
     type: object
   rest.WorkspaceCredentials:
     properties:
@@ -87,15 +102,17 @@ definitions:
   rest.WorkspaceCredentialsCreateReq:
     properties:
       expired_at:
+        default: 1893456000000
         type: integer
       name:
+        default: swagger demo
         type: string
-    required:
-    - name
     type: object
   rest.WorkspaceCredentialsCreateRes:
     properties:
       id:
+        type: string
+      name:
         type: string
       password:
         type: string
@@ -105,6 +122,7 @@ definitions:
   rest.WorkspaceCredentialsExpireReq:
     properties:
       duration:
+        default: 1800000
         type: integer
     type: object
   rest.WorkspaceCredentialsExpireRes:
@@ -141,13 +159,11 @@ definitions:
   rest.WorkspaceCredentialsUpdateReq:
     properties:
       expired_at:
-        minimum: 0
+        default: 1893456000000
         type: integer
       name:
+        default: swagger demo update
         type: string
-    required:
-    - expired_at
-    - name
     type: object
   rest.WorkspaceCredentialsUpdateRes:
     properties:
@@ -233,8 +249,8 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
-      - WsId: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - account
   /account/setup:
@@ -256,78 +272,24 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - account
-  /workspace:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/rest.WorkspaceGetRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - BearerAuth: []
-      tags:
-      - workspace
-  /workspace/me:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/rest.WorkspaceGetRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - BearerAuth: []
-      - WsId: []
-      tags:
-      - workspace
-    patch:
-      parameters:
-      - description: credentials properties
-        in: body
-        name: props
-        required: true
-        schema:
-          $ref: '#/definitions/rest.WorkspaceUpdateReq'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/rest.WorkspaceUpdateRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - BearerAuth: []
-      - WsId: []
-      tags:
-      - workspace
-  /workspace/me/credentials:
+  /credentials:
     get:
       parameters:
       - description: search keyword
         in: query
-        maxLength: 32
-        minLength: 2
         name: _q
         type: string
-      - description: limit returning records
+      - default: 10
+        description: limit returning records
         in: query
-        maximum: 30
-        minimum: 5
         name: _limit
         type: integer
-      - description: requesting page
+      - default: 0
+        description: requesting page
         in: query
         name: _page
         type: integer
@@ -341,10 +303,10 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
-      - WsId: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
-      - workspace
+      - credentials
     post:
       parameters:
       - description: credentials properties
@@ -363,11 +325,11 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
-      - WsId: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
-      - workspace
-  /workspace/me/credentials/{wsc_id}:
+      - credentials
+  /credentials/{wsc_id}:
     get:
       parameters:
       - description: credentials id
@@ -385,10 +347,10 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
-      - WsId: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
-      - workspace
+      - credentials
     patch:
       parameters:
       - description: credentials id
@@ -412,11 +374,11 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
-      - WsId: []
+      - Authorization: []
+      - WorkspaceId: []
       tags:
-      - workspace
-  /workspace/me/credentials/{wsc_id}/expiration:
+      - credentials
+  /credentials/{wsc_id}/expiration:
     put:
       parameters:
       - description: credentials id
@@ -440,21 +402,74 @@ paths:
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
-      - BearerAuth: []
-      - WsId: []
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - credentials
+  /workspace:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.WorkspaceGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      tags:
+      - workspace
+  /workspace/me:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.WorkspaceGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - workspace
+    patch:
+      parameters:
+      - description: credentials properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/rest.WorkspaceUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.WorkspaceUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
       tags:
       - workspace
 produces:
 - application/json
 securityDefinitions:
-  BearerAuth:
-    description: '[Bearer <JWT token>] or [Basic base64(key:secret)]'
+  Authorization:
+    description: '[Bearer JWT_TOKEN] or [Basic base64(key:secret)]'
     in: header
     name: Authorization
     type: apiKey
-  WsId:
+  WorkspaceId:
     description: The selected workspace id you are working with
     in: header
-    name: kanthor-ws-id
+    name: x-authorization-workspace
     type: apiKey
 swagger: "2.0"

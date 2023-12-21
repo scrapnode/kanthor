@@ -4,46 +4,43 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/internal/structure"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointListIn struct {
+	*entities.Query
 	WsId  string
 	AppId string
-	*structure.ListReq
 }
 
 func (in *EndpointListIn) Validate() error {
+	if err := in.Query.Validate(); err != nil {
+		return err
+	}
+
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
 		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
-		validator.PointerNotNil("list", in.ListReq),
 	)
 }
 
 type EndpointListOut struct {
-	*structure.ListRes[entities.Endpoint]
+	Data  []entities.Endpoint
+	Count int64
 }
 
 func (uc *endpoint) List(ctx context.Context, in *EndpointListIn) (*EndpointListOut, error) {
-	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
+	data, err := uc.repositories.Endpoint().List(ctx, in.WsId, in.AppId, in.Search, in.Limit, in.Page)
 	if err != nil {
 		return nil, err
 	}
 
-	listing, err := uc.repositories.Endpoint().List(
-		ctx,
-		app,
-		structure.WithListCursor(in.Cursor),
-		structure.WithListSearch(in.Search),
-		structure.WithListLimit(in.Limit),
-		structure.WithListIds(in.Ids),
-	)
+	count, err := uc.repositories.Endpoint().Count(ctx, in.WsId, in.AppId, in.Search)
 	if err != nil {
 		return nil, err
 	}
 
-	return &EndpointListOut{ListRes: listing}, nil
+	out := &EndpointListOut{Data: data, Count: count}
+	return out, nil
 }

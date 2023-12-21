@@ -12,8 +12,8 @@ import (
 )
 
 type WorkspaceCredentialsUpdateReq struct {
-	Name      string `json:"name" binding:"required"`
-	ExpiredAt int64  `json:"expired_at" binding:"required,gte=0"`
+	Name      string `json:"name" default:"swagger demo update"`
+	ExpiredAt int64  `json:"expired_at" default:"1893456000000"`
 }
 
 type WorkspaceCredentialsUpdateRes struct {
@@ -21,14 +21,14 @@ type WorkspaceCredentialsUpdateRes struct {
 }
 
 // UseWorkspaceCredentialsUpdate
-// @Tags		workspace
-// @Router		/workspace/me/credentials/{wsc_id}	[patch]
-// @Param		wsc_id								path		string							true	"credentials id"
-// @Param		props								body		WorkspaceCredentialsUpdateReq	true	"credentials properties"
-// @Success		200									{object}	WorkspaceCredentialsUpdateRes
-// @Failure		default								{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Tags		credentials
+// @Router		/credentials/{wsc_id}	[patch]
+// @Param		wsc_id					path		string							true	"credentials id"
+// @Param		props					body		WorkspaceCredentialsUpdateReq	true	"credentials properties"
+// @Success		200						{object}	WorkspaceCredentialsUpdateRes
+// @Failure		default					{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseWorkspaceCredentialsUpdate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsUpdateReq

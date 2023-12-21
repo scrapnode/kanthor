@@ -8,17 +8,15 @@ import (
 )
 
 type EndpointUpdateIn struct {
-	WsId  string
-	AppId string
-	Id    string
-	Name  string
+	WsId string
+	Id   string
+	Name string
 }
 
 func (in *EndpointUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
-		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
 		validator.StringStartsWith("id", in.Id, entities.IdNsEp),
 		validator.StringRequired("name", in.Name),
 	)
@@ -30,12 +28,7 @@ type EndpointUpdateOut struct {
 
 func (uc *endpoint) Update(ctx context.Context, in *EndpointUpdateIn) (*EndpointUpdateOut, error) {
 	ep, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
-		if err != nil {
-			return nil, err
-		}
-
-		ep, err := uc.repositories.Endpoint().Get(txctx, app, in.Id)
+		ep, err := uc.repositories.Endpoint().Get(ctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}

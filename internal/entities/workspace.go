@@ -4,9 +4,9 @@ type Workspace struct {
 	Entity
 	AuditTime
 
-	OwnerId string `json:"owner_id"`
-	Name    string `json:"name"`
-	Tier    string `json:"tier"`
+	OwnerId string
+	Name    string
+	Tier    string
 }
 
 func (entity *Workspace) TableName() string {
@@ -17,10 +17,10 @@ type WorkspaceCredentials struct {
 	Entity
 	AuditTime
 
-	WsId      string `json:"ws_id"`
-	Name      string `json:"name"`
-	Hash      string `json:"hash,omitempty"`
-	ExpiredAt int64  `json:"expired_at"`
+	WsId      string
+	Name      string
+	Hash      string
+	ExpiredAt int64
 }
 
 func (entity *WorkspaceCredentials) TableName() string {

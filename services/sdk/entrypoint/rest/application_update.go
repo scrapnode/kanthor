@@ -16,7 +16,7 @@ type ApplicationUpdateReq struct {
 }
 
 type ApplicationUpdateRes struct {
-	*entities.Application
+	*Application
 }
 
 // UseApplicationUpdate
@@ -26,7 +26,8 @@ type ApplicationUpdateRes struct {
 // @Param		props					body		ApplicationUpdateReq	true	"application properties"
 // @Success		200						{object}	ApplicationUpdateRes
 // @Failure		default					{object}	gateway.Error
-// @Security	BasicAuth
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseApplicationUpdate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req ApplicationUpdateReq
@@ -58,7 +59,7 @@ func UseApplicationUpdate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &ApplicationUpdateRes{out.Doc}
+		res := &ApplicationUpdateRes{ToApplication(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

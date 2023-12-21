@@ -34,13 +34,14 @@ func (sql *SqlWorkspaceCredentials) Update(ctx context.Context, doc *entities.Wo
 	return doc, nil
 }
 
-func (sql *SqlWorkspaceCredentials) List(ctx context.Context, wsId string, limit, page int, q string) ([]entities.WorkspaceCredentials, error) {
-	tx := sql.client.WithContext(ctx).
-		Model(&entities.WorkspaceCredentials{}).
-		Scopes(UseWsId(wsId, entities.TableWsc)).
-		Order(fmt.Sprintf("%s.id DESC", entities.TableWsc))
+func (sql *SqlWorkspaceCredentials) List(ctx context.Context, wsId string, q string, limit, page int) ([]entities.WorkspaceCredentials, error) {
+	doc := &entities.WorkspaceCredentials{}
 
-	tx = database.ApplyListQuery(tx, limit, page, q, []string{fmt.Sprintf("%s.name", entities.TableWsc)})
+	tx := sql.client.WithContext(ctx).Model(doc).
+		Scopes(UseWsId(wsId, doc.TableName())).
+		Order(fmt.Sprintf("%s.id DESC", doc.TableName()))
+
+	tx = database.ApplyListQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())}, limit, page)
 
 	var docs []entities.WorkspaceCredentials
 	if tx = tx.Find(&docs); tx.Error != nil {
@@ -51,17 +52,15 @@ func (sql *SqlWorkspaceCredentials) List(ctx context.Context, wsId string, limit
 }
 
 func (sql *SqlWorkspaceCredentials) Count(ctx context.Context, wsId, q string) (int64, error) {
-	tx := sql.client.WithContext(ctx).Model(&entities.WorkspaceCredentials{}).
+	doc := &entities.WorkspaceCredentials{}
+
+	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(UseWsId(wsId, entities.TableWsc))
 
-	if q != "" {
-		tx = tx.Where(fmt.Sprintf(`"%s.name" LIKE ?`, entities.TableWsc), "%"+q+"%")
-	}
+	tx = database.ApplyCountQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())})
 
 	var count int64
-	tx = tx.Count(&count)
-
-	return count, tx.Error
+	return count, tx.Count(&count).Error
 }
 
 func (sql *SqlWorkspaceCredentials) Get(ctx context.Context, wsId, id string) (*entities.WorkspaceCredentials, error) {

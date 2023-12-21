@@ -7,4 +7,4 @@ swagger:
 	./scripts/gen_swagger.sh
 
 swagger_clients:
-	./scripts/gen_swagger_client.sh
+	./scripts/gen_swagger_clients.sh

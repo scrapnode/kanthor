@@ -19,6 +19,12 @@ package rest
 
 // @accept json
 // @produce json
-// @securityDefinitions.basic BasicAuth
+
+// @securityDefinitions.apikey Authorization
 // @in header
 // @name Authorization
+// @description [Bearer JWT_TOKEN] or [Basic base64(key:secret)]
+// @securityDefinitions.apikey WorkspaceId
+// @in header
+// @name x-authorization-workspace
+// @description The selected workspace id you are working with

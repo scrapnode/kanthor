@@ -10,17 +10,17 @@ type Endpoint struct {
 	Entity
 	AuditTime
 	// @TODO: add deactivated_at
-	// DeactivatedAt int64 `json:"deactivated_at"`
+	// DeactivatedAt int64
 
-	AppId     string `json:"app_id"`
-	Name      string `json:"name"`
-	SecretKey string `json:"secret_key"`
+	AppId     string
+	Name      string
+	SecretKey string
 	// HTTP: POST/PUT/PATCH
-	Method string `json:"method"`
+	Method string
 	// format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
 	// HTTP: https:://httpbin.org/post?app=kanthor.webhook
 	// gRPC: grpc:://app.kanthorlabs.com
-	Uri string `json:"uri"`
+	Uri string
 }
 
 func (entity *Endpoint) TableName() string {
@@ -37,26 +37,26 @@ type EndpointRule struct {
 	Entity
 	AuditTime
 	// @TODO: add deactivated_at
-	// DeactivatedAt int64 `json:"deactivated_at"`
+	// DeactivatedAt int64
 
-	EpId string `json:"ep_id"`
-	Name string `json:"name"`
+	EpId string
+	Name string
 
-	Priority int32 `json:"priority"`
+	Priority int32
 	// the logic of not-false is true should be used here
 	// to guarantee default all rule will be on include mode
-	Exclusionary bool `json:"exclusionary"`
+	Exclusionary bool
 
 	// examples
 	//  - app_id
 	//  - type
 	//  - body
 	//  - metadata
-	ConditionSource string `json:"condition_source"`
+	ConditionSource string
 	// examples:
 	// 	- equal::orders.paid
 	// 	- regex::.*
-	ConditionExpression string `json:"condition_expression"`
+	ConditionExpression string
 }
 
 func (entity *EndpointRule) TableName() string {

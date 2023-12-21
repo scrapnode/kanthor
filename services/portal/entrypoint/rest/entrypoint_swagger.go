@@ -19,11 +19,12 @@ package rest
 
 // @accept json
 // @produce json
-// @securityDefinitions.apikey BearerAuth
+
+// @securityDefinitions.apikey Authorization
 // @in header
 // @name Authorization
-// @description [Bearer <JWT token>] or [Basic base64(key:secret)]
-// @securityDefinitions.apikey WsId
+// @description [Bearer JWT_TOKEN] or [Basic base64(key:secret)]
+// @securityDefinitions.apikey WorkspaceId
 // @in header
-// @name kanthor-ws-id
+// @name x-authorization-workspace
 // @description The selected workspace id you are working with

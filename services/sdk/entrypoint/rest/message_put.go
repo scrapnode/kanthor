@@ -27,12 +27,13 @@ type MessagePutRes struct {
 
 // UseMessagePut
 // @Tags		message
-// @Router		/application/{app_id}/message		[put]
-// @Param		app_id								path		string			true	"application id"
-// @Param		props								body		MessagePutReq	true	"message properties"
-// @Success		201									{object}	MessagePutRes
-// @Failure		default								{object}	gateway.Error
-// @Security	BasicAuth
+// @Router		/message		[put]
+// @Param		app_id			query		string			true	"application id"
+// @Param		props			body		MessagePutReq	true	"message properties"
+// @Success		201				{object}	MessagePutRes
+// @Failure		default			{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req MessagePutReq

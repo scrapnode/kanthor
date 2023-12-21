@@ -12,7 +12,7 @@ import (
 )
 
 type WorkspaceCredentialsExpireReq struct {
-	Duration int64 `json:"duration"`
+	Duration int64 `json:"duration" default:"1800000"`
 }
 
 type WorkspaceCredentialsExpireRes struct {
@@ -21,14 +21,14 @@ type WorkspaceCredentialsExpireRes struct {
 }
 
 // UseWorkspaceCredentialsExpire
-// @Tags		workspace
-// @Router		/workspace/me/credentials/{wsc_id}/expiration	[put]
-// @Param		wsc_id											path		string							true	"credentials id"
-// @Param		props											body		WorkspaceCredentialsExpireReq	true	"credentials properties"
-// @Success		200												{object}	WorkspaceCredentialsExpireRes
-// @Failure		default											{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Tags		credentials
+// @Router		/credentials/{wsc_id}/expiration	[put]
+// @Param		wsc_id								path		string							true	"credentials id"
+// @Param		props								body		WorkspaceCredentialsExpireReq	true	"credentials properties"
+// @Success		200									{object}	WorkspaceCredentialsExpireRes
+// @Failure		default								{object}	gateway.Error
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseWorkspaceCredentialsExpire(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsExpireReq

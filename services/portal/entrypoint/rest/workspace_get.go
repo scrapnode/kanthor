@@ -21,8 +21,8 @@ type WorkspaceGetRes struct {
 // @Router		/workspace/me			[get]
 // @Success		200						{object}	WorkspaceGetRes
 // @Failure		default					{object}	gateway.Error
-// @Security	BearerAuth
-// @Security	WsId
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseWorkspaceGet(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)

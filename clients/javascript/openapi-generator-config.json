@@ -1,7 +1,0 @@
-{
-  "npmName": "kanthor",
-  "npmVersion": "2022.1201.1701",
-  "platform": "node",
-  "useObjectParameters": true,
-  "supportsES6": true
-}

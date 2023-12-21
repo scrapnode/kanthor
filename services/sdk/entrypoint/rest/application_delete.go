@@ -12,7 +12,7 @@ import (
 )
 
 type ApplicationDeleteRes struct {
-	*entities.Application
+	*Application
 }
 
 // UseApplicationDelete
@@ -21,7 +21,8 @@ type ApplicationDeleteRes struct {
 // @Param		app_id					path		string					true	"application id"
 // @Success		200						{object}	ApplicationDeleteRes
 // @Failure		default					{object}	gateway.Error
-// @Security	BasicAuth
+// @Security	Authorization
+// @Security	WorkspaceId
 func UseApplicationDelete(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
@@ -45,7 +46,7 @@ func UseApplicationDelete(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &ApplicationDeleteRes{out.Doc}
+		res := &ApplicationDeleteRes{ToApplication(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

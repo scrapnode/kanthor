@@ -19,10 +19,10 @@ var requires = []string{
 	http.MethodDelete,
 }
 
-func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency) gin.HandlerFunc {
+func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency, bypass bool) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		method := ginctx.Request.Method
-		required := slices.Contains(requires, method)
+		required := slices.Contains(requires, method) && !bypass
 
 		if required {
 			key := ginctx.GetHeader(HeaderIdempotencyKey)

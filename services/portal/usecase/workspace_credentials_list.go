@@ -8,13 +8,15 @@ import (
 )
 
 type WorkspaceCredentialsListIn struct {
-	WsId   string
-	Search string
-	Limit  int
-	Page   int
+	*entities.Query
+	WsId string
 }
 
 func (in *WorkspaceCredentialsListIn) Validate() error {
+	if err := in.Query.Validate(); err != nil {
+		return err
+	}
+
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
@@ -27,14 +29,12 @@ type WorkspaceCredentialsListOut struct {
 }
 
 func (uc *workspaceCredentials) List(ctx context.Context, in *WorkspaceCredentialsListIn) (*WorkspaceCredentialsListOut, error) {
-	data, err := uc.repositories.WorkspaceCredentials().List(ctx, in.WsId, in.Limit, in.Page, in.Search)
+	data, err := uc.repositories.WorkspaceCredentials().List(ctx, in.WsId, in.Search, in.Limit, in.Page)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.WorkspaceCredentials().Count(
-		ctx, in.WsId, "",
-	)
+	count, err := uc.repositories.WorkspaceCredentials().Count(ctx, in.WsId, in.Search)
 	if err != nil {
 		return nil, err
 	}

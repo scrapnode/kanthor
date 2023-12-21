@@ -9,7 +9,7 @@ import (
 )
 
 type EndpointRuleCreateIn struct {
-	Ws   *entities.Workspace
+	WsId string
 	EpId string
 	Name string
 
@@ -22,7 +22,7 @@ type EndpointRuleCreateIn struct {
 func (in *EndpointRuleCreateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.PointerNotNil("ws", in.Ws),
+		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
 		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
 		validator.StringRequired("name", in.Name),
 		validator.NumberGreaterThan("priority", in.Priority, 0),
@@ -36,7 +36,7 @@ type EndpointRuleCreateOut struct {
 }
 
 func (uc *endpointRule) Create(ctx context.Context, in *EndpointRuleCreateIn) (*EndpointRuleCreateOut, error) {
-	ep, err := uc.repositories.Endpoint().GetOfWorkspace(ctx, in.Ws, in.EpId)
+	ep, err := uc.repositories.Endpoint().Get(ctx, in.WsId, in.EpId)
 	if err != nil {
 		return nil, err
 	}
