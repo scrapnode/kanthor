@@ -12,7 +12,7 @@ import (
 )
 
 type EndpointUpdateReq struct {
-	Name string `json:"name" binding:"required"`
+	Name string `json:"name"`
 }
 
 type EndpointUpdateRes struct {
@@ -21,9 +21,8 @@ type EndpointUpdateRes struct {
 
 // UseEndpointUpdate
 // @Tags		endpoint
-// @Router		/endpoint/{ep_id}	[put]
+// @Router		/endpoint/{ep_id}	[patch]
 // @Param		ep_id				path		string					true	"endpoint id"
-// @Param		app_id				query		string					true	"application id"
 // @Param		props				body		EndpointUpdateReq		true	"endpoint properties"
 // @Success		200					{object}	EndpointUpdateRes
 // @Failure		default				{object}	gateway.Error

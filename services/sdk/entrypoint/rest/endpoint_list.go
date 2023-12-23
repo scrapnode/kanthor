@@ -12,8 +12,8 @@ import (
 )
 
 type EndpointListRes struct {
-	Data  []Endpoint
-	Count int64
+	Data  []Endpoint `json:"data"`
+	Count int64      `json:"count"`
 }
 
 // UseEndpointList

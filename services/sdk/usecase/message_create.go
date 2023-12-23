@@ -12,7 +12,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type MessagePutIn struct {
+type MessageCreateIn struct {
 	WsId  string
 	Tier  string
 	AppId string
@@ -23,7 +23,7 @@ type MessagePutIn struct {
 	Metadata entities.Metadata
 }
 
-func (in *MessagePutIn) Validate() error {
+func (in *MessageCreateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
@@ -34,12 +34,12 @@ func (in *MessagePutIn) Validate() error {
 	)
 }
 
-type MessagePutOut struct {
+type MessageCreateOut struct {
 	EventId string `json:"event_id"`
 	Message *entities.Message
 }
 
-func (uc *message) Put(ctx context.Context, in *MessagePutIn) (*MessagePutOut, error) {
+func (uc *message) Put(ctx context.Context, in *MessageCreateIn) (*MessageCreateOut, error) {
 	key := CacheKeyApp(in.WsId, in.AppId)
 	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
 		return uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
@@ -73,5 +73,5 @@ func (uc *message) Put(ctx context.Context, in *MessagePutIn) (*MessagePutOut, e
 		return nil, errs[event.Id]
 	}
 
-	return &MessagePutOut{Message: msg}, nil
+	return &MessageCreateOut{Message: msg}, nil
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type WorkspaceUpdateReq struct {
-	Name string `json:"name" binding:"required"`
+	Name string `json:"name"`
 }
 
 type WorkspaceUpdateRes struct {

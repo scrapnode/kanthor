@@ -182,7 +182,43 @@ const docTemplateSdk = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "application"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ApplicationDeleteRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "security": [
                     {
                         "Authorization": []
@@ -217,42 +253,6 @@ const docTemplateSdk = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/rest.ApplicationUpdateRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "Authorization": []
-                    },
-                    {
-                        "WorkspaceId": []
-                    }
-                ],
-                "tags": [
-                    "application"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/rest.ApplicationDeleteRes"
                         }
                     },
                     "default": {
@@ -335,13 +335,6 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "description": "endpoint properties",
                         "name": "props",
                         "in": "body",
@@ -411,7 +404,7 @@ const docTemplateSdk = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
                 "security": [
                     {
                         "Authorization": []
@@ -430,12 +423,41 @@ const docTemplateSdk = `{
                         "name": "ep_id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.EndpointDeleteRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Authorization": []
                     },
                     {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "endpoint"
+                ],
+                "parameters": [
+                    {
                         "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "query",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -462,53 +484,10 @@ const docTemplateSdk = `{
                         }
                     }
                 }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "Authorization": []
-                    },
-                    {
-                        "WorkspaceId": []
-                    }
-                ],
-                "tags": [
-                    "endpoint"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/rest.EndpointDeleteRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
             }
         },
         "/message": {
-            "put": {
+            "post": {
                 "security": [
                     {
                         "Authorization": []
@@ -522,19 +501,12 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "description": "message properties",
                         "name": "props",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.MessagePutReq"
+                            "$ref": "#/definitions/rest.MessageCreateReq"
                         }
                     }
                 ],
@@ -542,7 +514,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/rest.MessagePutRes"
+                            "$ref": "#/definitions/rest.MessageCreateRes"
                         }
                     },
                     "default": {
@@ -625,13 +597,6 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "description": "rule properties",
                         "name": "props",
                         "in": "body",
@@ -677,13 +642,6 @@ const docTemplateSdk = `{
                         "name": "epr_id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -691,58 +649,6 @@ const docTemplateSdk = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/rest.EndpointRuleGetRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Authorization": []
-                    },
-                    {
-                        "WorkspaceId": []
-                    }
-                ],
-                "tags": [
-                    "endpoint rule"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "rule id",
-                        "name": "epr_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "description": "rule properties",
-                        "name": "props",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleUpdateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleUpdateRes"
                         }
                     },
                     "default": {
@@ -772,13 +678,6 @@ const docTemplateSdk = `{
                         "name": "epr_id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "endpoint id",
-                        "name": "ep_id",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -786,6 +685,51 @@ const docTemplateSdk = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/rest.EndpointRuleDeleteRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "endpoint rule"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "rule id",
+                        "name": "epr_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "rule properties",
+                        "name": "props",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.EndpointRuleUpdateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.EndpointRuleUpdateRes"
                         }
                     },
                     "default": {
@@ -857,9 +801,6 @@ const docTemplateSdk = `{
         },
         "rest.ApplicationCreateReq": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -942,9 +883,6 @@ const docTemplateSdk = `{
         },
         "rest.ApplicationUpdateReq": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -999,26 +937,16 @@ const docTemplateSdk = `{
         },
         "rest.EndpointCreateReq": {
             "type": "object",
-            "required": [
-                "method",
-                "name",
-                "uri"
-            ],
             "properties": {
+                "app_id": {
+                    "type": "string"
+                },
                 "method": {
                     "type": "string",
-                    "enum": [
-                        "POST",
-                        "PUT"
-                    ]
+                    "example": "POST"
                 },
                 "name": {
                     "type": "string"
-                },
-                "secret_key": {
-                    "type": "string",
-                    "maxLength": 32,
-                    "minLength": 16
                 },
                 "uri": {
                     "type": "string",
@@ -1158,16 +1086,14 @@ const docTemplateSdk = `{
         },
         "rest.EndpointRuleCreateReq": {
             "type": "object",
-            "required": [
-                "condition_expression",
-                "condition_source",
-                "name"
-            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
                 },
                 "condition_source": {
+                    "type": "string"
+                },
+                "ep_id": {
                     "type": "string"
                 },
                 "exclusionary": {
@@ -1336,9 +1262,6 @@ const docTemplateSdk = `{
         },
         "rest.EndpointUpdateReq": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -1371,13 +1294,12 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "rest.MessagePutReq": {
+        "rest.MessageCreateReq": {
             "type": "object",
-            "required": [
-                "body",
-                "type"
-            ],
             "properties": {
+                "app_id": {
+                    "type": "string"
+                },
                 "body": {
                     "type": "object",
                     "additionalProperties": true
@@ -1394,7 +1316,7 @@ const docTemplateSdk = `{
                 }
             }
         },
-        "rest.MessagePutRes": {
+        "rest.MessageCreateRes": {
             "type": "object",
             "properties": {
                 "id": {

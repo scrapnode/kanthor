@@ -50,7 +50,7 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, epId string, q strin
 		Scopes(
 			UseEpId(epId, doc.TableName()),
 			UseApp(entities.IdNsEp),
-			UseWsId(wsId, entities.IdNsApp),
+			UseWsId(wsId, entities.TableApp),
 		)
 
 	qcols := []string{
@@ -73,7 +73,7 @@ func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, epId string, q stri
 		Scopes(
 			UseEpId(epId, doc.TableName()),
 			UseApp(entities.IdNsEp),
-			UseWsId(wsId, entities.IdNsApp),
+			UseWsId(wsId, entities.TableApp),
 		)
 
 	qcols := []string{
@@ -95,7 +95,7 @@ func (sql *SqlEndpointRule) Get(ctx context.Context, wsId string, id string) (*e
 		Scopes(
 			UseEp(doc.TableName()),
 			UseApp(entities.IdNsEp),
-			UseWsId(wsId, entities.IdNsApp),
+			UseWsId(wsId, entities.TableApp),
 		).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)

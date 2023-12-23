@@ -11,7 +11,7 @@ func RegisterEndpointRuleRoutes(router gin.IRoutes, service *sdk) {
 		Use(middlewares.UseAuthz(service.infra.Authorizator))
 
 	router.POST("", UseEndpointRuleCreate(service))
-	router.PUT("/:epr_id", UseEndpointRuleUpdate(service))
+	router.PATCH("/:epr_id", UseEndpointRuleUpdate(service))
 	router.DELETE("/:epr_id", UseEndpointRuleDelete(service))
 
 	router.GET("", UseEndpointRuleList(service))

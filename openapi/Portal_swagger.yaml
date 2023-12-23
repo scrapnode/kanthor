@@ -203,8 +203,6 @@ definitions:
     properties:
       name:
         type: string
-    required:
-    - name
     type: object
   rest.WorkspaceUpdateRes:
     properties:

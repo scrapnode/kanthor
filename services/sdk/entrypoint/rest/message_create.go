@@ -14,29 +14,29 @@ import (
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 
-type MessagePutReq struct {
-	Type string `json:"type" binding:"required" example:"testing.debug"`
+type MessageCreateReq struct {
+	AppId string `json:"app_id"`
+	Type  string `json:"type" example:"testing.debug"`
 
-	Body    map[string]interface{} `json:"body" binding:"required"`
+	Body    map[string]interface{} `json:"body"`
 	Headers map[string]string      `json:"headers"`
 }
 
-type MessagePutRes struct {
+type MessageCreateRes struct {
 	Id string `json:"id"`
 }
 
-// UseMessagePut
+// UseMessageCreate
 // @Tags		message
-// @Router		/message		[put]
-// @Param		app_id			query		string			true	"application id"
-// @Param		props			body		MessagePutReq	true	"message properties"
-// @Success		201				{object}	MessagePutRes
+// @Router		/message		[post]
+// @Param		props			body		MessageCreateReq	true	"message properties"
+// @Success		201				{object}	MessageCreateRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization
 // @Security	WorkspaceId
-func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseMessageCreate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req MessagePutReq
+		var req MessageCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
@@ -50,7 +50,6 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			return
 		}
 
-		appId := ginctx.Param("app_id")
 		headers := entities.Header{}
 		if len(req.Headers) > 0 {
 			for k, v := range req.Headers {
@@ -60,10 +59,10 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
-		in := &usecase.MessagePutIn{
+		in := &usecase.MessageCreateIn{
 			WsId:     ws.Id,
 			Tier:     ws.Tier,
-			AppId:    appId,
+			AppId:    req.AppId,
 			Type:     req.Type,
 			Body:     string(body),
 			Headers:  headers,
@@ -83,7 +82,7 @@ func UseMessagePut(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &MessagePutRes{out.Message.Id}
+		res := &MessageCreateRes{out.Message.Id}
 
 		logger.Debugw("put message", "msg_id", out.Message.Id)
 		ginctx.JSON(http.StatusCreated, res)

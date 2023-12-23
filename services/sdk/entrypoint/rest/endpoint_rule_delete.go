@@ -19,7 +19,6 @@ type EndpointRuleDeleteRes struct {
 // @Tags		endpoint rule
 // @Router		/rule/{epr_id}	[delete]
 // @Param		epr_id			path		string					true	"rule id"
-// @Param		ep_id			query		string					true	"endpoint id"
 // @Success		200				{object}	EndpointRuleDeleteRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization

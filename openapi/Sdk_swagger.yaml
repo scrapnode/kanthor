@@ -42,8 +42,6 @@ definitions:
     properties:
       name:
         type: string
-    required:
-    - name
     type: object
   rest.ApplicationCreateRes:
     properties:
@@ -97,8 +95,6 @@ definitions:
     properties:
       name:
         type: string
-    required:
-    - name
     type: object
   rest.ApplicationUpdateRes:
     properties:
@@ -132,24 +128,16 @@ definitions:
     type: object
   rest.EndpointCreateReq:
     properties:
+      app_id:
+        type: string
       method:
-        enum:
-        - POST
-        - PUT
+        example: POST
         type: string
       name:
-        type: string
-      secret_key:
-        maxLength: 32
-        minLength: 16
         type: string
       uri:
         example: https://example.com
         type: string
-    required:
-    - method
-    - name
-    - uri
     type: object
   rest.EndpointCreateRes:
     properties:
@@ -249,16 +237,14 @@ definitions:
         type: string
       condition_source:
         type: string
+      ep_id:
+        type: string
       exclusionary:
         type: boolean
       name:
         type: string
       priority:
         type: integer
-    required:
-    - condition_expression
-    - condition_source
-    - name
     type: object
   rest.EndpointRuleCreateRes:
     properties:
@@ -364,8 +350,6 @@ definitions:
     properties:
       name:
         type: string
-    required:
-    - name
     type: object
   rest.EndpointUpdateRes:
     properties:
@@ -384,8 +368,10 @@ definitions:
       uri:
         type: string
     type: object
-  rest.MessagePutReq:
+  rest.MessageCreateReq:
     properties:
+      app_id:
+        type: string
       body:
         additionalProperties: true
         type: object
@@ -396,11 +382,8 @@ definitions:
       type:
         example: testing.debug
         type: string
-    required:
-    - body
-    - type
     type: object
-  rest.MessagePutRes:
+  rest.MessageCreateRes:
     properties:
       id:
         type: string
@@ -532,7 +515,7 @@ paths:
       - WorkspaceId: []
       tags:
       - application
-    put:
+    patch:
       parameters:
       - description: application id
         in: path
@@ -597,11 +580,6 @@ paths:
       - endpoint
     post:
       parameters:
-      - description: application id
-        in: query
-        name: app_id
-        required: true
-        type: string
       - description: endpoint properties
         in: body
         name: props
@@ -625,11 +603,6 @@ paths:
   /endpoint/{ep_id}:
     delete:
       parameters:
-      - description: application id
-        in: query
-        name: app_id
-        required: true
-        type: string
       - description: endpoint id
         in: path
         name: ep_id
@@ -675,16 +648,11 @@ paths:
       - WorkspaceId: []
       tags:
       - endpoint
-    put:
+    patch:
       parameters:
       - description: endpoint id
         in: path
         name: ep_id
-        required: true
-        type: string
-      - description: application id
-        in: query
-        name: app_id
         required: true
         type: string
       - description: endpoint properties
@@ -708,24 +676,19 @@ paths:
       tags:
       - endpoint
   /message:
-    put:
+    post:
       parameters:
-      - description: application id
-        in: query
-        name: app_id
-        required: true
-        type: string
       - description: message properties
         in: body
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.MessagePutReq'
+          $ref: '#/definitions/rest.MessageCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/rest.MessagePutRes'
+            $ref: '#/definitions/rest.MessageCreateRes'
         default:
           description: ""
           schema:
@@ -773,11 +736,6 @@ paths:
       - endpoint rule
     post:
       parameters:
-      - description: endpoint id
-        in: query
-        name: ep_id
-        required: true
-        type: string
       - description: rule properties
         in: body
         name: props
@@ -806,11 +764,6 @@ paths:
         name: epr_id
         required: true
         type: string
-      - description: endpoint id
-        in: query
-        name: ep_id
-        required: true
-        type: string
       responses:
         "200":
           description: OK
@@ -832,11 +785,6 @@ paths:
         name: epr_id
         required: true
         type: string
-      - description: endpoint id
-        in: query
-        name: ep_id
-        required: true
-        type: string
       responses:
         "200":
           description: OK
@@ -851,16 +799,11 @@ paths:
       - WorkspaceId: []
       tags:
       - endpoint rule
-    put:
+    patch:
       parameters:
       - description: rule id
         in: path
         name: epr_id
-        required: true
-        type: string
-      - description: endpoint id
-        in: query
-        name: ep_id
         required: true
         type: string
       - description: rule properties

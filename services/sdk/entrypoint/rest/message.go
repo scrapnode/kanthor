@@ -10,5 +10,5 @@ func RegisterMessageRoutes(router gin.IRoutes, service *sdk) {
 		Use(middlewares.UseWorkspace(RegisterWorkspaceResolver(service.uc))).
 		Use(middlewares.UseAuthz(service.infra.Authorizator))
 
-	router.PUT("", UseMessagePut(service.logger, service.uc))
+	router.POST("", UseMessageCreate(service.logger, service.uc))
 }

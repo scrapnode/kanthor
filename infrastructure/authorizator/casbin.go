@@ -195,7 +195,8 @@ func (authorizator *casbin) Enforce(tenant, sub, obj, act string) (bool, error) 
 	}
 
 	if !ok {
-		authorizator.logger.Warnw("permission denied", "sub", sub, "tenant", tenant, "obj", obj, "act", act, "explains", explains)
+		permissions, _ := authorizator.UserPermissionsInTenant(tenant, sub)
+		authorizator.logger.Warnw("permission denied", "sub", sub, "tenant", tenant, "obj", obj, "act", act, "explains", explains, "permissions", permissions)
 	}
 	return ok, nil
 }

@@ -21,9 +21,8 @@ type EndpointRuleUpdateRes struct {
 
 // UseEndpointRuleUpdate
 // @Tags		endpoint rule
-// @Router		/rule/{epr_id}	[put]
+// @Router		/rule/{epr_id}	[patch]
 // @Param		epr_id			path		string					true	"rule id"
-// @Param		ep_id			query		string					true	"endpoint id"
 // @Param		props			body		EndpointRuleUpdateReq	true	"rule properties"
 // @Success		200				{object}	EndpointRuleUpdateRes
 // @Failure		default			{object}	gateway.Error

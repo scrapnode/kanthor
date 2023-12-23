@@ -12,8 +12,8 @@ import (
 )
 
 type ApplicationListRes struct {
-	Data  []Application
-	Count int64
+	Data  []Application `json:"data"`
+	Count int64         `json:"count"`
 }
 
 // UseApplicationList

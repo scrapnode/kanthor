@@ -11,7 +11,7 @@ func RegisterApplicationRoutes(router gin.IRoutes, service *sdk) {
 		Use(middlewares.UseAuthz(service.infra.Authorizator))
 
 	router.POST("", UseApplicationCreate(service))
-	router.PUT("/:app_id", UseApplicationUpdate(service))
+	router.PATCH("/:app_id", UseApplicationUpdate(service))
 	router.DELETE("/:app_id", UseApplicationDelete(service))
 
 	router.GET("", UseApplicationList(service))

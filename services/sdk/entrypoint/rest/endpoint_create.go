@@ -12,11 +12,11 @@ import (
 )
 
 type EndpointCreateReq struct {
-	Name string `json:"name" binding:"required"`
+	AppId string `json:"app_id"`
+	Name  string `json:"name"`
 
-	SecretKey string `json:"secret_key" binding:"omitempty,min=16,max=32"`
-	Method    string `json:"method" binding:"required,oneof=POST PUT"`
-	Uri       string `json:"uri" binding:"required,uri" example:"https://example.com"`
+	Method string `json:"method" example:"POST"`
+	Uri    string `json:"uri" example:"https://example.com"`
 }
 
 type EndpointCreateRes struct {
@@ -26,7 +26,6 @@ type EndpointCreateRes struct {
 // UseEndpointCreate
 // @Tags		endpoint
 // @Router		/endpoint	[post]
-// @Param		app_id		query		string					true	"application id"
 // @Param		props		body		EndpointCreateReq	true	"endpoint properties"
 // @Success		201			{object}	EndpointCreateRes
 // @Failure		default		{object}	gateway.Error
@@ -44,12 +43,11 @@ func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		appId := ginctx.Param("app_id")
 		in := &usecase.EndpointCreateIn{
 			WsId:      ws.Id,
-			AppId:     appId,
+			AppId:     req.AppId,
 			Name:      req.Name,
-			SecretKey: req.SecretKey,
+			SecretKey: utils.RandomString(32),
 			Method:    req.Method,
 			Uri:       req.Uri,
 		}

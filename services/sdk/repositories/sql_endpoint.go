@@ -49,7 +49,7 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, q string, 
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(
 			UseAppId(appId, doc.TableName()),
-			UseWsId(wsId, entities.IdNsApp),
+			UseWsId(wsId, entities.TableApp),
 		)
 
 	qcols := []string{
@@ -71,7 +71,7 @@ func (sql *SqlEndpoint) Count(ctx context.Context, wsId, appId string, q string)
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(
 			UseAppId(appId, doc.TableName()),
-			UseWsId(wsId, entities.IdNsApp),
+			UseWsId(wsId, entities.TableApp),
 		)
 
 	qcols := []string{
@@ -92,7 +92,7 @@ func (sql *SqlEndpoint) Get(ctx context.Context, wsId string, id string) (*entit
 	tx := transaction.WithContext(ctx).Model(doc).
 		Scopes(
 			UseApp(doc.TableName()),
-			UseWsId(wsId, entities.IdNsApp),
+			UseWsId(wsId, entities.TableApp),
 		).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)

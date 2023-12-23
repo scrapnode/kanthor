@@ -19,7 +19,6 @@ type EndpointRuleGetRes struct {
 // @Tags		endpoint rule
 // @Router		/rule/{epr_id}	[get]
 // @Param		epr_id			path		string					true	"rule id"
-// @Param		ep_id			query		string					true	"endpoint id"
 // @Success		200				{object}	EndpointRuleGetRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization

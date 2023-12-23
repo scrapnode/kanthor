@@ -51,6 +51,10 @@ func (uc *account) Setup(ctx context.Context, in *AccountSetupIn) (*AccountSetup
 			return nil, err
 		}
 
+		if err := uc.infra.Authorizator.Refresh(ctx); err != nil {
+			return nil, err
+		}
+
 		return &AccountSetupOut{Workspace: ws}, nil
 	})
 

@@ -18,4 +18,4 @@ TARGET=${1:-origin}
 echo "---------------------------"
 printf "Pushing... $NOW --> %s\n" "$TARGET"
 echo "---------------------------"
-git push "$TARGET"
+git push "$TARGET"  

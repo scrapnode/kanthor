@@ -12,12 +12,13 @@ import (
 )
 
 type EndpointRuleCreateReq struct {
-	Name string `json:"name" binding:"required"`
+	EpId string `json:"ep_id"`
+	Name string `json:"name" `
 
 	Priority            int32  `json:"priority"`
 	Exclusionary        bool   `json:"exclusionary"`
-	ConditionSource     string `json:"condition_source" binding:"required"`
-	ConditionExpression string `json:"condition_expression" binding:"required"`
+	ConditionSource     string `json:"condition_source"`
+	ConditionExpression string `json:"condition_expression"`
 }
 
 type EndpointRuleCreateRes struct {
@@ -27,7 +28,6 @@ type EndpointRuleCreateRes struct {
 // UseEndpointRuleCreate
 // @Tags		endpoint rule
 // @Router		/rule		[post]
-// @Param		ep_id		query		string					true	"endpoint id"
 // @Param		props		body		EndpointRuleCreateReq	true	"rule properties"
 // @Success		201			{object}	EndpointRuleCreateRes
 // @Failure		default		{object}	gateway.Error
@@ -47,7 +47,7 @@ func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {
 
 		in := &usecase.EndpointRuleCreateIn{
 			WsId:                ws.Id,
-			EpId:                ginctx.Query("ep_id"),
+			EpId:                req.EpId,
 			Name:                req.Name,
 			Priority:            req.Priority,
 			Exclusionary:        req.Exclusionary,

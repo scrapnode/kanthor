@@ -64,7 +64,7 @@ func (sql *SqlApplication) Count(ctx context.Context, wsId string, q string) (in
 	doc := &entities.Application{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
-		Scopes(UseWsId(wsId, entities.TableWsc))
+		Scopes(UseWsId(wsId, doc.TableName()))
 
 	tx = database.ApplyCountQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())})
 

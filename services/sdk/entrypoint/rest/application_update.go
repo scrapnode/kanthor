@@ -12,7 +12,7 @@ import (
 )
 
 type ApplicationUpdateReq struct {
-	Name string `json:"name" binding:"required"`
+	Name string `json:"name"`
 }
 
 type ApplicationUpdateRes struct {
@@ -21,7 +21,7 @@ type ApplicationUpdateRes struct {
 
 // UseApplicationUpdate
 // @Tags		application
-// @Router		/application/{app_id}	[put]
+// @Router		/application/{app_id}	[patch]
 // @Param		app_id					path		string					true	"application id"
 // @Param		props					body		ApplicationUpdateReq	true	"application properties"
 // @Success		200						{object}	ApplicationUpdateRes

@@ -12,8 +12,8 @@ import (
 )
 
 type EndpointRuleListRes struct {
-	Data  []EndpointRule
-	Count int64
+	Data  []EndpointRule `json:"data"`
+	Count int64          `json:"count"`
 }
 
 // UseEndpointRuleList

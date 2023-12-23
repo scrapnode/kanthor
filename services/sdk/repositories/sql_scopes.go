@@ -35,7 +35,7 @@ func UseApp(target string) func(db *gorm.DB) *gorm.DB {
 
 func UseAppId(appId, target string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		where := fmt.Sprintf(`"%s"."id" = ?`, entities.IdNsApp)
+		where := fmt.Sprintf(`"%s"."id" = ?`, entities.TableApp)
 		return UseApp(target)(db).Where(where, appId)
 	}
 }
