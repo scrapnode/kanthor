@@ -20,7 +20,7 @@ type EndpointCreateReq struct {
 }
 
 type EndpointCreateRes struct {
-	*entities.Endpoint
+	*Endpoint
 }
 
 // UseEndpointCreate
@@ -64,7 +64,7 @@ func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointCreateRes{out.Doc}
+		res := &EndpointCreateRes{ToEndpoint(out.Doc)}
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

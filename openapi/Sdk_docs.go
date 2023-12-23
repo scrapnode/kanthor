@@ -957,31 +957,25 @@ const docTemplateSdk = `{
         "rest.EndpointCreateRes": {
             "type": "object",
             "properties": {
-                "appId": {
+                "app_id": {
                     "type": "string"
                 },
-                "createdAt": {
-                    "description": "I didn't find a way to disable automatic fields modify yet\nso, I use a tag to disable this feature here\nbut, we should keep our entities stateless if we can",
+                "created_at": {
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
                 "method": {
-                    "description": "HTTP: POST/PUT/PATCH",
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
-                "secretKey": {
-                    "type": "string"
-                },
-                "updatedAt": {
+                "updated_at": {
                     "type": "integer"
                 },
                 "uri": {
-                    "description": "format: scheme \":\" [\"//\" authority] path [\"?\" query] [\"#\" fragment]\nHTTP: https:://httpbin.org/post?app=kanthor.webhook\ngRPC: grpc:://app.kanthorlabs.com",
                     "type": "string"
                 }
             }
