@@ -337,6 +337,8 @@ definitions:
     type: object
   rest.EndpointUpdateReq:
     properties:
+      method:
+        type: string
       name:
         type: string
     type: object

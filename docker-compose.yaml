@@ -49,7 +49,7 @@ services:
       warehouse:
         condition: service_healthy
     container_name: kanthor-services-migration-database
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: on-failure
     networks:
       - kanthor
@@ -66,7 +66,7 @@ services:
       warehouse:
         condition: service_healthy
     container_name: kanthor-services-migration-datastore
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: on-failure
     networks:
       - kanthor
@@ -89,7 +89,7 @@ services:
       migration-database:
         condition: service_started
     container_name: kanthor-services-sdk
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -113,7 +113,7 @@ services:
       migration-database:
         condition: service_started
     container_name: kanthor-services-portal
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -137,7 +137,7 @@ services:
       migration-database:
         condition: service_started
     container_name: kanthor-services-scheduler
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -159,7 +159,7 @@ services:
       migration-database:
         condition: service_started
     container_name: kanthor-services-dispatcher
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -179,7 +179,7 @@ services:
       migration-datastore:
         condition: service_started
     container_name: kanthor-services-storage
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -199,7 +199,7 @@ services:
       migration-datastore:
         condition: service_started
     container_name: kanthor-services-attempt-trigger-planner
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -219,7 +219,7 @@ services:
       migration-datastore:
         condition: service_started
     container_name: kanthor-services-attempt-trigger-executor
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -239,7 +239,7 @@ services:
       migration-datastore:
         condition: service_started
     container_name: kanthor-services-attempt-endeavor-planner
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor
@@ -259,7 +259,7 @@ services:
       migration-datastore:
         condition: service_started
     container_name: kanthor-services-attempt-endeavor-executor
-    image: kanthorlabs/kanthor:latest
+    build: .
     restart: unless-stopped
     networks:
       - kanthor

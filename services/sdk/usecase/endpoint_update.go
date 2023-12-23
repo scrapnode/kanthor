@@ -2,15 +2,17 @@ package usecase
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type EndpointUpdateIn struct {
-	WsId string
-	Id   string
-	Name string
+	WsId   string
+	Id     string
+	Name   string
+	Method string
 }
 
 func (in *EndpointUpdateIn) Validate() error {
@@ -19,6 +21,7 @@ func (in *EndpointUpdateIn) Validate() error {
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", in.Id, entities.IdNsEp),
 		validator.StringRequired("name", in.Name),
+		validator.StringOneOf("method", in.Method, []string{http.MethodPost, http.MethodPut}),
 	)
 }
 
@@ -34,6 +37,7 @@ func (uc *endpoint) Update(ctx context.Context, in *EndpointUpdateIn) (*Endpoint
 		}
 
 		ep.Name = in.Name
+		ep.Method = in.Method
 		ep.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.Endpoint().Update(txctx, ep)
 	})

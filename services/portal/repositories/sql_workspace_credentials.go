@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SqlWorkspaceCredentials struct {
@@ -39,7 +40,7 @@ func (sql *SqlWorkspaceCredentials) List(ctx context.Context, wsId string, q str
 
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(UseWsId(wsId, doc.TableName())).
-		Order(fmt.Sprintf("%s.id DESC", doc.TableName()))
+		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf("%s.created_at", doc.TableName())}, Desc: true})
 
 	tx = database.ApplyListQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())}, limit, page)
 

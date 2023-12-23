@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SqlEndpoint struct {
@@ -50,7 +51,8 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, q string, 
 		Scopes(
 			UseAppId(appId, doc.TableName()),
 			UseWsId(wsId, entities.TableApp),
-		)
+		).
+		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf("%s.created_at", doc.TableName())}, Desc: true})
 
 	qcols := []string{
 		fmt.Sprintf("%s.name", doc.TableName()),

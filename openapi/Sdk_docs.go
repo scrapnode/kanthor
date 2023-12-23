@@ -1257,6 +1257,9 @@ const docTemplateSdk = `{
         "rest.EndpointUpdateReq": {
             "type": "object",
             "properties": {
+                "method": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 }

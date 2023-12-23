@@ -12,7 +12,8 @@ import (
 )
 
 type EndpointUpdateReq struct {
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Method string `json:"method"`
 }
 
 type EndpointUpdateRes struct {
@@ -41,9 +42,10 @@ func UseEndpointUpdate(service *sdk) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.EndpointUpdateIn{
-			WsId: ws.Id,
-			Id:   ginctx.Param("ep_id"),
-			Name: req.Name,
+			WsId:   ws.Id,
+			Id:     ginctx.Param("ep_id"),
+			Name:   req.Name,
+			Method: req.Method,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
