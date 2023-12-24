@@ -54,14 +54,14 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 			UseAppId(appId, entities.TableEp),
 			UseWsId(wsId, entities.TableApp),
 		).
-		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf("%s.created_at", doc.TableName())}, Desc: true})
+		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf(`"%s"."created_at"`, doc.TableName())}, Desc: true})
 
 	if len(query.Ids) > 0 {
-		tx = tx.Where(fmt.Sprintf("%s.id IN ?", doc.TableName()), query.Ids)
+		tx = tx.Where(fmt.Sprintf(`"%s"."id" IN ?`, doc.TableName()), query.Ids)
 	} else {
 		props := []string{
-			fmt.Sprintf("%s.name", doc.TableName()),
-			fmt.Sprintf("%s.condition_source", doc.TableName()),
+			fmt.Sprintf(`"%s"."name"`, doc.TableName()),
+			fmt.Sprintf(`"%s"."condition_source"`, doc.TableName()),
 		}
 		tx = database.ApplyListQuery(tx, props, query.Search, query.Limit, query.Page)
 	}
@@ -89,8 +89,8 @@ func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, appId, epId string,
 	}
 
 	props := []string{
-		fmt.Sprintf("%s.name", doc.TableName()),
-		fmt.Sprintf("%s.condition_source", doc.TableName()),
+		fmt.Sprintf(`"%s"."name"`, doc.TableName()),
+		fmt.Sprintf(`"%s"."condition_source"`, doc.TableName()),
 	}
 	tx = database.ApplyCountQuery(tx, props, query.Search)
 	var count int64

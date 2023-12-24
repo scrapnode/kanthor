@@ -53,7 +53,7 @@ type Application struct {
 func (app *Application) Validate(key string) error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired(fmt.Sprintf("%s.name", key), app.Name),
+		validator.StringRequired(fmt.Sprintf(`"%s"."name"`, key), app.Name),
 		validator.SliceRequired(fmt.Sprintf("%s.endpoints", key), app.Endpoints),
 	)
 	if err != nil {
@@ -79,7 +79,7 @@ type Endpoint struct {
 func (ep *Endpoint) Validate(key string) error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired(fmt.Sprintf("%s.name", key), ep.Name),
+		validator.StringRequired(fmt.Sprintf(`"%s"."name"`, key), ep.Name),
 		validator.StringLenIfNotEmpty(fmt.Sprintf("%s.secret_key", key), ep.SecretKey, 16, 32),
 		validator.StringUri(fmt.Sprintf("%s.uri", key), ep.Uri),
 		validator.StringOneOf(fmt.Sprintf("%s.method", key), ep.Method, []string{http.MethodPost, http.MethodPut}),
@@ -106,7 +106,7 @@ type EndpointRule struct {
 func (epr *EndpointRule) Validate(key string) error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired(fmt.Sprintf("%s.name", key), epr.Name),
+		validator.StringRequired(fmt.Sprintf(`"%s"."name"`, key), epr.Name),
 		validator.NumberGreaterThanOrEqual(fmt.Sprintf("%s.priority", key), epr.Priority, 0),
 		validator.StringRequired(fmt.Sprintf("%s.condition_source", key), epr.ConditionSource),
 		validator.StringRequired(fmt.Sprintf("%s.condition_expression", key), epr.ConditionExpression),

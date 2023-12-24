@@ -51,12 +51,12 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, query *entitie
 
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(UseWsId(wsId, doc.TableName())).
-		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf("%s.created_at", doc.TableName())}, Desc: true})
+		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf(`"%s"."created_at"`, doc.TableName())}, Desc: true})
 
 	if len(query.Ids) > 0 {
-		tx = tx.Where(fmt.Sprintf("%s.id IN ?", doc.TableName()), query.Ids)
+		tx = tx.Where(fmt.Sprintf(`"%s"."id" IN ?`, doc.TableName()), query.Ids)
 	} else {
-		props := []string{fmt.Sprintf("%s.name", doc.TableName())}
+		props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
 		tx = database.ApplyListQuery(tx, props, query.Search, query.Limit, query.Page)
 	}
 
@@ -78,7 +78,7 @@ func (sql *SqlApplication) Count(ctx context.Context, wsId string, query *entiti
 		return int64(len(query.Ids)), nil
 	}
 
-	props := []string{fmt.Sprintf("%s.name", doc.TableName())}
+	props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
 	tx = database.ApplyCountQuery(tx, props, query.Search)
 	var count int64
 	return count, tx.Count(&count).Error

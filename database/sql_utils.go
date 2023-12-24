@@ -13,7 +13,7 @@ func ApplyListQuery(tx *gorm.DB, props []string, search string, limit, page int)
 	if len(search) >= 3 && len(props) > 0 {
 		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here
-			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+search+"%")
+			tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, qcol), "%"+search+"%")
 		}
 	}
 
@@ -24,7 +24,7 @@ func ApplyCountQuery(tx *gorm.DB, props []string, search string) *gorm.DB {
 	if len(search) >= 3 && len(props) > 0 {
 		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here
-			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+search+"%")
+			tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, qcol), "%"+search+"%")
 		}
 	}
 
