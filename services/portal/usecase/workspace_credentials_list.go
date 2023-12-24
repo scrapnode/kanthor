@@ -29,12 +29,12 @@ type WorkspaceCredentialsListOut struct {
 }
 
 func (uc *workspaceCredentials) List(ctx context.Context, in *WorkspaceCredentialsListIn) (*WorkspaceCredentialsListOut, error) {
-	data, err := uc.repositories.WorkspaceCredentials().List(ctx, in.WsId, in.Search, in.Limit, in.Page)
+	data, err := uc.repositories.WorkspaceCredentials().List(ctx, in.WsId, in.Query)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.WorkspaceCredentials().Count(ctx, in.WsId, in.Search)
+	count, err := uc.repositories.WorkspaceCredentials().Count(ctx, in.WsId, in.Query)
 	if err != nil {
 		return nil, err
 	}

@@ -5,25 +5,26 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
-func ApplyListQuery(tx *gorm.DB, q string, qcols []string, limit, page int) *gorm.DB {
-	if len(q) >= 3 && len(qcols) > 0 {
-		for _, qcol := range qcols {
+func ApplyListQuery(tx *gorm.DB, props []string, search string, limit, page int) *gorm.DB {
+	if len(search) >= 3 && len(props) > 0 {
+		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here
-			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+q+"%")
+			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+search+"%")
 		}
 	}
 
-	return tx.Limit(limit).Offset(MaxInt((page-1)*limit, 0))
+	return tx.Limit(limit).Offset(utils.MaxInt((page-1)*limit, 0))
 }
 
-func ApplyCountQuery(tx *gorm.DB, q string, qcols []string) *gorm.DB {
-	if len(q) >= 3 && len(qcols) > 0 {
-		for _, qcol := range qcols {
+func ApplyCountQuery(tx *gorm.DB, props []string, search string) *gorm.DB {
+	if len(search) >= 3 && len(props) > 0 {
+		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here
-			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+q+"%")
+			tx = tx.Where(fmt.Sprintf(`"%s" LIKE ?`, qcol), "%"+search+"%")
 		}
 	}
 
@@ -46,11 +47,4 @@ func SqlError(err error) error {
 		return ErrRecordNotFound
 	}
 	return err
-}
-
-func MaxInt[T int | int32 | int64](x, y T) T {
-	if x < y {
-		return y
-	}
-	return x
 }

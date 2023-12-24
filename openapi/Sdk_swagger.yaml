@@ -413,6 +413,13 @@ paths:
   /application:
     get:
       parameters:
+      - collectionFormat: csv
+        description: list by ids
+        in: query
+        items:
+          type: string
+        name: id
+        type: array
       - description: search keyword
         in: query
         name: _q
@@ -540,6 +547,13 @@ paths:
         in: query
         name: app_id
         type: string
+      - collectionFormat: csv
+        description: list by ids
+        in: query
+        items:
+          type: string
+        name: id
+        type: array
       - description: search keyword
         in: query
         name: _q
@@ -699,6 +713,13 @@ paths:
         in: query
         name: ep_id
         type: string
+      - collectionFormat: csv
+        description: list by ids
+        in: query
+        items:
+          type: string
+        name: id
+        type: array
       - description: search keyword
         in: query
         name: _q

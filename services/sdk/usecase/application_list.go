@@ -29,12 +29,12 @@ type ApplicationListOut struct {
 }
 
 func (uc *application) List(ctx context.Context, in *ApplicationListIn) (*ApplicationListOut, error) {
-	data, err := uc.repositories.Application().List(ctx, in.WsId, in.Search, in.Limit, in.Page)
+	data, err := uc.repositories.Application().List(ctx, in.WsId, in.Query)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.Application().Count(ctx, in.WsId, in.Search)
+	count, err := uc.repositories.Application().Count(ctx, in.WsId, in.Query)
 	if err != nil {
 		return nil, err
 	}

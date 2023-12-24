@@ -277,6 +277,13 @@ paths:
   /credentials:
     get:
       parameters:
+      - collectionFormat: csv
+        description: list by ids
+        in: query
+        items:
+          type: string
+        name: id
+        type: array
       - description: search keyword
         in: query
         name: _q

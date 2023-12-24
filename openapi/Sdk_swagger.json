@@ -64,6 +64,16 @@
                 ],
                 "parameters": [
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list by ids",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "search keyword",
                         "name": "_q",
@@ -275,6 +285,16 @@
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list by ids",
+                        "name": "id",
                         "in": "query"
                     },
                     {
@@ -542,6 +562,16 @@
                         "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list by ids",
+                        "name": "id",
                         "in": "query"
                     },
                     {

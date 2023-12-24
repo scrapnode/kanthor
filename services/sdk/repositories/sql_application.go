@@ -46,13 +46,19 @@ func (sql *SqlApplication) Delete(ctx context.Context, doc *entities.Application
 	return nil
 }
 
-func (sql *SqlApplication) List(ctx context.Context, wsId string, q string, limit, page int) ([]entities.Application, error) {
+func (sql *SqlApplication) List(ctx context.Context, wsId string, query *entities.Query) ([]entities.Application, error) {
 	doc := &entities.Application{}
+
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(UseWsId(wsId, doc.TableName())).
 		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf("%s.created_at", doc.TableName())}, Desc: true})
 
-	tx = database.ApplyListQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())}, limit, page)
+	if len(query.Ids) > 0 {
+		tx = tx.Where(fmt.Sprintf("%s.id IN ?", doc.TableName()), query.Ids)
+	} else {
+		props := []string{fmt.Sprintf("%s.name", doc.TableName())}
+		tx = database.ApplyListQuery(tx, props, query.Search, query.Limit, query.Page)
+	}
 
 	var docs []entities.Application
 	if tx = tx.Find(&docs); tx.Error != nil {
@@ -62,14 +68,18 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, q string, limi
 	return docs, nil
 }
 
-func (sql *SqlApplication) Count(ctx context.Context, wsId string, q string) (int64, error) {
+func (sql *SqlApplication) Count(ctx context.Context, wsId string, query *entities.Query) (int64, error) {
 	doc := &entities.Application{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(UseWsId(wsId, doc.TableName()))
 
-	tx = database.ApplyCountQuery(tx, q, []string{fmt.Sprintf("%s.name", doc.TableName())})
+	if len(query.Ids) > 0 {
+		return int64(len(query.Ids)), nil
+	}
 
+	props := []string{fmt.Sprintf("%s.name", doc.TableName())}
+	tx = database.ApplyCountQuery(tx, props, query.Search)
 	var count int64
 	return count, tx.Count(&count).Error
 }

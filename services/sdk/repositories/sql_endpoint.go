@@ -45,8 +45,9 @@ func (sql *SqlEndpoint) Delete(ctx context.Context, doc *entities.Endpoint) erro
 	return nil
 }
 
-func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, q string, limit, page int) ([]entities.Endpoint, error) {
+func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, query *entities.Query) ([]entities.Endpoint, error) {
 	doc := &entities.Endpoint{}
+
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(
 			UseAppId(appId, doc.TableName()),
@@ -54,11 +55,15 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, q string, 
 		).
 		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf("%s.created_at", doc.TableName())}, Desc: true})
 
-	qcols := []string{
-		fmt.Sprintf("%s.name", doc.TableName()),
-		fmt.Sprintf("%s.uri", doc.TableName()),
+	if len(query.Ids) > 0 {
+		tx = tx.Where(fmt.Sprintf("%s.id IN ?", doc.TableName()), query.Ids)
+	} else {
+		props := []string{
+			fmt.Sprintf("%s.name", doc.TableName()),
+			fmt.Sprintf("%s.uri", doc.TableName()),
+		}
+		tx = database.ApplyListQuery(tx, props, query.Search, query.Limit, query.Page)
 	}
-	tx = database.ApplyListQuery(tx, q, qcols, limit, page)
 
 	var docs []entities.Endpoint
 	if tx = tx.Find(&docs); tx.Error != nil {
@@ -68,20 +73,24 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, q string, 
 	return docs, nil
 }
 
-func (sql *SqlEndpoint) Count(ctx context.Context, wsId, appId string, q string) (int64, error) {
+func (sql *SqlEndpoint) Count(ctx context.Context, wsId, appId string, query *entities.Query) (int64, error) {
 	doc := &entities.Endpoint{}
+
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(
 			UseAppId(appId, doc.TableName()),
 			UseWsId(wsId, entities.TableApp),
 		)
 
-	qcols := []string{
+	if len(query.Ids) > 0 {
+		return int64(len(query.Ids)), nil
+	}
+
+	props := []string{
 		fmt.Sprintf("%s.name", doc.TableName()),
 		fmt.Sprintf("%s.uri", doc.TableName()),
 	}
-	tx = database.ApplyCountQuery(tx, q, qcols)
-
+	tx = database.ApplyCountQuery(tx, props, query.Search)
 	var count int64
 	return count, tx.Count(&count).Error
 }

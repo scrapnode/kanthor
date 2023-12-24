@@ -71,6 +71,16 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list by ids",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "search keyword",
                         "name": "_q",
@@ -282,6 +292,16 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list by ids",
+                        "name": "id",
                         "in": "query"
                     },
                     {
@@ -549,6 +569,16 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list by ids",
+                        "name": "id",
                         "in": "query"
                     },
                     {

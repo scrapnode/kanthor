@@ -21,6 +21,7 @@ type EndpointRuleListRes struct {
 // @Router		/rule			[get]
 // @Param		app_id			query		string					false	"application id"
 // @Param		ep_id			query		string					false	"endpoint id"
+// @Param		id				query		[]string				false	"list by ids"
 // @Param		_q				query		string					false	"search keyword"
 // @Param		_limit			query		int						false	"limit returning records"	default(10)
 // @Param		_page			query		int						false	"current requesting page"	default(0)
@@ -41,7 +42,7 @@ func UseEndpointRuleList(service *sdk) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.EndpointRuleListIn{
-			Query: &entities.Query{Search: query.Search, Page: query.Page, Limit: query.Limit},
+			Query: entities.QueryFromGateWay(&query),
 			WsId:  ws.Id,
 			AppId: ginctx.Query("app_id"),
 			EpId:  ginctx.Query("ep_id"),

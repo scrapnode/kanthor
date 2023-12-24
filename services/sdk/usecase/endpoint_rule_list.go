@@ -33,12 +33,12 @@ type EndpointRuleListOut struct {
 }
 
 func (uc *endpointRule) List(ctx context.Context, in *EndpointRuleListIn) (*EndpointRuleListOut, error) {
-	data, err := uc.repositories.EndpointRule().List(ctx, in.WsId, in.AppId, in.EpId, in.Search, in.Limit, in.Page)
+	data, err := uc.repositories.EndpointRule().List(ctx, in.WsId, in.AppId, in.EpId, in.Query)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.EndpointRule().Count(ctx, in.WsId, in.AppId, in.EpId, in.Search)
+	count, err := uc.repositories.EndpointRule().Count(ctx, in.WsId, in.AppId, in.EpId, in.Query)
 	if err != nil {
 		return nil, err
 	}

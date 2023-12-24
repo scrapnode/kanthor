@@ -18,7 +18,7 @@ type Workspace interface {
 type WorkspaceCredentials interface {
 	Create(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error)
 	Update(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error)
-	List(ctx context.Context, wsId string, q string, limit, page int) ([]entities.WorkspaceCredentials, error)
-	Count(ctx context.Context, wsId string, q string) (int64, error)
+	List(ctx context.Context, wsId string, query *entities.Query) ([]entities.WorkspaceCredentials, error)
+	Count(ctx context.Context, wsId string, query *entities.Query) (int64, error)
 	Get(ctx context.Context, wsId, id string) (*entities.WorkspaceCredentials, error)
 }

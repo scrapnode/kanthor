@@ -114,6 +114,16 @@ const docTemplatePortal = `{
                 ],
                 "parameters": [
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list by ids",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "search keyword",
                         "name": "_q",
