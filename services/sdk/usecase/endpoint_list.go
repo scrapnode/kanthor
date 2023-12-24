@@ -21,7 +21,7 @@ func (in *EndpointListIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
-		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
+		validator.StringStartsWithIfNotEmpty("app_id", in.AppId, entities.IdNsApp),
 	)
 }
 

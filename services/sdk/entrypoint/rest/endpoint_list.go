@@ -19,7 +19,7 @@ type EndpointListRes struct {
 // UseEndpointList
 // @Tags		endpoint
 // @Router		/endpoint	[get]
-// @Param		app_id		query		string					true	"application id"
+// @Param		app_id		query		string					false	"application id"
 // @Param		_q			query		string					false	"search keyword"
 // @Param		_limit		query		int						false	"limit returning records"	default(10)
 // @Param		_page		query		int						false	"current requesting page"	default(0)

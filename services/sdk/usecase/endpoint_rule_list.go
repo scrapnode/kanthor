@@ -9,8 +9,9 @@ import (
 
 type EndpointRuleListIn struct {
 	*entities.Query
-	WsId string
-	EpId string
+	WsId  string
+	AppId string
+	EpId  string
 }
 
 func (in *EndpointRuleListIn) Validate() error {
@@ -21,7 +22,8 @@ func (in *EndpointRuleListIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
-		validator.StringStartsWith("ep_id", in.EpId, entities.IdNsEp),
+		validator.StringStartsWithIfNotEmpty("app_id", in.AppId, entities.IdNsApp),
+		validator.StringStartsWithIfNotEmpty("ep_id", in.EpId, entities.IdNsEp),
 	)
 }
 
@@ -31,12 +33,12 @@ type EndpointRuleListOut struct {
 }
 
 func (uc *endpointRule) List(ctx context.Context, in *EndpointRuleListIn) (*EndpointRuleListOut, error) {
-	data, err := uc.repositories.EndpointRule().List(ctx, in.WsId, in.EpId, in.Search, in.Limit, in.Page)
+	data, err := uc.repositories.EndpointRule().List(ctx, in.WsId, in.AppId, in.EpId, in.Search, in.Limit, in.Page)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.EndpointRule().Count(ctx, in.WsId, in.EpId, in.Search)
+	count, err := uc.repositories.EndpointRule().Count(ctx, in.WsId, in.AppId, in.EpId, in.Search)
 	if err != nil {
 		return nil, err
 	}

@@ -35,6 +35,10 @@ func UseApp(target string) func(db *gorm.DB) *gorm.DB {
 
 func UseAppId(appId, target string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
+		if appId == "" {
+			return UseApp(target)(db)
+		}
+
 		where := fmt.Sprintf(`"%s"."id" = ?`, entities.TableApp)
 		return UseApp(target)(db).Where(where, appId)
 	}
@@ -54,6 +58,10 @@ func UseEp(target string) func(db *gorm.DB) *gorm.DB {
 
 func UseEpId(epId, target string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
+		if epId == "" {
+			return UseEp(target)(db)
+		}
+
 		where := fmt.Sprintf(`"%s"."id" = ?`, entities.TableEp)
 		return UseEp(target)(db).Where(where, epId)
 	}

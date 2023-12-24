@@ -15,13 +15,27 @@ func StringRequired(prop, value string) Fn {
 	}
 }
 
+func StringStartsWithIfNotEmpty(prop, value, prefix string) Fn {
+	v := strings.Trim(value, " ")
+
+	return func() error {
+		if len(v) == 0 {
+			return nil
+		}
+
+		if !strings.HasPrefix(v, prefix) {
+			return fmt.Errorf("%s (value:%s) must be started with %s", prop, value, prefix)
+		}
+		return nil
+	}
+}
 func StringStartsWith(prop, value, prefix string) Fn {
 	return func() error {
 		if err := StringRequired(prop, value)(); err != nil {
 			return err
 		}
-		if !strings.HasPrefix(strings.Trim(value, " "), prefix) {
-			return fmt.Errorf("%s (value:%s) must be started with %s", prop, value, prefix)
+		if err := StringStartsWithIfNotEmpty(prop, value, prefix)(); err != nil {
+			return err
 		}
 		return nil
 	}

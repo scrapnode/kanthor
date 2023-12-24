@@ -19,7 +19,8 @@ type EndpointRuleListRes struct {
 // UseEndpointRuleList
 // @Tags		endpoint rule
 // @Router		/rule			[get]
-// @Param		ep_id			query		string					true	"endpoint id"
+// @Param		app_id			query		string					false	"application id"
+// @Param		ep_id			query		string					false	"endpoint id"
 // @Param		_q				query		string					false	"search keyword"
 // @Param		_limit			query		int						false	"limit returning records"	default(10)
 // @Param		_page			query		int						false	"current requesting page"	default(0)
@@ -42,6 +43,7 @@ func UseEndpointRuleList(service *sdk) gin.HandlerFunc {
 		in := &usecase.EndpointRuleListIn{
 			Query: &entities.Query{Search: query.Search, Page: query.Page, Limit: query.Limit},
 			WsId:  ws.Id,
+			AppId: ginctx.Query("app_id"),
 			EpId:  ginctx.Query("ep_id"),
 		}
 		if err := in.Validate(); err != nil {

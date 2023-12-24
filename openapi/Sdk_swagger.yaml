@@ -539,7 +539,6 @@ paths:
       - description: application id
         in: query
         name: app_id
-        required: true
         type: string
       - description: search keyword
         in: query
@@ -692,10 +691,13 @@ paths:
   /rule:
     get:
       parameters:
+      - description: application id
+        in: query
+        name: app_id
+        type: string
       - description: endpoint id
         in: query
         name: ep_id
-        required: true
         type: string
       - description: search keyword
         in: query

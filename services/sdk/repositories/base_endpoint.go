@@ -21,7 +21,7 @@ type EndpointRule interface {
 	Update(ctx context.Context, doc *entities.EndpointRule) (*entities.EndpointRule, error)
 	Delete(ctx context.Context, doc *entities.EndpointRule) error
 
-	List(ctx context.Context, wsId, epId string, q string, limit, page int) ([]entities.EndpointRule, error)
-	Count(ctx context.Context, wsId, epId string, q string) (int64, error)
+	List(ctx context.Context, wsId, appId, epId string, q string, limit, page int) ([]entities.EndpointRule, error)
+	Count(ctx context.Context, wsId, appId, epId string, q string) (int64, error)
 	Get(ctx context.Context, wsId string, id string) (*entities.EndpointRule, error)
 }

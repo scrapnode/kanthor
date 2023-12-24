@@ -282,8 +282,7 @@ const docTemplateSdk = `{
                         "type": "string",
                         "description": "application id",
                         "name": "app_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
@@ -542,10 +541,15 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",

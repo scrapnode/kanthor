@@ -45,12 +45,12 @@ func (sql *SqlEndpointRule) Delete(ctx context.Context, doc *entities.EndpointRu
 	return nil
 }
 
-func (sql *SqlEndpointRule) List(ctx context.Context, wsId, epId string, q string, limit, page int) ([]entities.EndpointRule, error) {
+func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, q string, limit, page int) ([]entities.EndpointRule, error) {
 	doc := &entities.EndpointRule{}
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(
 			UseEpId(epId, doc.TableName()),
-			UseApp(entities.IdNsEp),
+			UseAppId(appId, entities.TableEp),
 			UseWsId(wsId, entities.TableApp),
 		).
 		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf("%s.created_at", doc.TableName())}, Desc: true})
@@ -69,12 +69,12 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, epId string, q strin
 	return docs, nil
 }
 
-func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, epId string, q string) (int64, error) {
+func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, appId, epId string, q string) (int64, error) {
 	doc := &entities.EndpointRule{}
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Scopes(
 			UseEpId(epId, doc.TableName()),
-			UseApp(entities.IdNsEp),
+			UseAppId(appId, entities.TableEp),
 			UseWsId(wsId, entities.TableApp),
 		)
 
@@ -96,7 +96,7 @@ func (sql *SqlEndpointRule) Get(ctx context.Context, wsId string, id string) (*e
 	tx := transaction.WithContext(ctx).Model(doc).
 		Scopes(
 			UseEp(doc.TableName()),
-			UseApp(entities.IdNsEp),
+			UseApp(entities.TableEp),
 			UseWsId(wsId, entities.TableApp),
 		).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
