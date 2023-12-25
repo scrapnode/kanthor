@@ -309,10 +309,16 @@ definitions:
     type: object
   rest.EndpointRuleUpdateReq:
     properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      exclusionary:
+        type: boolean
       name:
         type: string
-    required:
-    - name
+      priority:
+        type: integer
     type: object
   rest.EndpointRuleUpdateRes:
     properties:

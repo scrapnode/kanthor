@@ -1247,12 +1247,21 @@ const docTemplateSdk = `{
         },
         "rest.EndpointRuleUpdateReq": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
                 }
             }
         },

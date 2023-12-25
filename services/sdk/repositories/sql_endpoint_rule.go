@@ -7,7 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type SqlEndpointRule struct {
@@ -53,8 +52,9 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 			UseEpId(epId, doc.TableName()),
 			UseAppId(appId, entities.TableEp),
 			UseWsId(wsId, entities.TableApp),
-		).
-		Order(clause.OrderByColumn{Column: clause.Column{Name: fmt.Sprintf(`"%s"."created_at"`, doc.TableName())}, Desc: true})
+		)
+
+	tx = tx.Order(fmt.Sprintf(`"%s"."exclusionary" DESC, "%s"."priority" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName(), doc.TableName()))
 
 	if len(query.Ids) > 0 {
 		tx = tx.Where(fmt.Sprintf(`"%s"."id" IN ?`, doc.TableName()), query.Ids)

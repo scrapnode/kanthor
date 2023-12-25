@@ -11,6 +11,11 @@ type EndpointRuleUpdateIn struct {
 	WsId string
 	Id   string
 	Name string
+
+	Priority            int32
+	Exclusionary        bool
+	ConditionSource     string
+	ConditionExpression string
 }
 
 func (in *EndpointRuleUpdateIn) Validate() error {
@@ -34,6 +39,10 @@ func (uc *endpointRule) Update(ctx context.Context, in *EndpointRuleUpdateIn) (*
 		}
 
 		epr.Name = in.Name
+		epr.Priority = in.Priority
+		epr.Exclusionary = in.Exclusionary
+		epr.ConditionSource = in.ConditionSource
+		epr.ConditionExpression = in.ConditionExpression
 		epr.SetAT(uc.infra.Timer.Now())
 		return uc.repositories.EndpointRule().Update(txctx, epr)
 	})

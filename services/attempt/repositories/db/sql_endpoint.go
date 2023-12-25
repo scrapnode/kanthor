@@ -26,7 +26,7 @@ func (sql *SqlEndpoint) Rules(ctx context.Context, appId string) ([]entities.End
 	rules := []entities.EndpointRule{}
 
 	join := fmt.Sprintf("JOIN %s ON %s.id = %s.ep_id AND %s.app_id = ?", entities.TableEp, entities.TableEp, entities.TableEpr, entities.TableEp)
-	order := fmt.Sprintf("%s.exclusionary DESC, %s.priority", entities.TableEpr, entities.TableEpr)
+	order := fmt.Sprintf("%s.exclusionary DESC, %s.priority, id DESC", entities.TableEpr, entities.TableEpr)
 	selects := fmt.Sprintf("%s.*", entities.TableEpr)
 
 	tx := sql.client.WithContext(ctx).

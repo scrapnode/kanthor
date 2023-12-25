@@ -12,7 +12,12 @@ import (
 )
 
 type EndpointRuleUpdateReq struct {
-	Name string `json:"name" binding:"required"`
+	Name string `json:"name"`
+
+	Priority            int32  `json:"priority"`
+	Exclusionary        bool   `json:"exclusionary"`
+	ConditionSource     string `json:"condition_source"`
+	ConditionExpression string `json:"condition_expression"`
 }
 
 type EndpointRuleUpdateRes struct {
@@ -41,9 +46,13 @@ func UseEndpointRuleUpdate(service *sdk) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.EndpointRuleUpdateIn{
-			WsId: ws.Id,
-			Id:   ginctx.Param("epr_id"),
-			Name: req.Name,
+			WsId:                ws.Id,
+			Id:                  ginctx.Param("epr_id"),
+			Name:                req.Name,
+			Priority:            req.Priority,
+			Exclusionary:        req.Exclusionary,
+			ConditionSource:     req.ConditionSource,
+			ConditionExpression: req.ConditionExpression,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
