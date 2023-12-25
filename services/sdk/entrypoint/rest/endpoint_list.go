@@ -41,9 +41,9 @@ func UseEndpointList(service *sdk) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.EndpointListIn{
-			Query: entities.QueryFromGateWay(&query),
-			WsId:  ws.Id,
-			AppId: ginctx.Query("app_id"),
+			PagingQuery: entities.PagingQueryFromGatewayQuery(&query),
+			WsId:        ws.Id,
+			AppId:       ginctx.Query("app_id"),
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Error(err)

@@ -5,26 +5,27 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"gorm.io/gorm"
 )
 
-func ApplyListQuery(tx *gorm.DB, props []string, search string, limit, page int) *gorm.DB {
-	if len(search) >= 3 && len(props) > 0 {
+func SqlApplyListQuery(tx *gorm.DB, props []string, query *entities.PagingQuery) *gorm.DB {
+	if len(query.Search) >= 3 && len(props) > 0 {
 		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here
-			tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, qcol), "%"+search+"%")
+			tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, qcol), "%"+query.Search+"%")
 		}
 	}
 
-	return tx.Limit(limit).Offset(utils.MaxInt((page-1)*limit, 0))
+	return tx.Limit(query.Limit).Offset(utils.MaxInt((query.Page-1)*query.Limit, 0))
 }
 
-func ApplyCountQuery(tx *gorm.DB, props []string, search string) *gorm.DB {
-	if len(search) >= 3 && len(props) > 0 {
+func SqlApplyCountQuery(tx *gorm.DB, props []string, query *entities.PagingQuery) *gorm.DB {
+	if len(query.Search) >= 3 && len(props) > 0 {
 		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here
-			tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, qcol), "%"+search+"%")
+			tx = tx.Where(fmt.Sprintf(`%s LIKE ?`, qcol), "%"+query.Search+"%")
 		}
 	}
 

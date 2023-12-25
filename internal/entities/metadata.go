@@ -1,6 +1,9 @@
 package entities
 
-import "encoding/json"
+import (
+	"database/sql/driver"
+	"encoding/json"
+)
 
 var (
 	MetaMsgIdempotencyKey = "kanthor.msg.idempotency_key"
@@ -29,4 +32,15 @@ func (meta Metadata) Merge(src map[string]string) {
 func (meta Metadata) String() string {
 	data, _ := json.Marshal(meta)
 	return string(data)
+}
+
+// Scan implements the Scanner interface.
+func (meta *Metadata) Scan(value interface{}) error {
+	return json.Unmarshal([]byte(value.(string)), meta)
+}
+
+// Value implements the driver Valuer interface.
+func (meta Metadata) Value() (driver.Value, error) {
+	mt, err := json.Marshal(meta)
+	return string(mt), err
 }

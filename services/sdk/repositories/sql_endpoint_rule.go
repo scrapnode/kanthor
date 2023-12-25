@@ -44,7 +44,7 @@ func (sql *SqlEndpointRule) Delete(ctx context.Context, doc *entities.EndpointRu
 	return nil
 }
 
-func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, query *entities.Query) ([]entities.EndpointRule, error) {
+func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, query *entities.PagingQuery) ([]entities.EndpointRule, error) {
 	doc := &entities.EndpointRule{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
@@ -63,7 +63,7 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 			fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 			fmt.Sprintf(`"%s"."condition_source"`, doc.TableName()),
 		}
-		tx = database.ApplyListQuery(tx, props, query.Search, query.Limit, query.Page)
+		tx = database.SqlApplyListQuery(tx, props, query)
 	}
 
 	var docs []entities.EndpointRule
@@ -74,7 +74,7 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 	return docs, nil
 }
 
-func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, appId, epId string, query *entities.Query) (int64, error) {
+func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, appId, epId string, query *entities.PagingQuery) (int64, error) {
 	doc := &entities.EndpointRule{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
@@ -92,7 +92,7 @@ func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, appId, epId string,
 		fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 		fmt.Sprintf(`"%s"."condition_source"`, doc.TableName()),
 	}
-	tx = database.ApplyCountQuery(tx, props, query.Search)
+	tx = database.SqlApplyCountQuery(tx, props, query)
 	var count int64
 	return count, tx.Count(&count).Error
 }

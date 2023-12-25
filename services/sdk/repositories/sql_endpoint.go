@@ -45,7 +45,7 @@ func (sql *SqlEndpoint) Delete(ctx context.Context, doc *entities.Endpoint) erro
 	return nil
 }
 
-func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, query *entities.Query) ([]entities.Endpoint, error) {
+func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, query *entities.PagingQuery) ([]entities.Endpoint, error) {
 	doc := &entities.Endpoint{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
@@ -62,7 +62,7 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, query *ent
 			fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 			fmt.Sprintf(`"%s"."uri"`, doc.TableName()),
 		}
-		tx = database.ApplyListQuery(tx, props, query.Search, query.Limit, query.Page)
+		tx = database.SqlApplyListQuery(tx, props, query)
 	}
 
 	var docs []entities.Endpoint
@@ -73,7 +73,7 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, query *ent
 	return docs, nil
 }
 
-func (sql *SqlEndpoint) Count(ctx context.Context, wsId, appId string, query *entities.Query) (int64, error) {
+func (sql *SqlEndpoint) Count(ctx context.Context, wsId, appId string, query *entities.PagingQuery) (int64, error) {
 	doc := &entities.Endpoint{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
@@ -90,7 +90,7 @@ func (sql *SqlEndpoint) Count(ctx context.Context, wsId, appId string, query *en
 		fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 		fmt.Sprintf(`"%s"."uri"`, doc.TableName()),
 	}
-	tx = database.ApplyCountQuery(tx, props, query.Search)
+	tx = database.SqlApplyCountQuery(tx, props, query)
 	var count int64
 	return count, tx.Count(&count).Error
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/database"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
@@ -25,6 +26,7 @@ func New(
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
 	db database.Database,
+	ds datastore.Datastore,
 	uc usecase.Portal,
 ) patterns.Runnable {
 	logger = logger.With("service", "portal")
@@ -33,6 +35,7 @@ func New(
 		logger: logger,
 		infra:  infra,
 		db:     db,
+		ds:     ds,
 		uc:     uc,
 	}
 }
@@ -42,6 +45,7 @@ type portal struct {
 	logger logging.Logger
 	infra  *infrastructure.Infrastructure
 	db     database.Database
+	ds     datastore.Datastore
 	uc     usecase.Portal
 
 	server *http.Server
@@ -59,6 +63,10 @@ func (service *portal) Start(ctx context.Context) error {
 	}
 
 	if err := service.db.Connect(ctx); err != nil {
+		return err
+	}
+
+	if err := service.ds.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -108,6 +116,7 @@ func (service *portal) router() (*gin.Engine, error) {
 		RegisterAccountRoutes(api.Group("/account"), service)
 		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
 		RegisterWorkspaceCredentialsRoutes(api.Group("/credentials"), service)
+		RegisterMessageRoutes(api.Group("/message"), service)
 	}
 
 	return router, nil
@@ -133,6 +142,10 @@ func (service *portal) Stop(ctx context.Context) error {
 	}
 
 	if err := service.db.Disconnect(ctx); err != nil {
+		returning = errors.Join(returning, err)
+	}
+
+	if err := service.ds.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
 

@@ -1,91 +1,36 @@
 package repositories
 
 import (
-	"context"
 	"sync"
 
 	"github.com/scrapnode/kanthor/database"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/logging"
-	"gorm.io/gorm"
+	"github.com/scrapnode/kanthor/pkg/timer"
+	"github.com/scrapnode/kanthor/services/portal/repositories/db"
+	"github.com/scrapnode/kanthor/services/portal/repositories/ds"
 )
 
-func NewSql(logger logging.Logger, db database.Database) Repositories {
+func NewSql(logger logging.Logger, timer timer.Timer, dbclient database.Database, dsclient datastore.Datastore) Repositories {
 	logger = logger.With("repositories", "sql")
-	return &sql{logger: logger, db: db}
+	return &sql{logger: logger, db: db.NewSql(logger, dbclient), ds: ds.NewSql(logger, dsclient, timer)}
 }
 
 type sql struct {
 	logger logging.Logger
-	db     database.Database
-
-	workspace            *SqlWorkspace
-	workspaceCredentials *SqlWorkspaceCredentials
-	application          *SqlApplication
-	endpoint             *SqlEndpoint
-	endpointRule         *SqlEndpointRule
-
-	mu sync.Mutex
+	db     db.Database
+	ds     ds.Datastore
+	mu     sync.Mutex
 }
 
-func (repo *sql) Transaction(ctx context.Context, handler func(txctx context.Context) (interface{}, error)) (res interface{}, err error) {
-	err = repo.db.Client().(*gorm.DB).Transaction(func(tx *gorm.DB) error {
-		res, err = handler(context.WithValue(ctx, database.CtxTransaction, tx))
-		return err
-	})
-	return
-}
-
-func (repo *sql) Workspace() Workspace {
+func (repo *sql) Database() db.Database {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
-
-	if repo.workspace == nil {
-		repo.workspace = &SqlWorkspace{client: repo.db.Client().(*gorm.DB)}
-	}
-
-	return repo.workspace
+	return repo.db
 }
 
-func (repo *sql) WorkspaceCredentials() WorkspaceCredentials {
+func (repo *sql) Datastore() ds.Datastore {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
-
-	if repo.workspaceCredentials == nil {
-		repo.workspaceCredentials = &SqlWorkspaceCredentials{client: repo.db.Client().(*gorm.DB)}
-	}
-
-	return repo.workspaceCredentials
-}
-
-func (repo *sql) Application() Application {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.db.Client().(*gorm.DB)}
-	}
-
-	return repo.application
-}
-
-func (repo *sql) Endpoint() Endpoint {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.endpoint == nil {
-		repo.endpoint = &SqlEndpoint{client: repo.db.Client().(*gorm.DB)}
-	}
-
-	return repo.endpoint
-}
-
-func (repo *sql) EndpointRule() EndpointRule {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	if repo.endpointRule == nil {
-		repo.endpointRule = &SqlEndpointRule{client: repo.db.Client().(*gorm.DB)}
-	}
-
-	return repo.endpointRule
+	return repo.ds
 }

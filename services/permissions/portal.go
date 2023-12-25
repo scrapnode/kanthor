@@ -15,4 +15,6 @@ var PortalOwnerPermissions = []authorizator.Permission{
 	{Object: "/api/credentials/:wsc_id", Action: "PATCH"},
 	{Object: "/api/credentials/:wsc_id", Action: "GET"},
 	{Object: "/api/credentials/:wsc_id/expiration", Action: "PUT"},
+	{Object: "/api/message", Action: "GET"},
+	{Object: "/api/message/:msg_id", Action: "GET"},
 }

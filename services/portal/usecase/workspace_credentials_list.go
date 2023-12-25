@@ -8,12 +8,12 @@ import (
 )
 
 type WorkspaceCredentialsListIn struct {
-	*entities.Query
+	*entities.PagingQuery
 	WsId string
 }
 
 func (in *WorkspaceCredentialsListIn) Validate() error {
-	if err := in.Query.Validate(); err != nil {
+	if err := in.PagingQuery.Validate(); err != nil {
 		return err
 	}
 
@@ -29,12 +29,12 @@ type WorkspaceCredentialsListOut struct {
 }
 
 func (uc *workspaceCredentials) List(ctx context.Context, in *WorkspaceCredentialsListIn) (*WorkspaceCredentialsListOut, error) {
-	data, err := uc.repositories.WorkspaceCredentials().List(ctx, in.WsId, in.Query)
+	data, err := uc.repositories.Database().WorkspaceCredentials().List(ctx, in.WsId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.WorkspaceCredentials().Count(ctx, in.WsId, in.Query)
+	count, err := uc.repositories.Database().WorkspaceCredentials().Count(ctx, in.WsId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}

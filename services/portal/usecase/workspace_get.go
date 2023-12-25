@@ -27,14 +27,14 @@ type WorkspaceGetOut struct {
 }
 
 func (uc *workspace) Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error) {
-	ws, err := uc.repositories.Workspace().GetOwned(ctx, in.AccId, in.Id)
+	ws, err := uc.repositories.Database().Workspace().GetOwned(ctx, in.AccId, in.Id)
 	if err == nil {
 		return &WorkspaceGetOut{Doc: ws}, nil
 	}
 
 	tenants, err := uc.infra.Authorizator.Tenants(in.AccId)
 	if err == nil && slices.Contains(tenants, in.Id) {
-		ws, err := uc.repositories.Workspace().Get(ctx, in.Id)
+		ws, err := uc.repositories.Database().Workspace().Get(ctx, in.Id)
 		if err == nil {
 			return &WorkspaceGetOut{Doc: ws}, nil
 		}

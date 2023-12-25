@@ -8,12 +8,12 @@ import (
 )
 
 type ApplicationListIn struct {
-	*entities.Query
+	*entities.PagingQuery
 	WsId string
 }
 
 func (in *ApplicationListIn) Validate() error {
-	if err := in.Query.Validate(); err != nil {
+	if err := in.PagingQuery.Validate(); err != nil {
 		return err
 	}
 
@@ -29,12 +29,12 @@ type ApplicationListOut struct {
 }
 
 func (uc *application) List(ctx context.Context, in *ApplicationListIn) (*ApplicationListOut, error) {
-	data, err := uc.repositories.Application().List(ctx, in.WsId, in.Query)
+	data, err := uc.repositories.Application().List(ctx, in.WsId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.Application().Count(ctx, in.WsId, in.Query)
+	count, err := uc.repositories.Application().Count(ctx, in.WsId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}

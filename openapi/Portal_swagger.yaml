@@ -23,6 +23,47 @@ definitions:
       workspace:
         $ref: '#/definitions/Workspace'
     type: object
+  Message:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+    type: object
+  MessageGetRes:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+    type: object
+  MessageListRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/Message'
+        type: array
+    type: object
   Workspace:
     properties:
       created_at:
@@ -398,6 +439,70 @@ paths:
       - WorkspaceId: []
       tags:
       - credentials
+  /message:
+    get:
+      parameters:
+      - description: application id
+        in: query
+        name: app_id
+        required: true
+        type: string
+      - default: 10
+        description: limit returning records
+        in: query
+        name: _limit
+        type: integer
+      - description: starting time to scan in milliseconds
+        example: 1669914060000
+        in: query
+        name: _start
+        type: integer
+      - description: ending time to scan in milliseconds
+        example: 1985533260000
+        in: query
+        name: _end
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/MessageListRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - message
+  /message/{msg_id}:
+    get:
+      parameters:
+      - description: application id
+        in: query
+        name: app_id
+        required: true
+        type: string
+      - description: message id
+        in: path
+        name: msg_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/MessageGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - message
   /workspace:
     get:
       responses:

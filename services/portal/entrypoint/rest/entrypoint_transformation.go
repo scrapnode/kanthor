@@ -43,3 +43,26 @@ func ToWorkspaceCredentials(doc *entities.WorkspaceCredentials) *WorkspaceCreden
 		ExpiredAt: doc.ExpiredAt,
 	}
 }
+
+type Message struct {
+	Id        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
+
+	AppId    string `json:"app_id"`
+	Type     string `json:"type"`
+	Metadata string `json:"metadata"`
+	Headers  string `json:"headers"`
+	Body     string `json:"body"`
+} // @name Message
+
+func ToMessage(doc *entities.Message) *Message {
+	return &Message{
+		Id:        doc.Id,
+		Timestamp: doc.Timestamp,
+		AppId:     doc.AppId,
+		Type:      doc.Type,
+		Metadata:  doc.Metadata.String(),
+		Headers:   doc.Headers.String(),
+		Body:      doc.Body,
+	}
+}

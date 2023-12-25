@@ -28,7 +28,7 @@ func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceL
 	seen := map[string]bool{}
 
 	// owner
-	own, err := uc.repositories.Workspace().ListOwned(ctx, in.AccId)
+	own, err := uc.repositories.Database().Workspace().ListOwned(ctx, in.AccId)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceL
 		return nil, err
 	}
 	if len(tenants) > 0 {
-		workspaces, err := uc.repositories.Workspace().ListByIds(ctx, tenants)
+		workspaces, err := uc.repositories.Database().Workspace().ListByIds(ctx, tenants)
 		if err != nil {
 			return nil, err
 		}

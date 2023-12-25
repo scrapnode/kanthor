@@ -1,4 +1,4 @@
-package repositories
+package db
 
 import (
 	"context"
@@ -57,7 +57,7 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	doc := &entities.Workspace{}
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
 
-	tx := transaction.WithContext(ctx).Model(&doc).
+	tx := transaction.WithContext(ctx).Model(doc).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
 		First(doc)
 	if tx.Error != nil {
@@ -71,7 +71,7 @@ func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner, id string) (*entit
 	doc := &entities.Workspace{}
 
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(&doc).
+	tx := transaction.WithContext(ctx).Model(doc).
 		Where("owner_id = ? AND id = ?", owner, id).
 		Order("id asc").
 		First(doc)

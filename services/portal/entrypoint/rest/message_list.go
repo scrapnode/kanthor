@@ -11,26 +11,30 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
-type WorkspaceCredentialsListRes struct {
-	Data  []WorkspaceCredentials `json:"data"`
-	Count int64                  `json:"count"`
-} // @name WorkspaceCredentialsListRes
+type WorkspaceCredentialsListReq struct {
+	*gateway.Query
+	AppId string `json:"app_id" form:"app_id"`
+}
 
-// UseWorkspaceCredentialsList
-// @Tags		credentials
-// @Router		/credentials	[get]
-// @Param		id				query		[]string					false	"list by ids"
-// @Param		_q				query		string						false	"search keyword"
-// @Param		_limit			query		int							false	"limit returning records" 	default(10)
-// @Param		_page			query		int							false	"requesting page"			default(0)
-// @Success		200				{object}	WorkspaceCredentialsListRes
+type MessageListRes struct {
+	Data []Message `json:"data"`
+} // @name MessageListRes
+
+// UseMessageList
+// @Tags		message
+// @Router		/message		[get]
+// @Param		app_id			query		string			true	"application id"
+// @Param		_limit			query		int				false	"limit returning records" 	default(10)
+// @Param		_start			query		int64			false	"starting time to scan in milliseconds" example(1669914060000)
+// @Param		_end			query		int64			false	"ending time to scan in milliseconds" 	example(1985533260000)
+// @Success		200				{object}	MessageListRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization
 // @Security	WorkspaceId
-func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
+func UseMessageList(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var query gateway.Query
-		if err := ginctx.BindQuery(&query); err != nil {
+		var req WorkspaceCredentialsListReq
+		if err := ginctx.BindQuery(&req); err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to parse your request query"))
 			return
@@ -39,9 +43,10 @@ func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
-		in := &usecase.WorkspaceCredentialsListIn{
-			PagingQuery: entities.PagingQueryFromGatewayQuery(&query),
-			WsId:        ws.Id,
+		in := &usecase.MessageListIn{
+			ScanningQuery: entities.ScanningQueryFromGatewayQuery(req.Query),
+			WsId:          ws.Id,
+			AppId:         req.AppId,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
@@ -49,16 +54,16 @@ func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		out, err := service.uc.WorkspaceCredentials().List(ctx, in)
+		out, err := service.uc.Message().List(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &WorkspaceCredentialsListRes{Data: make([]WorkspaceCredentials, 0), Count: out.Count}
+		res := &MessageListRes{Data: make([]Message, 0)}
 		for _, ws := range out.Data {
-			res.Data = append(res.Data, *ToWorkspaceCredentials(&ws))
+			res.Data = append(res.Data, *ToMessage(&ws))
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

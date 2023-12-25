@@ -11,6 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services/attempt/config"
 	"github.com/scrapnode/kanthor/services/attempt/entrypoint"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
@@ -21,6 +22,7 @@ func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, 
 	wire.Build(
 		config.New,
 		logging.New,
+		timer.New,
 		infrastructure.New,
 		database.New,
 		datastore.New,
@@ -35,6 +37,7 @@ func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable,
 	wire.Build(
 		config.New,
 		logging.New,
+		timer.New,
 		infrastructure.New,
 		database.New,
 		datastore.New,
@@ -49,6 +52,7 @@ func AttemptTriggerCli(provider configuration.Provider) (patterns.CommandLine, e
 	wire.Build(
 		config.New,
 		logging.New,
+		timer.New,
 		infrastructure.New,
 		database.New,
 		datastore.New,
@@ -62,6 +66,7 @@ func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable,
 	wire.Build(
 		config.New,
 		logging.New,
+		timer.New,
 		infrastructure.New,
 		database.New,
 		datastore.New,
@@ -76,6 +81,7 @@ func AttemptEndeavorExecutor(provider configuration.Provider) (patterns.Runnable
 	wire.Build(
 		config.New,
 		logging.New,
+		timer.New,
 		infrastructure.New,
 		database.New,
 		datastore.New,

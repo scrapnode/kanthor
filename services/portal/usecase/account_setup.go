@@ -27,7 +27,7 @@ type AccountSetupOut struct {
 }
 
 func (uc *account) Setup(ctx context.Context, in *AccountSetupIn) (*AccountSetupOut, error) {
-	res, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+	res, err := uc.repositories.Database().Transaction(ctx, func(txctx context.Context) (interface{}, error) {
 		ws := &entities.Workspace{
 			OwnerId: in.AccountId,
 			Name:    in.WorkspaceName,
@@ -39,7 +39,7 @@ func (uc *account) Setup(ctx context.Context, in *AccountSetupIn) (*AccountSetup
 
 		ws.Id = suid.New(entities.IdNsWs)
 		ws.SetAT(uc.infra.Timer.Now())
-		if _, err := uc.repositories.Workspace().Create(ctx, ws); err != nil {
+		if _, err := uc.repositories.Database().Workspace().Create(ctx, ws); err != nil {
 			return nil, err
 		}
 

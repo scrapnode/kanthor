@@ -13,6 +13,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services/attempt/config"
 	"github.com/scrapnode/kanthor/services/attempt/entrypoint"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
@@ -61,7 +62,8 @@ func AttemptTriggerPlanner(provider configuration.Provider) (patterns.Runnable, 
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	timerTimer := timer.New()
+	repositoriesRepositories := repositories.New(logger, timerTimer, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
 	runnable := entrypoint.TriggerPlanner(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
@@ -88,7 +90,8 @@ func AttemptTriggerExecutor(provider configuration.Provider) (patterns.Runnable,
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	timerTimer := timer.New()
+	repositoriesRepositories := repositories.New(logger, timerTimer, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
 	runnable := entrypoint.TriggerExecutor(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
@@ -115,7 +118,8 @@ func AttemptTriggerCli(provider configuration.Provider) (patterns.CommandLine, e
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	timerTimer := timer.New()
+	repositoriesRepositories := repositories.New(logger, timerTimer, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
 	commandLine := entrypoint.TriggerCli(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return commandLine, nil
@@ -142,7 +146,8 @@ func AttemptEndeavorPlanner(provider configuration.Provider) (patterns.Runnable,
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	timerTimer := timer.New()
+	repositoriesRepositories := repositories.New(logger, timerTimer, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
 	runnable := entrypoint.EndeavorPlanner(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
@@ -169,7 +174,8 @@ func AttemptEndeavorExecutor(provider configuration.Provider) (patterns.Runnable
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	timerTimer := timer.New()
+	repositoriesRepositories := repositories.New(logger, timerTimer, databaseDatabase, datastoreDatastore)
 	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
 	runnable := entrypoint.EndeavorExecutor(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
 	return runnable, nil
@@ -214,9 +220,14 @@ func Portal(provider configuration.Provider) (patterns.Runnable, error) {
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories2.New(logger, databaseDatabase)
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	timerTimer := timer.New()
+	repositoriesRepositories := repositories2.New(logger, timerTimer, databaseDatabase, datastoreDatastore)
 	portal := usecase3.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := entrypoint3.Rest(configConfig, logger, infrastructureInfrastructure, databaseDatabase, portal)
+	runnable := entrypoint3.Rest(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, portal)
 	return runnable, nil
 }
 

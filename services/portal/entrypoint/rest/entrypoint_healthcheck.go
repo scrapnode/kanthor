@@ -25,6 +25,11 @@ func RegisterHealthcheck(router gin.IRoutes, service *portal) {
 			return
 		}
 
+		if err := service.ds.Readiness(); err != nil {
+			ginctx.Status(http.StatusInternalServerError)
+			return
+		}
+
 		ginctx.String(http.StatusOK, "ready")
 	})
 	router.GET("/liveness", func(ginctx *gin.Context) {
@@ -34,6 +39,11 @@ func RegisterHealthcheck(router gin.IRoutes, service *portal) {
 		}
 
 		if err := service.db.Liveness(); err != nil {
+			ginctx.Status(http.StatusInternalServerError)
+			return
+		}
+
+		if err := service.ds.Liveness(); err != nil {
 			ginctx.Status(http.StatusInternalServerError)
 			return
 		}

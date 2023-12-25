@@ -28,7 +28,7 @@ type WorkspaceCreateOut struct {
 }
 
 func (uc *workspace) Create(ctx context.Context, in *WorkspaceCreateIn) (*WorkspaceCreateOut, error) {
-	res, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+	res, err := uc.repositories.Database().Transaction(ctx, func(txctx context.Context) (interface{}, error) {
 		doc := &entities.Workspace{
 			OwnerId: in.AccId,
 			Name:    in.Name,
@@ -37,7 +37,7 @@ func (uc *workspace) Create(ctx context.Context, in *WorkspaceCreateIn) (*Worksp
 		doc.Id = suid.New(entities.IdNsWs)
 		doc.SetAT(uc.infra.Timer.Now())
 
-		ws, err := uc.repositories.Workspace().Create(ctx, doc)
+		ws, err := uc.repositories.Database().Workspace().Create(ctx, doc)
 		if err != nil {
 			return nil, err
 		}

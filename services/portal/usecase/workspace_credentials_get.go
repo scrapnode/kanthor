@@ -26,7 +26,7 @@ type WorkspaceCredentialsGetOut struct {
 
 func (uc *workspaceCredentials) Get(ctx context.Context, in *WorkspaceCredentialsGetIn) (*WorkspaceCredentialsGetOut, error) {
 	// we don't need to use cache here because the usage is too low
-	wsc, err := uc.repositories.WorkspaceCredentials().Get(ctx, in.WsId, in.Id)
+	wsc, err := uc.repositories.Database().WorkspaceCredentials().Get(ctx, in.WsId, in.Id)
 	if err != nil {
 		return nil, err
 	}

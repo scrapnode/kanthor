@@ -6,8 +6,10 @@ import (
 
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/database"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services/portal/config"
 	"github.com/scrapnode/kanthor/services/portal/repositories"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
@@ -48,9 +50,16 @@ func New(provider configuration.Provider) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			ds, err := datastore.New(provider)
+			if err != nil {
+				return err
+			}
 
 			defer func() {
 				if err := db.Disconnect(ctx); err != nil {
+					logger.Error(err)
+				}
+				if err := ds.Disconnect(ctx); err != nil {
 					logger.Error(err)
 				}
 				if err := infra.Disconnect(ctx); err != nil {
@@ -61,11 +70,14 @@ func New(provider configuration.Provider) *cobra.Command {
 			if err := db.Connect(ctx); err != nil {
 				return err
 			}
+			if err := ds.Connect(ctx); err != nil {
+				return err
+			}
 			if err := infra.Connect(ctx); err != nil {
 				return err
 			}
 
-			repos := repositories.New(logger, db)
+			repos := repositories.New(logger, timer.New(), db, ds)
 			uc := usecase.New(conf, logger, infra, repos)
 
 			p := &printing{json: map[string]any{}}

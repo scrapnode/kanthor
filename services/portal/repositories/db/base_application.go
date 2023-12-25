@@ -1,4 +1,4 @@
-package repositories
+package db
 
 import (
 	"context"
@@ -8,4 +8,5 @@ import (
 
 type Application interface {
 	BulkCreate(ctx context.Context, docs []entities.Application) ([]string, error)
+	Get(ctx context.Context, wsId, id string) (*entities.Application, error)
 }

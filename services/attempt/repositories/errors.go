@@ -3,6 +3,6 @@ package repositories
 import "errors"
 
 var (
-	ErrNotConnected     = errors.New("USECASES.ATTEMPT.repositories.CONNECTION.NOT_CONNECTED")
-	ErrAlreadyConnected = errors.New("USECASES.ATTEMPT.repositories.CONNECTION.ALREADY_CONNECTED")
+	ErrNotConnected     = errors.New("USECASES.PORTAL.REPOSITORIES.CONNECTION.NOT_CONNECTED")
+	ErrAlreadyConnected = errors.New("USECASES.PORTAL.REPOSITORIES.CONNECTION.ALREADY_CONNECTED")
 )

@@ -8,13 +8,13 @@ import (
 )
 
 type EndpointListIn struct {
-	*entities.Query
+	*entities.PagingQuery
 	WsId  string
 	AppId string
 }
 
 func (in *EndpointListIn) Validate() error {
-	if err := in.Query.Validate(); err != nil {
+	if err := in.PagingQuery.Validate(); err != nil {
 		return err
 	}
 
@@ -31,12 +31,12 @@ type EndpointListOut struct {
 }
 
 func (uc *endpoint) List(ctx context.Context, in *EndpointListIn) (*EndpointListOut, error) {
-	data, err := uc.repositories.Endpoint().List(ctx, in.WsId, in.AppId, in.Query)
+	data, err := uc.repositories.Endpoint().List(ctx, in.WsId, in.AppId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.Endpoint().Count(ctx, in.WsId, in.AppId, in.Query)
+	count, err := uc.repositories.Endpoint().Count(ctx, in.WsId, in.AppId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}

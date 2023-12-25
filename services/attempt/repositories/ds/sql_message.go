@@ -22,8 +22,8 @@ func (sql *SqlMessage) Count(ctx context.Context, appId string, from, to time.Ti
 	tx := sql.client.
 		Table(entities.TableMsg).
 		Where("app_id = ?", appId).
-		Where("id < ?", high).
 		Where("id > ?", low).
+		Where("id < ?", high).
 		Count(&count)
 	return count, tx.Error
 

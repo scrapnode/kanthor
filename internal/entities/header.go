@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"net/http"
 	"net/textproto"
@@ -78,4 +79,15 @@ func (h Header) FromHTTP(headers http.Header) {
 func (h Header) String() string {
 	data, _ := json.Marshal(h)
 	return string(data)
+}
+
+// Scan implements the Scanner interface.
+func (h *Header) Scan(value interface{}) error {
+	return json.Unmarshal([]byte(value.(string)), h)
+}
+
+// Value implements the driver Valuer interface.
+func (h Header) Value() (driver.Value, error) {
+	mt, err := json.Marshal(h)
+	return string(mt), err
 }

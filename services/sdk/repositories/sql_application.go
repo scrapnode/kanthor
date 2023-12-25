@@ -46,7 +46,7 @@ func (sql *SqlApplication) Delete(ctx context.Context, doc *entities.Application
 	return nil
 }
 
-func (sql *SqlApplication) List(ctx context.Context, wsId string, query *entities.Query) ([]entities.Application, error) {
+func (sql *SqlApplication) List(ctx context.Context, wsId string, query *entities.PagingQuery) ([]entities.Application, error) {
 	doc := &entities.Application{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
@@ -57,7 +57,7 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, query *entitie
 		tx = tx.Where(fmt.Sprintf(`"%s"."id" IN ?`, doc.TableName()), query.Ids)
 	} else {
 		props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
-		tx = database.ApplyListQuery(tx, props, query.Search, query.Limit, query.Page)
+		tx = database.SqlApplyListQuery(tx, props, query)
 	}
 
 	var docs []entities.Application
@@ -68,7 +68,7 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, query *entitie
 	return docs, nil
 }
 
-func (sql *SqlApplication) Count(ctx context.Context, wsId string, query *entities.Query) (int64, error) {
+func (sql *SqlApplication) Count(ctx context.Context, wsId string, query *entities.PagingQuery) (int64, error) {
 	doc := &entities.Application{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).
@@ -79,7 +79,7 @@ func (sql *SqlApplication) Count(ctx context.Context, wsId string, query *entiti
 	}
 
 	props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
-	tx = database.ApplyCountQuery(tx, props, query.Search)
+	tx = database.SqlApplyCountQuery(tx, props, query)
 	var count int64
 	return count, tx.Count(&count).Error
 }
@@ -89,7 +89,7 @@ func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.
 	doc.Id = id
 
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(&doc).
+	tx := transaction.WithContext(ctx).Model(doc).
 		Scopes(UseWsId(wsId, doc.TableName())).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
 		First(doc)

@@ -1,7 +1,8 @@
-package repositories
+package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
@@ -28,4 +29,20 @@ func (sql *SqlApplication) BulkCreate(ctx context.Context, docs []entities.Appli
 		return nil, tx.Error
 	}
 	return ids, nil
+}
+
+func (sql *SqlApplication) Get(ctx context.Context, wsId, id string) (*entities.Application, error) {
+	doc := &entities.Application{}
+	doc.Id = id
+
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
+	tx := transaction.WithContext(ctx).Model(&doc).
+		Scopes(UseWsId(wsId, doc.TableName())).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		First(doc)
+	if tx.Error != nil {
+		return nil, database.SqlError(tx.Error)
+	}
+
+	return doc, nil
 }

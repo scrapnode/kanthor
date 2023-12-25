@@ -42,10 +42,10 @@ func UseEndpointRuleList(service *sdk) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.EndpointRuleListIn{
-			Query: entities.QueryFromGateWay(&query),
-			WsId:  ws.Id,
-			AppId: ginctx.Query("app_id"),
-			EpId:  ginctx.Query("ep_id"),
+			PagingQuery: entities.PagingQueryFromGatewayQuery(&query),
+			WsId:        ws.Id,
+			AppId:       ginctx.Query("app_id"),
+			EpId:        ginctx.Query("ep_id"),
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))

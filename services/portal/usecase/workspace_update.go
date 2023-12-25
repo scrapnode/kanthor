@@ -32,15 +32,15 @@ func (uc *workspace) Update(ctx context.Context, in *WorkspaceUpdateIn) (*Worksp
 		return nil, err
 	}
 
-	ws, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ws, err := uc.repositories.Workspace().Get(txctx, getout.Doc.Id)
+	ws, err := uc.repositories.Database().Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		ws, err := uc.repositories.Database().Workspace().Get(txctx, getout.Doc.Id)
 		if err != nil {
 			return nil, err
 		}
 
 		ws.Name = in.Name
 		ws.SetAT(uc.infra.Timer.Now())
-		return uc.repositories.Workspace().Update(txctx, ws)
+		return uc.repositories.Database().Workspace().Update(txctx, ws)
 	})
 	if err != nil {
 		return nil, err

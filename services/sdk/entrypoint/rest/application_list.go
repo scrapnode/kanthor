@@ -40,8 +40,8 @@ func UseApplicationList(service *sdk) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.ApplicationListIn{
-			Query: entities.QueryFromGateWay(&query),
-			WsId:  ws.Id,
+			PagingQuery: entities.PagingQueryFromGatewayQuery(&query),
+			WsId:        ws.Id,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))

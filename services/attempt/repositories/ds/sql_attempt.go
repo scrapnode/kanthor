@@ -81,8 +81,8 @@ func (sql *SqlAttempt) Count(ctx context.Context, appId string, from, to time.Ti
 	var count int64
 	tx := sql.client.
 		Table(entities.TableAtt).
-		Where("req_id < ?", high).
 		Where("req_id > ?", low).
+		Where("req_id < ?", high).
 		Where("schedule_next <= ?", next).
 		Count(&count)
 	return count, tx.Error

@@ -1,21 +1,19 @@
 package repositories
 
 import (
-	"context"
-
 	"github.com/scrapnode/kanthor/database"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/logging"
+	"github.com/scrapnode/kanthor/pkg/timer"
+	"github.com/scrapnode/kanthor/services/portal/repositories/db"
+	"github.com/scrapnode/kanthor/services/portal/repositories/ds"
 )
 
-func New(logger logging.Logger, db database.Database) Repositories {
-	return NewSql(logger, db)
+func New(logger logging.Logger, timer timer.Timer, dbclient database.Database, dsclient datastore.Datastore) Repositories {
+	return NewSql(logger, timer, dbclient, dsclient)
 }
 
 type Repositories interface {
-	Transaction(ctx context.Context, handler func(txctx context.Context) (interface{}, error)) (res interface{}, err error)
-	Workspace() Workspace
-	WorkspaceCredentials() WorkspaceCredentials
-	Application() Application
-	Endpoint() Endpoint
-	EndpointRule() EndpointRule
+	Database() db.Database
+	Datastore() ds.Datastore
 }

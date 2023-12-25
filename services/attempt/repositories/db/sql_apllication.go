@@ -17,7 +17,7 @@ func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Applic
 	doc := &entities.Application{}
 
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(&doc).
+	tx := transaction.WithContext(ctx).Model(doc).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
 		First(doc)
 	if tx.Error != nil {

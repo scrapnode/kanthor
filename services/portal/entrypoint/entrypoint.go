@@ -2,6 +2,7 @@ package entrypoint
 
 import (
 	"github.com/scrapnode/kanthor/database"
+	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
@@ -15,7 +16,8 @@ func Rest(
 	logger logging.Logger,
 	infra *infrastructure.Infrastructure,
 	db database.Database,
+	ds datastore.Datastore,
 	uc usecase.Portal,
 ) patterns.Runnable {
-	return rest.New(conf, logger, infra, db, uc)
+	return rest.New(conf, logger, infra, db, ds, uc)
 }

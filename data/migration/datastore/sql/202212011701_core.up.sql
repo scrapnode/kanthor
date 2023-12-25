@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS kanthor_message (
     app_id VARCHAR(64) NOT NULL,
     id VARCHAR(64) NOT NULL,
     PRIMARY KEY (app_id, id),
-
     timestamp BIGINT NOT NULL DEFAULT 0,
     tier VARCHAR(64) NOT NULL,
     type VARCHAR(256) NOT NULL,
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS kanthor_request (
     msg_id VARCHAR(64) NOT NULL,
     id VARCHAR(64) NOT NULL,
     PRIMARY KEY (app_id, msg_id, id),
-
     timestamp BIGINT NOT NULL DEFAULT 0,
     ep_id VARCHAR(64) NOT NULL,
     tier VARCHAR(64) NOT NULL,
@@ -35,7 +33,6 @@ CREATE TABLE IF NOT EXISTS kanthor_response (
     msg_id VARCHAR(64) NOT NULL,
     id VARCHAR(64) NOT NULL,
     PRIMARY KEY (app_id, msg_id, id),
-    
     timestamp BIGINT NOT NULL DEFAULT 0,
     ep_id VARCHAR(64) NOT NULL,
     req_id VARCHAR(64) NOT NULL,
@@ -51,18 +48,14 @@ CREATE TABLE IF NOT EXISTS kanthor_response (
 
 CREATE TABLE IF NOT EXISTS kanthor_attempt (
     req_id VARCHAR(64) NOT NULL PRIMARY KEY,
-
     msg_id VARCHAR(64) NOT NULL,
     app_id VARCHAR(64) NOT NULL,
     tier VARCHAR(64) NOT NULL,
     status INT NOT NULL,
-    
     res_id VARCHAR(64) NOT NULL,
-
     schedule_counter INT NOT NULL,
     schedule_next BIGINT NOT NULL DEFAULT 0,
     scheduled_at BIGINT NOT NULL DEFAULT 0,
-    
     completed_at BIGINT NOT NULL DEFAULT 0
 );
 

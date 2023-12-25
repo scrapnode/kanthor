@@ -326,6 +326,110 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "/message": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "message"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "limit returning records",
+                        "name": "_limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1669914060000,
+                        "description": "starting time to scan in milliseconds",
+                        "name": "_start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1985533260000,
+                        "description": "ending time to scan in milliseconds",
+                        "name": "_end",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/MessageListRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/message/{msg_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "message"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "application id",
+                        "name": "app_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "message id",
+                        "name": "msg_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/MessageGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/workspace": {
             "get": {
                 "security": [
@@ -496,6 +600,69 @@ const docTemplatePortal = `{
                 },
                 "workspace": {
                     "$ref": "#/definitions/Workspace"
+                }
+            }
+        },
+        "Message": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "MessageGetRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "MessageListRes": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
                 }
             }
         },
