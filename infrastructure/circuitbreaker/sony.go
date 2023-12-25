@@ -60,8 +60,9 @@ func (cb *sonycb) get(cmd string, onError ErrorHandler) *gobreaker.CircuitBreake
 				return true
 			}
 
+			reached := counts.TotalFailures > cb.conf.Half.PassthroughRequests
 			ratio := float32(counts.TotalFailures) / float32(counts.Requests)
-			if ratio >= cb.conf.Open.Conditions.ErrorRatio {
+			if reached && ratio >= cb.conf.Open.Conditions.ErrorRatio {
 				cb.logger.Warnw("open because of error ratio", "ratio", ratio, "threshold", cb.conf.Open.Conditions.ErrorRatio)
 				return true
 			}

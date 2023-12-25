@@ -88,7 +88,7 @@ func (sql *SqlWorkspace) ListOwned(ctx context.Context, owner string) ([]entitie
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&entities.Workspace{}).
 		Where("owner_id = ?", owner).
-		Order("id asc").
+		Order("id DESC").
 		Find(&docs)
 
 	return docs, database.SqlError(tx.Error)

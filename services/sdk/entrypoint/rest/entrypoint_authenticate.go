@@ -9,9 +9,12 @@ import (
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 
-func RegisterWorkspaceResolver(uc usecase.Sdk) func(ctx context.Context, id string) (*entities.Workspace, error) {
-	return func(ctx context.Context, id string) (*entities.Workspace, error) {
-		in := &usecase.WorkspaceGetIn{Id: id}
+func RegisterWorkspaceResolver(uc usecase.Sdk) func(ctx context.Context, acc *authenticator.Account, id string) (*entities.Workspace, error) {
+	return func(ctx context.Context, acc *authenticator.Account, id string) (*entities.Workspace, error) {
+		in := &usecase.WorkspaceGetIn{
+			AccId: acc.Sub,
+			Id:    id,
+		}
 		if err := in.Validate(); err != nil {
 			return nil, err
 		}

@@ -34,7 +34,7 @@ func (uc *workspace) Create(ctx context.Context, in *WorkspaceCreateIn) (*Worksp
 			Name:    in.Name,
 			Tier:    project.Tier(),
 		}
-		doc.Id = suid.New(entities.IdNsWsc)
+		doc.Id = suid.New(entities.IdNsWs)
 		doc.SetAT(uc.infra.Timer.Now())
 
 		ws, err := uc.repositories.Workspace().Create(ctx, doc)

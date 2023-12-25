@@ -25,13 +25,21 @@ type WorkspaceListOut struct {
 
 func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceListOut, error) {
 	out := &WorkspaceListOut{}
+	seen := map[string]bool{}
 
 	// owner
 	own, err := uc.repositories.Workspace().ListOwned(ctx, in.AccId)
 	if err != nil {
 		return nil, err
 	}
-	out.Data = append(out.Data, own...)
+	for _, ws := range own {
+		if _, found := seen[ws.Id]; found {
+			continue
+		}
+
+		seen[ws.Id] = true
+		out.Data = append(out.Data, ws)
+	}
 
 	// collaborator
 	tenants, err := uc.infra.Authorizator.Tenants(in.AccId)
@@ -43,7 +51,14 @@ func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceL
 		if err != nil {
 			return nil, err
 		}
-		out.Data = append(out.Data, workspaces...)
+		for _, ws := range workspaces {
+			if _, found := seen[ws.Id]; found {
+				continue
+			}
+
+			seen[ws.Id] = true
+			out.Data = append(out.Data, ws)
+		}
 	}
 
 	return out, nil

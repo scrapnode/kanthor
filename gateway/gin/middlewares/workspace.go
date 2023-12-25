@@ -11,7 +11,7 @@ import (
 	"github.com/scrapnode/kanthor/internal/entities"
 )
 
-func UseWorkspace(resolve func(ctx context.Context, id string) (*entities.Workspace, error)) gin.HandlerFunc {
+func UseWorkspace(resolve func(ctx context.Context, acc *authenticator.Account, id string) (*entities.Workspace, error)) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
@@ -26,7 +26,7 @@ func UseWorkspace(resolve func(ctx context.Context, id string) (*entities.Worksp
 			return
 		}
 
-		workspace, err := resolve(ctx, id)
+		workspace, err := resolve(ctx, acc, id)
 		if err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
