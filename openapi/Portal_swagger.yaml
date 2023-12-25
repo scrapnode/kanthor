@@ -223,7 +223,7 @@ info:
   title: Kanthor Portal API
   version: "1.0"
 paths:
-  /account/me:
+  /account:
     get:
       responses:
         "200":
@@ -239,7 +239,6 @@ paths:
       - WorkspaceId: []
       tags:
       - account
-  /account/setup:
     post:
       parameters:
       - description: setup options

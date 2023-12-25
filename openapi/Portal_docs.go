@@ -30,7 +30,7 @@ const docTemplatePortal = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/me": {
+        "/account": {
             "get": {
                 "security": [
                     {
@@ -57,9 +57,7 @@ const docTemplatePortal = `{
                         }
                     }
                 }
-            }
-        },
-        "/account/setup": {
+            },
             "post": {
                 "security": [
                     {

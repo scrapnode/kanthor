@@ -23,7 +23,7 @@
     },
     "basePath": "/api",
     "paths": {
-        "/account/me": {
+        "/account": {
             "get": {
                 "security": [
                     {
@@ -50,9 +50,7 @@
                         }
                     }
                 }
-            }
-        },
-        "/account/setup": {
+            },
             "post": {
                 "security": [
                     {

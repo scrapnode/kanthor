@@ -22,7 +22,7 @@ type AccountSetupRes struct {
 
 // UseAccountSetup
 // @Tags		account
-// @Router		/account/setup			[post]
+// @Router		/account			[post]
 // @Param		props				body		AccountSetupReq	true	"setup options"
 // @Success		200					{object}	AccountSetupRes
 // @Failure		default				{object}	gateway.Error
