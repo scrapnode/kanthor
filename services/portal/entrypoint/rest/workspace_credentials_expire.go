@@ -13,12 +13,12 @@ import (
 
 type WorkspaceCredentialsExpireReq struct {
 	Duration int64 `json:"duration" default:"1800000"`
-}
+} // @name WorkspaceCredentialsExpireReq
 
 type WorkspaceCredentialsExpireRes struct {
 	Id        string `json:"id"`
 	ExpiredAt int64  `json:"expired_at"`
-}
+} // @name WorkspaceCredentialsExpireRes
 
 // UseWorkspaceCredentialsExpire
 // @Tags		credentials

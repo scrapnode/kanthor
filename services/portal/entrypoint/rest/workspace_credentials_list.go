@@ -14,7 +14,7 @@ import (
 type WorkspaceCredentialsListRes struct {
 	Data  []WorkspaceCredentials `json:"data"`
 	Count int64                  `json:"count"`
-}
+} // @name WorkspaceCredentialsListRes
 
 // UseWorkspaceCredentialsList
 // @Tags		credentials

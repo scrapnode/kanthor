@@ -11,24 +11,36 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
-type WorkspaceListRes struct {
-	Data  []Workspace `json:"data"`
-	Count int64       `json:"count"`
-} // @name WorkspaceListRes
+type WorkspaceCreateReq struct {
+	Name string `json:"name" default:"main"`
+} // @name WorkspaceCreateReq
 
-// UseWorkspaceList
+type WorkspaceCreateRes struct {
+	*Workspace
+} // @name WorkspaceCreateReq
+
+// UseWorkspaceCreate
 // @Tags		workspace
-// @Router		/workspace				[get]
-// @Success		200						{object}	WorkspaceGetRes
-// @Failure		default					{object}	gateway.Error
+// @Router		/workspace			[post]
+// @Param		props				body		WorkspaceCreateReq	true	"credentials properties"
+// @Success		200					{object}	WorkspaceCreateRes
+// @Failure		default				{object}	gateway.Error
 // @Security	Authorization
-func UseWorkspaceList(service *portal) gin.HandlerFunc {
+func UseWorkspaceCreate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
+		var req WorkspaceCreateReq
+		if err := ginctx.ShouldBindJSON(&req); err != nil {
+			service.logger.Error(err)
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
+			return
+		}
+
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
-		in := &usecase.WorkspaceListIn{
+		in := &usecase.WorkspaceCreateIn{
 			AccId: acc.Sub,
+			Name:  req.Name,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
@@ -36,18 +48,14 @@ func UseWorkspaceList(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		out, err := service.uc.Workspace().List(ctx, in)
+		out, err := service.uc.Workspace().Create(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &WorkspaceListRes{Data: make([]Workspace, 0), Count: out.Count}
-		for _, ws := range out.Data {
-			res.Data = append(res.Data, *ToWorkspace(&ws))
-		}
-
+		res := &WorkspaceCreateRes{ToWorkspace(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

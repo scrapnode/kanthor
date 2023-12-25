@@ -10,7 +10,7 @@ type Workspace struct {
 	OwnerId string `json:"owner_id"`
 	Name    string `json:"name"`
 	Tier    string `json:"tier"`
-}
+} // @name Workspace
 
 func ToWorkspace(doc *entities.Workspace) *Workspace {
 	return &Workspace{
@@ -31,7 +31,7 @@ type WorkspaceCredentials struct {
 	WsId      string `json:"ws_id"`
 	Name      string `json:"name"`
 	ExpiredAt int64  `json:"expired_at"`
-}
+} // @name WorkspaceCredentials
 
 func ToWorkspaceCredentials(doc *entities.WorkspaceCredentials) *WorkspaceCredentials {
 	return &WorkspaceCredentials{

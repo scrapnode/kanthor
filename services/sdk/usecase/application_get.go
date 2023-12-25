@@ -2,9 +2,7 @@ package usecase
 
 import (
 	"context"
-	"time"
 
-	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -27,12 +25,9 @@ type ApplicationGetOut struct {
 }
 
 func (uc *application) Get(ctx context.Context, in *ApplicationGetIn) (*ApplicationGetOut, error) {
-	key := CacheKeyApp(in.WsId, in.Id)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*ApplicationGetOut, error) {
-		app, err := uc.repositories.Application().Get(ctx, in.WsId, in.Id)
-		if err != nil {
-			return nil, err
-		}
-		return &ApplicationGetOut{Doc: app}, nil
-	})
+	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &ApplicationGetOut{Doc: app}, nil
 }

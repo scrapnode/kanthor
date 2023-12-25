@@ -10,11 +10,12 @@ import (
 )
 
 type Workspace interface {
-	Setup(ctx context.Context, in *WorkspaceSetupIn) (*WorkspaceSetupOut, error)
-
+	Create(ctx context.Context, in *WorkspaceCreateIn) (*WorkspaceCreateOut, error)
 	Update(ctx context.Context, in *WorkspaceUpdateIn) (*WorkspaceUpdateOut, error)
 	List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceListOut, error)
 	Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error)
+
+	Setup(ctx context.Context, in *WorkspaceSetupIn) (*WorkspaceSetupOut, error)
 }
 
 type workspace struct {

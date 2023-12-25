@@ -20,7 +20,7 @@ func RegisterWorkspaceResolver(uc usecase.Sdk) func(ctx context.Context, id stri
 		if err != nil {
 			return nil, err
 		}
-		return out.Workspace, nil
+		return out.Doc, nil
 	}
 }
 

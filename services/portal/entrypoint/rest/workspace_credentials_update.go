@@ -14,11 +14,11 @@ import (
 type WorkspaceCredentialsUpdateReq struct {
 	Name      string `json:"name" default:"swagger demo update"`
 	ExpiredAt int64  `json:"expired_at" default:"1893456000000"`
-}
+} // @name WorkspaceCredentialsUpdateReq
 
 type WorkspaceCredentialsUpdateRes struct {
 	*WorkspaceCredentials
-}
+} // @name WorkspaceCredentialsUpdateRes
 
 // UseWorkspaceCredentialsUpdate
 // @Tags		credentials
@@ -41,10 +41,9 @@ func UseWorkspaceCredentialsUpdate(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		id := ginctx.Param("wsc_id")
 		in := &usecase.WorkspaceCredentialsUpdateIn{
 			WsId:      ws.Id,
-			Id:        id,
+			Id:        ginctx.Param("wsc_id"),
 			Name:      req.Name,
 			ExpiredAt: req.ExpiredAt,
 		}

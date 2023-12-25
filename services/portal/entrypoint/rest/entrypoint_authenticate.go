@@ -18,6 +18,6 @@ func RegisterWorkspaceResolver(uc usecase.Portal) func(ctx context.Context, id s
 		if err != nil {
 			return nil, err
 		}
-		return out.Workspace, nil
+		return out.Doc, nil
 	}
 }

@@ -1,6 +1,10 @@
 package entities
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/scrapnode/kanthor/pkg/validator"
+)
 
 type Application struct {
 	Entity
@@ -27,6 +31,14 @@ func (entity *Application) Unmarshal(data []byte) error {
 func (entity *Application) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
+}
+
+func (entity *Application) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith("ws_id", entity.WsId, IdNsWs),
+		validator.StringRequired("name", entity.Name),
+	)
 }
 
 type ApplicationWithRelationship struct {

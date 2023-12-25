@@ -14,6 +14,10 @@ type SqlWorkspace struct {
 }
 
 func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error) {
+	if err := doc.Validate(); err != nil {
+		return nil, err
+	}
+
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	if tx := transaction.Create(doc); tx.Error != nil {
 		return nil, tx.Error
@@ -23,6 +27,10 @@ func (sql *SqlWorkspace) Create(ctx context.Context, doc *entities.Workspace) (*
 }
 
 func (sql *SqlWorkspace) Update(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error) {
+	if err := doc.Validate(); err != nil {
+		return nil, err
+	}
+
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
@@ -30,7 +38,7 @@ func (sql *SqlWorkspace) Update(ctx context.Context, doc *entities.Workspace) (*
 	return doc, tx.Error
 }
 
-func (sql *SqlWorkspace) ListByIds(ctx context.Context, ids []string) (*[]entities.Workspace, error) {
+func (sql *SqlWorkspace) ListByIds(ctx context.Context, ids []string) ([]entities.Workspace, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
@@ -42,7 +50,7 @@ func (sql *SqlWorkspace) ListByIds(ctx context.Context, ids []string) (*[]entiti
 		Where("id IN ?", ids).
 		Find(&docs)
 
-	return &docs, tx.Error
+	return docs, tx.Error
 }
 
 func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspace, error) {
@@ -59,12 +67,12 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	return doc, nil
 }
 
-func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner string) (*entities.Workspace, error) {
+func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner, id string) (*entities.Workspace, error) {
 	doc := &entities.Workspace{}
 
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
 	tx := transaction.WithContext(ctx).Model(&doc).
-		Where("owner_id = ?", owner).
+		Where("owner_id = ? AND id = ?", owner, id).
 		Order("id asc").
 		First(doc)
 	if tx.Error != nil {

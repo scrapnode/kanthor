@@ -2,37 +2,43 @@ package usecase
 
 import (
 	"context"
-	"time"
+	"errors"
+	"slices"
 
-	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
 type WorkspaceGetIn struct {
-	Id string
+	AccId string
+	Id    string
 }
 
 func (in *WorkspaceGetIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.StringRequired("acc_id", in.AccId),
 		validator.StringStartsWith("id", in.Id, entities.IdNsWs),
 	)
 }
 
 type WorkspaceGetOut struct {
-	Workspace *entities.Workspace
+	Doc *entities.Workspace
 }
 
 func (uc *workspace) Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error) {
-	key := utils.Key("portal", in.Id)
-	return cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*WorkspaceGetOut, error) {
-		ws, err := uc.repositories.Workspace().Get(ctx, in.Id)
-		if err != nil {
-			return nil, err
-		}
+	ws, err := uc.repositories.Workspace().GetOwned(ctx, in.AccId, in.Id)
+	if err == nil {
+		return &WorkspaceGetOut{Doc: ws}, nil
+	}
 
-		return &WorkspaceGetOut{Workspace: ws}, nil
-	})
+	tenants, err := uc.infra.Authorizator.Tenants(in.AccId)
+	if err == nil && slices.Contains(tenants, in.Id) {
+		ws, err := uc.repositories.Workspace().Get(ctx, in.Id)
+		if err == nil {
+			return &WorkspaceGetOut{Doc: ws}, nil
+		}
+	}
+
+	return nil, errors.New("you don't own the workspace or have no permission to access it")
 }

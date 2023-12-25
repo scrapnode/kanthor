@@ -2,6 +2,184 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  AccountGetRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
+      workspaces:
+        items:
+          $ref: '#/definitions/Workspace'
+        type: array
+    type: object
+  AccountSetupReq:
+    properties:
+      workspace_name:
+        type: string
+    type: object
+  AccountSetupRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
+      workspace:
+        $ref: '#/definitions/Workspace'
+    type: object
+  Workspace:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      tier:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  WorkspaceCreateReq:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      tier:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  WorkspaceCredentials:
+    properties:
+      created_at:
+        type: integer
+      expired_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  WorkspaceCredentialsCreateReq:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      user:
+        type: string
+    type: object
+  WorkspaceCredentialsExpireReq:
+    properties:
+      duration:
+        default: 1800000
+        type: integer
+    type: object
+  WorkspaceCredentialsExpireRes:
+    properties:
+      expired_at:
+        type: integer
+      id:
+        type: string
+    type: object
+  WorkspaceCredentialsGetRes:
+    properties:
+      created_at:
+        type: integer
+      expired_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  WorkspaceCredentialsListRes:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/WorkspaceCredentials'
+        type: array
+    type: object
+  WorkspaceCredentialsUpdateReq:
+    properties:
+      expired_at:
+        default: 1893456000000
+        type: integer
+      name:
+        default: swagger demo update
+        type: string
+    type: object
+  WorkspaceCredentialsUpdateRes:
+    properties:
+      created_at:
+        type: integer
+      expired_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  WorkspaceGetRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/authorizator.Permission'
+        type: array
+      tier:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  WorkspaceUpdateReq:
+    properties:
+      name:
+        example: another name
+        type: string
+    type: object
+  WorkspaceUpdateRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      tier:
+        type: string
+      updated_at:
+        type: integer
+    type: object
   authenticator.Account:
     properties:
       metadata:
@@ -22,202 +200,12 @@ definitions:
       role:
         type: string
     type: object
-  entities.Workspace:
-    properties:
-      createdAt:
-        description: |-
-          I didn't find a way to disable automatic fields modify yet
-          so, I use a tag to disable this feature here
-          but, we should keep our entities stateless if we can
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      ownerId:
-        type: string
-      tier:
-        type: string
-      updatedAt:
-        type: integer
-    type: object
   gateway.Error:
     properties:
       code:
         type: string
       error:
         type: string
-    type: object
-  rest.AccountGetRes:
-    properties:
-      account:
-        $ref: '#/definitions/authenticator.Account'
-      workspaces:
-        items:
-          $ref: '#/definitions/entities.Workspace'
-        type: array
-    type: object
-  rest.AccountSetupReq:
-    properties:
-      workspace_name:
-        type: string
-    type: object
-  rest.AccountSetupRes:
-    properties:
-      account:
-        $ref: '#/definitions/authenticator.Account'
-      workspace:
-        $ref: '#/definitions/rest.Workspace'
-    type: object
-  rest.Workspace:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      owner_id:
-        type: string
-      tier:
-        type: string
-      updated_at:
-        type: integer
-    type: object
-  rest.WorkspaceCredentials:
-    properties:
-      created_at:
-        type: integer
-      expired_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.WorkspaceCredentialsCreateReq:
-    properties:
-      expired_at:
-        default: 1893456000000
-        type: integer
-      name:
-        default: swagger demo
-        type: string
-    type: object
-  rest.WorkspaceCredentialsCreateRes:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      user:
-        type: string
-    type: object
-  rest.WorkspaceCredentialsExpireReq:
-    properties:
-      duration:
-        default: 1800000
-        type: integer
-    type: object
-  rest.WorkspaceCredentialsExpireRes:
-    properties:
-      expired_at:
-        type: integer
-      id:
-        type: string
-    type: object
-  rest.WorkspaceCredentialsGetRes:
-    properties:
-      created_at:
-        type: integer
-      expired_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.WorkspaceCredentialsListRes:
-    properties:
-      count:
-        type: integer
-      data:
-        items:
-          $ref: '#/definitions/rest.WorkspaceCredentials'
-        type: array
-    type: object
-  rest.WorkspaceCredentialsUpdateReq:
-    properties:
-      expired_at:
-        default: 1893456000000
-        type: integer
-      name:
-        default: swagger demo update
-        type: string
-    type: object
-  rest.WorkspaceCredentialsUpdateRes:
-    properties:
-      created_at:
-        type: integer
-      expired_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.WorkspaceGetRes:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      owner_id:
-        type: string
-      permissions:
-        items:
-          $ref: '#/definitions/authorizator.Permission'
-        type: array
-      tier:
-        type: string
-      updated_at:
-        type: integer
-    type: object
-  rest.WorkspaceUpdateReq:
-    properties:
-      name:
-        type: string
-    type: object
-  rest.WorkspaceUpdateRes:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      owner_id:
-        type: string
-      tier:
-        type: string
-      updated_at:
-        type: integer
     type: object
 externalDocs:
   description: OpenAPI
@@ -241,7 +229,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.AccountGetRes'
+            $ref: '#/definitions/AccountGetRes'
         default:
           description: ""
           schema:
@@ -259,12 +247,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.AccountSetupReq'
+          $ref: '#/definitions/AccountSetupReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.AccountSetupRes'
+            $ref: '#/definitions/AccountSetupRes'
         default:
           description: ""
           schema:
@@ -302,7 +290,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.WorkspaceCredentialsListRes'
+            $ref: '#/definitions/WorkspaceCredentialsListRes'
         default:
           description: ""
           schema:
@@ -319,12 +307,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.WorkspaceCredentialsCreateReq'
+          $ref: '#/definitions/WorkspaceCredentialsCreateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.WorkspaceCredentialsCreateRes'
+            $ref: '#/definitions/WorkspaceCredentialsCreateReq'
         default:
           description: ""
           schema:
@@ -346,7 +334,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.WorkspaceCredentialsGetRes'
+            $ref: '#/definitions/WorkspaceCredentialsGetRes'
         default:
           description: ""
           schema:
@@ -368,12 +356,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.WorkspaceCredentialsUpdateReq'
+          $ref: '#/definitions/WorkspaceCredentialsUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.WorkspaceCredentialsUpdateRes'
+            $ref: '#/definitions/WorkspaceCredentialsUpdateRes'
         default:
           description: ""
           schema:
@@ -396,12 +384,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.WorkspaceCredentialsExpireReq'
+          $ref: '#/definitions/WorkspaceCredentialsExpireReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.WorkspaceCredentialsExpireRes'
+            $ref: '#/definitions/WorkspaceCredentialsExpireRes'
         default:
           description: ""
           schema:
@@ -417,7 +405,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.WorkspaceGetRes'
+            $ref: '#/definitions/WorkspaceGetRes'
         default:
           description: ""
           schema:
@@ -426,42 +414,72 @@ paths:
       - Authorization: []
       tags:
       - workspace
-  /workspace/me:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/rest.WorkspaceGetRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - Authorization: []
-      - WorkspaceId: []
-      tags:
-      - workspace
-    patch:
+    post:
       parameters:
       - description: credentials properties
         in: body
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.WorkspaceUpdateReq'
+          $ref: '#/definitions/WorkspaceCreateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.WorkspaceUpdateRes'
+            $ref: '#/definitions/WorkspaceCreateReq'
         default:
           description: ""
           schema:
             $ref: '#/definitions/gateway.Error'
       security:
       - Authorization: []
-      - WorkspaceId: []
+      tags:
+      - workspace
+  /workspace/{ws_id}:
+    get:
+      parameters:
+      - description: workspace id
+        in: path
+        name: ws_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/WorkspaceGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      tags:
+      - workspace
+    patch:
+      parameters:
+      - description: workspace id
+        in: path
+        name: ws_id
+        required: true
+        type: string
+      - description: credentials properties
+        in: body
+        name: props
+        required: true
+        schema:
+          $ref: '#/definitions/WorkspaceUpdateReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/WorkspaceUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
       tags:
       - workspace
 produces:

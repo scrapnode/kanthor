@@ -9,9 +9,9 @@ import (
 type Workspace interface {
 	Create(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error)
 	Update(ctx context.Context, doc *entities.Workspace) (*entities.Workspace, error)
-	ListByIds(ctx context.Context, ids []string) (*[]entities.Workspace, error)
+	ListByIds(ctx context.Context, ids []string) ([]entities.Workspace, error)
 	Get(ctx context.Context, id string) (*entities.Workspace, error)
-	GetOwned(ctx context.Context, owner string) (*entities.Workspace, error)
+	GetOwned(ctx context.Context, owner, id string) (*entities.Workspace, error)
 	ListOwned(ctx context.Context, owner string) ([]entities.Workspace, error)
 }
 

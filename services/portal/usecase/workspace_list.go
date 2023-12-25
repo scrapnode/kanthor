@@ -19,20 +19,19 @@ func (in *WorkspaceListIn) Validate() error {
 }
 
 type WorkspaceListOut struct {
-	Workspaces map[string]*entities.Workspace
+	Data  []entities.Workspace
+	Count int64
 }
 
 func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceListOut, error) {
-	out := &WorkspaceListOut{Workspaces: map[string]*entities.Workspace{}}
+	out := &WorkspaceListOut{}
 
 	// owner
 	own, err := uc.repositories.Workspace().ListOwned(ctx, in.AccId)
 	if err != nil {
 		return nil, err
 	}
-	for _, ws := range own {
-		out.Workspaces[ws.Id] = &ws
-	}
+	out.Data = append(out.Data, own...)
 
 	// collaborator
 	tenants, err := uc.infra.Authorizator.Tenants(in.AccId)
@@ -44,10 +43,7 @@ func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceL
 		if err != nil {
 			return nil, err
 		}
-		for _, ws := range *workspaces {
-			out.Workspaces[ws.Id] = &ws
-		}
-
+		out.Data = append(out.Data, workspaces...)
 	}
 
 	return out, nil

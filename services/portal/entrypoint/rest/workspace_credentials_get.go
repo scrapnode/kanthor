@@ -13,7 +13,7 @@ import (
 
 type WorkspaceCredentialsGetRes struct {
 	*WorkspaceCredentials
-}
+} // @name WorkspaceCredentialsGetRes
 
 // UseWorkspaceCredentialsGet
 // @Tags		credentials
@@ -28,10 +28,9 @@ func UseWorkspaceCredentialsGet(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		id := ginctx.Param("wsc_id")
 		in := &usecase.WorkspaceCredentialsGetIn{
 			WsId: ws.Id,
-			Id:   id,
+			Id:   ginctx.Param("wsc_id"),
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))

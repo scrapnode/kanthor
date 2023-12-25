@@ -15,14 +15,14 @@ import (
 type WorkspaceCredentialsCreateReq struct {
 	Name      string `json:"name" default:"swagger demo"`
 	ExpiredAt int64  `json:"expired_at" default:"1893456000000"`
-}
+} // @name WorkspaceCredentialsCreateReq
 
 type WorkspaceCredentialsCreateRes struct {
 	Id       string `json:"id"`
 	Name     string `json:"name"`
 	User     string `json:"user"`
 	Password string `json:"password"`
-}
+} // @name WorkspaceCredentialsCreateReq
 
 // UseWorkspaceCredentialsCreate
 // @Tags		credentials

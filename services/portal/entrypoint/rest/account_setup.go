@@ -13,12 +13,12 @@ import (
 
 type AccountSetupReq struct {
 	WorkspaceName string `json:"workspace_name"`
-}
+} // @name AccountSetupReq
 
 type AccountSetupRes struct {
 	Account   *authenticator.Account `json:"account"`
 	Workspace *Workspace             `json:"workspace"`
-}
+} // @name AccountSetupRes
 
 // UseAccountSetup
 // @Tags		account

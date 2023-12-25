@@ -7,15 +7,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
 type AccountGetRes struct {
 	Account    *authenticator.Account `json:"account"`
-	Workspaces []entities.Workspace   `json:"workspaces"`
-}
+	Workspaces []Workspace            `json:"workspaces"`
+} // @name AccountGetRes
 
 // UseAccountGet
 // @Tags		account
@@ -29,7 +28,7 @@ func UseAccountGet(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
-		res := &AccountGetRes{Account: acc, Workspaces: make([]entities.Workspace, 0)}
+		res := &AccountGetRes{Account: acc, Workspaces: make([]Workspace, 0)}
 
 		// we don't need to validate input here because we know it must be valid
 		in := &usecase.WorkspaceListIn{AccId: acc.Sub}
@@ -45,8 +44,8 @@ func UseAccountGet(service *portal) gin.HandlerFunc {
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
-		for _, ws := range out.Workspaces {
-			res.Workspaces = append(res.Workspaces, *ws)
+		for _, ws := range out.Data {
+			res.Workspaces = append(res.Workspaces, *ToWorkspace(&ws))
 		}
 
 		ginctx.JSON(http.StatusOK, res)

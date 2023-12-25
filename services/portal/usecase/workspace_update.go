@@ -8,13 +8,15 @@ import (
 )
 
 type WorkspaceUpdateIn struct {
-	Id   string
-	Name string
+	AccId string
+	Id    string
+	Name  string
 }
 
 func (in *WorkspaceUpdateIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.StringRequired("acc_id", in.AccId),
 		validator.StringStartsWith("id", in.Id, entities.IdNsWs),
 		validator.StringRequired("name", in.Name),
 	)
@@ -25,8 +27,13 @@ type WorkspaceUpdateOut struct {
 }
 
 func (uc *workspace) Update(ctx context.Context, in *WorkspaceUpdateIn) (*WorkspaceUpdateOut, error) {
+	getout, err := uc.Get(ctx, &WorkspaceGetIn{AccId: in.AccId, Id: in.Id})
+	if err != nil {
+		return nil, err
+	}
+
 	ws, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ws, err := uc.repositories.Workspace().Get(txctx, in.Id)
+		ws, err := uc.repositories.Workspace().Get(txctx, getout.Doc.Id)
 		if err != nil {
 			return nil, err
 		}
