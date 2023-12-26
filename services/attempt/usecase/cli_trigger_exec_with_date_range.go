@@ -2,10 +2,10 @@ package usecase
 
 import (
 	"context"
-	"time"
 
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -18,14 +18,14 @@ type TriggerExecWithDateRangeIn struct {
 	To   int64
 }
 
-func (in *TriggerExecWithDateRangeIn) Validate() error {
+func (in *TriggerExecWithDateRangeIn) Validate(timer timer.Timer) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("app_id", in.AppId, entities.IdNsApp),
 		validator.NumberGreaterThan("concurrency", in.Concurrency, 0),
 		validator.NumberGreaterThan("arrange_delay", in.ArrangeDelay, 60000),
 		validator.NumberLessThan("from", in.From, in.To),
-		validator.NumberLessThanOrEqual("from", in.To, time.Now().UTC().UnixMilli()),
+		validator.NumberLessThanOrEqual("from", in.To, timer.Now().UnixMilli()),
 	)
 }
 

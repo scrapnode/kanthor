@@ -46,6 +46,6 @@ func (client *client) read(name string) (int64, error) {
 	}
 
 	prev := int64(binary.BigEndian.Uint64(data))
-	now := time.Now().UTC().UnixMilli()
+	now := time.Now().UnixMilli()
 	return now - prev, nil
 }

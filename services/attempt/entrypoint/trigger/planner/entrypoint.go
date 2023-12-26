@@ -134,7 +134,7 @@ func (service *planner) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	} else {
-		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(time.Now().UTC()).Format(time.RFC3339))
+		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(service.infra.Timer.Now().UTC()).Format(time.RFC3339))
 	}
 
 	// on dev environment, should run the job immediately after we starting the service

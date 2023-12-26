@@ -58,6 +58,8 @@ infrastructure:
         headers:
           - Content-Type
           - User-Agent
+          - Cookie
+          - X-Session-Token
     - engine: ask
       ask:
         access_key: admin@kanthorlabs.com

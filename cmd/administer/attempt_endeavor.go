@@ -80,7 +80,7 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 			repos := repositories.New(logger, db, ds)
 			uc := usecase.New(conf, logger, infra, repos)
 
-			ch := repos.Datastore().Attempt().Scan(ctx, *from, *to, time.Now().UTC().UnixMilli(), concurrency)
+			ch := repos.Datastore().Attempt().Scan(ctx, *from, *to, time.Now().UnixMilli(), concurrency)
 			for r := range ch {
 				if r.Error != nil {
 					return r.Error

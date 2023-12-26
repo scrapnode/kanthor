@@ -75,7 +75,7 @@ func UseMessageCreate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 			return
 		}
 
-		out, err := uc.Message().Put(ctx, in)
+		out, err := uc.Message().Create(ctx, in)
 		if err != nil {
 			logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))

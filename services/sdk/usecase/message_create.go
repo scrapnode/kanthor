@@ -39,7 +39,7 @@ type MessageCreateOut struct {
 	Message *entities.Message
 }
 
-func (uc *message) Put(ctx context.Context, in *MessageCreateIn) (*MessageCreateOut, error) {
+func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCreateOut, error) {
 	key := CacheKeyApp(in.WsId, in.AppId)
 	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
 		return uc.repositories.Application().Get(ctx, in.WsId, in.AppId)

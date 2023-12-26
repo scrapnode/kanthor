@@ -77,6 +77,10 @@ func (h Header) FromHTTP(headers http.Header) {
 }
 
 func (h Header) String() string {
+	if h == nil {
+		return ""
+	}
+
 	data, _ := json.Marshal(h)
 	return string(data)
 }

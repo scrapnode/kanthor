@@ -140,7 +140,7 @@ func (service *planner) Run(ctx context.Context) error {
 		service.logger.Debug("starting immediately because of development env")
 		service.cron.Entry(id).Job.Run()
 	} else {
-		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(time.Now().UTC()).Format(time.RFC3339))
+		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(service.infra.Timer.Now().UTC()).Format(time.RFC3339))
 	}
 
 	if err := service.readiness(); err != nil {

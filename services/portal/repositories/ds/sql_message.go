@@ -18,7 +18,13 @@ func (sql *SqlMessage) List(ctx context.Context, appId string, query *entities.S
 
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Where(fmt.Sprintf(`"%s"."app_id" = ?`, doc.TableName()), appId).
-		Order(fmt.Sprintf(`"%s"."app_id" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName()))
+		Order(fmt.Sprintf(`"%s"."app_id" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName())).
+		Select([]string{
+			fmt.Sprintf(`"%s"."id"`, doc.TableName()),
+			fmt.Sprintf(`"%s"."timestamp"`, doc.TableName()),
+			fmt.Sprintf(`"%s"."app_id"`, doc.TableName()),
+			fmt.Sprintf(`"%s"."type"`, doc.TableName()),
+		})
 
 	tx = datastore.SqlApplyScanQuery(tx, entities.IdNsMsg, "id", query)
 

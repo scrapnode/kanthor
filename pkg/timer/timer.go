@@ -21,5 +21,5 @@ func (t *timer) Now() time.Time {
 
 // Now return current UTC time from milliseconds
 func (t *timer) UnixMilli(msec int64) time.Time {
-	return time.UnixMilli(msec).UTC()
+	return time.UnixMilli(msec)
 }

@@ -49,6 +49,6 @@ func Handler(service *planner, schedule *cron.SpecSchedule) func() {
 		}
 
 		service.logger.Infow("planned attempt endeavors", "count", len(out.Success), "from", out.From.Format(time.RFC3339), "to", out.To.Format(time.RFC3339))
-		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(time.Now().UTC()).Format(time.RFC3339))
+		service.logger.Infow("waiting for next schedule", "next_scheule", schedule.Next(service.infra.Timer.Now().UTC()).Format(time.RFC3339))
 	}
 }

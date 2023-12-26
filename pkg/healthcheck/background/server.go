@@ -39,7 +39,7 @@ func (server *server) Connect(ctx context.Context) error {
 }
 
 func (server *server) Disconnect(ctx context.Context) error {
-	server.terminated <- time.Now().UTC().UnixMilli()
+	server.terminated <- time.Now().UnixMilli()
 	server.logger.Info("HEALTHCHECK.BACKGROUND.SERVER.DISCONNECTED")
 	return nil
 }
@@ -108,7 +108,7 @@ func (server *server) check(name string, conf *healthcheck.CheckConfig, check fu
 
 func (server *server) write(name string) error {
 	data := make([]byte, 8)
-	binary.BigEndian.PutUint64(data, uint64(time.Now().UTC().UnixMilli()))
+	binary.BigEndian.PutUint64(data, uint64(time.Now().UnixMilli()))
 
 	file := fmt.Sprintf("%s.%s", server.dest, name)
 	return os.WriteFile(file, data, os.ModePerm)

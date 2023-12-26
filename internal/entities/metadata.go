@@ -30,6 +30,10 @@ func (meta Metadata) Merge(src map[string]string) {
 }
 
 func (meta Metadata) String() string {
+	if meta == nil {
+		return ""
+	}
+
 	data, _ := json.Marshal(meta)
 	return string(data)
 }

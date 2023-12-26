@@ -36,17 +36,18 @@ func PagingQueryFromGatewayQuery(query *gateway.Query) *PagingQuery {
 }
 
 type ScanningQuery struct {
-	Limit int
-	From  time.Time
-	To    time.Time
+	Search string
+	Limit  int
+	From   time.Time
+	To     time.Time
 }
 
 func (q *ScanningQuery) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.StringLenIfNotEmpty("search", q.Search, 27, 100),
 		validator.NumberInRange("limit", q.Limit, 5, 100),
 		validator.NumberGreaterThan("start", q.From.UnixMilli(), 0),
-		validator.NumberGreaterThan("end", q.To.UnixMilli(), q.From.UnixMilli()),
 	)
 }
 
@@ -55,5 +56,15 @@ func ScanningQueryFromGatewayQuery(query *gateway.Query, timer timer.Timer) *Sca
 		return &ScanningQuery{}
 	}
 
-	return &ScanningQuery{Limit: query.Limit, From: timer.UnixMilli(query.Start), To: timer.UnixMilli(query.End)}
+	q := &ScanningQuery{
+		Search: query.Search,
+		Limit:  query.Limit,
+		From:   timer.UnixMilli(query.Start),
+		To:     timer.Now(),
+	}
+	if query.End > 0 {
+		q.To = timer.UnixMilli(query.End)
+	}
+
+	return q
 }
