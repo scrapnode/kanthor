@@ -1,7 +1,10 @@
 package entities
 
 import (
+	"time"
+
 	"github.com/scrapnode/kanthor/gateway"
+	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
@@ -34,23 +37,23 @@ func PagingQueryFromGatewayQuery(query *gateway.Query) *PagingQuery {
 
 type ScanningQuery struct {
 	Limit int
-	Start int64
-	End   int64
+	From  time.Time
+	To    time.Time
 }
 
 func (q *ScanningQuery) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberInRange("limit", q.Limit, 5, 100),
-		validator.NumberGreaterThan("start", q.Start, 0),
-		validator.NumberGreaterThan("end", q.End, q.Start),
+		validator.NumberGreaterThan("start", q.From.UnixMilli(), 0),
+		validator.NumberGreaterThan("end", q.To.UnixMilli(), q.From.UnixMilli()),
 	)
 }
 
-func ScanningQueryFromGatewayQuery(query *gateway.Query) *ScanningQuery {
+func ScanningQueryFromGatewayQuery(query *gateway.Query, timer timer.Timer) *ScanningQuery {
 	if query == nil {
 		return &ScanningQuery{}
 	}
 
-	return &ScanningQuery{Limit: query.Limit, Start: query.Start, End: query.End}
+	return &ScanningQuery{Limit: query.Limit, From: timer.UnixMilli(query.Start), To: timer.UnixMilli(query.End)}
 }

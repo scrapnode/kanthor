@@ -44,7 +44,7 @@ func UseMessageList(service *portal) gin.HandlerFunc {
 
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 		in := &usecase.MessageListIn{
-			ScanningQuery: entities.ScanningQueryFromGatewayQuery(req.Query),
+			ScanningQuery: entities.ScanningQueryFromGatewayQuery(req.Query, service.infra.Timer),
 			WsId:          ws.Id,
 			AppId:         req.AppId,
 		}

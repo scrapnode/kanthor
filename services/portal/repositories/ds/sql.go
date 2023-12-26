@@ -5,19 +5,17 @@ import (
 
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/logging"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 )
 
-func NewSql(logger logging.Logger, ds datastore.Datastore, timer timer.Timer) Datastore {
+func NewSql(logger logging.Logger, ds datastore.Datastore) Datastore {
 	logger = logger.With("repositories", "datastore.sql")
-	return &sql{logger: logger, ds: ds, timer: timer}
+	return &sql{logger: logger, ds: ds}
 }
 
 type sql struct {
 	logger logging.Logger
 	ds     datastore.Datastore
-	timer  timer.Timer
 
 	message *SqlMessage
 
@@ -29,7 +27,7 @@ func (repo *sql) Message() Message {
 	defer repo.mu.Unlock()
 
 	if repo.message == nil {
-		repo.message = &SqlMessage{client: repo.ds.Client().(*gorm.DB), timer: repo.timer}
+		repo.message = &SqlMessage{client: repo.ds.Client().(*gorm.DB)}
 	}
 
 	return repo.message

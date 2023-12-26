@@ -10,7 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/logging"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services/attempt/config"
 	"github.com/scrapnode/kanthor/services/attempt/repositories"
 	"github.com/scrapnode/kanthor/services/attempt/usecase"
@@ -78,7 +77,7 @@ func NewAttemptEndeavor(provider configuration.Provider) *cobra.Command {
 				return err
 			}
 
-			repos := repositories.New(logger, timer.New(), db, ds)
+			repos := repositories.New(logger, db, ds)
 			uc := usecase.New(conf, logger, infra, repos)
 
 			ch := repos.Datastore().Attempt().Scan(ctx, *from, *to, time.Now().UTC().UnixMilli(), concurrency)

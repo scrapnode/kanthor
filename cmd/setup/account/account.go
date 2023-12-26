@@ -9,7 +9,6 @@ import (
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/logging"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/services/portal/config"
 	"github.com/scrapnode/kanthor/services/portal/repositories"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
@@ -77,7 +76,7 @@ func New(provider configuration.Provider) *cobra.Command {
 				return err
 			}
 
-			repos := repositories.New(logger, timer.New(), db, ds)
+			repos := repositories.New(logger, db, ds)
 			uc := usecase.New(conf, logger, infra, repos)
 
 			p := &printing{json: map[string]any{}}

@@ -6,13 +6,11 @@ import (
 
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 )
 
 type SqlMessage struct {
 	client *gorm.DB
-	timer  timer.Timer
 }
 
 func (sql *SqlMessage) List(ctx context.Context, appId string, query *entities.ScanningQuery) ([]entities.Message, error) {
@@ -22,7 +20,7 @@ func (sql *SqlMessage) List(ctx context.Context, appId string, query *entities.S
 		Where(fmt.Sprintf(`"%s"."app_id" = ?`, doc.TableName()), appId).
 		Order(fmt.Sprintf(`"%s"."app_id" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName()))
 
-	tx = datastore.SqlApplyScanQuery(tx, sql.timer, entities.IdNsMsg, "id", query)
+	tx = datastore.SqlApplyScanQuery(tx, entities.IdNsMsg, "id", query)
 
 	var docs []entities.Message
 	if tx = tx.Find(&docs); tx.Error != nil {

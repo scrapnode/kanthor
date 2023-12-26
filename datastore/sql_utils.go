@@ -6,15 +6,12 @@ import (
 
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/suid"
-	"github.com/scrapnode/kanthor/pkg/timer"
 	"gorm.io/gorm"
 )
 
-func SqlApplyScanQuery(tx *gorm.DB, timer timer.Timer, ns, prop string, query *entities.ScanningQuery) *gorm.DB {
-	from := timer.UnixMilli(query.Start)
-	to := timer.UnixMilli(query.End)
-	low := suid.Id(ns, suid.BeforeTime(from))
-	high := suid.Id(ns, suid.AfterTime(to))
+func SqlApplyScanQuery(tx *gorm.DB, ns, prop string, query *entities.ScanningQuery) *gorm.DB {
+	low := suid.Id(ns, suid.BeforeTime(query.From))
+	high := suid.Id(ns, suid.AfterTime(query.To))
 
 	return tx.
 		Where(fmt.Sprintf(`%s > ?`, prop), low).

@@ -52,17 +52,17 @@ infrastructure:
     time_to_live: 43200000 # 12h
 
   authenticators:
-    - engine: ask
-      ask:
-        access_key: admin@kanthorlabs.com
-        secret_key: changemenow
-        # base64(key:secret): basic YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93
     - engine: forward
       forward:
         uri: https://asia-southeast1-scrapnode-iam.cloudfunctions.net/api/auth/jwt/debug
         headers:
           - Content-Type
           - User-Agent
+    - engine: ask
+      ask:
+        access_key: admin@kanthorlabs.com
+        secret_key: changemenow
+        # base64(key:secret): basic YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93
 
   authorizator:
     engine: casbin
