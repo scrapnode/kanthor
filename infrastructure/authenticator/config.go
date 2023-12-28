@@ -5,15 +5,15 @@ import (
 )
 
 type Config struct {
-	Engine  string   `json:"engine" yaml:"engine" mapstructure:"engine"`
-	Ask     *Ask     `json:"ask" yaml:"ask" mapstructure:"ask"`
-	Forward *Forward `json:"forward" yaml:"forward" mapstructure:"forward"`
+	Engine   string    `json:"engine" yaml:"engine" mapstructure:"engine"`
+	Ask      *Ask      `json:"ask" yaml:"ask" mapstructure:"ask"`
+	External *External `json:"external" yaml:"external" mapstructure:"external"`
 }
 
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringOneOf("AUTHENTICATOR.SCHEME", conf.Engine, []string{EngineAsk, EngineForward}),
+		validator.StringOneOf("AUTHENTICATOR.SCHEME", conf.Engine, []string{EngineAsk, EngineExternal}),
 	)
 	if err != nil {
 		return err
@@ -23,8 +23,8 @@ func (conf *Config) Validate() error {
 		return conf.Ask.Validate()
 	}
 
-	if conf.Engine == EngineForward {
-		return conf.Forward.Validate()
+	if conf.Engine == EngineExternal {
+		return conf.External.Validate()
 	}
 
 	return nil
@@ -43,14 +43,15 @@ func (conf *Ask) Validate() error {
 	)
 }
 
-type Forward struct {
-	Uri     string   `json:"uri" yaml:"uri" mapstructure:"uri"`
-	Headers []string `json:"headers" yaml:"headers" mapstructure:"headers"`
+type External struct {
+	Uri     string            `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Headers []string          `json:"headers" yaml:"headers" mapstructure:"headers"`
+	Mapper  map[string]string `json:"mapper" yaml:"mapper" mapstructure:"mapper"`
 }
 
-func (conf *Forward) Validate() error {
+func (conf *External) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("AUTHENTICATOR.FORWARD.URI", conf.Uri),
+		validator.StringUri("AUTHENTICATOR.EXTERNAL.URI", conf.Uri),
 	)
 }

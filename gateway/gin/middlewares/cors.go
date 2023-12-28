@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"net/url"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -9,8 +10,18 @@ import (
 
 func UseCors() gin.HandlerFunc {
 	return cors.New(cors.Config{
-		AllowAllOrigins:  true,
-		AllowCredentials: false,
+		AllowOriginFunc: func(origin string) bool {
+			u, err := url.Parse(origin)
+			if err != nil {
+				return false
+			}
+			if u.Hostname() == "localhost" {
+				return true
+			}
+
+			return false
+		},
+		AllowCredentials: true,
 		AllowMethods: []string{
 			"GET",
 			"POST",

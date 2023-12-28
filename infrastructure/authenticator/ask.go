@@ -4,8 +4,8 @@ import "context"
 
 var EngineAsk = "ask"
 
-func NewAsk(conf *Ask) Verifier {
-	return &ask{conf: conf}
+func NewAsk(conf *Ask) (Verifier, error) {
+	return &ask{conf: conf}, nil
 }
 
 type ask struct {

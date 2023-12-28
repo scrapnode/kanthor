@@ -35,11 +35,19 @@ func New(conf []Config, logger logging.Logger, send sender.Send, cb circuitbreak
 
 	for _, c := range conf {
 		if c.Engine == EngineAsk {
-			instance.Register(c.Engine, NewAsk(c.Ask))
+			ask, err := NewAsk(c.Ask)
+			if err != nil {
+				return nil, err
+			}
+			instance.Register(c.Engine, ask)
 		}
 
-		if c.Engine == EngineForward {
-			instance.Register(c.Engine, NewForward(c.Forward, logger, send, cb))
+		if c.Engine == EngineExternal {
+			external, err := NewExternal(c.External, logger, send, cb)
+			if err != nil {
+				return nil, err
+			}
+			instance.Register(c.Engine, external)
 		}
 	}
 

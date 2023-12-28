@@ -18,21 +18,16 @@ datastore:
   uri: *postgres_uri
   migration:
     source: file://./data/migration/datastore/sql
- 
+
 # infrastructure
 infrastructure:
-  cryptography:
-    kdf: {}
-    symmetric:
-      key: b16142af34f3235bf221f1f620bf59d1 # md5 hash of kanthor_root_key
-
   sender:
     trace: true
     timeout: 5000 # 5s
     retry:
       count: 1
       wait_time: 100 # 100ms
-      
+
   circuit_breaker:
     close:
       cleanup_interval: 600000 # 10m
@@ -56,12 +51,27 @@ infrastructure:
     uri: *redis_uri
     time_to_live: 43200000 # 12h
 
+  authenticators:
+    - engine: external
+      external:
+        uri: http://localhost:4000/sessions/whoami
+        headers:
+          - Content-Type
+          - User-Agent
+          - Cookie
+          - X-Session-Token
+    - engine: ask
+      ask:
+        access_key: admin@kanthorlabs.com
+        secret_key: changemenow
+        # base64(key:secret): basic YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93
+
   authorizator:
     engine: casbin
     casbin:
       model_uri: file://./data/authorizator/casbin_rbac_model.conf
       policy_uri: *postgres_uri
-      watcher: 
+      watcher:
         uri: *nats_uri
 
   metric:
@@ -89,19 +99,12 @@ sdk:
   gateway:
     addr: :8180
     timeout: 60000
-  # the sdk has internal authenticator
 
 portal:
   gateway:
     addr: :8280
     timeout: 60000
-  authenticator:
-    engine: ask
-    ask:
-      access_key: kanthor_root_key
-      secret_key: kanthor_root_password
-      # base64(access_key:secret_key): a2FudGhvcl9yb290X2tleTprYW50aG9yX3Jvb3RfcGFzc3dvcmQ=
-      
+
 scheduler:
   request:
     schedule:
