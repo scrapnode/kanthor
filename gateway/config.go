@@ -7,8 +7,9 @@ import (
 const EngineHttpx = "httpx"
 
 type Config struct {
-	Addr    string `json:"addr" yaml:"addr"`
-	Timeout int64  `json:"timeout" yaml:"timeout"`
+	Addr    string   `json:"addr" yaml:"addr"`
+	Timeout int64    `json:"timeout" yaml:"timeout"`
+	Origins []string `json:"origins" yaml:"origins"`
 }
 
 func (conf *Config) Validate(prefix string) error {
@@ -19,5 +20,6 @@ func (conf *Config) Validate(prefix string) error {
 		validator.DefaultConfig,
 		validator.StringRequired(prefix+"GATEWAY.ADDR", conf.Addr),
 		validator.NumberGreaterThanOrEqual(prefix+"GATEWAY.TIMEOUT", conf.Timeout, 1000),
+		validator.SliceRequired(prefix+"GATEWAY.ORIGINS", conf.Origins),
 	)
 }

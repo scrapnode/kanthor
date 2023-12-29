@@ -84,7 +84,7 @@ func (service *sdk) Start(ctx context.Context) error {
 func (service *sdk) router() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(middlewares.UseCors())
+	router.Use(middlewares.UseCors(service.conf.Gateway.Origins))
 	// system routes
 	RegisterHealthcheck(router, service)
 

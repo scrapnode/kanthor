@@ -91,7 +91,7 @@ func (service *portal) Start(ctx context.Context) error {
 func (service *portal) router() (*gin.Engine, error) {
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(middlewares.UseCors())
+	router.Use(middlewares.UseCors(service.conf.Gateway.Origins))
 	// system routes
 	RegisterHealthcheck(router, service)
 

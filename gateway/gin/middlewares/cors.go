@@ -1,26 +1,15 @@
 package middlewares
 
 import (
-	"net/url"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func UseCors() gin.HandlerFunc {
+func UseCors(origins []string) gin.HandlerFunc {
 	return cors.New(cors.Config{
-		AllowOriginFunc: func(origin string) bool {
-			u, err := url.Parse(origin)
-			if err != nil {
-				return false
-			}
-			if u.Hostname() == "localhost" {
-				return true
-			}
-
-			return false
-		},
+		AllowOrigins:     origins,
 		AllowCredentials: true,
 		AllowMethods: []string{
 			"GET",
