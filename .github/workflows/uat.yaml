@@ -86,8 +86,6 @@ jobs:
 
       - name: Push to AWS ECR
         run: |
-          docker build --platform linux/amd64 --progress=plain -t kanthorlabs/base:latest docker/base
-
           docker build . --tag ${{ secrets.ECR_USERNAME }}/kanthor:${{ needs.prepare.outputs.BUILD_ID }}
           docker push ${{ secrets.ECR_USERNAME }}/kanthor:${{ needs.prepare.outputs.BUILD_ID }}
 
