@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/database/config"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
-	postgresdevier "gorm.io/driver/postgres"
+	postgresdriver "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -79,7 +79,7 @@ func (db *sql) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	dialector := postgresdevier.Open(db.conf.Uri)
+	dialector := postgresdriver.Open(db.conf.Uri)
 	client, err := gorm.Open(dialector, &gorm.Config{
 		Logger: NewSqlLogger(db.logger),
 	})

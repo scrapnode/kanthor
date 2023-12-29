@@ -29,6 +29,7 @@ func StringStartsWithIfNotEmpty(prop, value, prefix string) Fn {
 		return nil
 	}
 }
+
 func StringStartsWith(prop, value, prefix string) Fn {
 	return func() error {
 		if err := StringRequired(prop, value)(); err != nil {
@@ -38,6 +39,17 @@ func StringStartsWith(prop, value, prefix string) Fn {
 			return err
 		}
 		return nil
+	}
+}
+
+func StringStartsWithOneOf(prop, value string, prefixes []string) Fn {
+	return func() error {
+		for i := range prefixes {
+			if err := StringStartsWithIfNotEmpty(prop, value, prefixes[i])(); err == nil {
+				return nil
+			}
+		}
+		return fmt.Errorf("%s (value:%s) prefix must be started with one of %s", prop, value, prefixes)
 	}
 }
 

@@ -10,6 +10,7 @@ require (
 	github.com/go-redsync/redsync/v4 v4.9.4
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golang-migrate/migrate/v4 v4.16.1
+	github.com/google/go-jsonnet v0.20.0
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
@@ -28,8 +29,6 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.1
-	github.com/tidwall/gjson v1.17.0
-	github.com/tidwall/sjson v1.2.5
 	go.opentelemetry.io/otel v1.17.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.40.0
 	go.opentelemetry.io/otel/sdk v1.17.0
@@ -102,8 +101,6 @@ require (
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.40.0 // indirect
@@ -131,4 +128,5 @@ require (
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.20.3 // indirect
+	sigs.k8s.io/yaml v1.3.0 // indirect
 )

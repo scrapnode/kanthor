@@ -52,17 +52,6 @@ infrastructure:
     time_to_live: 43200000 # 12h
 
   authenticators:
-    - engine: external
-      external:
-        uri: http://localhost:4000/sessions/whoami
-        headers:
-          - Content-Type
-          - User-Agent
-          - Cookie
-          - X-Session-Token
-        mapper:
-          "sub": "identity.id"
-          "name": "identity.traits.username"
     - engine: ask
       ask:
         access_key: admin@kanthorlabs.com

@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/datastore/config"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
-	postgresdevier "gorm.io/driver/postgres"
+	postgresdriver "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -76,7 +76,7 @@ func (ds *sql) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	dialector := postgresdevier.Open(ds.conf.Uri)
+	dialector := postgresdriver.Open(ds.conf.Uri)
 	client, err := gorm.Open(dialector, &gorm.Config{
 		// GORM perform write (create/update/delete) operations run inside a transaction to ensure data consistency,
 		// you can disable it during initialization if it is not required,

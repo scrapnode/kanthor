@@ -44,14 +44,37 @@ func (conf *Ask) Validate() error {
 }
 
 type External struct {
-	Uri     string            `json:"uri" yaml:"uri" mapstructure:"uri"`
-	Headers []string          `json:"headers" yaml:"headers" mapstructure:"headers"`
-	Mapper  map[string]string `json:"mapper" yaml:"mapper" mapstructure:"mapper"`
+	Uri     string          `json:"uri" yaml:"uri" mapstructure:"uri"`
+	Headers []string        `json:"headers" yaml:"headers" mapstructure:"headers"`
+	Mapper  *ExternalMapper `json:"mapper" yaml:"mapper" mapstructure:"mapper"`
 }
 
 func (conf *External) Validate() error {
-	return validator.Validate(
+	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.StringUri("AUTHENTICATOR.EXTERNAL.URI", conf.Uri),
+	)
+	if err != nil {
+		return err
+	}
+
+	if conf.Mapper != nil {
+		if err := conf.Mapper.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type ExternalMapper struct {
+	Uri string `json:"uri" yaml:"uri" mapstructure:"uri"`
+}
+
+func (conf *ExternalMapper) Validate() error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringUri("AUTHENTICATOR.EXTERNAL.MAPPER.URI", conf.Uri),
+		validator.StringStartsWithOneOf("AUTHENTICATOR.EXTERNAL.MAPPER.URI", conf.Uri, []string{"base64"}),
 	)
 }

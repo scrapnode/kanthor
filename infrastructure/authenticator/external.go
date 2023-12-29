@@ -2,14 +2,15 @@ package authenticator
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"net/url"
 
+	"github.com/google/go-jsonnet"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/logging"
-	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
 )
 
 var EngineExternal = "external"
@@ -61,20 +62,27 @@ func (verifier *external) parse(response []byte) (*Account, error) {
 	acc := &Account{}
 
 	// use mapper if we configured it
-	if len(verifier.conf.Mapper) > 0 {
-		var strresp = string(response)
-		var snippet = "{}"
-		var err error
+	if verifier.conf.Mapper != nil {
+		vm := jsonnet.MakeVM()
+		vm.ExtCode("session", string(response))
 
-		for target, src := range verifier.conf.Mapper {
-			value := gjson.Get(strresp, src)
-			snippet, err = sjson.Set(snippet, target, value.String())
-			if err != nil {
-				return nil, err
-			}
+		// @TODO: parse this block once
+		r, err := url.Parse(verifier.conf.Mapper.Uri)
+		if err != nil {
+			return nil, err
+		}
+		snippet, err := base64.StdEncoding.DecodeString(r.Host)
+		if err != nil {
+			return nil, err
 		}
 
-		if err := json.Unmarshal([]byte(snippet), acc); err != nil {
+		j, err := vm.EvaluateAnonymousSnippet("default.jsonnet", string(snippet))
+		if err != nil {
+			return nil, err
+		}
+
+		// try to map the account directly
+		if err := json.Unmarshal([]byte(j), acc); err != nil {
 			return nil, err
 		}
 	} else {
@@ -82,7 +90,6 @@ func (verifier *external) parse(response []byte) (*Account, error) {
 		if err := json.Unmarshal(response, acc); err != nil {
 			return nil, err
 		}
-
 	}
 
 	if err := acc.Validate(); err != nil {

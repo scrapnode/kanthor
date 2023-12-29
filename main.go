@@ -10,8 +10,6 @@ import (
 	"github.com/scrapnode/kanthor/project"
 )
 
-// @TODO: set version for project package
-//
 //go:embed .version
 var version string
 
