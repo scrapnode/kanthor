@@ -64,6 +64,63 @@ definitions:
           $ref: '#/definitions/Message'
         type: array
     type: object
+  Request:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      ep_id:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      method:
+        type: string
+      msg_id:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+      uri:
+        type: string
+    type: object
+  RequestGetRes:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      ep_id:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      method:
+        type: string
+      msg_id:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+      uri:
+        type: string
+    type: object
+  RequestListRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/Request'
+        type: array
+    type: object
   Workspace:
     properties:
       created_at:
@@ -503,6 +560,70 @@ paths:
       - WorkspaceId: []
       tags:
       - message
+  /request:
+    get:
+      parameters:
+      - description: epndpoint id
+        in: query
+        name: ep_id
+        required: true
+        type: string
+      - default: 10
+        description: limit returning records
+        in: query
+        name: _limit
+        type: integer
+      - description: starting time to scan in milliseconds
+        example: 1669914060000
+        in: query
+        name: _start
+        type: integer
+      - description: ending time to scan in milliseconds
+        example: 1985533260000
+        in: query
+        name: _end
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/RequestListRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - request
+  /request/{id}:
+    get:
+      parameters:
+      - description: epndpoint id
+        in: query
+        name: ep_id
+        required: true
+        type: string
+      - description: msg id
+        in: query
+        name: msg_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/RequestGetRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - request
   /workspace:
     get:
       responses:

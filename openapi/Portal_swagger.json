@@ -423,6 +423,110 @@
                 }
             }
         },
+        "/request": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "request"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "epndpoint id",
+                        "name": "ep_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "limit returning records",
+                        "name": "_limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1669914060000,
+                        "description": "starting time to scan in milliseconds",
+                        "name": "_start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1985533260000,
+                        "description": "ending time to scan in milliseconds",
+                        "name": "_end",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/RequestListRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/request/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "request"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "epndpoint id",
+                        "name": "ep_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "msg id",
+                        "name": "msg_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/RequestGetRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/workspace": {
             "get": {
                 "security": [
@@ -655,6 +759,93 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/Message"
+                    }
+                }
+            }
+        },
+        "Request": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "msg_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "RequestGetRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "msg_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "RequestListRes": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Request"
                     }
                 }
             }

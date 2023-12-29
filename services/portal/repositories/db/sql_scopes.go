@@ -20,3 +20,15 @@ func UseWsId(wsId, target string) func(db *gorm.DB) *gorm.DB {
 		return db.Joins(join).Where(where, wsId)
 	}
 }
+
+func UseApp(target string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		join := fmt.Sprintf(
+			`JOIN "%s" ON "%s"."id" = "%s"."app_id"`,
+			entities.TableApp,
+			entities.TableApp,
+			target,
+		)
+		return db.Joins(join)
+	}
+}

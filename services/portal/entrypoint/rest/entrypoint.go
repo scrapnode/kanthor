@@ -117,6 +117,7 @@ func (service *portal) router() (*gin.Engine, error) {
 		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
 		RegisterWorkspaceCredentialsRoutes(api.Group("/credentials"), service)
 		RegisterMessageRoutes(api.Group("/message"), service)
+		RegisterRequestRoutes(api.Group("/request"), service)
 	}
 
 	return router, nil

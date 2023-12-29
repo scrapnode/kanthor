@@ -7,8 +7,8 @@ import (
 type Request struct {
 	TSEntity
 
-	MsgId string
 	EpId  string
+	MsgId string
 
 	Tier     string
 	AppId    string

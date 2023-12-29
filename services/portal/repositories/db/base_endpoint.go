@@ -8,6 +8,7 @@ import (
 
 type Endpoint interface {
 	BulkCreate(ctx context.Context, docs []entities.Endpoint) ([]string, error)
+	Get(ctx context.Context, wsId, id string) (*entities.Endpoint, error)
 }
 
 type EndpointRule interface {

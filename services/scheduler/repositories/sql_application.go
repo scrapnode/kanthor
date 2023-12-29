@@ -13,10 +13,11 @@ type SqlApplication struct {
 }
 
 func (sql *SqlApplication) Get(ctx context.Context, id string) (*entities.Application, error) {
-	var app entities.Application
-	if tx := sql.client.Model(&app).Where("id = ?", id).First(&app); tx.Error != nil {
+	doc := &entities.Application{}
+	doc.Id = id
+	if tx := sql.client.Model(doc).Where("id = ?", id).First(doc); tx.Error != nil {
 		return nil, fmt.Errorf("application.get: %w", tx.Error)
 	}
 
-	return &app, nil
+	return doc, nil
 }

@@ -11,29 +11,29 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
-type MessageListReq struct {
+type RequestListReq struct {
 	*gateway.Query
-	AppId string `json:"app_id" form:"app_id"`
-} // @name MessageListReq
+	EpId string `json:"ep_id" form:"ep_id"`
+} // @name RequestListReq
 
-type MessageListRes struct {
-	Data []Message `json:"data"`
-} // @name MessageListRes
+type RequestListRes struct {
+	Data []Request `json:"data"`
+} // @name RequestListRes
 
-// UseMessageList
-// @Tags		message
-// @Router		/message		[get]
-// @Param		app_id			query		string			true	"application id"
+// UseRequestList
+// @Tags		request
+// @Router		/request		[get]
+// @Param		ep_id			query		string			true	"epndpoint id"
 // @Param		_limit			query		int				false	"limit returning records" 	default(10)
 // @Param		_start			query		int64			false	"starting time to scan in milliseconds" example(1669914060000)
 // @Param		_end			query		int64			false	"ending time to scan in milliseconds" 	example(1985533260000)
-// @Success		200				{object}	MessageListRes
+// @Success		200				{object}	RequestListRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization
 // @Security	WorkspaceId
-func UseMessageList(service *portal) gin.HandlerFunc {
+func UseRequestList(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
-		var req MessageListReq
+		var req RequestListReq
 		if err := ginctx.BindQuery(&req); err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("unable to parse your request query"))
@@ -43,10 +43,10 @@ func UseMessageList(service *portal) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
-		in := &usecase.MessageListIn{
+		in := &usecase.RequestListIn{
 			ScanningQuery: entities.ScanningQueryFromGatewayQuery(req.Query, service.infra.Timer),
 			WsId:          ws.Id,
-			AppId:         req.AppId,
+			EpId:          req.EpId,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
@@ -54,16 +54,16 @@ func UseMessageList(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		out, err := service.uc.Message().List(ctx, in)
+		out, err := service.uc.Request().List(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &MessageListRes{Data: make([]Message, 0)}
+		res := &RequestListRes{Data: make([]Request, 0)}
 		for _, ws := range out.Data {
-			res.Data = append(res.Data, *ToMessage(&ws))
+			res.Data = append(res.Data, *ToRequest(&ws))
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/internal/entities"
@@ -28,4 +29,20 @@ func (sql *SqlEndpoint) BulkCreate(ctx context.Context, docs []entities.Endpoint
 		return nil, tx.Error
 	}
 	return ids, nil
+}
+
+func (sql *SqlEndpoint) Get(ctx context.Context, wsId, id string) (*entities.Endpoint, error) {
+	doc := &entities.Endpoint{}
+	doc.Id = id
+
+	transaction := database.SqlTxnFromContext(ctx, sql.client)
+	tx := transaction.WithContext(ctx).Model(&doc).
+		Scopes(UseApp(doc.TableName()), UseWsId(wsId, entities.TableApp)).
+		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		First(doc)
+	if tx.Error != nil {
+		return nil, database.SqlError(tx.Error)
+	}
+
+	return doc, nil
 }

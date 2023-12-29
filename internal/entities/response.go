@@ -9,8 +9,8 @@ import (
 type Response struct {
 	TSEntity
 
-	MsgId string
 	EpId  string
+	MsgId string
 	ReqId string
 
 	Tier     string

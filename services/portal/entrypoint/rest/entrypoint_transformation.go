@@ -66,3 +66,36 @@ func ToMessage(doc *entities.Message) *Message {
 		Body:      doc.Body,
 	}
 }
+
+type Request struct {
+	Id        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
+
+	EpId  string `json:"ep_id"`
+	MsgId string `json:"msg_id"`
+
+	AppId    string `json:"app_id"`
+	Type     string `json:"type"`
+	Metadata string `json:"metadata"`
+
+	Headers string `json:"headers"`
+	Body    string `json:"body"`
+	Uri     string `json:"uri"`
+	Method  string `json:"method"`
+} // @name Request
+
+func ToRequest(doc *entities.Request) *Request {
+	return &Request{
+		Id:        doc.Id,
+		Timestamp: doc.Timestamp,
+		EpId:      doc.EpId,
+		MsgId:     doc.MsgId,
+		AppId:     doc.AppId,
+		Type:      doc.Type,
+		Metadata:  doc.Metadata.String(),
+		Headers:   doc.Headers.String(),
+		Body:      doc.Body,
+		Uri:       doc.Uri,
+		Method:    doc.Method,
+	}
+}
