@@ -24,6 +24,7 @@ func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[str
 		if ignore, ok := seen[epr.EpId]; ok && ignore {
 			continue
 		}
+		seen[epr.EpId] = false
 
 		log := []interface{}{
 			"msg_id", msg.Id,
@@ -57,15 +58,15 @@ func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[str
 			continue
 		}
 
-		if !matched {
-			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.NOT_MATCHED"}, log...))
-			seen[epr.EpId] = false
+		if matched {
+			ep := assets.EndpointMap[epr.EpId]
+			req := Request(msg, &ep, &epr, timer)
+			requests[req.Id] = req
+			seen[epr.EpId] = true
 			continue
 		}
 
-		ep := assets.EndpointMap[epr.EpId]
-		req := Request(msg, &ep, &epr, timer)
-		requests[req.Id] = req
+		logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.NOT_MATCHED"}, log...))
 	}
 
 	return requests, logs
