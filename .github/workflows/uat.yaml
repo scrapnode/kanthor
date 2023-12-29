@@ -63,9 +63,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: prebuild base image
-        run: docker build --platform linux/amd64 --progress=plain -t kanthorlabs/base:latest docker/base
-
       - uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
@@ -90,7 +87,7 @@ jobs:
       - name: Push to AWS ECR
         run: |
           docker build --platform linux/amd64 --progress=plain -t kanthorlabs/base:latest docker/base
-          
+
           docker build . --tag ${{ secrets.ECR_USERNAME }}/kanthor:${{ needs.prepare.outputs.BUILD_ID }}
           docker push ${{ secrets.ECR_USERNAME }}/kanthor:${{ needs.prepare.outputs.BUILD_ID }}
 
