@@ -47,7 +47,7 @@ func (sql *SqlRequest) Create(ctx context.Context, docs []*entities.Request) ([]
 		tableName := fmt.Sprintf(`"%s"`, entities.TableReq)
 		columns := fmt.Sprintf(`"%s"`, strings.Join(entities.RequestProps, `","`))
 		statement := fmt.Sprintf(
-			"INSERT INTO %s(%s) VALUES %s ON CONFLICT(app_id, msg_id, id) DO NOTHING;",
+			"INSERT INTO %s(%s) VALUES %s ON CONFLICT(ep_id, msg_id, id) DO NOTHING;",
 			tableName,
 			columns,
 			strings.Join(names, ","),
