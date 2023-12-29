@@ -1,4 +1,4 @@
-all: ioc swagger swagger_clients
+all: ioc swagger swagger_clients vet
 
 ioc:
 	./scripts/gen_ioc.sh
@@ -8,3 +8,7 @@ swagger:
 
 swagger_clients:
 	./scripts/gen_swagger_clients.sh
+	
+vet:
+	./scripts/ci_vet.sh
+

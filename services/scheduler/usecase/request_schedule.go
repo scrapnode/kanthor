@@ -3,10 +3,8 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/samber/lo"
-	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/assessor"
 	"github.com/scrapnode/kanthor/internal/entities"
@@ -154,10 +152,10 @@ func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Me
 			continue
 		}
 
-		reqs, logs := assessor.Requests(message, app, uc.infra.Timer)
-		if len(logs) > 0 {
-			for _, l := range logs {
-				uc.logger.Warnw(l[0].(string), l[1:]...)
+		reqs, traces := assessor.Requests(message, app, uc.infra.Timer)
+		if len(traces) > 0 {
+			for _, trace := range traces {
+				uc.logger.Warnw(trace[0].(string), trace[1:]...)
 			}
 		}
 		for reqId, req := range reqs {
@@ -179,30 +177,24 @@ func (uc *request) applicables(ctx context.Context, appIds []string) map[string]
 	for _, id := range appIds {
 		appId := id
 		wg.Go(func() {
-			key := utils.Key("scheduler", appId)
-			app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour, func() (*assessor.Assets, error) {
-				endpoints, err := uc.repositories.Endpoint().List(ctx, appId)
-				if err != nil {
-					return nil, err
-				}
-				returning := &assessor.Assets{EndpointMap: map[string]entities.Endpoint{}}
-				for _, ep := range endpoints {
-					returning.EndpointMap[ep.Id] = ep
-				}
-
-				rules, err := uc.repositories.Endpoint().Rules(ctx, appId)
-				if err != nil {
-					return nil, err
-				}
-				returning.Rules = rules
-
-				return returning, nil
-			})
+			endpoints, err := uc.repositories.Endpoint().List(ctx, appId)
 			if err != nil {
 				uc.logger.Errorw("unable to get applicable endpoints", "err", err.Error(), "app_id", appId)
 				return
 			}
-			apps.Set(appId, app)
+			assets := &assessor.Assets{EndpointMap: map[string]entities.Endpoint{}}
+			for _, ep := range endpoints {
+				assets.EndpointMap[ep.Id] = ep
+			}
+
+			rules, err := uc.repositories.Endpoint().Rules(ctx, appId)
+			if err != nil {
+				uc.logger.Errorw("unable to get applicable endpoint rules", "err", err.Error(), "app_id", appId)
+				return
+			}
+			assets.Rules = rules
+
+			apps.Set(appId, assets)
 		})
 	}
 	wg.Wait()

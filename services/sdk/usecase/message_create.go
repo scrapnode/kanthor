@@ -2,9 +2,7 @@ package usecase
 
 import (
 	"context"
-	"time"
 
-	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/internal/transformation"
@@ -40,10 +38,7 @@ type MessageCreateOut struct {
 }
 
 func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCreateOut, error) {
-	key := CacheKeyApp(in.WsId, in.AppId)
-	app, err := cache.Warp(uc.infra.Cache, ctx, key, time.Hour*24, func() (*entities.Application, error) {
-		return uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
-	})
+	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
 	}

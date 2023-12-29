@@ -16,7 +16,7 @@ type Assets struct {
 
 func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[string]*entities.Request, [][]interface{}) {
 	requests := map[string]*entities.Request{}
-	logs := [][]interface{}{}
+	traces := [][]interface{}{}
 	seen := map[string]bool{}
 
 	for _, epr := range assets.Rules {
@@ -26,7 +26,7 @@ func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[str
 		}
 		seen[epr.EpId] = false
 
-		log := []interface{}{
+		trace := []interface{}{
 			"msg_id", msg.Id,
 			"ep_id", epr.EpId,
 			"epr_id", epr.Id,
@@ -36,14 +36,14 @@ func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[str
 
 		check, err := ConditionExpression(&epr)
 		if err != nil {
-			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.CONDITION_EXRESSION.ERROR", "err", err.Error()}, log...))
+			traces = append(traces, append([]interface{}{"ASSESSOR.REQUESTS.RULE.CONDITION_EXRESSION.ERROR", "err", err.Error()}, trace...))
 			// once we got error of evaludation, ignore request scheduling for this endpoint
 			seen[epr.EpId] = true
 			continue
 		}
 		source := ConditionSource(&epr, msg)
 		if source == "" {
-			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.CONDITION_SOURCE.EMPTY"}, log...))
+			traces = append(traces, append([]interface{}{"ASSESSOR.REQUESTS.RULE.CONDITION_SOURCE.EMPTY"}, trace...))
 			// once we got error of evaludation, ignore request scheduling for this endpoint
 			seen[epr.EpId] = true
 			continue
@@ -53,7 +53,7 @@ func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[str
 
 		// once we got exclusionary rule, ignore all other rules of current endpoint
 		if epr.Exclusionary && matched {
-			logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.EXCLUSIONARY"}, log...))
+			traces = append(traces, append([]interface{}{"ASSESSOR.REQUESTS.RULE.EXCLUSIONARY"}, trace...))
 			seen[epr.EpId] = true
 			continue
 		}
@@ -66,10 +66,10 @@ func Requests(msg *entities.Message, assets *Assets, timer timer.Timer) (map[str
 			continue
 		}
 
-		logs = append(logs, append([]interface{}{"ASSESSOR.REQUESTS.RULE.NOT_MATCHED"}, log...))
+		traces = append(traces, append([]interface{}{"ASSESSOR.REQUESTS.RULE.NOT_MATCHED"}, trace...))
 	}
 
-	return requests, logs
+	return requests, traces
 }
 
 func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.EndpointRule, timer timer.Timer) *entities.Request {
