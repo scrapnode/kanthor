@@ -8,7 +8,7 @@ type Application struct {
 	UpdatedAt int64  `json:"updated_at"`
 	WsId      string `json:"ws_id"`
 	Name      string `json:"name"`
-}
+} // @name Application
 
 func ToApplication(doc *entities.Application) *Application {
 	return &Application{
@@ -28,7 +28,7 @@ type Endpoint struct {
 	Name      string `json:"name"`
 	Method    string `json:"method"`
 	Uri       string `json:"uri"`
-}
+} // @name Endpoint
 
 func ToEndpoint(doc *entities.Endpoint) *Endpoint {
 	return &Endpoint{
@@ -52,7 +52,7 @@ type EndpointRule struct {
 	Exclusionary        bool   `json:"exclusionary"`
 	ConditionSource     string `json:"condition_source"`
 	ConditionExpression string `json:"condition_expression"`
-}
+} // @name EndpointRule
 
 func ToEndpointRule(doc *entities.EndpointRule) *EndpointRule {
 	return &EndpointRule{

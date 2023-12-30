@@ -13,7 +13,7 @@ import (
 
 type EndpointRuleGetRes struct {
 	*EndpointRule
-}
+} // @name EndpointRuleGetRes
 
 // UseEndpointRuleGet
 // @Tags		endpoint rule

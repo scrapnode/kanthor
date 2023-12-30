@@ -14,7 +14,7 @@ import (
 type EndpointRuleListRes struct {
 	Data  []EndpointRule `json:"data"`
 	Count int64          `json:"count"`
-}
+} // @name EndpointRuleListRes
 
 // UseEndpointRuleList
 // @Tags		endpoint rule

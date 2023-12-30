@@ -1,13 +1,9 @@
 package config
 
 import (
-	"slices"
-	"strings"
-
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/services"
-	attempt "github.com/scrapnode/kanthor/services/attempt/config"
 	dispatcher "github.com/scrapnode/kanthor/services/dispatcher/config"
 	portal "github.com/scrapnode/kanthor/services/portal/config"
 	scheduler "github.com/scrapnode/kanthor/services/scheduler/config"
@@ -51,13 +47,6 @@ func Services(provider configuration.Provider, name string) (map[string]validato
 			return nil, err
 		}
 		returning[services.STORAGE] = s
-	}
-	if slices.Contains(services.ATTEMPTS, name) || name == services.ALL {
-		s, err := attempt.New(provider)
-		if err != nil {
-			return nil, err
-		}
-		returning[strings.Join(services.ATTEMPTS, "/")] = s
 	}
 
 	return returning, nil

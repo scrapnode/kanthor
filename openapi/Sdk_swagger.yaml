@@ -2,6 +2,371 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  AccountGetRes:
+    properties:
+      account:
+        $ref: '#/definitions/authenticator.Account'
+    type: object
+  Application:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  ApplicationCreateReq:
+    properties:
+      name:
+        type: string
+    type: object
+  ApplicationCreateRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  ApplicationDeleteRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  ApplicationGetRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  ApplicationListRes:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/Application'
+        type: array
+    type: object
+  ApplicationUpdateReq:
+    properties:
+      name:
+        type: string
+    type: object
+  ApplicationUpdateRes:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      ws_id:
+        type: string
+    type: object
+  Endpoint:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        type: string
+    type: object
+  EndpointCreateReq:
+    properties:
+      app_id:
+        type: string
+      method:
+        example: POST
+        type: string
+      name:
+        type: string
+      uri:
+        example: https://example.com
+        type: string
+    type: object
+  EndpointCreateRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        type: string
+    type: object
+  EndpointDeleteRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        type: string
+    type: object
+  EndpointGetRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        type: string
+    type: object
+  EndpointListRes:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/Endpoint'
+        type: array
+    type: object
+  EndpointRule:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      created_at:
+        type: integer
+      ep_id:
+        type: string
+      exclusionary:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    type: object
+  EndpointRuleCreateReq:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      ep_id:
+        type: string
+      exclusionary:
+        type: boolean
+      name:
+        type: string
+      priority:
+        type: integer
+    type: object
+  EndpointRuleCreateRes:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      created_at:
+        type: integer
+      ep_id:
+        type: string
+      exclusionary:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    type: object
+  EndpointRuleDeleteRes:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      created_at:
+        type: integer
+      ep_id:
+        type: string
+      exclusionary:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    type: object
+  EndpointRuleGetRes:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      created_at:
+        type: integer
+      ep_id:
+        type: string
+      exclusionary:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    type: object
+  EndpointRuleListRes:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/EndpointRule'
+        type: array
+    type: object
+  EndpointRuleUpdateReq:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      exclusionary:
+        type: boolean
+      name:
+        type: string
+      priority:
+        type: integer
+    type: object
+  EndpointRuleUpdateRes:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      created_at:
+        type: integer
+      ep_id:
+        type: string
+      exclusionary:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      updated_at:
+        type: integer
+    type: object
+  EndpointUpdateReq:
+    properties:
+      method:
+        type: string
+      name:
+        type: string
+    type: object
+  EndpointUpdateRes:
+    properties:
+      app_id:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      method:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: integer
+      uri:
+        type: string
+    type: object
+  MessageCreateReq:
+    properties:
+      app_id:
+        type: string
+      body:
+        additionalProperties: true
+        type: object
+      headers:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        example: testing.debug
+        type: string
+    type: object
+  MessageCreateRes:
+    properties:
+      id:
+        type: string
+    type: object
   authenticator.Account:
     properties:
       metadata:
@@ -18,371 +383,6 @@ definitions:
       code:
         type: string
       error:
-        type: string
-    type: object
-  rest.AccountGetRes:
-    properties:
-      account:
-        $ref: '#/definitions/authenticator.Account'
-    type: object
-  rest.Application:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.ApplicationCreateReq:
-    properties:
-      name:
-        type: string
-    type: object
-  rest.ApplicationCreateRes:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.ApplicationDeleteRes:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.ApplicationGetRes:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.ApplicationListRes:
-    properties:
-      count:
-        type: integer
-      data:
-        items:
-          $ref: '#/definitions/rest.Application'
-        type: array
-    type: object
-  rest.ApplicationUpdateReq:
-    properties:
-      name:
-        type: string
-    type: object
-  rest.ApplicationUpdateRes:
-    properties:
-      created_at:
-        type: integer
-      id:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      ws_id:
-        type: string
-    type: object
-  rest.Endpoint:
-    properties:
-      app_id:
-        type: string
-      created_at:
-        type: integer
-      id:
-        type: string
-      method:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      uri:
-        type: string
-    type: object
-  rest.EndpointCreateReq:
-    properties:
-      app_id:
-        type: string
-      method:
-        example: POST
-        type: string
-      name:
-        type: string
-      uri:
-        example: https://example.com
-        type: string
-    type: object
-  rest.EndpointCreateRes:
-    properties:
-      app_id:
-        type: string
-      created_at:
-        type: integer
-      id:
-        type: string
-      method:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      uri:
-        type: string
-    type: object
-  rest.EndpointDeleteRes:
-    properties:
-      app_id:
-        type: string
-      created_at:
-        type: integer
-      id:
-        type: string
-      method:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      uri:
-        type: string
-    type: object
-  rest.EndpointGetRes:
-    properties:
-      app_id:
-        type: string
-      created_at:
-        type: integer
-      id:
-        type: string
-      method:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      uri:
-        type: string
-    type: object
-  rest.EndpointListRes:
-    properties:
-      count:
-        type: integer
-      data:
-        items:
-          $ref: '#/definitions/rest.Endpoint'
-        type: array
-    type: object
-  rest.EndpointRule:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      created_at:
-        type: integer
-      ep_id:
-        type: string
-      exclusionary:
-        type: boolean
-      id:
-        type: string
-      name:
-        type: string
-      priority:
-        type: integer
-      updated_at:
-        type: integer
-    type: object
-  rest.EndpointRuleCreateReq:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      ep_id:
-        type: string
-      exclusionary:
-        type: boolean
-      name:
-        type: string
-      priority:
-        type: integer
-    type: object
-  rest.EndpointRuleCreateRes:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      created_at:
-        type: integer
-      ep_id:
-        type: string
-      exclusionary:
-        type: boolean
-      id:
-        type: string
-      name:
-        type: string
-      priority:
-        type: integer
-      updated_at:
-        type: integer
-    type: object
-  rest.EndpointRuleDeleteRes:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      created_at:
-        type: integer
-      ep_id:
-        type: string
-      exclusionary:
-        type: boolean
-      id:
-        type: string
-      name:
-        type: string
-      priority:
-        type: integer
-      updated_at:
-        type: integer
-    type: object
-  rest.EndpointRuleGetRes:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      created_at:
-        type: integer
-      ep_id:
-        type: string
-      exclusionary:
-        type: boolean
-      id:
-        type: string
-      name:
-        type: string
-      priority:
-        type: integer
-      updated_at:
-        type: integer
-    type: object
-  rest.EndpointRuleListRes:
-    properties:
-      count:
-        type: integer
-      data:
-        items:
-          $ref: '#/definitions/rest.EndpointRule'
-        type: array
-    type: object
-  rest.EndpointRuleUpdateReq:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      exclusionary:
-        type: boolean
-      name:
-        type: string
-      priority:
-        type: integer
-    type: object
-  rest.EndpointRuleUpdateRes:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      created_at:
-        type: integer
-      ep_id:
-        type: string
-      exclusionary:
-        type: boolean
-      id:
-        type: string
-      name:
-        type: string
-      priority:
-        type: integer
-      updated_at:
-        type: integer
-    type: object
-  rest.EndpointUpdateReq:
-    properties:
-      method:
-        type: string
-      name:
-        type: string
-    type: object
-  rest.EndpointUpdateRes:
-    properties:
-      app_id:
-        type: string
-      created_at:
-        type: integer
-      id:
-        type: string
-      method:
-        type: string
-      name:
-        type: string
-      updated_at:
-        type: integer
-      uri:
-        type: string
-    type: object
-  rest.MessageCreateReq:
-    properties:
-      app_id:
-        type: string
-      body:
-        additionalProperties: true
-        type: object
-      headers:
-        additionalProperties:
-          type: string
-        type: object
-      type:
-        example: testing.debug
-        type: string
-    type: object
-  rest.MessageCreateRes:
-    properties:
-      id:
         type: string
     type: object
 externalDocs:
@@ -407,7 +407,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.AccountGetRes'
+            $ref: '#/definitions/AccountGetRes'
         default:
           description: ""
           schema:
@@ -444,7 +444,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.ApplicationListRes'
+            $ref: '#/definitions/ApplicationListRes'
         default:
           description: ""
           schema:
@@ -461,12 +461,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.ApplicationCreateReq'
+          $ref: '#/definitions/ApplicationCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/rest.ApplicationCreateRes'
+            $ref: '#/definitions/ApplicationCreateRes'
         default:
           description: ""
           schema:
@@ -488,7 +488,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.ApplicationDeleteRes'
+            $ref: '#/definitions/ApplicationDeleteRes'
         default:
           description: ""
           schema:
@@ -509,7 +509,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.ApplicationGetRes'
+            $ref: '#/definitions/ApplicationGetRes'
         default:
           description: ""
           schema:
@@ -531,12 +531,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.ApplicationUpdateReq'
+          $ref: '#/definitions/ApplicationUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.ApplicationUpdateRes'
+            $ref: '#/definitions/ApplicationUpdateRes'
         default:
           description: ""
           schema:
@@ -578,7 +578,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointListRes'
+            $ref: '#/definitions/EndpointListRes'
         default:
           description: ""
           schema:
@@ -595,12 +595,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.EndpointCreateReq'
+          $ref: '#/definitions/EndpointCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/rest.EndpointCreateRes'
+            $ref: '#/definitions/EndpointCreateRes'
         default:
           description: ""
           schema:
@@ -622,7 +622,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointDeleteRes'
+            $ref: '#/definitions/EndpointDeleteRes'
         default:
           description: ""
           schema:
@@ -648,7 +648,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointGetRes'
+            $ref: '#/definitions/EndpointGetRes'
         default:
           description: ""
           schema:
@@ -670,12 +670,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.EndpointUpdateReq'
+          $ref: '#/definitions/EndpointUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointUpdateRes'
+            $ref: '#/definitions/EndpointUpdateRes'
         default:
           description: ""
           schema:
@@ -693,12 +693,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.MessageCreateReq'
+          $ref: '#/definitions/MessageCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/rest.MessageCreateRes'
+            $ref: '#/definitions/MessageCreateRes'
         default:
           description: ""
           schema:
@@ -744,7 +744,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointRuleListRes'
+            $ref: '#/definitions/EndpointRuleListRes'
         default:
           description: ""
           schema:
@@ -761,12 +761,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.EndpointRuleCreateReq'
+          $ref: '#/definitions/EndpointRuleCreateReq'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/rest.EndpointRuleCreateRes'
+            $ref: '#/definitions/EndpointRuleCreateRes'
         default:
           description: ""
           schema:
@@ -788,7 +788,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointRuleDeleteRes'
+            $ref: '#/definitions/EndpointRuleDeleteRes'
         default:
           description: ""
           schema:
@@ -809,7 +809,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointRuleGetRes'
+            $ref: '#/definitions/EndpointRuleGetRes'
         default:
           description: ""
           schema:
@@ -831,12 +831,12 @@ paths:
         name: props
         required: true
         schema:
-          $ref: '#/definitions/rest.EndpointRuleUpdateReq'
+          $ref: '#/definitions/EndpointRuleUpdateReq'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.EndpointRuleUpdateRes'
+            $ref: '#/definitions/EndpointRuleUpdateRes'
         default:
           description: ""
           schema:

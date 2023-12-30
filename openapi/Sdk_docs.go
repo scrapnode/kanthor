@@ -44,7 +44,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.AccountGetRes"
+                            "$ref": "#/definitions/AccountGetRes"
                         }
                     },
                     "default": {
@@ -105,7 +105,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationListRes"
+                            "$ref": "#/definitions/ApplicationListRes"
                         }
                     },
                     "default": {
@@ -135,7 +135,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationCreateReq"
+                            "$ref": "#/definitions/ApplicationCreateReq"
                         }
                     }
                 ],
@@ -143,7 +143,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationCreateRes"
+                            "$ref": "#/definitions/ApplicationCreateRes"
                         }
                     },
                     "default": {
@@ -181,7 +181,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationGetRes"
+                            "$ref": "#/definitions/ApplicationGetRes"
                         }
                     },
                     "default": {
@@ -217,7 +217,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationDeleteRes"
+                            "$ref": "#/definitions/ApplicationDeleteRes"
                         }
                     },
                     "default": {
@@ -254,7 +254,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationUpdateReq"
+                            "$ref": "#/definitions/ApplicationUpdateReq"
                         }
                     }
                 ],
@@ -262,7 +262,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.ApplicationUpdateRes"
+                            "$ref": "#/definitions/ApplicationUpdateRes"
                         }
                     },
                     "default": {
@@ -329,7 +329,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointListRes"
+                            "$ref": "#/definitions/EndpointListRes"
                         }
                     },
                     "default": {
@@ -359,7 +359,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointCreateReq"
+                            "$ref": "#/definitions/EndpointCreateReq"
                         }
                     }
                 ],
@@ -367,7 +367,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointCreateRes"
+                            "$ref": "#/definitions/EndpointCreateRes"
                         }
                     },
                     "default": {
@@ -412,7 +412,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointGetRes"
+                            "$ref": "#/definitions/EndpointGetRes"
                         }
                     },
                     "default": {
@@ -448,7 +448,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointDeleteRes"
+                            "$ref": "#/definitions/EndpointDeleteRes"
                         }
                     },
                     "default": {
@@ -485,7 +485,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointUpdateReq"
+                            "$ref": "#/definitions/EndpointUpdateReq"
                         }
                     }
                 ],
@@ -493,7 +493,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointUpdateRes"
+                            "$ref": "#/definitions/EndpointUpdateRes"
                         }
                     },
                     "default": {
@@ -525,7 +525,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.MessageCreateReq"
+                            "$ref": "#/definitions/MessageCreateReq"
                         }
                     }
                 ],
@@ -533,7 +533,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/rest.MessageCreateRes"
+                            "$ref": "#/definitions/MessageCreateRes"
                         }
                     },
                     "default": {
@@ -606,7 +606,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleListRes"
+                            "$ref": "#/definitions/EndpointRuleListRes"
                         }
                     },
                     "default": {
@@ -636,7 +636,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleCreateReq"
+                            "$ref": "#/definitions/EndpointRuleCreateReq"
                         }
                     }
                 ],
@@ -644,7 +644,7 @@ const docTemplateSdk = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleCreateRes"
+                            "$ref": "#/definitions/EndpointRuleCreateRes"
                         }
                     },
                     "default": {
@@ -682,7 +682,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleGetRes"
+                            "$ref": "#/definitions/EndpointRuleGetRes"
                         }
                     },
                     "default": {
@@ -718,7 +718,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleDeleteRes"
+                            "$ref": "#/definitions/EndpointRuleDeleteRes"
                         }
                     },
                     "default": {
@@ -755,7 +755,7 @@ const docTemplateSdk = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleUpdateReq"
+                            "$ref": "#/definitions/EndpointRuleUpdateReq"
                         }
                     }
                 ],
@@ -763,7 +763,7 @@ const docTemplateSdk = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.EndpointRuleUpdateRes"
+                            "$ref": "#/definitions/EndpointRuleUpdateRes"
                         }
                     },
                     "default": {
@@ -777,6 +777,565 @@ const docTemplateSdk = `{
         }
     },
     "definitions": {
+        "AccountGetRes": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/authenticator.Account"
+                }
+            }
+        },
+        "Application": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "ws_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApplicationCreateReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApplicationCreateRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "ws_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApplicationDeleteRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "ws_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApplicationGetRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "ws_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApplicationListRes": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Application"
+                    }
+                }
+            }
+        },
+        "ApplicationUpdateReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApplicationUpdateRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "ws_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "Endpoint": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndpointCreateReq": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string",
+                    "example": "POST"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string",
+                    "example": "https://example.com"
+                }
+            }
+        },
+        "EndpointCreateRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndpointDeleteRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndpointGetRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndpointListRes": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Endpoint"
+                    }
+                }
+            }
+        },
+        "EndpointRule": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EndpointRuleCreateReq": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EndpointRuleCreateRes": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EndpointRuleDeleteRes": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EndpointRuleGetRes": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EndpointRuleListRes": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/EndpointRule"
+                    }
+                }
+            }
+        },
+        "EndpointRuleUpdateReq": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EndpointRuleUpdateRes": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EndpointUpdateReq": {
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndpointUpdateRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "integer"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "MessageCreateReq": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string",
+                    "example": "testing.debug"
+                }
+            }
+        },
+        "MessageCreateRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "authenticator.Account": {
             "type": "object",
             "properties": {
@@ -801,565 +1360,6 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.AccountGetRes": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "$ref": "#/definitions/authenticator.Account"
-                }
-            }
-        },
-        "rest.Application": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "ws_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.ApplicationCreateReq": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.ApplicationCreateRes": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "ws_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.ApplicationDeleteRes": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "ws_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.ApplicationGetRes": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "ws_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.ApplicationListRes": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/rest.Application"
-                    }
-                }
-            }
-        },
-        "rest.ApplicationUpdateReq": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.ApplicationUpdateRes": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "ws_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.Endpoint": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.EndpointCreateReq": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string",
-                    "example": "POST"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "uri": {
-                    "type": "string",
-                    "example": "https://example.com"
-                }
-            }
-        },
-        "rest.EndpointCreateRes": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.EndpointDeleteRes": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.EndpointGetRes": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.EndpointListRes": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/rest.Endpoint"
-                    }
-                }
-            }
-        },
-        "rest.EndpointRule": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                }
-            }
-        },
-        "rest.EndpointRuleCreateReq": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                }
-            }
-        },
-        "rest.EndpointRuleCreateRes": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                }
-            }
-        },
-        "rest.EndpointRuleDeleteRes": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                }
-            }
-        },
-        "rest.EndpointRuleGetRes": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                }
-            }
-        },
-        "rest.EndpointRuleListRes": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/rest.EndpointRule"
-                    }
-                }
-            }
-        },
-        "rest.EndpointRuleUpdateReq": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                }
-            }
-        },
-        "rest.EndpointRuleUpdateRes": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "integer"
-                }
-            }
-        },
-        "rest.EndpointUpdateReq": {
-            "type": "object",
-            "properties": {
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.EndpointUpdateRes": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "integer"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.MessageCreateReq": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "body": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "headers": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "type": {
-                    "type": "string",
-                    "example": "testing.debug"
-                }
-            }
-        },
-        "rest.MessageCreateRes": {
-            "type": "object",
-            "properties": {
-                "id": {
                     "type": "string"
                 }
             }

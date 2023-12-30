@@ -13,11 +13,11 @@ import (
 
 type ApplicationCreateReq struct {
 	Name string `json:"name"`
-}
+} // @name ApplicationCreateReq
 
 type ApplicationCreateRes struct {
 	*Application
-}
+} // @name ApplicationCreateRes
 
 // UseApplicationCreate
 // @Tags		application

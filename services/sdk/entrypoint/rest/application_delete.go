@@ -13,7 +13,7 @@ import (
 
 type ApplicationDeleteRes struct {
 	*Application
-}
+} // @name ApplicationDeleteRes
 
 // UseApplicationDelete
 // @Tags		application

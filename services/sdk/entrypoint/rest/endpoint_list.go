@@ -14,7 +14,7 @@ import (
 type EndpointListRes struct {
 	Data  []Endpoint `json:"data"`
 	Count int64      `json:"count"`
-}
+} // @name EndpointListRes
 
 // UseEndpointList
 // @Tags		endpoint

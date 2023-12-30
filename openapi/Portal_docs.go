@@ -722,11 +722,23 @@ const docTemplatePortal = `{
                 "request_latest_ts": {
                     "type": "integer"
                 },
+                "requests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Request"
+                    }
+                },
                 "response_count": {
                     "type": "integer"
                 },
                 "response_latest_ts": {
                     "type": "integer"
+                },
+                "responses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Response"
+                    }
                 },
                 "success_id": {
                     "type": "string"
@@ -774,11 +786,23 @@ const docTemplatePortal = `{
                 "request_latest_ts": {
                     "type": "integer"
                 },
+                "requests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Request"
+                    }
+                },
                 "response_count": {
                     "type": "integer"
                 },
                 "response_latest_ts": {
                     "type": "integer"
+                },
+                "responses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Response"
+                    }
                 },
                 "success_id": {
                     "type": "string"
@@ -813,6 +837,88 @@ const docTemplatePortal = `{
                     "type": "integer"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "Request": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "msg_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "Response": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "ep_id": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "msg_id": {
+                    "type": "string"
+                },
+                "req_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "uri": {
                     "type": "string"
                 }
             }

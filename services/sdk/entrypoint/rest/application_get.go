@@ -13,7 +13,7 @@ import (
 
 type ApplicationGetRes struct {
 	*Application
-}
+} // @name ApplicationGetRes
 
 // UseApplicationGet
 // @Tags		application

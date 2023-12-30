@@ -20,11 +20,11 @@ type MessageCreateReq struct {
 
 	Body    map[string]interface{} `json:"body"`
 	Headers map[string]string      `json:"headers"`
-}
+} // @name MessageCreateReq
 
 type MessageCreateRes struct {
 	Id string `json:"id"`
-}
+} // @name MessageCreateRes
 
 // UseMessageCreate
 // @Tags		message

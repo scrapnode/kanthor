@@ -13,11 +13,11 @@ import (
 
 type ApplicationUpdateReq struct {
 	Name string `json:"name"`
-}
+} // @name ApplicationUpdateReq
 
 type ApplicationUpdateRes struct {
 	*Application
-}
+} // @name ApplicationUpdateRes
 
 // UseApplicationUpdate
 // @Tags		application

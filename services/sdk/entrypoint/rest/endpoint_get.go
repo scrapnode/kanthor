@@ -13,7 +13,7 @@ import (
 
 type EndpointGetRes struct {
 	*Endpoint
-}
+} // @name EndpointGetRes
 
 // UseEndpointGet
 // @Tags		endpoint

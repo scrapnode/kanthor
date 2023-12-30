@@ -14,7 +14,7 @@ import (
 type ApplicationListRes struct {
 	Data  []Application `json:"data"`
 	Count int64         `json:"count"`
-}
+} // @name ApplicationListRes
 
 // UseApplicationList
 // @Tags		application

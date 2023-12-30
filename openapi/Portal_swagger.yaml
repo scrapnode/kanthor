@@ -63,10 +63,18 @@ definitions:
         type: integer
       request_latest_ts:
         type: integer
+      requests:
+        items:
+          $ref: '#/definitions/Request'
+        type: array
       response_count:
         type: integer
       response_latest_ts:
         type: integer
+      responses:
+        items:
+          $ref: '#/definitions/Response'
+        type: array
       success_id:
         type: string
       timestamp:
@@ -97,10 +105,18 @@ definitions:
         type: integer
       request_latest_ts:
         type: integer
+      requests:
+        items:
+          $ref: '#/definitions/Request'
+        type: array
       response_count:
         type: integer
       response_latest_ts:
         type: integer
+      responses:
+        items:
+          $ref: '#/definitions/Response'
+        type: array
       success_id:
         type: string
       timestamp:
@@ -123,6 +139,60 @@ definitions:
       timestamp:
         type: integer
       type:
+        type: string
+    type: object
+  Request:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      ep_id:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      method:
+        type: string
+      msg_id:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+      uri:
+        type: string
+    type: object
+  Response:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      ep_id:
+        type: string
+      error:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      msg_id:
+        type: string
+      req_id:
+        type: string
+      status:
+        type: integer
+      timestamp:
+        type: integer
+      type:
+        type: string
+      uri:
         type: string
     type: object
   Workspace:

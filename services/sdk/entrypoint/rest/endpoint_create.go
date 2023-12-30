@@ -17,11 +17,11 @@ type EndpointCreateReq struct {
 
 	Method string `json:"method" example:"POST"`
 	Uri    string `json:"uri" example:"https://example.com"`
-}
+} // @name EndpointCreateReq
 
 type EndpointCreateRes struct {
 	*Endpoint
-}
+} // @name EndpointCreateRes
 
 // UseEndpointCreate
 // @Tags		endpoint

@@ -11,7 +11,7 @@ import (
 
 type AccountGetRes struct {
 	Account *authenticator.Account `json:"account"`
-}
+} // @name AccountGetRes
 
 // UseAccountGet
 // @Tags		account

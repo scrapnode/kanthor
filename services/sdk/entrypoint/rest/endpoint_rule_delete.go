@@ -13,7 +13,7 @@ import (
 
 type EndpointRuleDeleteRes struct {
 	*EndpointRule
-}
+} // @name EndpointRuleDeleteRes
 
 // UseEndpointRuleDelete
 // @Tags		endpoint rule

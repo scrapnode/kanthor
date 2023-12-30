@@ -14,11 +14,11 @@ import (
 type EndpointUpdateReq struct {
 	Name   string `json:"name"`
 	Method string `json:"method"`
-}
+} // @name EndpointUpdateReq
 
 type EndpointUpdateRes struct {
 	*Endpoint
-}
+} // @name EndpointUpdateRes
 
 // UseEndpointUpdate
 // @Tags		endpoint

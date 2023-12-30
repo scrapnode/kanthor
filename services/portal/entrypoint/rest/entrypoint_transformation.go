@@ -148,7 +148,7 @@ type Request struct {
 	Body    string `json:"body"`
 	Uri     string `json:"uri"`
 	Method  string `json:"method"`
-}
+} // @name Request
 
 type Response struct {
 	Id        string `json:"id"`
@@ -166,4 +166,4 @@ type Response struct {
 	Uri     string `json:"uri"`
 	Status  int    `json:"status"`
 	Error   string `json:"error"`
-}
+} // @name Response

@@ -19,11 +19,11 @@ type EndpointRuleCreateReq struct {
 	Exclusionary        bool   `json:"exclusionary"`
 	ConditionSource     string `json:"condition_source"`
 	ConditionExpression string `json:"condition_expression"`
-}
+} // @name EndpointRuleCreateReq
 
 type EndpointRuleCreateRes struct {
 	*EndpointRule
-}
+} // @name EndpointRuleCreateRes
 
 // UseEndpointRuleCreate
 // @Tags		endpoint rule
