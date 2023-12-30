@@ -45,7 +45,7 @@ func UseEndpointGetMessage(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointGetMessageRes{ToEndpointMessage(out.Doc)}
+		res := &EndpointGetMessageRes{ToEndpointMessage(out.Doc, out.Requests, out.Responses)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

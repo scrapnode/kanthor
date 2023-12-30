@@ -51,8 +51,9 @@ type Message struct {
 	AppId    string `json:"app_id"`
 	Type     string `json:"type"`
 	Metadata string `json:"metadata"`
-	Headers  string `json:"headers"`
-	Body     string `json:"body"`
+
+	Headers string `json:"headers"`
+	Body    string `json:"body"`
 } // @name Message
 
 func ToMessage(doc *entities.Message) *Message {
@@ -75,15 +76,94 @@ type EndpointMessage struct {
 	ResponseCount    int    `json:"response_count"`
 	ResponseLatestTs int64  `json:"response_latest_ts"`
 	SuccessId        string `json:"success_id"`
+
+	Requests  []Request  `json:"requests"`
+	Responses []Response `json:"responses"`
 } // @name EndpointMessage
 
-func ToEndpointMessage(doc *entities.EndpointMessage) *EndpointMessage {
-	return &EndpointMessage{
+func ToEndpointMessage(doc *entities.EndpointMessage, requests []entities.Request, responses []entities.Response) *EndpointMessage {
+	msg := &EndpointMessage{
 		Message:          ToMessage(&doc.Message),
 		RequestCount:     doc.RequestCount,
 		RequestLatestTs:  doc.RequestLatestTs,
 		ResponseCount:    doc.ResponseCount,
 		ResponseLatestTs: doc.ResponseLatestTs,
 		SuccessId:        doc.SuccessId,
+
+		Requests:  make([]Request, 0),
+		Responses: make([]Response, 0),
 	}
+
+	if len(requests) > 0 {
+		for _, request := range requests {
+			msg.Requests = append(msg.Requests, Request{
+				Id:        request.Id,
+				Timestamp: request.Timestamp,
+				EpId:      request.EpId,
+				MsgId:     request.MsgId,
+				AppId:     request.AppId,
+				Type:      request.Type,
+				Metadata:  request.Metadata.String(),
+				Headers:   request.Headers.String(),
+				Body:      request.Body,
+				Uri:       request.Uri,
+				Method:    request.Method,
+			})
+		}
+	}
+
+	if len(responses) > 0 {
+		for _, response := range responses {
+			msg.Responses = append(msg.Responses, Response{
+				Id:        response.Id,
+				Timestamp: response.Timestamp,
+				EpId:      response.EpId,
+				MsgId:     response.MsgId,
+				AppId:     response.AppId,
+				Type:      response.Type,
+				Metadata:  response.Metadata.String(),
+				Headers:   response.Headers.String(),
+				Body:      response.Body,
+				Uri:       response.Uri,
+				Status:    response.Status,
+				Error:     response.Error,
+			})
+		}
+	}
+
+	return msg
+}
+
+type Request struct {
+	Id        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
+	EpId      string `json:"ep_id"`
+	MsgId     string `json:"msg_id"`
+
+	AppId    string `json:"app_id"`
+	Type     string `json:"type"`
+	Metadata string `json:"metadata"`
+
+	Headers string `json:"headers"`
+	Body    string `json:"body"`
+	Uri     string `json:"uri"`
+	Method  string `json:"method"`
+}
+
+type Response struct {
+	Id        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
+	EpId      string `json:"ep_id"`
+	MsgId     string `json:"msg_id"`
+	ReqId     string `json:"req_id"`
+
+	AppId    string `json:"app_id"`
+	Type     string `json:"type"`
+	Metadata string `json:"metadata"`
+
+	Headers string `json:"headers"`
+	Body    string `json:"body"`
+	Uri     string `json:"uri"`
+	Status  int    `json:"status"`
+	Error   string `json:"error"`
 }

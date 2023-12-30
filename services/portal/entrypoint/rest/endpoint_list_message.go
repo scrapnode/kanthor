@@ -57,7 +57,7 @@ func UseEndpointListMessage(service *portal) gin.HandlerFunc {
 
 		res := &EndpointListMessageRes{Data: make([]EndpointMessage, 0)}
 		for _, doc := range out.Data {
-			res.Data = append(res.Data, *ToEndpointMessage(&doc))
+			res.Data = append(res.Data, *ToEndpointMessage(&doc, nil, nil))
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

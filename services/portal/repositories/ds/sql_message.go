@@ -18,7 +18,13 @@ func (sql *SqlMessage) ListByIds(ctx context.Context, appId string, ids []string
 
 	tx := sql.client.WithContext(ctx).Model(doc).
 		Where(fmt.Sprintf(`"%s"."app_id" = ? AND "%s"."id" IN ?`, doc.TableName(), doc.TableName()), appId, ids).
-		Order(fmt.Sprintf(`"%s"."app_id" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName()))
+		Order(fmt.Sprintf(`"%s"."app_id" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName())).
+		Select([]string{
+			fmt.Sprintf(`"%s"."id"`, doc.TableName()),
+			fmt.Sprintf(`"%s"."timestamp"`, doc.TableName()),
+			fmt.Sprintf(`"%s"."app_id"`, doc.TableName()),
+			fmt.Sprintf(`"%s"."type"`, doc.TableName()),
+		})
 
 	var docs []entities.Message
 	if tx = tx.Find(&docs); tx.Error != nil {
@@ -28,6 +34,20 @@ func (sql *SqlMessage) ListByIds(ctx context.Context, appId string, ids []string
 	return docs, nil
 }
 
+func (sql *SqlMessage) GetByIds(ctx context.Context, appId string, ids []string) ([]entities.Message, error) {
+	doc := &entities.Message{}
+
+	tx := sql.client.WithContext(ctx).Model(doc).
+		Where(fmt.Sprintf(`"%s"."app_id" = ? AND "%s"."id" IN ?`, doc.TableName(), doc.TableName()), appId, ids).
+		Order(fmt.Sprintf(`"%s"."app_id" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName()))
+
+	var docs []entities.Message
+	if tx = tx.Find(&docs); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return docs, nil
+}
 func (sql *SqlMessage) List(ctx context.Context, appId string, query *entities.ScanningQuery) ([]entities.Message, error) {
 	doc := &entities.Message{}
 
