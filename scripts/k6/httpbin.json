@@ -6,7 +6,7 @@
         {
           "name": "success",
           "method": "POST",
-          "uri": "http://httpbin/post",
+          "uri": "https://httpbin.org/post",
           "rules": [
             {
               "name": "pass-through",
@@ -18,7 +18,7 @@
         {
           "name": "delay",
           "method": "POST",
-          "uri": "http://httpbin/delay/5",
+          "uri": "https://httpbin.org/delay/5",
           "rules": [
             {
               "name": "pass-through",
@@ -30,7 +30,7 @@
         {
           "name": "fail",
           "method": "POST",
-          "uri": "http://httpbin/status/500",
+          "uri": "https://httpbin.org/status/500",
           "rules": [
             {
               "name": "pass-through",
