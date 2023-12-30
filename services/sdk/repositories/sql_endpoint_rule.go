@@ -63,7 +63,7 @@ func (sql *SqlEndpointRule) List(ctx context.Context, wsId, appId, epId string, 
 			fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 			fmt.Sprintf(`"%s"."condition_source"`, doc.TableName()),
 		}
-		tx = database.SqlApplyListQuery(tx, props, query)
+		tx = database.SqlApplyListQuery(tx, query, props)
 	}
 
 	var docs []entities.EndpointRule
@@ -92,7 +92,7 @@ func (sql *SqlEndpointRule) Count(ctx context.Context, wsId, appId, epId string,
 		fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 		fmt.Sprintf(`"%s"."condition_source"`, doc.TableName()),
 	}
-	tx = database.SqlApplyCountQuery(tx, props, query)
+	tx = database.SqlApplyListQuery(tx, query, props)
 	var count int64
 	return count, tx.Count(&count).Error
 }

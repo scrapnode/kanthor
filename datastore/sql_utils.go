@@ -9,22 +9,30 @@ import (
 	"gorm.io/gorm"
 )
 
-func SqlApplyScanQuery(tx *gorm.DB, ns, prop string, query *entities.ScanningQuery) *gorm.DB {
-	low := suid.Id(ns, suid.BeforeTime(query.From))
-	high := suid.Id(ns, suid.AfterTime(query.To))
+type ScanningCondition struct {
+	PrimaryKeyNs  string
+	PrimaryKeyCol string
+}
+
+func SqlApplyScanQuery(tx *gorm.DB, query *entities.ScanningQuery, condition *ScanningCondition) *gorm.DB {
+	low := suid.Id(condition.PrimaryKeyNs, suid.BeforeTime(query.From))
+	high := suid.Id(condition.PrimaryKeyNs, suid.AfterTime(query.To))
 
 	tx = tx.
-		Where(fmt.Sprintf(`%s > ?`, prop), low).
-		Where(fmt.Sprintf(`%s < ?`, prop), high).
+		Where(fmt.Sprintf(`%s > ?`, condition.PrimaryKeyCol), low).
+		Where(fmt.Sprintf(`%s < ?`, condition.PrimaryKeyCol), high).
 		Limit(query.Limit)
 
 	if query.Search != "" {
 		// IMPORTANT: only support search by primary key
 		// our primary key is often conbined from multiple columns
-		// so you need to add an condition that is matched with multiple columns
-		// for example
+		// so you can search with the second column of the primary key
+		// when and only when you added the first column to the where condition
+		// for example, your primary key is message_pk(app_id, id)
+		// you can only match the where condition for the ID column
+		// when you add the where condition for the app_id column before
 		// message: app_id = ? AND id = ?
-		tx = tx.Where(fmt.Sprintf(`%s = ?`, prop), query.Search)
+		tx = tx.Where(fmt.Sprintf(`%s = ?`, condition.PrimaryKeyCol), query.Search)
 	}
 
 	return tx

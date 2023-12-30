@@ -57,8 +57,8 @@ func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {
 		}
 
 		res := &WorkspaceCredentialsListRes{Data: make([]WorkspaceCredentials, 0), Count: out.Count}
-		for _, ws := range out.Data {
-			res.Data = append(res.Data, *ToWorkspaceCredentials(&ws))
+		for _, doc := range out.Data {
+			res.Data = append(res.Data, *ToWorkspaceCredentials(&doc))
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

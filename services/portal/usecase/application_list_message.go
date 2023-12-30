@@ -7,13 +7,13 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type MessageListIn struct {
+type ApplicationListMessageIn struct {
 	*entities.ScanningQuery
 	WsId  string
 	AppId string
 }
 
-func (in *MessageListIn) Validate() error {
+func (in *ApplicationListMessageIn) Validate() error {
 	if err := in.ScanningQuery.Validate(); err != nil {
 		return err
 	}
@@ -25,11 +25,11 @@ func (in *MessageListIn) Validate() error {
 	)
 }
 
-type MessageListOut struct {
+type ApplicationListMessageOut struct {
 	Data []entities.Message
 }
 
-func (uc *message) List(ctx context.Context, in *MessageListIn) (*MessageListOut, error) {
+func (uc *application) ListMessage(ctx context.Context, in *ApplicationListMessageIn) (*ApplicationListMessageOut, error) {
 	app, err := uc.repositories.Database().Application().Get(ctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
@@ -40,6 +40,6 @@ func (uc *message) List(ctx context.Context, in *MessageListIn) (*MessageListOut
 		return nil, err
 	}
 
-	out := &MessageListOut{Data: data}
+	out := &ApplicationListMessageOut{Data: data}
 	return out, nil
 }

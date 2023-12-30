@@ -7,18 +7,18 @@ var (
 )
 
 var PortalOwnerPermissions = []authorizator.Permission{
-	{Object: "/api/workspace/me", Action: "GET"},
-	{Object: "/api/workspace/me", Action: "PATCH"},
+	{Object: "/api/workspace", Action: "GET"},
+	{Object: "/api/workspace", Action: "POST"},
+	{Object: "/api/workspace/:ws_id", Action: "GET"},
+	{Object: "/api/workspace/:ws_id", Action: "PATCH"},
 
 	{Object: "/api/credentials", Action: "POST"},
 	{Object: "/api/credentials", Action: "GET"},
 	{Object: "/api/credentials/:wsc_id", Action: "PATCH"},
 	{Object: "/api/credentials/:wsc_id", Action: "GET"},
 	{Object: "/api/credentials/:wsc_id/expiration", Action: "PUT"},
-	{Object: "/api/message", Action: "GET"},
-	{Object: "/api/message/:msg_id", Action: "GET"},
-	{Object: "/api/request", Action: "GET"},
-	{Object: "/api/request/:req_id", Action: "GET"},
-	{Object: "/api/response", Action: "GET"},
-	{Object: "/api/response/:res_id", Action: "GET"},
+	{Object: "/api/application/:app_id/message", Action: "GET"},
+	{Object: "/api/application/:app_id/message/:msg_id", Action: "GET"},
+	{Object: "/api/endpoint/:ep_id/message", Action: "GET"},
+	{Object: "/api/endpoint/:ep_id/message/:msg_id", Action: "GET"},
 }

@@ -57,7 +57,7 @@ func (sql *SqlApplication) List(ctx context.Context, wsId string, query *entitie
 		tx = tx.Where(fmt.Sprintf(`"%s"."id" IN ?`, doc.TableName()), query.Ids)
 	} else {
 		props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
-		tx = database.SqlApplyListQuery(tx, props, query)
+		tx = database.SqlApplyListQuery(tx, query, props)
 	}
 
 	var docs []entities.Application
@@ -79,7 +79,7 @@ func (sql *SqlApplication) Count(ctx context.Context, wsId string, query *entiti
 	}
 
 	props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
-	tx = database.SqlApplyCountQuery(tx, props, query)
+	tx = database.SqlApplyListQuery(tx, query, props)
 	var count int64
 	return count, tx.Count(&count).Error
 }

@@ -9,12 +9,12 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/repositories"
 )
 
-type Request interface {
-	List(ctx context.Context, in *RequestListIn) (*RequestListOut, error)
-	Get(ctx context.Context, in *RequestGetIn) (*RequestGetOut, error)
+type Application interface {
+	ListMessage(ctx context.Context, in *ApplicationListMessageIn) (*ApplicationListMessageOut, error)
+	GetMessage(ctx context.Context, in *ApplicationGetMessageIn) (*ApplicationGetMessageOut, error)
 }
 
-type request struct {
+type application struct {
 	conf         *config.Config
 	logger       logging.Logger
 	infra        *infrastructure.Infrastructure

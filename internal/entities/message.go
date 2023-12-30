@@ -53,3 +53,12 @@ var MessageMappers = map[string]func(doc *Message) any{
 	"headers":   func(doc *Message) any { return doc.Headers.String() },
 	"body":      func(doc *Message) any { return doc.Body },
 }
+
+type EndpointMessage struct {
+	Message
+	RequestCount     int
+	RequestLatestTs  int64
+	ResponseCount    int
+	ResponseLatestTs int64
+	SuccessId        string
+}

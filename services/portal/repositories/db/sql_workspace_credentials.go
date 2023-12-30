@@ -46,7 +46,7 @@ func (sql *SqlWorkspaceCredentials) List(ctx context.Context, wsId string, query
 		tx = tx.Where(fmt.Sprintf(`"%s"."id" IN ?`, doc.TableName()), query.Ids)
 	} else {
 		props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
-		tx = database.SqlApplyListQuery(tx, props, query)
+		tx = database.SqlApplyListQuery(tx, query, props)
 	}
 
 	var docs []entities.WorkspaceCredentials
@@ -68,7 +68,7 @@ func (sql *SqlWorkspaceCredentials) Count(ctx context.Context, wsId string, quer
 	}
 
 	props := []string{fmt.Sprintf(`"%s"."name"`, doc.TableName())}
-	tx = database.SqlApplyCountQuery(tx, props, query)
+	tx = database.SqlApplyCountQuery(tx, query, props)
 	var count int64
 	return count, tx.Count(&count).Error
 }

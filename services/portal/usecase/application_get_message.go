@@ -7,13 +7,13 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-type MessageGetIn struct {
+type ApplicationGetMessageIn struct {
 	WsId  string
 	AppId string
 	Id    string
 }
 
-func (in *MessageGetIn) Validate() error {
+func (in *ApplicationGetMessageIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
@@ -22,11 +22,11 @@ func (in *MessageGetIn) Validate() error {
 	)
 }
 
-type MessageGetOut struct {
+type ApplicationGetMessageOut struct {
 	Doc *entities.Message
 }
 
-func (uc *message) Get(ctx context.Context, in *MessageGetIn) (*MessageGetOut, error) {
+func (uc *application) GetMessage(ctx context.Context, in *ApplicationGetMessageIn) (*ApplicationGetMessageOut, error) {
 	app, err := uc.repositories.Database().Application().Get(ctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
@@ -37,6 +37,6 @@ func (uc *message) Get(ctx context.Context, in *MessageGetIn) (*MessageGetOut, e
 		return nil, err
 	}
 
-	out := &MessageGetOut{Doc: msg}
+	out := &ApplicationGetMessageOut{Doc: msg}
 	return out, nil
 }

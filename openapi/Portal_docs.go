@@ -97,6 +97,87 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "/application/{app_id}/message": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "application"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "limit returning records",
+                        "name": "_limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1669914060000,
+                        "description": "starting time to scan in milliseconds",
+                        "name": "_start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1985533260000,
+                        "description": "ending time to scan in milliseconds",
+                        "name": "_end",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ApplicationListMessageRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/application/{app_id}/message/{msg_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "application"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ApplicationGetMessageRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/credentials": {
             "get": {
                 "security": [
@@ -326,7 +407,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "/message": {
+        "/endpoint/{ep_id}/message": {
             "get": {
                 "security": [
                     {
@@ -337,16 +418,9 @@ const docTemplatePortal = `{
                     }
                 ],
                 "tags": [
-                    "message"
+                    "endpoint"
                 ],
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "default": 10,
@@ -373,7 +447,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/MessageListRes"
+                            "$ref": "#/definitions/EndpointListMessageRes"
                         }
                     },
                     "default": {
@@ -385,7 +459,7 @@ const docTemplatePortal = `{
                 }
             }
         },
-        "/message/{msg_id}": {
+        "/endpoint/{ep_id}/message/{msg_id}": {
             "get": {
                 "security": [
                     {
@@ -396,133 +470,13 @@ const docTemplatePortal = `{
                     }
                 ],
                 "tags": [
-                    "message"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "message id",
-                        "name": "msg_id",
-                        "in": "path",
-                        "required": true
-                    }
+                    "endpoint"
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/MessageGetRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/request": {
-            "get": {
-                "security": [
-                    {
-                        "Authorization": []
-                    },
-                    {
-                        "WorkspaceId": []
-                    }
-                ],
-                "tags": [
-                    "request"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "epndpoint id",
-                        "name": "ep_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "limit returning records",
-                        "name": "_limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "example": 1669914060000,
-                        "description": "starting time to scan in milliseconds",
-                        "name": "_start",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "example": 1985533260000,
-                        "description": "ending time to scan in milliseconds",
-                        "name": "_end",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/RequestListRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/request/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "Authorization": []
-                    },
-                    {
-                        "WorkspaceId": []
-                    }
-                ],
-                "tags": [
-                    "request"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "epndpoint id",
-                        "name": "ep_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "msg id",
-                        "name": "msg_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/RequestGetRes"
+                            "$ref": "#/definitions/EndpointGetMessageRes"
                         }
                     },
                     "default": {
@@ -707,6 +661,136 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "ApplicationGetMessageRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "ApplicationListMessageRes": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                }
+            }
+        },
+        "EndpointGetMessageRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "request_count": {
+                    "type": "integer"
+                },
+                "request_latest_ts": {
+                    "type": "integer"
+                },
+                "response_count": {
+                    "type": "integer"
+                },
+                "response_latest_ts": {
+                    "type": "integer"
+                },
+                "success_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndpointListMessageRes": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/EndpointMessage"
+                    }
+                }
+            }
+        },
+        "EndpointMessage": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "request_count": {
+                    "type": "integer"
+                },
+                "request_latest_ts": {
+                    "type": "integer"
+                },
+                "response_count": {
+                    "type": "integer"
+                },
+                "response_latest_ts": {
+                    "type": "integer"
+                },
+                "success_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "Message": {
             "type": "object",
             "properties": {
@@ -730,130 +814,6 @@ const docTemplatePortal = `{
                 },
                 "type": {
                     "type": "string"
-                }
-            }
-        },
-        "MessageGetRes": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "body": {
-                    "type": "string"
-                },
-                "headers": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "MessageListRes": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Message"
-                    }
-                }
-            }
-        },
-        "Request": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "body": {
-                    "type": "string"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "headers": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "msg_id": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "RequestGetRes": {
-            "type": "object",
-            "properties": {
-                "app_id": {
-                    "type": "string"
-                },
-                "body": {
-                    "type": "string"
-                },
-                "ep_id": {
-                    "type": "string"
-                },
-                "headers": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "msg_id": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "RequestListRes": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Request"
-                    }
                 }
             }
         },

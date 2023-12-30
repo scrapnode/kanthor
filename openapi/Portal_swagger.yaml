@@ -23,6 +23,91 @@ definitions:
       workspace:
         $ref: '#/definitions/Workspace'
     type: object
+  ApplicationGetMessageRes:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+    type: object
+  ApplicationListMessageRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/Message'
+        type: array
+    type: object
+  EndpointGetMessageRes:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      request_count:
+        type: integer
+      request_latest_ts:
+        type: integer
+      response_count:
+        type: integer
+      response_latest_ts:
+        type: integer
+      success_id:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+    type: object
+  EndpointListMessageRes:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/EndpointMessage'
+        type: array
+    type: object
+  EndpointMessage:
+    properties:
+      app_id:
+        type: string
+      body:
+        type: string
+      headers:
+        type: string
+      id:
+        type: string
+      metadata:
+        type: string
+      request_count:
+        type: integer
+      request_latest_ts:
+        type: integer
+      response_count:
+        type: integer
+      response_latest_ts:
+        type: integer
+      success_id:
+        type: string
+      timestamp:
+        type: integer
+      type:
+        type: string
+    type: object
   Message:
     properties:
       app_id:
@@ -39,87 +124,6 @@ definitions:
         type: integer
       type:
         type: string
-    type: object
-  MessageGetRes:
-    properties:
-      app_id:
-        type: string
-      body:
-        type: string
-      headers:
-        type: string
-      id:
-        type: string
-      metadata:
-        type: string
-      timestamp:
-        type: integer
-      type:
-        type: string
-    type: object
-  MessageListRes:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/Message'
-        type: array
-    type: object
-  Request:
-    properties:
-      app_id:
-        type: string
-      body:
-        type: string
-      ep_id:
-        type: string
-      headers:
-        type: string
-      id:
-        type: string
-      metadata:
-        type: string
-      method:
-        type: string
-      msg_id:
-        type: string
-      timestamp:
-        type: integer
-      type:
-        type: string
-      uri:
-        type: string
-    type: object
-  RequestGetRes:
-    properties:
-      app_id:
-        type: string
-      body:
-        type: string
-      ep_id:
-        type: string
-      headers:
-        type: string
-      id:
-        type: string
-      metadata:
-        type: string
-      method:
-        type: string
-      msg_id:
-        type: string
-      timestamp:
-        type: integer
-      type:
-        type: string
-      uri:
-        type: string
-    type: object
-  RequestListRes:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/Request'
-        type: array
     type: object
   Workspace:
     properties:
@@ -359,6 +363,54 @@ paths:
       - WorkspaceId: []
       tags:
       - account
+  /application/{app_id}/message:
+    get:
+      parameters:
+      - default: 10
+        description: limit returning records
+        in: query
+        name: _limit
+        type: integer
+      - description: starting time to scan in milliseconds
+        example: 1669914060000
+        in: query
+        name: _start
+        type: integer
+      - description: ending time to scan in milliseconds
+        example: 1985533260000
+        in: query
+        name: _end
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ApplicationListMessageRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - application
+  /application/{app_id}/message/{msg_id}:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ApplicationGetMessageRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - application
   /credentials:
     get:
       parameters:
@@ -496,14 +548,9 @@ paths:
       - WorkspaceId: []
       tags:
       - credentials
-  /message:
+  /endpoint/{ep_id}/message:
     get:
       parameters:
-      - description: application id
-        in: query
-        name: app_id
-        required: true
-        type: string
       - default: 10
         description: limit returning records
         in: query
@@ -523,7 +570,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/MessageListRes'
+            $ref: '#/definitions/EndpointListMessageRes'
         default:
           description: ""
           schema:
@@ -532,25 +579,14 @@ paths:
       - Authorization: []
       - WorkspaceId: []
       tags:
-      - message
-  /message/{msg_id}:
+      - endpoint
+  /endpoint/{ep_id}/message/{msg_id}:
     get:
-      parameters:
-      - description: application id
-        in: query
-        name: app_id
-        required: true
-        type: string
-      - description: message id
-        in: path
-        name: msg_id
-        required: true
-        type: string
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/MessageGetRes'
+            $ref: '#/definitions/EndpointGetMessageRes'
         default:
           description: ""
           schema:
@@ -559,71 +595,7 @@ paths:
       - Authorization: []
       - WorkspaceId: []
       tags:
-      - message
-  /request:
-    get:
-      parameters:
-      - description: epndpoint id
-        in: query
-        name: ep_id
-        required: true
-        type: string
-      - default: 10
-        description: limit returning records
-        in: query
-        name: _limit
-        type: integer
-      - description: starting time to scan in milliseconds
-        example: 1669914060000
-        in: query
-        name: _start
-        type: integer
-      - description: ending time to scan in milliseconds
-        example: 1985533260000
-        in: query
-        name: _end
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/RequestListRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - Authorization: []
-      - WorkspaceId: []
-      tags:
-      - request
-  /request/{id}:
-    get:
-      parameters:
-      - description: epndpoint id
-        in: query
-        name: ep_id
-        required: true
-        type: string
-      - description: msg id
-        in: query
-        name: msg_id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/RequestGetRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - Authorization: []
-      - WorkspaceId: []
-      tags:
-      - request
+      - endpoint
   /workspace:
     get:
       responses:

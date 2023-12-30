@@ -62,7 +62,7 @@ func (sql *SqlEndpoint) List(ctx context.Context, wsId, appId string, query *ent
 			fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 			fmt.Sprintf(`"%s"."uri"`, doc.TableName()),
 		}
-		tx = database.SqlApplyListQuery(tx, props, query)
+		tx = database.SqlApplyListQuery(tx, query, props)
 	}
 
 	var docs []entities.Endpoint
@@ -90,7 +90,7 @@ func (sql *SqlEndpoint) Count(ctx context.Context, wsId, appId string, query *en
 		fmt.Sprintf(`"%s"."name"`, doc.TableName()),
 		fmt.Sprintf(`"%s"."uri"`, doc.TableName()),
 	}
-	tx = database.SqlApplyCountQuery(tx, props, query)
+	tx = database.SqlApplyListQuery(tx, query, props)
 	var count int64
 	return count, tx.Count(&count).Error
 }

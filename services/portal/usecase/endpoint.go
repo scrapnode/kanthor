@@ -9,12 +9,12 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/repositories"
 )
 
-type Message interface {
-	List(ctx context.Context, in *MessageListIn) (*MessageListOut, error)
-	Get(ctx context.Context, in *MessageGetIn) (*MessageGetOut, error)
+type Endpoint interface {
+	ListMessage(ctx context.Context, in *EndpointListMessageIn) (*EndpointListMessageOut, error)
+	GetMessage(ctx context.Context, in *EndpointGetMessageIn) (*EndpointGetMessageOut, error)
 }
 
-type message struct {
+type endpoint struct {
 	conf         *config.Config
 	logger       logging.Logger
 	infra        *infrastructure.Infrastructure

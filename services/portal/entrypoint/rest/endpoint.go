@@ -5,11 +5,11 @@ import (
 	"github.com/scrapnode/kanthor/gateway/gin/middlewares"
 )
 
-func RegisterMessageRoutes(router gin.IRoutes, service *portal) {
+func RegisterEndpointRoutes(router gin.IRoutes, service *portal) {
 	router = router.
 		Use(middlewares.UseWorkspace(RegisterWorkspaceResolver(service.uc))).
 		Use(middlewares.UseAuthz(service.infra.Authorizator))
 
-	router.GET("", UseMessageList(service))
-	router.GET("/:msg_id", UseMessageGet(service))
+	router.GET(":ep_id/message", UseEndpointListMessage(service))
+	router.GET(":ep_id/message/:msg_id", UseEndpointGetMessage(service))
 }

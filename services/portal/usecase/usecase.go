@@ -13,8 +13,8 @@ type Portal interface {
 	Account() Account
 	Workspace() Workspace
 	WorkspaceCredentials() WorkspaceCredentials
-	Message() Message
-	Request() Request
+	Application() Application
+	Endpoint() Endpoint
 }
 
 func New(
@@ -42,8 +42,8 @@ type portal struct {
 	account              *account
 	workspace            *workspace
 	workspaceCredentials *workspaceCredentials
-	message              *message
-	request              *request
+	application          *application
+	endpoint             *endpoint
 
 	mu sync.Mutex
 }
@@ -93,32 +93,32 @@ func (uc *portal) WorkspaceCredentials() WorkspaceCredentials {
 	return uc.workspaceCredentials
 }
 
-func (uc *portal) Message() Message {
+func (uc *portal) Application() Application {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if uc.message == nil {
-		uc.message = &message{
+	if uc.application == nil {
+		uc.application = &application{
 			conf:         uc.conf,
 			logger:       uc.logger,
 			infra:        uc.infra,
 			repositories: uc.repositories,
 		}
 	}
-	return uc.message
+	return uc.application
 }
 
-func (uc *portal) Request() Request {
+func (uc *portal) Endpoint() Endpoint {
 	uc.mu.Lock()
 	defer uc.mu.Unlock()
 
-	if uc.request == nil {
-		uc.request = &request{
+	if uc.endpoint == nil {
+		uc.endpoint = &endpoint{
 			conf:         uc.conf,
 			logger:       uc.logger,
 			infra:        uc.infra,
 			repositories: uc.repositories,
 		}
 	}
-	return uc.request
+	return uc.endpoint
 }

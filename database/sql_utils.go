@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SqlApplyListQuery(tx *gorm.DB, props []string, query *entities.PagingQuery) *gorm.DB {
+func SqlApplyListQuery(tx *gorm.DB, query *entities.PagingQuery, props []string) *gorm.DB {
 	if len(query.Search) >= 3 && len(props) > 0 {
 		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here
@@ -21,7 +21,7 @@ func SqlApplyListQuery(tx *gorm.DB, props []string, query *entities.PagingQuery)
 	return tx.Limit(query.Limit).Offset(utils.MaxInt((query.Page-1)*query.Limit, 0))
 }
 
-func SqlApplyCountQuery(tx *gorm.DB, props []string, query *entities.PagingQuery) *gorm.DB {
+func SqlApplyCountQuery(tx *gorm.DB, query *entities.PagingQuery, props []string) *gorm.DB {
 	if len(query.Search) >= 3 && len(props) > 0 {
 		for _, qcol := range props {
 			// because dataset volume of database is often small, so we can use scanning here

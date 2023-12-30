@@ -11,29 +11,26 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
-type RequestGetRes struct {
-	*Request
-} // @name RequestGetRes
+type EndpointGetMessageRes struct {
+	*EndpointMessage
+} // @name EndpointGetMessageRes
 
-// UseRequestGet
-// @Tags		request
-// @Router		/request/{id}		[get]
-// @Param		ep_id				query		string			true	"epndpoint id"
-// @Param		msg_id				query		string			true	"msg id"
-// @Success		200					{object}	RequestGetRes
-// @Failure		default				{object}	gateway.Error
+// UseEndpointGetMessage
+// @Tags		endpoint
+// @Router		/endpoint/{ep_id}/message/{msg_id}			[get]
+// @Success		200											{object}	EndpointGetMessageRes
+// @Failure		default										{object}	gateway.Error
 // @Security	Authorization
 // @Security	WorkspaceId
-func UseRequestGet(service *portal) gin.HandlerFunc {
+func UseEndpointGetMessage(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		in := &usecase.RequestGetIn{
+		in := &usecase.EndpointGetMessageIn{
 			WsId:  ws.Id,
-			EpId:  ginctx.Query("ep_id"),
-			MsgId: ginctx.Query("msg_id"),
-			Id:    ginctx.Param("req_id"),
+			EpId:  ginctx.Param("ep_id"),
+			MsgId: ginctx.Param("msg_id"),
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
@@ -41,14 +38,14 @@ func UseRequestGet(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		out, err := service.uc.Request().Get(ctx, in)
+		out, err := service.uc.Endpoint().GetMessage(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &RequestGetRes{ToRequest(out.Doc)}
+		res := &EndpointGetMessageRes{ToEndpointMessage(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

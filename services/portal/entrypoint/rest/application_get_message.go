@@ -11,27 +11,25 @@ import (
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
-type MessageGetRes struct {
+type ApplicationGetMessageRes struct {
 	*Message
-} // @name MessageGetRes
+} // @name ApplicationGetMessageRes
 
-// UseMessageGet
-// @Tags		message
-// @Router		/message/{msg_id}	[get]
-// @Param		app_id					query		string			true	"application id"
-// @Param		msg_id					path		string			true	"message id"
-// @Success		200						{object}	MessageGetRes
-// @Failure		default					{object}	gateway.Error
+// UseApplicationGetMessage
+// @Tags		application
+// @Router		/application/{app_id}/message/{msg_id}		[get]
+// @Success		200											{object}	ApplicationGetMessageRes
+// @Failure		default										{object}	gateway.Error
 // @Security	Authorization
 // @Security	WorkspaceId
-func UseMessageGet(service *portal) gin.HandlerFunc {
+func UseApplicationGetMessage(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
-		in := &usecase.MessageGetIn{
+		in := &usecase.ApplicationGetMessageIn{
 			WsId:  ws.Id,
-			AppId: ginctx.Query("app_id"),
+			AppId: ginctx.Param("app_id"),
 			Id:    ginctx.Param("msg_id"),
 		}
 		if err := in.Validate(); err != nil {
@@ -40,14 +38,14 @@ func UseMessageGet(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		out, err := service.uc.Message().Get(ctx, in)
+		out, err := service.uc.Application().GetMessage(ctx, in)
 		if err != nil {
 			service.logger.Error(err)
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
 			return
 		}
 
-		res := &MessageGetRes{ToMessage(out.Doc)}
+		res := &ApplicationGetMessageRes{ToMessage(out.Doc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

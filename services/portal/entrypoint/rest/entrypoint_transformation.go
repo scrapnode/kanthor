@@ -67,35 +67,23 @@ func ToMessage(doc *entities.Message) *Message {
 	}
 }
 
-type Request struct {
-	Id        string `json:"id"`
-	Timestamp int64  `json:"timestamp"`
+type EndpointMessage struct {
+	*Message
 
-	EpId  string `json:"ep_id"`
-	MsgId string `json:"msg_id"`
+	RequestCount     int    `json:"request_count"`
+	RequestLatestTs  int64  `json:"request_latest_ts"`
+	ResponseCount    int    `json:"response_count"`
+	ResponseLatestTs int64  `json:"response_latest_ts"`
+	SuccessId        string `json:"success_id"`
+} // @name EndpointMessage
 
-	AppId    string `json:"app_id"`
-	Type     string `json:"type"`
-	Metadata string `json:"metadata"`
-
-	Headers string `json:"headers"`
-	Body    string `json:"body"`
-	Uri     string `json:"uri"`
-	Method  string `json:"method"`
-} // @name Request
-
-func ToRequest(doc *entities.Request) *Request {
-	return &Request{
-		Id:        doc.Id,
-		Timestamp: doc.Timestamp,
-		EpId:      doc.EpId,
-		MsgId:     doc.MsgId,
-		AppId:     doc.AppId,
-		Type:      doc.Type,
-		Metadata:  doc.Metadata.String(),
-		Headers:   doc.Headers.String(),
-		Body:      doc.Body,
-		Uri:       doc.Uri,
-		Method:    doc.Method,
+func ToEndpointMessage(doc *entities.EndpointMessage) *EndpointMessage {
+	return &EndpointMessage{
+		Message:          ToMessage(&doc.Message),
+		RequestCount:     doc.RequestCount,
+		RequestLatestTs:  doc.RequestLatestTs,
+		ResponseCount:    doc.ResponseCount,
+		ResponseLatestTs: doc.ResponseLatestTs,
+		SuccessId:        doc.SuccessId,
 	}
 }
