@@ -11,18 +11,6 @@ definitions:
           $ref: '#/definitions/Workspace'
         type: array
     type: object
-  AccountSetupReq:
-    properties:
-      workspace_name:
-        type: string
-    type: object
-  AccountSetupRes:
-    properties:
-      account:
-        $ref: '#/definitions/authenticator.Account'
-      workspace:
-        $ref: '#/definitions/Workspace'
-    type: object
   AnalyticsGetOverviewRes:
     properties:
       application_count:
@@ -321,6 +309,15 @@ definitions:
       ws_id:
         type: string
     type: object
+  WorkspaceExportRes:
+    properties:
+      application:
+        items:
+          $ref: '#/definitions/rest.WorkspaceSnapshotApp'
+        type: array
+      name:
+        type: string
+    type: object
   WorkspaceGetRes:
     properties:
       created_at:
@@ -388,6 +385,41 @@ definitions:
       error:
         type: string
     type: object
+  rest.WorkspaceSnapshotApp:
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/rest.WorkspaceSnapshotEp'
+        type: array
+      name:
+        type: string
+    type: object
+  rest.WorkspaceSnapshotEp:
+    properties:
+      method:
+        type: string
+      name:
+        type: string
+      rules:
+        items:
+          $ref: '#/definitions/rest.WorkspaceSnapshotEpr'
+        type: array
+      uri:
+        type: string
+    type: object
+  rest.WorkspaceSnapshotEpr:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      exclusionary:
+        type: boolean
+      name:
+        type: string
+      priority:
+        type: integer
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -411,28 +443,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/AccountGetRes'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/gateway.Error'
-      security:
-      - Authorization: []
-      - WorkspaceId: []
-      tags:
-      - account
-    post:
-      parameters:
-      - description: setup options
-        in: body
-        name: props
-        required: true
-        schema:
-          $ref: '#/definitions/AccountSetupReq'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/AccountSetupRes'
         default:
           description: ""
           schema:
@@ -766,6 +776,27 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/WorkspaceUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      tags:
+      - workspace
+  /workspace/{ws_id}/transfer:
+    get:
+      parameters:
+      - description: workspace id
+        in: path
+        name: ws_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/WorkspaceExportRes'
         default:
           description: ""
           schema:

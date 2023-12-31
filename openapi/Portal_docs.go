@@ -57,44 +57,6 @@ const docTemplatePortal = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Authorization": []
-                    },
-                    {
-                        "WorkspaceId": []
-                    }
-                ],
-                "tags": [
-                    "account"
-                ],
-                "parameters": [
-                    {
-                        "description": "setup options",
-                        "name": "props",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/AccountSetupReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/AccountSetupRes"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/gateway.Error"
-                        }
-                    }
-                }
             }
         },
         "/analytics/overview": {
@@ -654,6 +616,41 @@ const docTemplatePortal = `{
                     }
                 }
             }
+        },
+        "/workspace/{ws_id}/transfer": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "workspace id",
+                        "name": "ws_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/WorkspaceExportRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -668,25 +665,6 @@ const docTemplatePortal = `{
                     "items": {
                         "$ref": "#/definitions/Workspace"
                     }
-                }
-            }
-        },
-        "AccountSetupReq": {
-            "type": "object",
-            "properties": {
-                "workspace_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "AccountSetupRes": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "$ref": "#/definitions/authenticator.Account"
-                },
-                "workspace": {
-                    "$ref": "#/definitions/Workspace"
                 }
             }
         },
@@ -1145,6 +1123,20 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "WorkspaceExportRes": {
+            "type": "object",
+            "properties": {
+                "application": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rest.WorkspaceSnapshotApp"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "WorkspaceGetRes": {
             "type": "object",
             "properties": {
@@ -1245,6 +1237,60 @@ const docTemplatePortal = `{
                 },
                 "error": {
                     "type": "string"
+                }
+            }
+        },
+        "rest.WorkspaceSnapshotApp": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rest.WorkspaceSnapshotEp"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.WorkspaceSnapshotEp": {
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rest.WorkspaceSnapshotEpr"
+                    }
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.WorkspaceSnapshotEpr": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
                 }
             }
         }

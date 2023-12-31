@@ -167,3 +167,57 @@ type Response struct {
 	Status  int    `json:"status"`
 	Error   string `json:"error"`
 } // @name Response
+
+type WorkspaceSnapshot struct {
+	Name         string                 `json:"name"`
+	Applications []WorkspaceSnapshotApp `json:"application"`
+}
+
+type WorkspaceSnapshotApp struct {
+	Name      string                `json:"name"`
+	Endpoints []WorkspaceSnapshotEp `json:"endpoints"`
+}
+
+type WorkspaceSnapshotEp struct {
+	Name   string                 `json:"name"`
+	Method string                 `json:"method"`
+	Uri    string                 `json:"uri"`
+	Rules  []WorkspaceSnapshotEpr `json:"rules"`
+}
+
+type WorkspaceSnapshotEpr struct {
+	Name                string `json:"name"`
+	Priority            int32  `json:"priority"`
+	Exclusionary        bool   `json:"exclusionary"`
+	ConditionSource     string `json:"condition_source"`
+	ConditionExpression string `json:"condition_expression"`
+}
+
+func ToWorkspaceSnapshot(snapshot *entities.WorkspaceSnapshot) *WorkspaceSnapshot {
+	returning := &WorkspaceSnapshot{Name: snapshot.Name}
+
+	for _, app := range snapshot.Applications {
+		application := WorkspaceSnapshotApp{Name: app.Name}
+		for _, ep := range app.Endpoints {
+			endpoint := WorkspaceSnapshotEp{
+				Name:   ep.Name,
+				Method: ep.Method,
+				Uri:    ep.Uri,
+			}
+			for _, epr := range ep.Rules {
+				rule := WorkspaceSnapshotEpr{
+					Name:                epr.Name,
+					Priority:            epr.Priority,
+					Exclusionary:        epr.Exclusionary,
+					ConditionSource:     epr.ConditionSource,
+					ConditionExpression: epr.ConditionExpression,
+				}
+				endpoint.Rules = append(endpoint.Rules, rule)
+			}
+			application.Endpoints = append(application.Endpoints, endpoint)
+		}
+		returning.Applications = append(returning.Applications, application)
+	}
+
+	return returning
+}

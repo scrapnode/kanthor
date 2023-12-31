@@ -47,3 +47,29 @@ func (entity *WorkspaceCredentials) Validate() error {
 		validator.NumberGreaterThan("expired_at", entity.ExpiredAt, 0),
 	)
 }
+
+type WorkspaceSnapshot struct {
+	Id           string
+	Name         string
+	Applications map[string]WorkspaceSnapshotApp
+}
+
+type WorkspaceSnapshotApp struct {
+	Name      string
+	Endpoints map[string]WorkspaceSnapshotEp
+}
+
+type WorkspaceSnapshotEp struct {
+	Name   string
+	Method string
+	Uri    string
+	Rules  map[string]WorkspaceSnapshotEpr
+}
+
+type WorkspaceSnapshotEpr struct {
+	Name                string
+	Priority            int32
+	Exclusionary        bool
+	ConditionSource     string
+	ConditionExpression string
+}

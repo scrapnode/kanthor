@@ -15,7 +15,7 @@ type Workspace interface {
 	List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceListOut, error)
 	Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error)
 
-	Setup(ctx context.Context, in *WorkspaceSetupIn) (*WorkspaceSetupOut, error)
+	Export(ctx context.Context, in *WorkspaceExportIn) (*WorkspaceExportOut, error)
 }
 
 type workspace struct {

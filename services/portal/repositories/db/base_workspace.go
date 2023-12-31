@@ -13,6 +13,7 @@ type Workspace interface {
 	Get(ctx context.Context, id string) (*entities.Workspace, error)
 	GetOwned(ctx context.Context, owner, id string) (*entities.Workspace, error)
 	ListOwned(ctx context.Context, owner string) ([]entities.Workspace, error)
+	GetSnapshotRows(ct context.Context, id string) ([]SnaptshotRow, error)
 }
 
 type WorkspaceCredentials interface {

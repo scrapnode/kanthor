@@ -14,9 +14,10 @@ type Endpoint struct {
 	// @TODO: add deactivated_at
 	// DeactivatedAt int64
 
-	AppId     string
-	Name      string
 	SecretKey string
+
+	AppId string
+	Name  string
 	// HTTP: POST/PUT/PATCH
 	Method string
 	// format: scheme ":" ["//" authority] path ["?" query] ["#" fragment]
