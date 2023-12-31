@@ -7,11 +7,11 @@ var (
 )
 
 var PortalOwnerPermissions = []authorizator.Permission{
+	{Object: "/api/analytics/overview", Action: "GET"},
 	{Object: "/api/workspace", Action: "GET"},
 	{Object: "/api/workspace", Action: "POST"},
 	{Object: "/api/workspace/:ws_id", Action: "GET"},
 	{Object: "/api/workspace/:ws_id", Action: "PATCH"},
-
 	{Object: "/api/credentials", Action: "POST"},
 	{Object: "/api/credentials", Action: "GET"},
 	{Object: "/api/credentials/:wsc_id", Action: "PATCH"},

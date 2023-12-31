@@ -23,6 +23,15 @@ definitions:
       workspace:
         $ref: '#/definitions/Workspace'
     type: object
+  AnalyticsGetOverviewRes:
+    properties:
+      application_count:
+        type: integer
+      credentials_count:
+        type: integer
+      endpoint_count:
+        type: integer
+    type: object
   ApplicationGetMessageRes:
     properties:
       app_id:
@@ -433,6 +442,22 @@ paths:
       - WorkspaceId: []
       tags:
       - account
+  /analytics/overview:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/AnalyticsGetOverviewRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - analytics
   /application/{app_id}/message:
     get:
       parameters:

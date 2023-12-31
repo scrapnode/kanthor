@@ -97,6 +97,35 @@ const docTemplatePortal = `{
                 }
             }
         },
+        "/analytics/overview": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/AnalyticsGetOverviewRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/application/{app_id}/message": {
             "get": {
                 "security": [
@@ -658,6 +687,20 @@ const docTemplatePortal = `{
                 },
                 "workspace": {
                     "$ref": "#/definitions/Workspace"
+                }
+            }
+        },
+        "AnalyticsGetOverviewRes": {
+            "type": "object",
+            "properties": {
+                "application_count": {
+                    "type": "integer"
+                },
+                "credentials_count": {
+                    "type": "integer"
+                },
+                "endpoint_count": {
+                    "type": "integer"
                 }
             }
         },

@@ -9,6 +9,16 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
+var DefaultPagingLimitMin = 5
+var DefaultPagingLimitMax = 100
+var DefaultPagingPageMin = 1
+var DefaultPagingPageMax = 10
+
+var DefaultPagingQuery = &PagingQuery{
+	Limit: DefaultPagingLimitMin,
+	Page:  DefaultPagingPageMin,
+}
+
 type PagingQuery struct {
 	Search string
 	Limit  int
@@ -20,8 +30,8 @@ func (q *PagingQuery) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringLenIfNotEmpty("search", q.Search, 3, 100),
-		validator.NumberInRange("limit", q.Limit, 5, 100),
-		validator.NumberInRange("page", q.Page, 0, 100),
+		validator.NumberInRange("limit", q.Limit, DefaultPagingLimitMin, DefaultPagingLimitMax),
+		validator.NumberInRange("page", q.Page, DefaultPagingPageMin, DefaultPagingPageMax),
 	)
 }
 
@@ -30,8 +40,8 @@ func PagingQueryFromGatewayQuery(query *gateway.Query) *PagingQuery {
 		return &PagingQuery{}
 	}
 
-	limit := utils.MinInt(utils.MaxInt(query.Limit, 5), 100)
-	page := utils.MinInt(utils.MaxInt(query.Page, 0), 100)
+	limit := utils.MinInt(utils.MaxInt(query.Limit, DefaultPagingLimitMin), DefaultPagingLimitMax)
+	page := utils.MinInt(utils.MaxInt(query.Page, DefaultPagingPageMin), DefaultPagingPageMax)
 	return &PagingQuery{Search: query.Search, Limit: limit, Page: page, Ids: query.Id}
 }
 

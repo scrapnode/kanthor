@@ -31,6 +31,28 @@ func (sql *SqlEndpoint) BulkCreate(ctx context.Context, docs []entities.Endpoint
 	return ids, nil
 }
 
+func (sql *SqlEndpoint) Count(ctx context.Context, wsId string, query *entities.PagingQuery) (int64, error) {
+	doc := &entities.Endpoint{}
+
+	tx := sql.client.WithContext(ctx).Model(doc).
+		Scopes(
+			UseApp(doc.TableName()),
+			UseWsId(wsId, entities.TableApp),
+		)
+
+	if len(query.Ids) > 0 {
+		return int64(len(query.Ids)), nil
+	}
+
+	props := []string{
+		fmt.Sprintf(`"%s"."name"`, doc.TableName()),
+		fmt.Sprintf(`"%s"."uri"`, doc.TableName()),
+	}
+	tx = database.SqlApplyListQuery(tx, query, props)
+	var count int64
+	return count, tx.Count(&count).Error
+}
+
 func (sql *SqlEndpoint) Get(ctx context.Context, wsId, id string) (*entities.Endpoint, error) {
 	doc := &entities.Endpoint{}
 	doc.Id = id

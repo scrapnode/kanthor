@@ -10,6 +10,7 @@ import (
 )
 
 type Portal interface {
+	Analytics() Analytics
 	Account() Account
 	Workspace() Workspace
 	WorkspaceCredentials() WorkspaceCredentials
@@ -39,6 +40,7 @@ type portal struct {
 	infra        *infrastructure.Infrastructure
 	repositories repositories.Repositories
 
+	analytics            *analytics
 	account              *account
 	workspace            *workspace
 	workspaceCredentials *workspaceCredentials
@@ -46,6 +48,21 @@ type portal struct {
 	endpoint             *endpoint
 
 	mu sync.Mutex
+}
+
+func (uc *portal) Analytics() Analytics {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.analytics == nil {
+		uc.analytics = &analytics{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			repositories: uc.repositories,
+		}
+	}
+	return uc.analytics
 }
 
 func (uc *portal) Account() Account {

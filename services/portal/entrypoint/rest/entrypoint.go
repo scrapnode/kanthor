@@ -113,6 +113,7 @@ func (service *portal) router() (*gin.Engine, error) {
 		api.Use(middlewares.UseAuth(service.infra.Authenticator, service.infra.Authenticator.Engines()[0]))
 
 		// IMPORTANT: always put the longer route in the top
+		RegisterAnalyticsRoutes(api.Group("/analytics"), service)
 		RegisterAccountRoutes(api.Group("/account"), service)
 		RegisterWorkspaceRoutes(api.Group("/workspace"), service)
 		RegisterWorkspaceCredentialsRoutes(api.Group("/credentials"), service)
