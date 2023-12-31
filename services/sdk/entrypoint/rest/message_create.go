@@ -29,7 +29,7 @@ type MessageCreateRes struct {
 // UseMessageCreate
 // @Tags		message
 // @Router		/message		[post]
-// @Param		props			body		MessageCreateReq	true	"message properties"
+// @Param		payload			body		MessageCreateReq	true	"message payload"
 // @Success		201				{object}	MessageCreateRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization

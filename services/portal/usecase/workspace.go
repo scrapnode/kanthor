@@ -16,6 +16,7 @@ type Workspace interface {
 	Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error)
 
 	Export(ctx context.Context, in *WorkspaceExportIn) (*WorkspaceExportOut, error)
+	Import(ctx context.Context, in *WorkspaceImportIn) (*WorkspaceImportOut, error)
 }
 
 type workspace struct {

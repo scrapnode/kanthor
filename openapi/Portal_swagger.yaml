@@ -313,7 +313,7 @@ definitions:
     properties:
       application:
         items:
-          $ref: '#/definitions/rest.WorkspaceSnapshotApp'
+          $ref: '#/definitions/WorkspaceSnapshotApp'
         type: array
       name:
         type: string
@@ -335,6 +335,70 @@ definitions:
       tier:
         type: string
       updated_at:
+        type: integer
+    type: object
+  WorkspaceImportReq:
+    properties:
+      snapshot:
+        $ref: '#/definitions/WorkspaceSnapshot'
+    type: object
+  WorkspaceImportRes:
+    properties:
+      app_id:
+        items:
+          type: string
+        type: array
+      ep_id:
+        items:
+          type: string
+        type: array
+      epr_id:
+        items:
+          type: string
+        type: array
+    type: object
+  WorkspaceSnapshot:
+    properties:
+      application:
+        items:
+          $ref: '#/definitions/WorkspaceSnapshotApp'
+        type: array
+      name:
+        type: string
+    type: object
+  WorkspaceSnapshotApp:
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/WorkspaceSnapshotEp'
+        type: array
+      name:
+        type: string
+    type: object
+  WorkspaceSnapshotEp:
+    properties:
+      method:
+        type: string
+      name:
+        type: string
+      rules:
+        items:
+          $ref: '#/definitions/WorkspaceSnapshotEpr'
+        type: array
+      uri:
+        type: string
+    type: object
+  WorkspaceSnapshotEpr:
+    properties:
+      condition_expression:
+        type: string
+      condition_source:
+        type: string
+      exclusionary:
+        type: boolean
+      name:
+        type: string
+      priority:
         type: integer
     type: object
   WorkspaceUpdateReq:
@@ -384,41 +448,6 @@ definitions:
         type: string
       error:
         type: string
-    type: object
-  rest.WorkspaceSnapshotApp:
-    properties:
-      endpoints:
-        items:
-          $ref: '#/definitions/rest.WorkspaceSnapshotEp'
-        type: array
-      name:
-        type: string
-    type: object
-  rest.WorkspaceSnapshotEp:
-    properties:
-      method:
-        type: string
-      name:
-        type: string
-      rules:
-        items:
-          $ref: '#/definitions/rest.WorkspaceSnapshotEpr'
-        type: array
-      uri:
-        type: string
-    type: object
-  rest.WorkspaceSnapshotEpr:
-    properties:
-      condition_expression:
-        type: string
-      condition_source:
-        type: string
-      exclusionary:
-        type: boolean
-      name:
-        type: string
-      priority:
-        type: integer
     type: object
 externalDocs:
   description: OpenAPI
@@ -556,9 +585,9 @@ paths:
       - credentials
     post:
       parameters:
-      - description: credentials properties
+      - description: credentials payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/WorkspaceCredentialsCreateReq'
@@ -605,9 +634,9 @@ paths:
         name: wsc_id
         required: true
         type: string
-      - description: credentials properties
+      - description: credentials payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/WorkspaceCredentialsUpdateReq'
@@ -633,9 +662,9 @@ paths:
         name: wsc_id
         required: true
         type: string
-      - description: credentials properties
+      - description: credentials payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/WorkspaceCredentialsExpireReq'
@@ -718,9 +747,9 @@ paths:
       - workspace
     post:
       parameters:
-      - description: credentials properties
+      - description: credentials payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/WorkspaceCreateReq'
@@ -765,9 +794,9 @@ paths:
         name: ws_id
         required: true
         type: string
-      - description: credentials properties
+      - description: credentials payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/WorkspaceUpdateReq'
@@ -797,6 +826,32 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/WorkspaceExportRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/gateway.Error'
+      security:
+      - Authorization: []
+      tags:
+      - workspace
+    post:
+      parameters:
+      - description: workspace id
+        in: path
+        name: ws_id
+        required: true
+        type: string
+      - description: import payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/WorkspaceImportReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/WorkspaceImportRes'
         default:
           description: ""
           schema:

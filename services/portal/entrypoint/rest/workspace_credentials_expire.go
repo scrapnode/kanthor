@@ -24,7 +24,7 @@ type WorkspaceCredentialsExpireRes struct {
 // @Tags		credentials
 // @Router		/credentials/{wsc_id}/expiration	[put]
 // @Param		wsc_id								path		string							true	"credentials id"
-// @Param		props								body		WorkspaceCredentialsExpireReq	true	"credentials properties"
+// @Param		payload								body		WorkspaceCredentialsExpireReq	true	"credentials payload"
 // @Success		200									{object}	WorkspaceCredentialsExpireRes
 // @Failure		default								{object}	gateway.Error
 // @Security	Authorization

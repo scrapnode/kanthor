@@ -32,3 +32,15 @@ func UseApp(target string) func(db *gorm.DB) *gorm.DB {
 		return db.Joins(join)
 	}
 }
+
+func UseEp(target string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		join := fmt.Sprintf(
+			`JOIN "%s" ON "%s"."id" = "%s"."ep_id"`,
+			entities.TableEp,
+			entities.TableEp,
+			target,
+		)
+		return db.Joins(join)
+	}
+}

@@ -26,7 +26,7 @@ type EndpointCreateRes struct {
 // UseEndpointCreate
 // @Tags		endpoint
 // @Router		/endpoint	[post]
-// @Param		props		body		EndpointCreateReq	true	"endpoint properties"
+// @Param		payload		body		EndpointCreateReq	true	"endpoint payload"
 // @Success		201			{object}	EndpointCreateRes
 // @Failure		default		{object}	gateway.Error
 // @Security	Authorization

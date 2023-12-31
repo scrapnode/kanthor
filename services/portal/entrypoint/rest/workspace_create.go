@@ -22,7 +22,7 @@ type WorkspaceCreateRes struct {
 // UseWorkspaceCreate
 // @Tags		workspace
 // @Router		/workspace			[post]
-// @Param		props				body		WorkspaceCreateReq	true	"credentials properties"
+// @Param		payload				body		WorkspaceCreateReq	true	"credentials payload"
 // @Success		200					{object}	WorkspaceCreateRes
 // @Failure		default				{object}	gateway.Error
 // @Security	Authorization

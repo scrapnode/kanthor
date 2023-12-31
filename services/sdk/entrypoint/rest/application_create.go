@@ -22,7 +22,7 @@ type ApplicationCreateRes struct {
 // UseApplicationCreate
 // @Tags		application
 // @Router		/application		[post]
-// @Param		props				body		ApplicationCreateReq	true	"application properties"
+// @Param		payload				body		ApplicationCreateReq	true	"application payload"
 // @Success		201					{object}	ApplicationCreateRes
 // @Failure		default				{object}	gateway.Error
 // @Security	Authorization

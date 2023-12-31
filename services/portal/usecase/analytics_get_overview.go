@@ -22,6 +22,7 @@ type AnalyticsGetOverviewOut struct {
 	CredentialsCount int64
 	ApplicationCount int64
 	EndpointCount    int64
+	RuleCount        int64
 }
 
 func (uc *analytics) GetOverview(ctx context.Context, in *AnalyticsGetOverviewIn) (*AnalyticsGetOverviewOut, error) {
@@ -29,15 +30,25 @@ func (uc *analytics) GetOverview(ctx context.Context, in *AnalyticsGetOverviewIn
 	if err != nil {
 		return nil, err
 	}
-	appCount, err := uc.repositories.Database().WorkspaceCredentials().Count(ctx, in.WsId, entities.DefaultPagingQuery)
+	appCount, err := uc.repositories.Database().Application().Count(ctx, in.WsId, entities.DefaultPagingQuery)
 	if err != nil {
 		return nil, err
 	}
-	epCount, err := uc.repositories.Database().WorkspaceCredentials().Count(ctx, in.WsId, entities.DefaultPagingQuery)
+	epCount, err := uc.repositories.Database().Endpoint().Count(ctx, in.WsId, entities.DefaultPagingQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	out := &AnalyticsGetOverviewOut{CredentialsCount: credCount, ApplicationCount: appCount, EndpointCount: epCount}
+	eprCount, err := uc.repositories.Database().EndpointRule().Count(ctx, in.WsId, entities.DefaultPagingQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &AnalyticsGetOverviewOut{
+		CredentialsCount: credCount,
+		ApplicationCount: appCount,
+		EndpointCount:    epCount,
+		RuleCount:        eprCount,
+	}
 	return out, nil
 }

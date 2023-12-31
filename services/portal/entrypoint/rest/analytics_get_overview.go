@@ -15,6 +15,7 @@ type AnalyticsGetOverviewRes struct {
 	CredentialsCount int64 `json:"credentials_count"`
 	ApplicationCount int64 `json:"application_count"`
 	EndpointCount    int64 `json:"endpoint_count"`
+	RuleCount        int64 `json:"rule_count"`
 } // @name AnalyticsGetOverviewRes
 
 // UseAnalyticsGetOverview
@@ -48,7 +49,8 @@ func UseAnalyticsGetOverview(service *portal) gin.HandlerFunc {
 		res := &AnalyticsGetOverviewRes{
 			CredentialsCount: out.CredentialsCount,
 			ApplicationCount: out.ApplicationCount,
-			EndpointCount:    out.CredentialsCount,
+			EndpointCount:    out.EndpointCount,
+			RuleCount:        out.RuleCount,
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

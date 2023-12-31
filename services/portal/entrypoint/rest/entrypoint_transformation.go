@@ -1,6 +1,9 @@
 package rest
 
-import "github.com/scrapnode/kanthor/internal/entities"
+import (
+	"github.com/scrapnode/kanthor/internal/entities"
+	"github.com/scrapnode/kanthor/pkg/suid"
+)
 
 type Workspace struct {
 	Id        string `json:"id"`
@@ -171,19 +174,19 @@ type Response struct {
 type WorkspaceSnapshot struct {
 	Name         string                 `json:"name"`
 	Applications []WorkspaceSnapshotApp `json:"application"`
-}
+} // @name WorkspaceSnapshot
 
 type WorkspaceSnapshotApp struct {
 	Name      string                `json:"name"`
 	Endpoints []WorkspaceSnapshotEp `json:"endpoints"`
-}
+} // @name WorkspaceSnapshotApp
 
 type WorkspaceSnapshotEp struct {
 	Name   string                 `json:"name"`
 	Method string                 `json:"method"`
 	Uri    string                 `json:"uri"`
 	Rules  []WorkspaceSnapshotEpr `json:"rules"`
-}
+} // @name WorkspaceSnapshotEp
 
 type WorkspaceSnapshotEpr struct {
 	Name                string `json:"name"`
@@ -191,7 +194,7 @@ type WorkspaceSnapshotEpr struct {
 	Exclusionary        bool   `json:"exclusionary"`
 	ConditionSource     string `json:"condition_source"`
 	ConditionExpression string `json:"condition_expression"`
-}
+} // @name WorkspaceSnapshotEpr
 
 func ToWorkspaceSnapshot(snapshot *entities.WorkspaceSnapshot) *WorkspaceSnapshot {
 	returning := &WorkspaceSnapshot{Name: snapshot.Name}
@@ -217,6 +220,47 @@ func ToWorkspaceSnapshot(snapshot *entities.WorkspaceSnapshot) *WorkspaceSnapsho
 			application.Endpoints = append(application.Endpoints, endpoint)
 		}
 		returning.Applications = append(returning.Applications, application)
+	}
+
+	return returning
+}
+
+func FromWorkspaceSnapshot(snapshot *WorkspaceSnapshot, id string) *entities.WorkspaceSnapshot {
+	returning := &entities.WorkspaceSnapshot{
+		Id:           id,
+		Name:         snapshot.Name,
+		Applications: make(map[string]entities.WorkspaceSnapshotApp),
+	}
+
+	for _, app := range snapshot.Applications {
+		application := entities.WorkspaceSnapshotApp{
+			Name:      app.Name,
+			Endpoints: make(map[string]entities.WorkspaceSnapshotEp),
+		}
+
+		for _, ep := range app.Endpoints {
+			endpoint := entities.WorkspaceSnapshotEp{
+				Name:   ep.Name,
+				Method: ep.Method,
+				Uri:    ep.Uri,
+				Rules:  make(map[string]entities.WorkspaceSnapshotEpr),
+			}
+
+			for _, epr := range ep.Rules {
+				rule := entities.WorkspaceSnapshotEpr{
+					Name:                epr.Name,
+					Priority:            epr.Priority,
+					Exclusionary:        epr.Exclusionary,
+					ConditionSource:     epr.ConditionSource,
+					ConditionExpression: epr.ConditionExpression,
+				}
+				endpoint.Rules[suid.New(entities.IdNsEpr)] = rule
+			}
+
+			application.Endpoints[suid.New(entities.IdNsEp)] = endpoint
+		}
+
+		returning.Applications[suid.New(entities.IdNsApp)] = application
 	}
 
 	return returning

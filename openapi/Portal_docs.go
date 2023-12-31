@@ -243,8 +243,8 @@ const docTemplatePortal = `{
                 ],
                 "parameters": [
                     {
-                        "description": "credentials properties",
-                        "name": "props",
+                        "description": "credentials payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -326,8 +326,8 @@ const docTemplatePortal = `{
                         "required": true
                     },
                     {
-                        "description": "credentials properties",
-                        "name": "props",
+                        "description": "credentials payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -373,8 +373,8 @@ const docTemplatePortal = `{
                         "required": true
                     },
                     {
-                        "description": "credentials properties",
-                        "name": "props",
+                        "description": "credentials payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -515,8 +515,8 @@ const docTemplatePortal = `{
                 ],
                 "parameters": [
                     {
-                        "description": "credentials properties",
-                        "name": "props",
+                        "description": "credentials payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -592,8 +592,8 @@ const docTemplatePortal = `{
                         "required": true
                     },
                     {
-                        "description": "credentials properties",
-                        "name": "props",
+                        "description": "credentials payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -641,6 +641,48 @@ const docTemplatePortal = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/WorkspaceExportRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/gateway.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "tags": [
+                    "workspace"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "workspace id",
+                        "name": "ws_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "import payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/WorkspaceImportReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/WorkspaceImportRes"
                         }
                     },
                     "default": {
@@ -1129,7 +1171,7 @@ const docTemplatePortal = `{
                 "application": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/rest.WorkspaceSnapshotApp"
+                        "$ref": "#/definitions/WorkspaceSnapshotApp"
                     }
                 },
                 "name": {
@@ -1162,6 +1204,105 @@ const docTemplatePortal = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "WorkspaceImportReq": {
+            "type": "object",
+            "properties": {
+                "snapshot": {
+                    "$ref": "#/definitions/WorkspaceSnapshot"
+                }
+            }
+        },
+        "WorkspaceImportRes": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ep_id": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "epr_id": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "WorkspaceSnapshot": {
+            "type": "object",
+            "properties": {
+                "application": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/WorkspaceSnapshotApp"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "WorkspaceSnapshotApp": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/WorkspaceSnapshotEp"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "WorkspaceSnapshotEp": {
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/WorkspaceSnapshotEpr"
+                    }
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "WorkspaceSnapshotEpr": {
+            "type": "object",
+            "properties": {
+                "condition_expression": {
+                    "type": "string"
+                },
+                "condition_source": {
+                    "type": "string"
+                },
+                "exclusionary": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priority": {
                     "type": "integer"
                 }
             }
@@ -1237,60 +1378,6 @@ const docTemplatePortal = `{
                 },
                 "error": {
                     "type": "string"
-                }
-            }
-        },
-        "rest.WorkspaceSnapshotApp": {
-            "type": "object",
-            "properties": {
-                "endpoints": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/rest.WorkspaceSnapshotEp"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.WorkspaceSnapshotEp": {
-            "type": "object",
-            "properties": {
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "rules": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/rest.WorkspaceSnapshotEpr"
-                    }
-                },
-                "uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "rest.WorkspaceSnapshotEpr": {
-            "type": "object",
-            "properties": {
-                "condition_expression": {
-                    "type": "string"
-                },
-                "condition_source": {
-                    "type": "string"
-                },
-                "exclusionary": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "integer"
                 }
             }
         }

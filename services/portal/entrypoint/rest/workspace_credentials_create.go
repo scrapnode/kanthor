@@ -27,7 +27,7 @@ type WorkspaceCredentialsCreateRes struct {
 // UseWorkspaceCredentialsCreate
 // @Tags		credentials
 // @Router		/credentials	[post]
-// @Param		props			body		WorkspaceCredentialsCreateReq	true	"credentials properties"
+// @Param		payload			body		WorkspaceCredentialsCreateReq	true	"credentials payload"
 // @Success		200				{object}	WorkspaceCredentialsCreateRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization
@@ -45,9 +45,10 @@ func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 
 		in := &usecase.WorkspaceCredentialsGenerateIn{
-			WsId:        ws.Id,
-			Name:        req.Name,
-			ExpiredAt:   req.ExpiredAt,
+			WsId:      ws.Id,
+			Name:      req.Name,
+			ExpiredAt: req.ExpiredAt,
+			// @TODO remove hardcode
 			Role:        permissions.SdkOwner,
 			Permissions: permissions.SdkOwnerPermissions,
 		}

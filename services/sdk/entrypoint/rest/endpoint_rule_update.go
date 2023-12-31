@@ -28,7 +28,7 @@ type EndpointRuleUpdateRes struct {
 // @Tags		endpoint rule
 // @Router		/rule/{epr_id}	[patch]
 // @Param		epr_id			path		string					true	"rule id"
-// @Param		props			body		EndpointRuleUpdateReq	true	"rule properties"
+// @Param		payload			body		EndpointRuleUpdateReq	true	"rule payload"
 // @Success		200				{object}	EndpointRuleUpdateRes
 // @Failure		default			{object}	gateway.Error
 // @Security	Authorization

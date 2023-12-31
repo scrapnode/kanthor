@@ -456,9 +456,9 @@ paths:
       - application
     post:
       parameters:
-      - description: application properties
+      - description: application payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/ApplicationCreateReq'
@@ -526,9 +526,9 @@ paths:
         name: app_id
         required: true
         type: string
-      - description: application properties
+      - description: application payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/ApplicationUpdateReq'
@@ -590,9 +590,9 @@ paths:
       - endpoint
     post:
       parameters:
-      - description: endpoint properties
+      - description: endpoint payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/EndpointCreateReq'
@@ -665,9 +665,9 @@ paths:
         name: ep_id
         required: true
         type: string
-      - description: endpoint properties
+      - description: endpoint payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/EndpointUpdateReq'
@@ -688,9 +688,9 @@ paths:
   /message:
     post:
       parameters:
-      - description: message properties
+      - description: message payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/MessageCreateReq'
@@ -756,9 +756,9 @@ paths:
       - endpoint rule
     post:
       parameters:
-      - description: rule properties
+      - description: rule payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/EndpointRuleCreateReq'
@@ -826,9 +826,9 @@ paths:
         name: epr_id
         required: true
         type: string
-      - description: rule properties
+      - description: rule payload
         in: body
-        name: props
+        name: payload
         required: true
         schema:
           $ref: '#/definitions/EndpointRuleUpdateReq'

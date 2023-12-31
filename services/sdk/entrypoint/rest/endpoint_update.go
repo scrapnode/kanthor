@@ -24,7 +24,7 @@ type EndpointUpdateRes struct {
 // @Tags		endpoint
 // @Router		/endpoint/{ep_id}	[patch]
 // @Param		ep_id				path		string					true	"endpoint id"
-// @Param		props				body		EndpointUpdateReq		true	"endpoint properties"
+// @Param		payload				body		EndpointUpdateReq		true	"endpoint payload"
 // @Success		200					{object}	EndpointUpdateRes
 // @Failure		default				{object}	gateway.Error
 // @Security	Authorization

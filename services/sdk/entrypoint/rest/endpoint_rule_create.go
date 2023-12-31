@@ -28,7 +28,7 @@ type EndpointRuleCreateRes struct {
 // UseEndpointRuleCreate
 // @Tags		endpoint rule
 // @Router		/rule		[post]
-// @Param		props		body		EndpointRuleCreateReq	true	"rule properties"
+// @Param		payload		body		EndpointRuleCreateReq	true	"rule payload"
 // @Success		201			{object}	EndpointRuleCreateRes
 // @Failure		default		{object}	gateway.Error
 // @Security	Authorization

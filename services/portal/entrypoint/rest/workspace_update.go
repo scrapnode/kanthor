@@ -23,7 +23,7 @@ type WorkspaceUpdateRes struct {
 // @Tags		workspace
 // @Router		/workspace/{ws_id}		[patch]
 // @Param		ws_id					path		string						true	"workspace id"
-// @Param		props					body		WorkspaceUpdateReq	true	"credentials properties"
+// @Param		payload					body		WorkspaceUpdateReq	true	"credentials payload"
 // @Success		200						{object}	WorkspaceUpdateRes
 // @Failure		default					{object}	gateway.Error
 // @Security	Authorization

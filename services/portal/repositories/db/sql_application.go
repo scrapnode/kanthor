@@ -13,15 +13,14 @@ type SqlApplication struct {
 	client *gorm.DB
 }
 
-func (sql *SqlApplication) BulkCreate(ctx context.Context, docs []entities.Application) ([]string, error) {
+func (sql *SqlApplication) CreateBulk(ctx context.Context, docs []entities.Application) ([]string, error) {
 	ids := []string{}
 	if len(docs) == 0 {
 		return ids, nil
 	}
 
-	for i, doc := range docs {
+	for _, doc := range docs {
 		ids = append(ids, doc.Id)
-		docs[i] = doc
 	}
 
 	transaction := database.SqlTxnFromContext(ctx, sql.client)

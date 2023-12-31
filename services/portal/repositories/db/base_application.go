@@ -7,7 +7,7 @@ import (
 )
 
 type Application interface {
-	BulkCreate(ctx context.Context, docs []entities.Application) ([]string, error)
+	CreateBulk(ctx context.Context, docs []entities.Application) ([]string, error)
 	Count(ctx context.Context, wsId string, query *entities.PagingQuery) (int64, error)
 	Get(ctx context.Context, wsId, id string) (*entities.Application, error)
 }

@@ -130,8 +130,8 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "description": "application properties",
-                        "name": "props",
+                        "description": "application payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -249,8 +249,8 @@ const docTemplateSdk = `{
                         "required": true
                     },
                     {
-                        "description": "application properties",
-                        "name": "props",
+                        "description": "application payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -354,8 +354,8 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "description": "endpoint properties",
-                        "name": "props",
+                        "description": "endpoint payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -480,8 +480,8 @@ const docTemplateSdk = `{
                         "required": true
                     },
                     {
-                        "description": "endpoint properties",
-                        "name": "props",
+                        "description": "endpoint payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -520,8 +520,8 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "description": "message properties",
-                        "name": "props",
+                        "description": "message payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -631,8 +631,8 @@ const docTemplateSdk = `{
                 ],
                 "parameters": [
                     {
-                        "description": "rule properties",
-                        "name": "props",
+                        "description": "rule payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -750,8 +750,8 @@ const docTemplateSdk = `{
                         "required": true
                     },
                     {
-                        "description": "rule properties",
-                        "name": "props",
+                        "description": "rule payload",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
