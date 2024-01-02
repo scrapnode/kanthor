@@ -3,7 +3,6 @@ package create
 import (
 	"context"
 	"encoding/json"
-	"os"
 
 	kanthor "github.com/scrapnode/kanthor/clients/sdk-go"
 	"github.com/scrapnode/kanthor/cmd/client/utils"
@@ -18,7 +17,7 @@ func Message() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			req, err := parseMessageCreateReq(cmd, args)
+			req, err := parseMessageCreateReq(cmd)
 			if err != nil {
 				return err
 			}
@@ -27,7 +26,7 @@ func Message() *cobra.Command {
 				return err
 			}
 
-			return utils.Print(res)
+			return utils.ResponseTo(cmd, res)
 		},
 	}
 
@@ -38,19 +37,9 @@ func Message() *cobra.Command {
 	return command
 }
 
-func parseMessageCreateReq(cmd *cobra.Command, args []string) (*kanthor.MessageCreateReq, error) {
+func parseMessageCreateReq(cmd *cobra.Command) (*kanthor.MessageCreateReq, error) {
 	req := &kanthor.MessageCreateReq{}
-
-	// read the request object from json file
-	if len(args) > 0 {
-		data, err := os.ReadFile(args[0])
-		if err != nil {
-			return nil, err
-		}
-		if err := json.Unmarshal(data, req); err != nil {
-			return nil, err
-		}
-	}
+	utils.RequestFrom(cmd, req)
 
 	appId, err := cmd.Flags().GetString("app-id")
 	if err != nil {

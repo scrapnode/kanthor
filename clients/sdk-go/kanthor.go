@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/scrapnode/kanthor/clients/sdk-go/internal/openapi"
 )
 
@@ -40,6 +42,9 @@ func NewWithOptions(credentials string, opts *Options) (*Kanthor, error) {
 
 	conf := openapi.NewConfiguration()
 	conf.Scheme = "https"
+	conf.Middleware = func(r *http.Request) {
+		r.Header.Set("Idempotency-Key", uuid.NewString())
+	}
 
 	h, err := parse(credentials, &proj)
 	if err != nil {
@@ -78,12 +83,10 @@ func parse(credentials string, proj *Project) (string, error) {
 	}
 
 	parts := strings.Split(segments[1], ".")
-	if len(parts) != 2 {
-		return "", errors.New("malform credentials password")
-	}
-
-	if h, exist := proj.Hosts[parts[0]]; exist {
-		return h, nil
+	if len(parts) == 2 {
+		if h, exist := proj.Hosts[parts[0]]; exist {
+			return h, nil
+		}
 	}
 
 	return host, nil

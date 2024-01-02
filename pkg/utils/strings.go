@@ -25,7 +25,7 @@ func RandomString(n int) string {
 	var str string
 	count := n / 32
 	for i := 0; i <= count; i++ {
-		str += strings.ReplaceAll(uuid.New().String(), "-", "")
+		str += strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 
 	return str[:n]
