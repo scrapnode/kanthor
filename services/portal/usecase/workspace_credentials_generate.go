@@ -10,6 +10,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
+	"github.com/scrapnode/kanthor/project"
 )
 
 type WorkspaceCredentialsGenerateIn struct {
@@ -47,7 +48,7 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, in *WorkspaceCrede
 	doc.Id = suid.New(entities.IdNsWsc)
 	doc.SetAT(now)
 
-	password := fmt.Sprintf("wscp_%s", utils.RandomString(constants.PasswordLength))
+	password := fmt.Sprintf("%s.%s", project.RegionCode(), utils.RandomString(constants.PasswordLength))
 	// once we got error, reject entirely request instead of do a partial success request
 	hash, err := utils.PasswordHash(password)
 	if err != nil {

@@ -15,11 +15,11 @@
 package casbin
 
 import (
-	"github.com/Knetic/govaluate"
 	"github.com/casbin/casbin/v2/effector"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
 	"github.com/casbin/casbin/v2/rbac"
+	"github.com/casbin/govaluate"
 )
 
 var _ IEnforcer = &Enforcer{}
@@ -86,6 +86,12 @@ type IEnforcer interface {
 	GetPermissionsForUserInDomain(user string, domain string) [][]string
 	AddRoleForUserInDomain(user string, role string, domain string) (bool, error)
 	DeleteRoleForUserInDomain(user string, role string, domain string) (bool, error)
+	GetAllUsersByDomain(domain string) []string
+	DeleteRolesForUserInDomain(user string, domain string) (bool, error)
+	DeleteAllUsersByDomain(domain string) (bool, error)
+	DeleteDomains(domains ...string) (bool, error)
+	GetAllDomains() ([]string, error)
+	GetAllRolesByDomain(domain string) []string
 
 	/* Management API */
 	GetAllSubjects() []string

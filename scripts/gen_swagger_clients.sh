@@ -2,12 +2,8 @@
 set -e
 
 OPENAPI_DIR=openapi
-CLIENTS_DIR=clients
 
-# delimited strings is used as array
-CLIENT_DIRS="$CLIENTS_DIR/golang"
+GO_CLIENT_DIR=clients/sdk-go
 
-for CLIENT_DIR in $CLIENT_DIRS
-do
-    echo "--> $CLIENT_DIR"
-done
+rm -rf $GO_CLIENT_DIR/internal/openapi
+openapi-generator-cli generate -i $OPENAPI_DIR/Sdk_swagger.json -g go -o $GO_CLIENT_DIR/internal/openapi -c $GO_CLIENT_DIR/openapi-generator-config.json --ignore-file-override .openapi-generator-ignore

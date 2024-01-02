@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+func RegionCode() string {
+	code := os.Getenv("KANTHOR_REGION_CODE")
+	if code != "" {
+		return code
+	}
+	return "southeast"
+}
+
 func Namespace() string {
 	ns := os.Getenv("KANTHOR_NAMESPACE")
 	if ns != "" {
@@ -15,17 +23,17 @@ func Namespace() string {
 }
 
 func Tier() string {
-	ns := os.Getenv("KANTHOR_TIER")
-	if ns != "" {
-		return ns
+	tier := os.Getenv("KANTHOR_TIER")
+	if tier != "" {
+		return tier
 	}
 	return "default"
 }
 
 func DefaultWorkspaceName() string {
-	ns := os.Getenv("KANTHOR_DEFAULT_WORKSPACE_NAME")
-	if ns != "" {
-		return ns
+	name := os.Getenv("KANTHOR_DEFAULT_WORKSPACE_NAME")
+	if name != "" {
+		return name
 	}
 	return "main"
 }
