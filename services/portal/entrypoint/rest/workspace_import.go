@@ -12,7 +12,7 @@ import (
 )
 
 type WorkspaceImportReq struct {
-	Snapshot *WorkspaceSnapshot `json:"snapshot"`
+	Snapshot *WorkspaceSnapshot `json:"snapshot" form:"snapshot" binding:"required"`
 } // @name WorkspaceImportReq
 
 type WorkspaceImportRes struct {

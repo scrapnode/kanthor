@@ -721,6 +721,9 @@ const docTemplatePortal = `{
                 },
                 "endpoint_count": {
                     "type": "integer"
+                },
+                "rule_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -1210,6 +1213,9 @@ const docTemplatePortal = `{
         },
         "WorkspaceImportReq": {
             "type": "object",
+            "required": [
+                "snapshot"
+            ],
             "properties": {
                 "snapshot": {
                     "$ref": "#/definitions/WorkspaceSnapshot"
