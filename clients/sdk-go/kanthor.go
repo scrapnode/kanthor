@@ -71,6 +71,7 @@ func NewWithOptions(credentials string, opts *Options) (*Kanthor, error) {
 
 	api := openapi.NewAPIClient(conf)
 	sdk := &Kanthor{
+		Account: &Account{api: api},
 		Message: &Message{api: api},
 	}
 	return sdk, nil

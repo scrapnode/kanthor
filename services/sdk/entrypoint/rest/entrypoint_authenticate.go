@@ -53,7 +53,7 @@ func (verifier *internal) Verify(ctx context.Context, request *authenticator.Req
 		Sub:  out.Credentials.Id,
 		Name: out.Credentials.Name,
 		Metadata: map[string]string{
-			string(gateway.CtxWorkspaceId): out.Credentials.WsId,
+			gateway.MetaWorkspaceId: out.Credentials.WsId,
 		},
 	}
 	return account, nil

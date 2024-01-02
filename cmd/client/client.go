@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/scrapnode/kanthor/cmd/client/create"
+	"github.com/scrapnode/kanthor/cmd/client/get"
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +17,7 @@ func New() *cobra.Command {
 	}
 
 	command.AddCommand(create.New())
+	command.AddCommand(get.New())
 
 	command.PersistentFlags().BoolP("debug", "", false, "--debug | show debug information when client perform an action")
 	command.PersistentFlags().StringP("host", "", "", "--host | override destination sever host")
