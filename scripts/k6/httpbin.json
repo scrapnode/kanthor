@@ -1,5 +1,6 @@
 {
-  "applications": [
+  "name": "performance tests",
+  "application": [
     {
       "name": "performance tests",
       "endpoints": [
@@ -10,18 +11,8 @@
           "rules": [
             {
               "name": "pass-through",
-              "condition_source": "type",
-              "condition_expression": "any::"
-            }
-          ]
-        },
-        {
-          "name": "delay",
-          "method": "POST",
-          "uri": "https://httpbin.org/delay/5",
-          "rules": [
-            {
-              "name": "pass-through",
+              "priority": 1,
+              "exclusionary": false,
               "condition_source": "type",
               "condition_expression": "any::"
             }
@@ -34,6 +25,22 @@
           "rules": [
             {
               "name": "pass-through",
+              "priority": 1,
+              "exclusionary": false,
+              "condition_source": "type",
+              "condition_expression": "any::"
+            }
+          ]
+        },
+        {
+          "name": "delay",
+          "method": "POST",
+          "uri": "https://httpbin.org/delay/5",
+          "rules": [
+            {
+              "name": "pass-through",
+              "priority": 1,
+              "exclusionary": false,
               "condition_source": "type",
               "condition_expression": "any::"
             }

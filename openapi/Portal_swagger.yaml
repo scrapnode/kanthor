@@ -211,6 +211,12 @@ definitions:
     type: object
   WorkspaceCreateReq:
     properties:
+      name:
+        default: main
+        type: string
+    type: object
+  WorkspaceCreateRes:
+    properties:
       created_at:
         type: integer
       id:
@@ -751,7 +757,7 @@ paths:
       - workspace
     post:
       parameters:
-      - description: credentials payload
+      - description: workspace payload
         in: body
         name: payload
         required: true
@@ -761,7 +767,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/WorkspaceCreateReq'
+            $ref: '#/definitions/WorkspaceCreateRes'
         default:
           description: ""
           schema:
@@ -798,7 +804,7 @@ paths:
         name: ws_id
         required: true
         type: string
-      - description: credentials payload
+      - description: workspace payload
         in: body
         name: payload
         required: true

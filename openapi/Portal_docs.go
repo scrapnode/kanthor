@@ -515,7 +515,7 @@ const docTemplatePortal = `{
                 ],
                 "parameters": [
                     {
-                        "description": "credentials payload",
+                        "description": "workspace payload",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -528,7 +528,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/WorkspaceCreateReq"
+                            "$ref": "#/definitions/WorkspaceCreateRes"
                         }
                     },
                     "default": {
@@ -592,7 +592,7 @@ const docTemplatePortal = `{
                         "required": true
                     },
                     {
-                        "description": "credentials payload",
+                        "description": "workspace payload",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -1013,6 +1013,15 @@ const docTemplatePortal = `{
             }
         },
         "WorkspaceCreateReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "default": "main"
+                }
+            }
+        },
+        "WorkspaceCreateRes": {
             "type": "object",
             "properties": {
                 "created_at": {

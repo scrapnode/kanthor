@@ -17,12 +17,12 @@ type WorkspaceCreateReq struct {
 
 type WorkspaceCreateRes struct {
 	*Workspace
-} // @name WorkspaceCreateReq
+} // @name WorkspaceCreateRes
 
 // UseWorkspaceCreate
 // @Tags		workspace
 // @Router		/workspace			[post]
-// @Param		payload				body		WorkspaceCreateReq	true	"credentials payload"
+// @Param		payload				body		WorkspaceCreateReq	true	"workspace payload"
 // @Success		200					{object}	WorkspaceCreateRes
 // @Failure		default				{object}	gateway.Error
 // @Security	Authorization
