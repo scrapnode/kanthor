@@ -11,6 +11,7 @@ REQUEST_COUNT=${REQUEST_COUNT:-1}
 
 go run main.go migrate database up && go run main.go migrate datastore up
 
+NOW=$(date '+%Y-%m-%d %H:%M:%S')
 # prepare new workspace with new application
 IDEMPTOTENCY_KEY_WORKSPACE_CREATE=$(uuidgen)
 curl -s -X POST "$PORTAL_API_ENDPOINT/workspace" \
@@ -18,7 +19,7 @@ curl -s -X POST "$PORTAL_API_ENDPOINT/workspace" \
     -H "Idempotency-Key: $IDEMPTOTENCY_KEY_WORKSPACE_CREATE" \
     -H "Authorization: basic $PORTAL_AUTH_CREDENTIALS" \
     -H 'Content-Type: application/json' \
-    -d '{"name": "test request"}' > "$STORAGE_PATH/workspace.json"
+    -d "{\"name\": \"test workspace of $NOW\"}" > "$STORAGE_PATH/workspace.json"
 
 TEST_WORKSPACE_ID=$(cat $STORAGE_PATH/workspace.json | jq -r '.id')
 jq '{snapshot: .}' $TEST_WORKSPACE_SNAPSHOT_PATH > "$STORAGE_PATH/workspace.snapshot.json"
