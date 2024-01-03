@@ -5,14 +5,13 @@ STORAGE_PATH=${STORAGE_PATH:-"/tmp"}
 PORTAL_AUTH_CREDENTIALS=${PORTAL_AUTH_CREDENTIALS:-"YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93"}
 PORTAL_API_ENDPOINT=${PORTAL_API_ENDPOINT:-"http://localhost:8280/api"}
 SDK_API_ENDPOINT=${SDK_API_ENDPOINT:-"http://localhost:8180/api"}
+TEST_WORKSPACE_SNAPSHOT_PATH=${TEST_WORKSPACE_SNAPSHOT_PATH:-"scripts/data/httpbin.json"}
 REQUEST_WAIT_TIME=${REQUEST_WAIT_TIME:-1}
 REQUEST_COUNT=${REQUEST_COUNT:-1}
-TEST_WORKSPACE_SNAPSHOT_PATH=${TEST_WORKSPACE_SNAPSHOT_PATH:-"scripts/k6/httpbin.json"}
 
 go run main.go migrate database up && go run main.go migrate datastore up
 
 # prepare new workspace with new application
-
 IDEMPTOTENCY_KEY_WORKSPACE_CREATE=$(uuidgen)
 curl -s -X POST "$PORTAL_API_ENDPOINT/workspace" \
     -H "Content-Type: application/json" \

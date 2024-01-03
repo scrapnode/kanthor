@@ -1,8 +1,8 @@
 {
-  "name": "performance tests",
+  "name": "manual test",
   "application": [
     {
-      "name": "performance tests",
+      "name": "manual test",
       "endpoints": [
         {
           "name": "success",
