@@ -11,7 +11,7 @@ RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 COPY . .
 RUN make ioc swagger
-RUN go build -mod vendor -o ./.kanthor/kanthor -buildvcs=false
+RUN go build -o ./.kanthor/kanthor -buildvcs=false
 
 FROM alpine:3
 WORKDIR /app
