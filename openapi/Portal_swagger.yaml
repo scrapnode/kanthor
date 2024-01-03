@@ -319,7 +319,7 @@ definitions:
     type: object
   WorkspaceExportRes:
     properties:
-      application:
+      applications:
         items:
           $ref: '#/definitions/WorkspaceSnapshotApp'
         type: array
@@ -369,7 +369,7 @@ definitions:
     type: object
   WorkspaceSnapshot:
     properties:
-      application:
+      applications:
         items:
           $ref: '#/definitions/WorkspaceSnapshotApp'
         type: array

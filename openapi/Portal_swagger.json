@@ -1173,7 +1173,7 @@
         "WorkspaceExportRes": {
             "type": "object",
             "properties": {
-                "application": {
+                "applications": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/WorkspaceSnapshotApp"
@@ -1250,7 +1250,7 @@
         "WorkspaceSnapshot": {
             "type": "object",
             "properties": {
-                "application": {
+                "applications": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/WorkspaceSnapshotApp"

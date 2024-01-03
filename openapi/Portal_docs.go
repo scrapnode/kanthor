@@ -1180,7 +1180,7 @@ const docTemplatePortal = `{
         "WorkspaceExportRes": {
             "type": "object",
             "properties": {
-                "application": {
+                "applications": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/WorkspaceSnapshotApp"
@@ -1257,7 +1257,7 @@ const docTemplatePortal = `{
         "WorkspaceSnapshot": {
             "type": "object",
             "properties": {
-                "application": {
+                "applications": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/WorkspaceSnapshotApp"

@@ -20,6 +20,7 @@ func (in *WorkspaceImportIn) Validate() error {
 		validator.DefaultConfig,
 		validator.StringStartsWith("id", in.Id, entities.IdNsWs),
 		validator.PointerNotNil("snapshot", in.Snapshot),
+		validator.MapRequired("snapshot.applications", in.Snapshot.Applications),
 		validator.Map(in.Snapshot.Applications, func(appId string, app entities.WorkspaceSnapshotApp) error {
 			appPrefix := fmt.Sprintf("snapshot[%s]", appId)
 			return validator.Validate(

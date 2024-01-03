@@ -173,7 +173,7 @@ type Response struct {
 
 type WorkspaceSnapshot struct {
 	Name         string                 `json:"name"`
-	Applications []WorkspaceSnapshotApp `json:"application"`
+	Applications []WorkspaceSnapshotApp `json:"applications"`
 } // @name WorkspaceSnapshot
 
 type WorkspaceSnapshotApp struct {
