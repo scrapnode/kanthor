@@ -12,7 +12,7 @@ import (
 var DefaultPagingLimitMin = 5
 var DefaultPagingLimitMax = 100
 var DefaultPagingPageMin = 1
-var DefaultPagingPageMax = 10
+var DefaultPagingPageMax = 100
 
 var DefaultPagingQuery = &PagingQuery{
 	Limit: DefaultPagingLimitMin,
