@@ -15,7 +15,7 @@ jobs:
           path: kanthor
 
       - run: |
-          echo "${{ github.repository.owner }}"
+          echo "${{ github.repository }}"
 
       - uses: actions/checkout@v3
         with:
