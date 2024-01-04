@@ -15,12 +15,12 @@ jobs:
           path: kanthor
 
       - run: |
-          echo "${{ github.repository }}"
+          echo "${{ github.repository_owner }}"
 
       - uses: actions/checkout@v3
         with:
           path: kanthor-sdk-go
-          repository: ${{ github.repository.owner }}/kanthor-sdk-go
+          repository: ${{ github.repository_owner }}/kanthor-sdk-go
           ref: "master"
           token: ${{ secrets.KANTHOR_GITHUB_TOKEN }}
 
