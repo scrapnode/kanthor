@@ -1,4 +1,4 @@
-name: SDK Sync CI
+name: SDK Auto Sync CI
 
 on:
   push:
@@ -23,11 +23,13 @@ jobs:
       - name: setup git config
         working-directory: sdk
         run: |
-          git config user.name "Kanthor SDK Bot"
+          git config user.name "Kanthor SDK Sync Bot"
           git config user.email "<>"
 
       - name: sync openapi specs
-        run: cp core/openapi/Sdk_swagger.json sdk/openapi.json
+        run: |
+          cp core/openapi/Sdk_swagger.json sdk/openapi.json
+          cp core/openapi/Sdk_swagger.yaml sdk/openapi.yaml
 
       - name: push
         working-directory: sdk
