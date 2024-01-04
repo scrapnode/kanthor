@@ -25,8 +25,17 @@ func (sql *SqlWorkspaceCredentials) Create(ctx context.Context, doc *entities.Wo
 
 func (sql *SqlWorkspaceCredentials) Update(ctx context.Context, doc *entities.WorkspaceCredentials) (*entities.WorkspaceCredentials, error) {
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
+
+	updates := []string{
+		"name",
+		"expired_at",
+		"updated_at",
+	}
 	tx := transaction.WithContext(ctx).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		// When update with struct, GORM will only update non-zero fields,
+		// you might want to use map to update attributes or use Select to specify fields to update
+		Select(updates).
 		Updates(doc)
 
 	if tx.Error != nil {

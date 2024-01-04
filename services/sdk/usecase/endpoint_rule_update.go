@@ -24,6 +24,9 @@ func (in *EndpointRuleUpdateIn) Validate() error {
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
 		validator.StringStartsWith("id", in.Id, entities.IdNsEpr),
 		validator.StringRequired("name", in.Name),
+		validator.NumberGreaterThan("priority", in.Priority, 0),
+		validator.StringRequired("condition_source", in.ConditionSource),
+		validator.StringRequired("condition_expression", in.ConditionExpression),
 	)
 }
 

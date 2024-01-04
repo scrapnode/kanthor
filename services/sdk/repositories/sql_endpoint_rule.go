@@ -23,8 +23,20 @@ func (sql *SqlEndpointRule) Create(ctx context.Context, doc *entities.EndpointRu
 
 func (sql *SqlEndpointRule) Update(ctx context.Context, doc *entities.EndpointRule) (*entities.EndpointRule, error) {
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
+
+	updates := []string{
+		"name",
+		"priority",
+		"exclusionary",
+		"condition_source",
+		"condition_expression",
+		"updated_at",
+	}
 	tx := transaction.WithContext(ctx).
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		// When update with struct, GORM will only update non-zero fields,
+		// you might want to use map to update attributes or use Select to specify fields to update
+		Select(updates).
 		Updates(doc)
 	if tx.Error != nil {
 		return nil, tx.Error

@@ -32,8 +32,16 @@ func (sql *SqlWorkspace) Update(ctx context.Context, doc *entities.Workspace) (*
 	}
 
 	transaction := database.SqlTxnFromContext(ctx, sql.client)
+
+	updates := []string{
+		"name",
+		"updated_at",
+	}
 	tx := transaction.
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), doc.Id).
+		// When update with struct, GORM will only update non-zero fields,
+		// you might want to use map to update attributes or use Select to specify fields to update
+		Select(updates).
 		Updates(doc)
 	return doc, tx.Error
 }

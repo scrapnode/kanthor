@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "sdk",
+      "name": "Core APIs",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -13,13 +13,13 @@
       "showLog": true,
       "env": {
         "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6061",
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6061"
       },
-      "args": ["serve", "sdk"],
+      "args": ["serve", "sdk", "portal"],
       "preLaunchTask": "make"
     },
     {
-      "name": "portal",
+      "name": "Core Background",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -27,139 +27,10 @@
       "showLog": true,
       "env": {
         "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6062",
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6062"
       },
-      "args": ["serve", "portal"],
+      "args": ["serve", "scheduler", "dispatcher"],
       "preLaunchTask": "make"
-    },
-    {
-      "name": "scheduler",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6063",
-      },
-      "args": ["serve", "scheduler"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "dispatcher",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6064",
-      },
-      "args": ["serve", "dispatcher"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "storage",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6065",
-      },
-      "args": ["serve", "storage"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "attempt.trigger.planner",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-      },
-      "args": ["serve", "attempt.trigger.planner"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "attempt.trigger.executor",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-      },
-      "args": ["serve", "attempt.trigger.executor"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "attempt.endeavor.planner",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-      },
-      "args": ["serve", "attempt.endeavor.planner"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "attempt.endeavor.executor",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6067",
-      },
-      "args": ["serve", "attempt.endeavor.executor"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "administer.attempt-trigger.id",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_HOME": "${input:KANTHOR_HOME}",
-      },
-      "args": ["administer", "attempt-trigger", "-f", "2023-11-01", "${input:KANTHOR_APP_ID}", "--msg-id", "${input:KANTHOR_MESSAGE_ID}"],
-      "preLaunchTask": "make"
-    }
-  ],
-  "inputs": [
-    {
-      "id": "KANTHOR_HOME",
-      "type": "promptString",
-      "description": "home directory to loop up for configs.yaml",
-    },
-    {
-      "id": "KANTHOR_APP_ID",
-      "type": "promptString",
-      "description": "selected app id"
-    },
-    {
-      "id": "KANTHOR_MESSAGE_ID",
-      "type": "promptString",
-      "description": "selected message id"
     }
   ]
 }
