@@ -18,7 +18,6 @@ type EndpointGetRes struct {
 // UseEndpointGet
 // @Tags		endpoint
 // @Router		/endpoint/{ep_id}	[get]
-// @Param		app_id				query		string					true	"application id"
 // @Param		ep_id				path		string					true	"endpoint id"
 // @Success		200					{object}	EndpointGetRes
 // @Failure		default				{object}	gateway.Error

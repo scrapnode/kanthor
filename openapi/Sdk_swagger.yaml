@@ -634,11 +634,6 @@ paths:
       - endpoint
     get:
       parameters:
-      - description: application id
-        in: query
-        name: app_id
-        required: true
-        type: string
       - description: endpoint id
         in: path
         name: ep_id

@@ -395,13 +395,6 @@ const docTemplateSdk = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "application id",
-                        "name": "app_id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "endpoint id",
                         "name": "ep_id",
                         "in": "path",
