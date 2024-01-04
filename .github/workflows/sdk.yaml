@@ -12,29 +12,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          path: kanthor
-
-      - run: |
-          echo "${{ github.repository_owner }}"
+          path: core
 
       - uses: actions/checkout@v3
         with:
-          path: kanthor-sdk-go
+          path: sdk
           repository: ${{ github.repository_owner }}/kanthor-sdk-go
-          ref: "master"
           token: ${{ secrets.KANTHOR_GITHUB_TOKEN }}
 
       - name: setup git config
-        working-directory: kanthor-sdk-go
+        working-directory: sdk
         run: |
           git config user.name "Kanthor SDK Bot"
           git config user.email "<>"
 
       - name: sync openapi specs
-        run: cp kanthor/openapi/Sdk_swagger.yaml kanthor-sdk-go/openapi.yaml
+        run: cp core/openapi/Sdk_swagger.yaml sdk/openapi.yaml
 
       - name: push
-        working-directory: kanthor-sdk-go
+        working-directory: sdk
         run: |
           git add .
           git commit --allow-empty -m "ci($(date +%Y.%-m%d.%-H%M)): sync"; \
