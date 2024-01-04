@@ -1,0 +1,38 @@
+name: SDK Sync CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.event.head_commit.message, 'ci') && contains(github.event.head_commit.message, '#sdk') }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: kanthor
+
+      - uses: actions/checkout@v3
+        with:
+          path: kanthor-sdk-go
+          repository: kanthor-sdk-go
+          ref: "master"
+          token: ${{ secrets.KANTHOR_GITHUB_TOKEN }}
+
+      - name: setup git config
+        working-directory: kanthor-sdk-go
+        run: |
+          git config user.name "Kanthor SDK Bot"
+          git config user.email "<>"
+
+      - name: sync openapi specs
+        run: cp kanthor/openapi/Sdk_swagger.yaml kanthor-sdk-go/openapi.yaml
+
+      - name: push
+        working-directory: kanthor-sdk-go
+        run: |
+          git add .
+          git commit --allow-empty -m "ci($(date +%Y.%-m%d.%-H%M)): sync"; \
+          git push origin;

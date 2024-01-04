@@ -3,7 +3,6 @@ set -e
 
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )";
 
-sh "$SCRIPT_DIR/gen_swagger_clients.sh"
 sh "$SCRIPT_DIR/gen_swagger.sh"
 sh "$SCRIPT_DIR/gen_ioc.sh"
 sh "$SCRIPT_DIR/ci_vet.sh"
@@ -11,8 +10,9 @@ sh "$SCRIPT_DIR/ci_vet.sh"
 find . -type f -name 'checksum' -exec git add {} \;
 
 NOW=$(date +%Y.%-m%d.%-H%M)
+HAHSTAGS=${HAHSTAGS:-""}
 
-git commit --allow-empty -m "ci($NOW): ✨🐛🚨"
+git commit --allow-empty -m "ci($NOW): ✨🐛🚨 $HAHSTAGS"
 
 TARGET=${1:-origin}
 echo "---------------------------"
