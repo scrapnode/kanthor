@@ -8,7 +8,7 @@ on:
 jobs:
   go:
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.head_commit.message, 'ci') && contains(github.event.head_commit.message, '#sdk') }}
+    if: ${{ startsWith(github.event.head_commit.message, 'sync') || (startsWith(github.event.head_commit.message, 'ci') && contains(github.event.head_commit.message, '#sdk')) }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -22,7 +22,7 @@ jobs:
           token: ${{ secrets.KANTHOR_GITHUB_TOKEN }}
 
       - name: setup git config
-        working-directory: kanthor-sdk-go
+        working-directory: ${{ env.GITHUB_REPOSITORY_OWNER_ID }}/kanthor-sdk-go
         run: |
           git config user.name "Kanthor SDK Bot"
           git config user.email "<>"
