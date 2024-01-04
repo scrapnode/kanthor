@@ -27,7 +27,7 @@ jobs:
           git config user.email "<>"
 
       - name: sync openapi specs
-        run: cp core/openapi/Sdk_swagger.yaml sdk/openapi.yaml
+        run: cp core/openapi/Sdk_swagger.json sdk/openapi.json
 
       - name: push
         working-directory: sdk
