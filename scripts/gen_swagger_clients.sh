@@ -10,5 +10,4 @@ openapi-generator-cli generate -i $OPENAPI_DIR/Sdk_swagger.yaml \
     --ignore-file-override .openapi-generator-ignore \
     -g go \
     -o $GO_CLIENT_DIR/internal/openapi \
-    -c $GO_CLIENT_DIR/openapi-generator-config.json \
-    -t $GO_CLIENT_DIR/templates
+    -c $GO_CLIENT_DIR/openapi-generator-config.json
