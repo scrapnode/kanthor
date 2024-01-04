@@ -19,7 +19,7 @@ curl -s -X POST "$PORTAL_API_ENDPOINT/workspace" \
     -H "Idempotency-Key: $IDEMPTOTENCY_KEY_WORKSPACE_CREATE" \
     -H "Authorization: basic $PORTAL_AUTH_CREDENTIALS" \
     -H 'Content-Type: application/json' \
-    -d "{\"name\": \"test workspace of $NOW\"}" > "$STORAGE_PATH/workspace.json"
+    -d "{\"name\": \"test workspace at $NOW\"}" > "$STORAGE_PATH/workspace.json"
 
 TEST_WORKSPACE_ID=$(cat $STORAGE_PATH/workspace.json | jq -r '.id')
 jq '{snapshot: .}' $TEST_WORKSPACE_SNAPSHOT_PATH > "$STORAGE_PATH/workspace.snapshot.json"

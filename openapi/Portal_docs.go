@@ -256,7 +256,7 @@ const docTemplatePortal = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/WorkspaceCredentialsCreateReq"
+                            "$ref": "#/definitions/WorkspaceCredentialsCreateRes"
                         }
                     },
                     "default": {
@@ -1068,6 +1068,19 @@ const docTemplatePortal = `{
             }
         },
         "WorkspaceCredentialsCreateReq": {
+            "type": "object",
+            "properties": {
+                "expired_at": {
+                    "type": "integer",
+                    "default": 1893456000000
+                },
+                "name": {
+                    "type": "string",
+                    "default": "swagger demo"
+                }
+            }
+        },
+        "WorkspaceCredentialsCreateRes": {
             "type": "object",
             "properties": {
                 "id": {

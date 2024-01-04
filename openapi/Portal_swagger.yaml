@@ -247,6 +247,15 @@ definitions:
     type: object
   WorkspaceCredentialsCreateReq:
     properties:
+      expired_at:
+        default: 1893456000000
+        type: integer
+      name:
+        default: swagger demo
+        type: string
+    type: object
+  WorkspaceCredentialsCreateRes:
+    properties:
       id:
         type: string
       name:
@@ -605,7 +614,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/WorkspaceCredentialsCreateReq'
+            $ref: '#/definitions/WorkspaceCredentialsCreateRes'
         default:
           description: ""
           schema:

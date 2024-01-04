@@ -22,7 +22,7 @@ type WorkspaceCredentialsCreateRes struct {
 	Name     string `json:"name"`
 	User     string `json:"user"`
 	Password string `json:"password"`
-} // @name WorkspaceCredentialsCreateReq
+} // @name WorkspaceCredentialsCreateRes
 
 // UseWorkspaceCredentialsCreate
 // @Tags		credentials
