@@ -12,14 +12,13 @@ CHECKSUM_NEW=$(find $SCANNING_DIR -type f -name '*.go' -exec sha256sum {} \; | s
 CHECKSUM_OLD=$(cat $CHECKSUM_FILE || true)
 if [ "$CHECKSUM_NEW" != "$CHECKSUM_OLD" ];
 then
-
   echo "generating portal ...";
   rm -rf "$OPENAPI_DIR/Portal_*"
-  swag init -q --instanceName Portal -d $PORTAL_DIR -g entrypoint_swagger.go -o $OPENAPI_DIR --parseDependency --parseInternal;
+  swag init -q --instanceName Portal -d $PORTAL_DIR -g entrypoint_swagger.go -o $OPENAPI_DIR --parseDependency --parseInternal --requiredByDefault;
 
   echo "generating sdk ...";
   rm -rf "$OPENAPI_DIR/Sdk_*"
-  swag init -q --instanceName Sdk -d $SDK_DIR -g entrypoint_swagger.go -o $OPENAPI_DIR --parseDependency --parseInternal;
+  swag init -q --instanceName Sdk -d $SDK_DIR -g entrypoint_swagger.go -o $OPENAPI_DIR --parseDependency --parseInternal --requiredByDefault;
 
   echo "generating checksum ...";
   find $SCANNING_DIR -type f -name '*.go' -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d  ' ' -f1 > $CHECKSUM_FILE;

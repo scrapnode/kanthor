@@ -1,6 +1,27 @@
 package rest
 
-import "github.com/scrapnode/kanthor/internal/entities"
+import (
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
+	"github.com/scrapnode/kanthor/internal/entities"
+)
+
+type Account struct {
+	Sub      string            `json:"sub"`
+	Name     string            `json:"name"`
+	Metadata map[string]string `json:"metadata"`
+} // @name Account
+
+func ToAccount(acc *authenticator.Account) *Account {
+	account := &Account{
+		Sub:      acc.Sub,
+		Name:     acc.Name,
+		Metadata: make(map[string]string),
+	}
+	if acc.Metadata != nil {
+		account.Metadata = acc.Metadata
+	}
+	return account
+}
 
 type Application struct {
 	Id        string `json:"id"`

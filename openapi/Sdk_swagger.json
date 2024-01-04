@@ -763,16 +763,48 @@
         }
     },
     "definitions": {
+        "Account": {
+            "type": "object",
+            "required": [
+                "metadata",
+                "name",
+                "sub"
+            ],
+            "properties": {
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sub": {
+                    "type": "string"
+                }
+            }
+        },
         "AccountGetRes": {
             "type": "object",
+            "required": [
+                "account"
+            ],
             "properties": {
                 "account": {
-                    "$ref": "#/definitions/authenticator.Account"
+                    "$ref": "#/definitions/Account"
                 }
             }
         },
         "Application": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -793,6 +825,9 @@
         },
         "ApplicationCreateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -801,6 +836,13 @@
         },
         "ApplicationCreateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -821,6 +863,13 @@
         },
         "ApplicationDeleteRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -841,6 +890,13 @@
         },
         "ApplicationGetRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -861,6 +917,10 @@
         },
         "ApplicationListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -875,6 +935,9 @@
         },
         "ApplicationUpdateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -883,6 +946,13 @@
         },
         "ApplicationUpdateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -903,6 +973,15 @@
         },
         "Endpoint": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -929,6 +1008,12 @@
         },
         "EndpointCreateReq": {
             "type": "object",
+            "required": [
+                "app_id",
+                "method",
+                "name",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -948,6 +1033,15 @@
         },
         "EndpointCreateRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -974,6 +1068,15 @@
         },
         "EndpointDeleteRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1000,6 +1103,15 @@
         },
         "EndpointGetRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1026,6 +1138,10 @@
         },
         "EndpointListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -1040,6 +1156,17 @@
         },
         "EndpointRule": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1072,6 +1199,14 @@
         },
         "EndpointRuleCreateReq": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "ep_id",
+                "exclusionary",
+                "name",
+                "priority"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1095,6 +1230,17 @@
         },
         "EndpointRuleCreateRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1127,6 +1273,17 @@
         },
         "EndpointRuleDeleteRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1159,6 +1316,17 @@
         },
         "EndpointRuleGetRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1191,6 +1359,10 @@
         },
         "EndpointRuleListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -1205,6 +1377,13 @@
         },
         "EndpointRuleUpdateReq": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "exclusionary",
+                "name",
+                "priority"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1225,6 +1404,17 @@
         },
         "EndpointRuleUpdateRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1257,6 +1447,10 @@
         },
         "EndpointUpdateReq": {
             "type": "object",
+            "required": [
+                "method",
+                "name"
+            ],
             "properties": {
                 "method": {
                     "type": "string"
@@ -1268,6 +1462,15 @@
         },
         "EndpointUpdateRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1294,6 +1497,12 @@
         },
         "MessageCreateReq": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1316,31 +1525,21 @@
         },
         "MessageCreateRes": {
             "type": "object",
+            "required": [
+                "id"
+            ],
             "properties": {
                 "id": {
                     "type": "string"
                 }
             }
         },
-        "authenticator.Account": {
-            "type": "object",
-            "properties": {
-                "metadata": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "sub": {
-                    "type": "string"
-                }
-            }
-        },
         "gateway.Error": {
             "type": "object",
+            "required": [
+                "code",
+                "error"
+            ],
             "properties": {
                 "code": {
                     "type": "string"

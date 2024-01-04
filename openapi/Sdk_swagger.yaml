@@ -2,10 +2,27 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  Account:
+    properties:
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        type: string
+      sub:
+        type: string
+    required:
+    - metadata
+    - name
+    - sub
+    type: object
   AccountGetRes:
     properties:
       account:
-        $ref: '#/definitions/authenticator.Account'
+        $ref: '#/definitions/Account'
+    required:
+    - account
     type: object
   Application:
     properties:
@@ -19,11 +36,19 @@ definitions:
         type: integer
       ws_id:
         type: string
+    required:
+    - created_at
+    - id
+    - name
+    - updated_at
+    - ws_id
     type: object
   ApplicationCreateReq:
     properties:
       name:
         type: string
+    required:
+    - name
     type: object
   ApplicationCreateRes:
     properties:
@@ -37,6 +62,12 @@ definitions:
         type: integer
       ws_id:
         type: string
+    required:
+    - created_at
+    - id
+    - name
+    - updated_at
+    - ws_id
     type: object
   ApplicationDeleteRes:
     properties:
@@ -50,6 +81,12 @@ definitions:
         type: integer
       ws_id:
         type: string
+    required:
+    - created_at
+    - id
+    - name
+    - updated_at
+    - ws_id
     type: object
   ApplicationGetRes:
     properties:
@@ -63,6 +100,12 @@ definitions:
         type: integer
       ws_id:
         type: string
+    required:
+    - created_at
+    - id
+    - name
+    - updated_at
+    - ws_id
     type: object
   ApplicationListRes:
     properties:
@@ -72,11 +115,16 @@ definitions:
         items:
           $ref: '#/definitions/Application'
         type: array
+    required:
+    - count
+    - data
     type: object
   ApplicationUpdateReq:
     properties:
       name:
         type: string
+    required:
+    - name
     type: object
   ApplicationUpdateRes:
     properties:
@@ -90,6 +138,12 @@ definitions:
         type: integer
       ws_id:
         type: string
+    required:
+    - created_at
+    - id
+    - name
+    - updated_at
+    - ws_id
     type: object
   Endpoint:
     properties:
@@ -107,6 +161,14 @@ definitions:
         type: integer
       uri:
         type: string
+    required:
+    - app_id
+    - created_at
+    - id
+    - method
+    - name
+    - updated_at
+    - uri
     type: object
   EndpointCreateReq:
     properties:
@@ -120,6 +182,11 @@ definitions:
       uri:
         example: https://example.com
         type: string
+    required:
+    - app_id
+    - method
+    - name
+    - uri
     type: object
   EndpointCreateRes:
     properties:
@@ -137,6 +204,14 @@ definitions:
         type: integer
       uri:
         type: string
+    required:
+    - app_id
+    - created_at
+    - id
+    - method
+    - name
+    - updated_at
+    - uri
     type: object
   EndpointDeleteRes:
     properties:
@@ -154,6 +229,14 @@ definitions:
         type: integer
       uri:
         type: string
+    required:
+    - app_id
+    - created_at
+    - id
+    - method
+    - name
+    - updated_at
+    - uri
     type: object
   EndpointGetRes:
     properties:
@@ -171,6 +254,14 @@ definitions:
         type: integer
       uri:
         type: string
+    required:
+    - app_id
+    - created_at
+    - id
+    - method
+    - name
+    - updated_at
+    - uri
     type: object
   EndpointListRes:
     properties:
@@ -180,6 +271,9 @@ definitions:
         items:
           $ref: '#/definitions/Endpoint'
         type: array
+    required:
+    - count
+    - data
     type: object
   EndpointRule:
     properties:
@@ -201,6 +295,16 @@ definitions:
         type: integer
       updated_at:
         type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - ep_id
+    - exclusionary
+    - id
+    - name
+    - priority
+    - updated_at
     type: object
   EndpointRuleCreateReq:
     properties:
@@ -216,6 +320,13 @@ definitions:
         type: string
       priority:
         type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - ep_id
+    - exclusionary
+    - name
+    - priority
     type: object
   EndpointRuleCreateRes:
     properties:
@@ -237,6 +348,16 @@ definitions:
         type: integer
       updated_at:
         type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - ep_id
+    - exclusionary
+    - id
+    - name
+    - priority
+    - updated_at
     type: object
   EndpointRuleDeleteRes:
     properties:
@@ -258,6 +379,16 @@ definitions:
         type: integer
       updated_at:
         type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - ep_id
+    - exclusionary
+    - id
+    - name
+    - priority
+    - updated_at
     type: object
   EndpointRuleGetRes:
     properties:
@@ -279,6 +410,16 @@ definitions:
         type: integer
       updated_at:
         type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - ep_id
+    - exclusionary
+    - id
+    - name
+    - priority
+    - updated_at
     type: object
   EndpointRuleListRes:
     properties:
@@ -288,6 +429,9 @@ definitions:
         items:
           $ref: '#/definitions/EndpointRule'
         type: array
+    required:
+    - count
+    - data
     type: object
   EndpointRuleUpdateReq:
     properties:
@@ -301,6 +445,12 @@ definitions:
         type: string
       priority:
         type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - exclusionary
+    - name
+    - priority
     type: object
   EndpointRuleUpdateRes:
     properties:
@@ -322,6 +472,16 @@ definitions:
         type: integer
       updated_at:
         type: integer
+    required:
+    - condition_expression
+    - condition_source
+    - created_at
+    - ep_id
+    - exclusionary
+    - id
+    - name
+    - priority
+    - updated_at
     type: object
   EndpointUpdateReq:
     properties:
@@ -329,6 +489,9 @@ definitions:
         type: string
       name:
         type: string
+    required:
+    - method
+    - name
     type: object
   EndpointUpdateRes:
     properties:
@@ -346,6 +509,14 @@ definitions:
         type: integer
       uri:
         type: string
+    required:
+    - app_id
+    - created_at
+    - id
+    - method
+    - name
+    - updated_at
+    - uri
     type: object
   MessageCreateReq:
     properties:
@@ -361,22 +532,18 @@ definitions:
       type:
         example: testing.debug
         type: string
+    required:
+    - app_id
+    - body
+    - headers
+    - type
     type: object
   MessageCreateRes:
     properties:
       id:
         type: string
-    type: object
-  authenticator.Account:
-    properties:
-      metadata:
-        additionalProperties:
-          type: string
-        type: object
-      name:
-        type: string
-      sub:
-        type: string
+    required:
+    - id
     type: object
   gateway.Error:
     properties:
@@ -384,6 +551,9 @@ definitions:
         type: string
       error:
         type: string
+    required:
+    - code
+    - error
     type: object
 externalDocs:
   description: OpenAPI

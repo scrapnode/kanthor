@@ -770,16 +770,48 @@ const docTemplateSdk = `{
         }
     },
     "definitions": {
+        "Account": {
+            "type": "object",
+            "required": [
+                "metadata",
+                "name",
+                "sub"
+            ],
+            "properties": {
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sub": {
+                    "type": "string"
+                }
+            }
+        },
         "AccountGetRes": {
             "type": "object",
+            "required": [
+                "account"
+            ],
             "properties": {
                 "account": {
-                    "$ref": "#/definitions/authenticator.Account"
+                    "$ref": "#/definitions/Account"
                 }
             }
         },
         "Application": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -800,6 +832,9 @@ const docTemplateSdk = `{
         },
         "ApplicationCreateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -808,6 +843,13 @@ const docTemplateSdk = `{
         },
         "ApplicationCreateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -828,6 +870,13 @@ const docTemplateSdk = `{
         },
         "ApplicationDeleteRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -848,6 +897,13 @@ const docTemplateSdk = `{
         },
         "ApplicationGetRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -868,6 +924,10 @@ const docTemplateSdk = `{
         },
         "ApplicationListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -882,6 +942,9 @@ const docTemplateSdk = `{
         },
         "ApplicationUpdateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -890,6 +953,13 @@ const docTemplateSdk = `{
         },
         "ApplicationUpdateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -910,6 +980,15 @@ const docTemplateSdk = `{
         },
         "Endpoint": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -936,6 +1015,12 @@ const docTemplateSdk = `{
         },
         "EndpointCreateReq": {
             "type": "object",
+            "required": [
+                "app_id",
+                "method",
+                "name",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -955,6 +1040,15 @@ const docTemplateSdk = `{
         },
         "EndpointCreateRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -981,6 +1075,15 @@ const docTemplateSdk = `{
         },
         "EndpointDeleteRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1007,6 +1110,15 @@ const docTemplateSdk = `{
         },
         "EndpointGetRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1033,6 +1145,10 @@ const docTemplateSdk = `{
         },
         "EndpointListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -1047,6 +1163,17 @@ const docTemplateSdk = `{
         },
         "EndpointRule": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1079,6 +1206,14 @@ const docTemplateSdk = `{
         },
         "EndpointRuleCreateReq": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "ep_id",
+                "exclusionary",
+                "name",
+                "priority"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1102,6 +1237,17 @@ const docTemplateSdk = `{
         },
         "EndpointRuleCreateRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1134,6 +1280,17 @@ const docTemplateSdk = `{
         },
         "EndpointRuleDeleteRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1166,6 +1323,17 @@ const docTemplateSdk = `{
         },
         "EndpointRuleGetRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1198,6 +1366,10 @@ const docTemplateSdk = `{
         },
         "EndpointRuleListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -1212,6 +1384,13 @@ const docTemplateSdk = `{
         },
         "EndpointRuleUpdateReq": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "exclusionary",
+                "name",
+                "priority"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1232,6 +1411,17 @@ const docTemplateSdk = `{
         },
         "EndpointRuleUpdateRes": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "created_at",
+                "ep_id",
+                "exclusionary",
+                "id",
+                "name",
+                "priority",
+                "updated_at"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1264,6 +1454,10 @@ const docTemplateSdk = `{
         },
         "EndpointUpdateReq": {
             "type": "object",
+            "required": [
+                "method",
+                "name"
+            ],
             "properties": {
                 "method": {
                     "type": "string"
@@ -1275,6 +1469,15 @@ const docTemplateSdk = `{
         },
         "EndpointUpdateRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "created_at",
+                "id",
+                "method",
+                "name",
+                "updated_at",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1301,6 +1504,12 @@ const docTemplateSdk = `{
         },
         "MessageCreateReq": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -1323,31 +1532,21 @@ const docTemplateSdk = `{
         },
         "MessageCreateRes": {
             "type": "object",
+            "required": [
+                "id"
+            ],
             "properties": {
                 "id": {
                     "type": "string"
                 }
             }
         },
-        "authenticator.Account": {
-            "type": "object",
-            "properties": {
-                "metadata": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "sub": {
-                    "type": "string"
-                }
-            }
-        },
         "gateway.Error": {
             "type": "object",
+            "required": [
+                "code",
+                "error"
+            ],
             "properties": {
                 "code": {
                     "type": "string"

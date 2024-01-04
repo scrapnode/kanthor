@@ -10,7 +10,7 @@ import (
 )
 
 type AccountGetRes struct {
-	Account *authenticator.Account `json:"account"`
+	Account *Account `json:"account"`
 } // @name AccountGetRes
 
 // UseAccountGet
@@ -24,7 +24,7 @@ func UseAccountGet(service *sdk) gin.HandlerFunc {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
-		res := &AccountGetRes{Account: acc}
+		res := &AccountGetRes{Account: ToAccount(acc)}
 		ginctx.JSON(http.StatusOK, res)
 	}
 }

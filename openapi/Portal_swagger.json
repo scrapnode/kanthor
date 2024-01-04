@@ -691,6 +691,10 @@
     "definitions": {
         "AccountGetRes": {
             "type": "object",
+            "required": [
+                "account",
+                "workspaces"
+            ],
             "properties": {
                 "account": {
                     "$ref": "#/definitions/authenticator.Account"
@@ -705,6 +709,12 @@
         },
         "AnalyticsGetOverviewRes": {
             "type": "object",
+            "required": [
+                "application_count",
+                "credentials_count",
+                "endpoint_count",
+                "rule_count"
+            ],
             "properties": {
                 "application_count": {
                     "type": "integer"
@@ -722,6 +732,15 @@
         },
         "ApplicationGetMessageRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -748,6 +767,9 @@
         },
         "ApplicationListMessageRes": {
             "type": "object",
+            "required": [
+                "data"
+            ],
             "properties": {
                 "data": {
                     "type": "array",
@@ -759,6 +781,22 @@
         },
         "EndpointGetMessageRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "request_count",
+                "request_latest_ts",
+                "requests",
+                "response_count",
+                "response_latest_ts",
+                "responses",
+                "success_id",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -812,6 +850,9 @@
         },
         "EndpointListMessageRes": {
             "type": "object",
+            "required": [
+                "data"
+            ],
             "properties": {
                 "data": {
                     "type": "array",
@@ -823,6 +864,22 @@
         },
         "EndpointMessage": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "request_count",
+                "request_latest_ts",
+                "requests",
+                "response_count",
+                "response_latest_ts",
+                "responses",
+                "success_id",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -876,6 +933,15 @@
         },
         "Message": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -902,6 +968,19 @@
         },
         "Request": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "ep_id",
+                "headers",
+                "id",
+                "metadata",
+                "method",
+                "msg_id",
+                "timestamp",
+                "type",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -940,6 +1019,21 @@
         },
         "Response": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "ep_id",
+                "error",
+                "headers",
+                "id",
+                "metadata",
+                "msg_id",
+                "req_id",
+                "status",
+                "timestamp",
+                "type",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -984,6 +1078,14 @@
         },
         "Workspace": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1007,6 +1109,9 @@
         },
         "WorkspaceCreateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string",
@@ -1016,6 +1121,14 @@
         },
         "WorkspaceCreateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1039,6 +1152,14 @@
         },
         "WorkspaceCredentials": {
             "type": "object",
+            "required": [
+                "created_at",
+                "expired_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1062,6 +1183,10 @@
         },
         "WorkspaceCredentialsCreateReq": {
             "type": "object",
+            "required": [
+                "expired_at",
+                "name"
+            ],
             "properties": {
                 "expired_at": {
                     "type": "integer",
@@ -1075,6 +1200,12 @@
         },
         "WorkspaceCredentialsCreateRes": {
             "type": "object",
+            "required": [
+                "id",
+                "name",
+                "password",
+                "user"
+            ],
             "properties": {
                 "id": {
                     "type": "string"
@@ -1092,6 +1223,9 @@
         },
         "WorkspaceCredentialsExpireReq": {
             "type": "object",
+            "required": [
+                "duration"
+            ],
             "properties": {
                 "duration": {
                     "type": "integer",
@@ -1101,6 +1235,10 @@
         },
         "WorkspaceCredentialsExpireRes": {
             "type": "object",
+            "required": [
+                "expired_at",
+                "id"
+            ],
             "properties": {
                 "expired_at": {
                     "type": "integer"
@@ -1112,6 +1250,14 @@
         },
         "WorkspaceCredentialsGetRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "expired_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1135,6 +1281,10 @@
         },
         "WorkspaceCredentialsListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -1149,6 +1299,10 @@
         },
         "WorkspaceCredentialsUpdateReq": {
             "type": "object",
+            "required": [
+                "expired_at",
+                "name"
+            ],
             "properties": {
                 "expired_at": {
                     "type": "integer",
@@ -1162,6 +1316,14 @@
         },
         "WorkspaceCredentialsUpdateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "expired_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1185,6 +1347,10 @@
         },
         "WorkspaceExportRes": {
             "type": "object",
+            "required": [
+                "applications",
+                "name"
+            ],
             "properties": {
                 "applications": {
                     "type": "array",
@@ -1199,6 +1365,15 @@
         },
         "WorkspaceGetRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "permissions",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1239,6 +1414,11 @@
         },
         "WorkspaceImportRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "ep_id",
+                "epr_id"
+            ],
             "properties": {
                 "app_id": {
                     "type": "array",
@@ -1262,6 +1442,10 @@
         },
         "WorkspaceSnapshot": {
             "type": "object",
+            "required": [
+                "applications",
+                "name"
+            ],
             "properties": {
                 "applications": {
                     "type": "array",
@@ -1276,6 +1460,10 @@
         },
         "WorkspaceSnapshotApp": {
             "type": "object",
+            "required": [
+                "endpoints",
+                "name"
+            ],
             "properties": {
                 "endpoints": {
                     "type": "array",
@@ -1290,6 +1478,12 @@
         },
         "WorkspaceSnapshotEp": {
             "type": "object",
+            "required": [
+                "method",
+                "name",
+                "rules",
+                "uri"
+            ],
             "properties": {
                 "method": {
                     "type": "string"
@@ -1310,6 +1504,13 @@
         },
         "WorkspaceSnapshotEpr": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "exclusionary",
+                "name",
+                "priority"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1330,6 +1531,9 @@
         },
         "WorkspaceUpdateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string",
@@ -1339,6 +1543,14 @@
         },
         "WorkspaceUpdateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1362,6 +1574,11 @@
         },
         "authenticator.Account": {
             "type": "object",
+            "required": [
+                "metadata",
+                "name",
+                "sub"
+            ],
             "properties": {
                 "metadata": {
                     "type": "object",
@@ -1379,6 +1596,11 @@
         },
         "authorizator.Permission": {
             "type": "object",
+            "required": [
+                "action",
+                "object",
+                "role"
+            ],
             "properties": {
                 "action": {
                     "type": "string"
@@ -1393,6 +1615,10 @@
         },
         "gateway.Error": {
             "type": "object",
+            "required": [
+                "code",
+                "error"
+            ],
             "properties": {
                 "code": {
                     "type": "string"

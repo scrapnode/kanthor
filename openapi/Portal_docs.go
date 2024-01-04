@@ -698,6 +698,10 @@ const docTemplatePortal = `{
     "definitions": {
         "AccountGetRes": {
             "type": "object",
+            "required": [
+                "account",
+                "workspaces"
+            ],
             "properties": {
                 "account": {
                     "$ref": "#/definitions/authenticator.Account"
@@ -712,6 +716,12 @@ const docTemplatePortal = `{
         },
         "AnalyticsGetOverviewRes": {
             "type": "object",
+            "required": [
+                "application_count",
+                "credentials_count",
+                "endpoint_count",
+                "rule_count"
+            ],
             "properties": {
                 "application_count": {
                     "type": "integer"
@@ -729,6 +739,15 @@ const docTemplatePortal = `{
         },
         "ApplicationGetMessageRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -755,6 +774,9 @@ const docTemplatePortal = `{
         },
         "ApplicationListMessageRes": {
             "type": "object",
+            "required": [
+                "data"
+            ],
             "properties": {
                 "data": {
                     "type": "array",
@@ -766,6 +788,22 @@ const docTemplatePortal = `{
         },
         "EndpointGetMessageRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "request_count",
+                "request_latest_ts",
+                "requests",
+                "response_count",
+                "response_latest_ts",
+                "responses",
+                "success_id",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -819,6 +857,9 @@ const docTemplatePortal = `{
         },
         "EndpointListMessageRes": {
             "type": "object",
+            "required": [
+                "data"
+            ],
             "properties": {
                 "data": {
                     "type": "array",
@@ -830,6 +871,22 @@ const docTemplatePortal = `{
         },
         "EndpointMessage": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "request_count",
+                "request_latest_ts",
+                "requests",
+                "response_count",
+                "response_latest_ts",
+                "responses",
+                "success_id",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -883,6 +940,15 @@ const docTemplatePortal = `{
         },
         "Message": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "headers",
+                "id",
+                "metadata",
+                "timestamp",
+                "type"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -909,6 +975,19 @@ const docTemplatePortal = `{
         },
         "Request": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "ep_id",
+                "headers",
+                "id",
+                "metadata",
+                "method",
+                "msg_id",
+                "timestamp",
+                "type",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -947,6 +1026,21 @@ const docTemplatePortal = `{
         },
         "Response": {
             "type": "object",
+            "required": [
+                "app_id",
+                "body",
+                "ep_id",
+                "error",
+                "headers",
+                "id",
+                "metadata",
+                "msg_id",
+                "req_id",
+                "status",
+                "timestamp",
+                "type",
+                "uri"
+            ],
             "properties": {
                 "app_id": {
                     "type": "string"
@@ -991,6 +1085,14 @@ const docTemplatePortal = `{
         },
         "Workspace": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1014,6 +1116,9 @@ const docTemplatePortal = `{
         },
         "WorkspaceCreateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string",
@@ -1023,6 +1128,14 @@ const docTemplatePortal = `{
         },
         "WorkspaceCreateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1046,6 +1159,14 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentials": {
             "type": "object",
+            "required": [
+                "created_at",
+                "expired_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1069,6 +1190,10 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsCreateReq": {
             "type": "object",
+            "required": [
+                "expired_at",
+                "name"
+            ],
             "properties": {
                 "expired_at": {
                     "type": "integer",
@@ -1082,6 +1207,12 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsCreateRes": {
             "type": "object",
+            "required": [
+                "id",
+                "name",
+                "password",
+                "user"
+            ],
             "properties": {
                 "id": {
                     "type": "string"
@@ -1099,6 +1230,9 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsExpireReq": {
             "type": "object",
+            "required": [
+                "duration"
+            ],
             "properties": {
                 "duration": {
                     "type": "integer",
@@ -1108,6 +1242,10 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsExpireRes": {
             "type": "object",
+            "required": [
+                "expired_at",
+                "id"
+            ],
             "properties": {
                 "expired_at": {
                     "type": "integer"
@@ -1119,6 +1257,14 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsGetRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "expired_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1142,6 +1288,10 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsListRes": {
             "type": "object",
+            "required": [
+                "count",
+                "data"
+            ],
             "properties": {
                 "count": {
                     "type": "integer"
@@ -1156,6 +1306,10 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsUpdateReq": {
             "type": "object",
+            "required": [
+                "expired_at",
+                "name"
+            ],
             "properties": {
                 "expired_at": {
                     "type": "integer",
@@ -1169,6 +1323,14 @@ const docTemplatePortal = `{
         },
         "WorkspaceCredentialsUpdateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "expired_at",
+                "id",
+                "name",
+                "updated_at",
+                "ws_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1192,6 +1354,10 @@ const docTemplatePortal = `{
         },
         "WorkspaceExportRes": {
             "type": "object",
+            "required": [
+                "applications",
+                "name"
+            ],
             "properties": {
                 "applications": {
                     "type": "array",
@@ -1206,6 +1372,15 @@ const docTemplatePortal = `{
         },
         "WorkspaceGetRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "permissions",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1246,6 +1421,11 @@ const docTemplatePortal = `{
         },
         "WorkspaceImportRes": {
             "type": "object",
+            "required": [
+                "app_id",
+                "ep_id",
+                "epr_id"
+            ],
             "properties": {
                 "app_id": {
                     "type": "array",
@@ -1269,6 +1449,10 @@ const docTemplatePortal = `{
         },
         "WorkspaceSnapshot": {
             "type": "object",
+            "required": [
+                "applications",
+                "name"
+            ],
             "properties": {
                 "applications": {
                     "type": "array",
@@ -1283,6 +1467,10 @@ const docTemplatePortal = `{
         },
         "WorkspaceSnapshotApp": {
             "type": "object",
+            "required": [
+                "endpoints",
+                "name"
+            ],
             "properties": {
                 "endpoints": {
                     "type": "array",
@@ -1297,6 +1485,12 @@ const docTemplatePortal = `{
         },
         "WorkspaceSnapshotEp": {
             "type": "object",
+            "required": [
+                "method",
+                "name",
+                "rules",
+                "uri"
+            ],
             "properties": {
                 "method": {
                     "type": "string"
@@ -1317,6 +1511,13 @@ const docTemplatePortal = `{
         },
         "WorkspaceSnapshotEpr": {
             "type": "object",
+            "required": [
+                "condition_expression",
+                "condition_source",
+                "exclusionary",
+                "name",
+                "priority"
+            ],
             "properties": {
                 "condition_expression": {
                     "type": "string"
@@ -1337,6 +1538,9 @@ const docTemplatePortal = `{
         },
         "WorkspaceUpdateReq": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string",
@@ -1346,6 +1550,14 @@ const docTemplatePortal = `{
         },
         "WorkspaceUpdateRes": {
             "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "name",
+                "owner_id",
+                "tier",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "integer"
@@ -1369,6 +1581,11 @@ const docTemplatePortal = `{
         },
         "authenticator.Account": {
             "type": "object",
+            "required": [
+                "metadata",
+                "name",
+                "sub"
+            ],
             "properties": {
                 "metadata": {
                     "type": "object",
@@ -1386,6 +1603,11 @@ const docTemplatePortal = `{
         },
         "authorizator.Permission": {
             "type": "object",
+            "required": [
+                "action",
+                "object",
+                "role"
+            ],
             "properties": {
                 "action": {
                     "type": "string"
@@ -1400,6 +1622,10 @@ const docTemplatePortal = `{
         },
         "gateway.Error": {
             "type": "object",
+            "required": [
+                "code",
+                "error"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
