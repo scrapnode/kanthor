@@ -1,6 +1,6 @@
 {
   "name": "manual test",
-  "application": [
+  "applications": [
     {
       "name": "manual test",
       "endpoints": [
