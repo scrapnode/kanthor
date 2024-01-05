@@ -122,6 +122,7 @@ func ToEndpointMessage(doc *entities.EndpointMessage, requests []entities.Reques
 				Timestamp: response.Timestamp,
 				EpId:      response.EpId,
 				MsgId:     response.MsgId,
+				ReqId:     response.ReqId,
 				AppId:     response.AppId,
 				Type:      response.Type,
 				Metadata:  response.Metadata.String(),
