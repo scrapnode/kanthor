@@ -99,8 +99,9 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 	// https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md
 	req.Headers.Set(entities.HeaderWebhookId, msg.Id)
 	req.Headers.Set(entities.HeaderWebhookTs, fmt.Sprintf("%d", req.Timestamp))
+
 	sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, msg.Body)
-	signed := signature.Sign(sign, ep.SecretKey)
+	signed := signature.Sign(ep.SecretKey, sign)
 	req.Headers.Set(entities.HeaderWebhookSign, fmt.Sprintf("v1,%s", signed))
 
 	// custom headers

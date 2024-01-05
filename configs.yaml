@@ -5,7 +5,7 @@ nats_uri: &nats_uri nats://127.0.0.1:4222
 
 logger:
   pretty: true
-  level: debug
+  level: error
   with:
     env: localhost
 

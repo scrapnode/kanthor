@@ -1,8 +1,8 @@
 {
-  "name": "manual test",
+  "name": "tesing",
   "applications": [
     {
-      "name": "manual test",
+      "name": "tesing",
       "endpoints": [
         {
           "name": "success",
@@ -36,6 +36,20 @@
           "name": "delay",
           "method": "POST",
           "uri": "https://httpbin.org/delay/5",
+          "rules": [
+            {
+              "name": "pass-through",
+              "priority": 1,
+              "exclusionary": false,
+              "condition_source": "type",
+              "condition_expression": "any::"
+            }
+          ]
+        },
+        {
+          "name": "example",
+          "method": "POST",
+          "uri": "http://localhost:9080/webhook",
           "rules": [
             {
               "name": "pass-through",
