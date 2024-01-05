@@ -101,7 +101,7 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 	req.Headers.Set(entities.HeaderWebhookTs, fmt.Sprintf("%d", req.Timestamp))
 	sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, msg.Body)
 	signed := signature.Sign(sign, ep.SecretKey)
-	req.Headers.Set(entities.HeaderWebhookSig, fmt.Sprintf("v1,%s", signed))
+	req.Headers.Set(entities.HeaderWebhookSign, fmt.Sprintf("v1,%s", signed))
 
 	// custom headers
 	req.Headers.Set(entities.HeaderWebhookRef, fmt.Sprintf("%s/%s", msg.AppId, ep.Id))

@@ -11,7 +11,7 @@ var (
 	HeaderIdempotencyKey = "idempotency-key"
 	HeaderWebhookId      = "webhook-id"
 	HeaderWebhookTs      = "webhook-timestamp"
-	HeaderWebhookSig     = "webhook-signature"
+	HeaderWebhookSign    = "webhook-signature"
 	HeaderWebhookRef     = "webhook-ref"
 )
 
