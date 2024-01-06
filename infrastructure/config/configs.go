@@ -11,7 +11,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/dlm"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/pkg/utils"
@@ -48,7 +47,6 @@ type Config struct {
 	Idempotency            idempotency.Config     `json:"idempotency" yaml:"idempotency" mapstructure:"idempotency"`
 	DistributedLockManager dlm.Config             `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
 	Cache                  cache.Config           `json:"cache" yaml:"cache" mapstructure:"cache"`
-	Metric                 metric.Config          `json:"metric" yaml:"metric" mapstructure:"metric"`
 	Authenticators         []authenticator.Config `json:"authenticators" yaml:"authenticators" mapstructure:"authenticators"`
 	Authorizator           authorizator.Config    `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
 	Streaming              streaming.Config       `json:"streaming" yaml:"streaming" mapstructure:"streaming"`
@@ -69,9 +67,6 @@ func (conf *Config) Validate() error {
 	}
 	if err := conf.Cache.Validate(); err != nil {
 		return fmt.Errorf("infrastructure.cache: %v", err)
-	}
-	if err := conf.Metric.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.metric: %v", err)
 	}
 	if len(conf.Authenticators) > 0 {
 		for i, authenticator := range conf.Authenticators {

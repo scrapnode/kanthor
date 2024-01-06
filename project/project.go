@@ -50,12 +50,12 @@ func Key(key string) string {
 	return fmt.Sprintf("%s/%s/%s", Namespace(), Tier(), key)
 }
 
-func Topic(segments ...string) string {
-	return strings.Join(segments, ".")
-}
-
 func Subject(topic string) string {
 	return fmt.Sprintf("%s.%s.%s", Namespace(), Tier(), topic)
+}
+
+func Topic(segments ...string) string {
+	return strings.Join(segments, ".")
 }
 
 func IsTopic(subject, topic string) bool {

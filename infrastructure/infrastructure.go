@@ -12,7 +12,6 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/infrastructure/dlm"
 	"github.com/scrapnode/kanthor/infrastructure/idempotency"
-	"github.com/scrapnode/kanthor/infrastructure/monitoring/metric"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/logging"
@@ -54,10 +53,6 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
-	m, err := metric.New(&conf.Metric, logger)
-	if err != nil {
-		return nil, err
-	}
 	c, err := cache.New(&conf.Cache, logger)
 	if err != nil {
 		return nil, err
@@ -80,7 +75,6 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 		DistributedLockManager: lock,
 		Stream:                 s,
 		Cache:                  c,
-		Metric:                 m,
 	}
 	return infra, nil
 }
@@ -98,7 +92,6 @@ type Infrastructure struct {
 	Authorizator           authorizator.Authorizator
 	Stream                 streaming.Stream
 	Cache                  cache.Cache
-	Metric                 metric.Metric
 }
 
 func (infra *Infrastructure) Readiness() error {
@@ -112,9 +105,6 @@ func (infra *Infrastructure) Readiness() error {
 		return err
 	}
 	if err := infra.Cache.Readiness(); err != nil {
-		return err
-	}
-	if err := infra.Metric.Readiness(); err != nil {
 		return err
 	}
 	return nil
@@ -133,9 +123,6 @@ func (infra *Infrastructure) Liveness() error {
 	if err := infra.Cache.Liveness(); err != nil {
 		return err
 	}
-	if err := infra.Metric.Liveness(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -150,9 +137,6 @@ func (infra *Infrastructure) Connect(ctx context.Context) error {
 		return err
 	}
 	if err := infra.Cache.Connect(ctx); err != nil {
-		return err
-	}
-	if err := infra.Metric.Connect(ctx); err != nil {
 		return err
 	}
 
@@ -174,9 +158,6 @@ func (infra *Infrastructure) Disconnect(ctx context.Context) error {
 		returning = errors.Join(returning, err)
 	}
 	if err := infra.Cache.Disconnect(ctx); err != nil {
-		returning = errors.Join(returning, err)
-	}
-	if err := infra.Metric.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
 

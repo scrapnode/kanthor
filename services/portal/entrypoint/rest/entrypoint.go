@@ -107,9 +107,7 @@ func (service *portal) router() (*gin.Engine, error) {
 	api := router.Group("/api")
 	{
 		api.Use(middlewares.UseStartup(&service.conf.Gateway))
-		api.Use(middlewares.UseMetric(service.infra.Metric, "portal"))
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency, project.IsDev()))
-
 		api.Use(middlewares.UseAuth(service.infra.Authenticator, service.infra.Authenticator.Engines()[0]))
 
 		// IMPORTANT: always put the longer route in the top

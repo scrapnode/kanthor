@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/signature"
 	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/timer"
+	"github.com/scrapnode/kanthor/pkg/utils"
 )
 
 type Assets struct {
@@ -93,16 +93,13 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 	req.SetTS(timer.Now())
 
 	req.Metadata.Set(entities.MetaEprId, epr.Id)
-
 	req.Headers.Set(entities.HeaderIdempotencyKey, msg.Id)
 
 	// https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md
 	req.Headers.Set(entities.HeaderWebhookId, msg.Id)
 	req.Headers.Set(entities.HeaderWebhookTs, fmt.Sprintf("%d", req.Timestamp))
-
-	sign := fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, msg.Body)
-	signed := signature.Sign(ep.SecretKey, sign)
-	req.Headers.Set(entities.HeaderWebhookSign, fmt.Sprintf("v1,%s", signed))
+	signature := utils.SignatureSign(ep.SecretKey, fmt.Sprintf("%s.%d.%s", msg.Id, req.Timestamp, msg.Body))
+	req.Headers.Set(entities.HeaderWebhookSign, fmt.Sprintf("v1,%s", signature))
 
 	// custom headers
 	req.Headers.Set(entities.HeaderWebhookRef, fmt.Sprintf("%s/%s", msg.AppId, ep.Id))

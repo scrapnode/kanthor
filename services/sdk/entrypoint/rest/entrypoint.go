@@ -100,9 +100,7 @@ func (service *sdk) router() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.Use(middlewares.UseStartup(&service.conf.Gateway))
-		api.Use(middlewares.UseMetric(service.infra.Metric, "sdk"))
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency, project.IsDev()))
-
 		api.Use(middlewares.UseAuth(service.infra.Authenticator, AuthzEngineInternal))
 
 		// IMPORTANT: always put the longer route in the top

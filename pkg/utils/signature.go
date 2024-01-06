@@ -1,4 +1,4 @@
-package signature
+package utils
 
 import (
 	"crypto/hmac"
@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 )
 
-func Sign(key, data string) string {
+func SignatureSign(key, data string) string {
 	mac := hmac.New(sha256.New, []byte(key))
 	mac.Write([]byte(data))
 

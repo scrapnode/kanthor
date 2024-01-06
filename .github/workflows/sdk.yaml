@@ -31,6 +31,7 @@ jobs:
           cp core/openapi/Sdk_swagger.json sdk/openapi.json
           cp core/openapi/Sdk_swagger.yaml sdk/openapi.yaml
           cp core/scripts/sdk_setup.sh sdk/scripts/sdk_setup.sh
+          cp core/.version sdk/.version
 
       - name: push
         working-directory: sdk
