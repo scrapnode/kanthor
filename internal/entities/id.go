@@ -9,4 +9,5 @@ var (
 	IdNsMsg = "msg"
 	IdNsReq = "req"
 	IdNsRes = "res"
+	IdNsRec = "rec"
 )

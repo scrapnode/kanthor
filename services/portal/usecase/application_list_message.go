@@ -35,7 +35,7 @@ func (uc *application) ListMessage(ctx context.Context, in *ApplicationListMessa
 		return nil, err
 	}
 
-	data, err := uc.repositories.Datastore().Message().List(ctx, app.Id, in.ScanningQuery)
+	data, err := uc.repositories.Datastore().Message().Scan(ctx, app.Id, in.ScanningQuery)
 	if err != nil {
 		return nil, err
 	}

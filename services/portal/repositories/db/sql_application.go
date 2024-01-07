@@ -13,7 +13,7 @@ type SqlApplication struct {
 	client *gorm.DB
 }
 
-func (sql *SqlApplication) CreateBulk(ctx context.Context, docs []entities.Application) ([]string, error) {
+func (sql *SqlApplication) CreateBatch(ctx context.Context, docs []entities.Application) ([]string, error) {
 	ids := []string{}
 	if len(docs) == 0 {
 		return ids, nil

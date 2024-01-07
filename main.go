@@ -3,7 +3,6 @@ package main
 import (
 	_ "embed"
 	"log"
-	"runtime/debug"
 
 	"github.com/scrapnode/kanthor/cmd"
 	"github.com/scrapnode/kanthor/configuration"
@@ -24,11 +23,15 @@ func main() {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Panicf("main.recover: %v | stack: %s", r, debug.Stack())
+			// ignore main error
+			if err, ok := r.(error); ok {
+				log.Println("--- error ---")
+				log.Println(err.Error())
+			}
 		}
 	}()
 
 	if err := command.Execute(); err != nil {
-		log.Panicf("main.error: %s | stack: %s", err, debug.Stack())
+		panic(err)
 	}
 }

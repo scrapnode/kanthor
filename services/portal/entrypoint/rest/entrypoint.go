@@ -29,7 +29,7 @@ func New(
 	ds datastore.Datastore,
 	uc usecase.Portal,
 ) patterns.Runnable {
-	logger = logger.With("service", "portal")
+	logger = logger.With("service", "portal", "entrypoint", "rest")
 	return &portal{
 		conf:   conf,
 		logger: logger,
@@ -60,6 +60,10 @@ func (service *portal) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.conf.Validate(); err != nil {
+		return err
 	}
 
 	if err := service.db.Connect(ctx); err != nil {

@@ -48,7 +48,8 @@ func (sql *SqlMessage) GetByIds(ctx context.Context, appId string, ids []string)
 
 	return docs, nil
 }
-func (sql *SqlMessage) List(ctx context.Context, appId string, query *entities.ScanningQuery) ([]entities.Message, error) {
+
+func (sql *SqlMessage) Scan(ctx context.Context, appId string, query *entities.ScanningQuery) ([]entities.Message, error) {
 	doc := &entities.Message{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).

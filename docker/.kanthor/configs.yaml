@@ -124,24 +124,3 @@ storage:
     put:
       timeout: 60000 # 60s
       size: 1000
-
-attempt:
-  trigger:
-    planner:
-      schedule: "*/30 * * * *"
-      scan_start: -86400000 # 24h
-      scan_end: -1800000 # 30m
-      size: 500
-    executor:
-      timeout: 3600000 # 3h
-      concurrency: 500
-      arrange_delay: 1800000 # 30m
-  endeavor:
-    planner:
-      schedule: "*/15 * * * *"
-      scan_start: -86400000 # 24h
-      scan_end: -1800000 # 30m
-      size: 500
-    executor:
-      concurrency: 500
-      reschedule_delay: 1800000 # 30m

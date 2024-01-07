@@ -24,7 +24,7 @@ func New(
 	ds datastore.Datastore,
 	uc usecase.Storage,
 ) patterns.Runnable {
-	logger = logger.With("service", "storage")
+	logger = logger.With("service", "storage", "entrypoint", "consumer")
 	return &storage{
 		conf:       conf,
 		logger:     logger,
@@ -60,6 +60,10 @@ func (service *storage) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.conf.Validate(); err != nil {
+		return err
 	}
 
 	if err := service.ds.Connect(ctx); err != nil {

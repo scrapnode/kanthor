@@ -12,7 +12,7 @@ type MessageRequestMaps struct {
 }
 
 type Request interface {
-	ListMessages(ctx context.Context, epId string, query *entities.ScanningQuery) (*MessageRequestMaps, error)
+	ScanMessages(ctx context.Context, epId string, query *entities.ScanningQuery) (*MessageRequestMaps, error)
 	GetMessage(ctx context.Context, epId, msgId string) (*MessageRequestMaps, error)
-	List(ctx context.Context, epId string, query *entities.ScanningQuery) ([]entities.Request, error)
+	Scan(ctx context.Context, epId string, query *entities.ScanningQuery) ([]entities.Request, error)
 }

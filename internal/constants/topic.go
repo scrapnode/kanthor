@@ -5,10 +5,9 @@ var (
 	TopicMessage  = "public.message"
 	TopicRequest  = "public.request"
 	TopicResponse = "public.response"
-	TopicTrigger  = "private.attempt.trigger"
-	TopicEndeavor = "private.attempt.endeavor"
+	TopicRecovery = "private.recovery"
 )
 
 var (
-	TypeInternal = "internal"
+	TypeScanner = "scanner"
 )

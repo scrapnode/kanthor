@@ -18,7 +18,7 @@ func SqlApplyListQuery(tx *gorm.DB, query *entities.PagingQuery, props []string)
 		}
 	}
 
-	return tx.Limit(query.Limit).Offset(utils.MaxInt((query.Page-1)*query.Limit, 0))
+	return tx.Limit(query.Limit).Offset(utils.Max((query.Page-1)*query.Limit, 0))
 }
 
 func SqlApplyCountQuery(tx *gorm.DB, query *entities.PagingQuery, props []string) *gorm.DB {

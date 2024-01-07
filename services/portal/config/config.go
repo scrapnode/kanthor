@@ -3,10 +3,8 @@ package config
 import (
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/gateway"
-	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-// @TODO: mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Wrapper
 	if err := provider.Unmarshal(&conf); err != nil {
@@ -39,7 +37,5 @@ func (conf *Config) Validate() error {
 		return err
 	}
 
-	return validator.Validate(
-		validator.DefaultConfig,
-	)
+	return nil
 }

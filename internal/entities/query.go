@@ -40,8 +40,8 @@ func PagingQueryFromGatewayQuery(query *gateway.Query) *PagingQuery {
 		return &PagingQuery{}
 	}
 
-	limit := utils.MinInt(utils.MaxInt(query.Limit, DefaultPagingLimitMin), DefaultPagingLimitMax)
-	page := utils.MinInt(utils.MaxInt(query.Page, DefaultPagingPageMin), DefaultPagingPageMax)
+	limit := utils.Min(utils.Max(query.Limit, DefaultPagingLimitMin), DefaultPagingLimitMax)
+	page := utils.Min(utils.Max(query.Page, DefaultPagingPageMin), DefaultPagingPageMax)
 	return &PagingQuery{Search: query.Search, Limit: limit, Page: page, Ids: query.Id}
 }
 
@@ -72,9 +72,14 @@ func ScanningQueryFromGatewayQuery(query *gateway.Query, timer timer.Timer) *Sca
 		From:   timer.UnixMilli(query.Start),
 		To:     timer.Now(),
 	}
-	if query.End > 0 {
+	if timer.Now().UnixMilli() > query.End && query.End > 0 {
 		q.To = timer.UnixMilli(query.End)
 	}
 
 	return q
+}
+
+type ScanningResult[T any] struct {
+	Data  T
+	Error error
 }

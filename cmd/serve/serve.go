@@ -74,6 +74,7 @@ func single(provider configuration.Provider, name string) error {
 		if err = service.Run(ctx); err != nil {
 			logger.Error(err)
 		}
+		logger.Debug("exit running process")
 	}()
 	go func() {
 		if err = debug.Run(ctx); err != nil {
@@ -119,6 +120,7 @@ func multiple(provider configuration.Provider, names []string) error {
 			if err = service.Run(ctx); err != nil {
 				logger.Error(err)
 			}
+			logger.Debug("exit running process")
 		}(instance)
 	}
 

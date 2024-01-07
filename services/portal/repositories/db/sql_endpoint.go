@@ -13,7 +13,7 @@ type SqlEndpoint struct {
 	client *gorm.DB
 }
 
-func (sql *SqlEndpoint) CreateBulk(ctx context.Context, docs []entities.Endpoint) ([]string, error) {
+func (sql *SqlEndpoint) CreateBatch(ctx context.Context, docs []entities.Endpoint) ([]string, error) {
 	ids := []string{}
 	if len(docs) == 0 {
 		return ids, nil

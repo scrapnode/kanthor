@@ -58,6 +58,10 @@ func (service *sdk) Start(ctx context.Context) error {
 		return ErrAlreadyStarted
 	}
 
+	if err := service.conf.Validate(); err != nil {
+		return err
+	}
+
 	if err := service.db.Connect(ctx); err != nil {
 		return err
 	}

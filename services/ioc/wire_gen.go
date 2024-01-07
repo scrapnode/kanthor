@@ -20,18 +20,22 @@ import (
 	entrypoint2 "github.com/scrapnode/kanthor/services/portal/entrypoint"
 	"github.com/scrapnode/kanthor/services/portal/repositories"
 	usecase2 "github.com/scrapnode/kanthor/services/portal/usecase"
-	config3 "github.com/scrapnode/kanthor/services/scheduler/config"
-	entrypoint3 "github.com/scrapnode/kanthor/services/scheduler/entrypoint"
-	repositories2 "github.com/scrapnode/kanthor/services/scheduler/repositories"
-	usecase3 "github.com/scrapnode/kanthor/services/scheduler/usecase"
-	config4 "github.com/scrapnode/kanthor/services/sdk/config"
-	entrypoint4 "github.com/scrapnode/kanthor/services/sdk/entrypoint"
-	repositories3 "github.com/scrapnode/kanthor/services/sdk/repositories"
-	usecase4 "github.com/scrapnode/kanthor/services/sdk/usecase"
-	config5 "github.com/scrapnode/kanthor/services/storage/config"
-	entrypoint5 "github.com/scrapnode/kanthor/services/storage/entrypoint"
-	repositories4 "github.com/scrapnode/kanthor/services/storage/repositories"
-	usecase5 "github.com/scrapnode/kanthor/services/storage/usecase"
+	config3 "github.com/scrapnode/kanthor/services/recovery/config"
+	entrypoint3 "github.com/scrapnode/kanthor/services/recovery/entrypoint"
+	repositories2 "github.com/scrapnode/kanthor/services/recovery/repositories"
+	usecase3 "github.com/scrapnode/kanthor/services/recovery/usecase"
+	config4 "github.com/scrapnode/kanthor/services/scheduler/config"
+	entrypoint4 "github.com/scrapnode/kanthor/services/scheduler/entrypoint"
+	repositories3 "github.com/scrapnode/kanthor/services/scheduler/repositories"
+	usecase4 "github.com/scrapnode/kanthor/services/scheduler/usecase"
+	config5 "github.com/scrapnode/kanthor/services/sdk/config"
+	entrypoint5 "github.com/scrapnode/kanthor/services/sdk/entrypoint"
+	repositories4 "github.com/scrapnode/kanthor/services/sdk/repositories"
+	usecase5 "github.com/scrapnode/kanthor/services/sdk/usecase"
+	config6 "github.com/scrapnode/kanthor/services/storage/config"
+	entrypoint6 "github.com/scrapnode/kanthor/services/storage/entrypoint"
+	repositories5 "github.com/scrapnode/kanthor/services/storage/repositories"
+	usecase6 "github.com/scrapnode/kanthor/services/storage/usecase"
 )
 
 // Injectors from wire_dispatcher.go:
@@ -83,9 +87,9 @@ func Portal(provider configuration.Provider) (patterns.Runnable, error) {
 	return runnable, nil
 }
 
-// Injectors from wire_scheduler.go:
+// Injectors from wire_recovery.go:
 
-func Scheduler(provider configuration.Provider) (patterns.Runnable, error) {
+func RecoveryScanner(provider configuration.Provider) (patterns.Runnable, error) {
 	configConfig, err := config3.New(provider)
 	if err != nil {
 		return nil, err
@@ -102,15 +106,19 @@ func Scheduler(provider configuration.Provider) (patterns.Runnable, error) {
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories2.New(logger, databaseDatabase)
-	scheduler := usecase3.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := entrypoint3.Consumer(configConfig, logger, infrastructureInfrastructure, databaseDatabase, scheduler)
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories2.New(logger, databaseDatabase, datastoreDatastore)
+	recovery := usecase3.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint3.Scanner(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, recovery)
 	return runnable, nil
 }
 
-// Injectors from wire_sdk.go:
+// Injectors from wire_scheduler.go:
 
-func Sdk(provider configuration.Provider) (patterns.Runnable, error) {
+func Scheduler(provider configuration.Provider) (patterns.Runnable, error) {
 	configConfig, err := config4.New(provider)
 	if err != nil {
 		return nil, err
@@ -128,15 +136,40 @@ func Sdk(provider configuration.Provider) (patterns.Runnable, error) {
 		return nil, err
 	}
 	repositoriesRepositories := repositories3.New(logger, databaseDatabase)
-	sdk := usecase4.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := entrypoint4.Rest(configConfig, logger, infrastructureInfrastructure, databaseDatabase, sdk)
+	scheduler := usecase4.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint4.Consumer(configConfig, logger, infrastructureInfrastructure, databaseDatabase, scheduler)
+	return runnable, nil
+}
+
+// Injectors from wire_sdk.go:
+
+func Sdk(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config5.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories4.New(logger, databaseDatabase)
+	sdk := usecase5.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint5.Rest(configConfig, logger, infrastructureInfrastructure, databaseDatabase, sdk)
 	return runnable, nil
 }
 
 // Injectors from wire_storage.go:
 
 func Storage(provider configuration.Provider) (patterns.Runnable, error) {
-	configConfig, err := config5.New(provider)
+	configConfig, err := config6.New(provider)
 	if err != nil {
 		return nil, err
 	}
@@ -152,8 +185,8 @@ func Storage(provider configuration.Provider) (patterns.Runnable, error) {
 	if err != nil {
 		return nil, err
 	}
-	repositoriesRepositories := repositories4.New(logger, datastoreDatastore)
-	storage := usecase5.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := entrypoint5.Consumer(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, storage)
+	repositoriesRepositories := repositories5.New(logger, datastoreDatastore)
+	storage := usecase6.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint6.Consumer(configConfig, logger, infrastructureInfrastructure, datastoreDatastore, storage)
 	return runnable, nil
 }

@@ -5,7 +5,7 @@ nats_uri: &nats_uri nats://127.0.0.1:4222
 
 logger:
   pretty: true
-  level: error
+  level: info
   with:
     env: localhost
 
@@ -117,23 +117,15 @@ storage:
       timeout: 60000 # 60s
       size: 1000
 
-attempt:
-  trigger:
-    planner:
-      schedule: "*/30 * * * *"
-      scan_start: -86400000 # 24h
-      scan_end: -1800000 # 30m
-      size: 500
-    executor:
-      timeout: 3600000 # 3h
-      concurrency: 500
-      arrange_delay: 1800000 # 30m
-  endeavor:
-    planner:
-      schedule: "*/15 * * * *"
-      scan_start: -86400000 # 24h
-      scan_end: -1800000 # 30m
-      size: 500
-    executor:
-      concurrency: 500
-      reschedule_delay: 1800000 # 30m
+recovery:
+  scanner:
+    scheduler: "*/15 * * * *"
+    timeout: 300000 # 5m
+    batch_size: 100
+    buckets:
+      - offset: 0 # 30m
+        duration: 1800000 # 30m
+      - offset: 1800000 # 30m
+        duration: 1800000 # 30m
+      - offset: 3600000 # 1h
+        duration: 1800000 # 30m

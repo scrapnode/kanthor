@@ -24,7 +24,7 @@ func New(
 	db database.Database,
 	uc usecase.Scheduler,
 ) patterns.Runnable {
-	logger = logger.With("service", "scheduler")
+	logger = logger.With("service", "scheduler", "entrypoint", "consumer")
 	return &scheduler{
 		conf:       conf,
 		logger:     logger,
@@ -60,6 +60,10 @@ func (service *scheduler) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.conf.Validate(); err != nil {
+		return err
 	}
 
 	if err := service.db.Connect(ctx); err != nil {

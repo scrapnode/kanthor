@@ -13,11 +13,11 @@ type SqlRequest struct {
 	client *gorm.DB
 }
 
-func (sql *SqlRequest) ListMessages(ctx context.Context, epId string, query *entities.ScanningQuery) (*MessageRequestMaps, error) {
+func (sql *SqlRequest) ScanMessages(ctx context.Context, epId string, query *entities.ScanningQuery) (*MessageRequestMaps, error) {
 	returning := &MessageRequestMaps{Maps: make(map[string][]entities.Request)}
 
 	for {
-		requests, err := sql.List(ctx, epId, query)
+		requests, err := sql.Scan(ctx, epId, query)
 		if err != nil {
 			return nil, err
 		}
@@ -76,7 +76,7 @@ func (sql *SqlRequest) GetMessage(ctx context.Context, epId, msgId string) (*Mes
 	return returning, nil
 }
 
-func (sql *SqlRequest) List(ctx context.Context, epId string, query *entities.ScanningQuery) ([]entities.Request, error) {
+func (sql *SqlRequest) Scan(ctx context.Context, epId string, query *entities.ScanningQuery) ([]entities.Request, error) {
 	doc := &entities.Request{}
 
 	tx := sql.client.WithContext(ctx).Model(doc).

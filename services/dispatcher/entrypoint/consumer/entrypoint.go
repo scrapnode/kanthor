@@ -22,7 +22,7 @@ func New(
 	infra *infrastructure.Infrastructure,
 	uc usecase.Dispatcher,
 ) patterns.Runnable {
-	logger = logger.With("service", "dispatcher")
+	logger = logger.With("service", "dispatcher", "entrypoint", "consumer")
 	return &dispatcher{
 		conf:       conf,
 		logger:     logger,
@@ -56,6 +56,10 @@ func (service *dispatcher) Start(ctx context.Context) error {
 
 	if service.status == patterns.StatusStarted {
 		return ErrAlreadyStarted
+	}
+
+	if err := service.conf.Validate(); err != nil {
+		return err
 	}
 
 	if err := service.infra.Connect(ctx); err != nil {

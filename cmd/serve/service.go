@@ -26,6 +26,9 @@ func Service(provider configuration.Provider, name string) (patterns.Runnable, e
 	if name == services.STORAGE {
 		return ioc.Storage(provider)
 	}
+	if name == services.RECOVERY_SCANNER {
+		return ioc.RecoveryScanner(provider)
+	}
 
 	return nil, fmt.Errorf("serve.service: unknown service [%s]", name)
 }

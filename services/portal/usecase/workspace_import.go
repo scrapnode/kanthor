@@ -102,19 +102,19 @@ func (uc *workspace) Import(ctx context.Context, in *WorkspaceImportIn) (*Worksp
 
 		o := &WorkspaceImportOut{}
 
-		appIds, err := uc.repositories.Database().Application().CreateBulk(txctx, applications)
+		appIds, err := uc.repositories.Database().Application().CreateBatch(txctx, applications)
 		if err != nil {
 			return nil, err
 		}
 		o.AppIds = appIds
 
-		epIds, err := uc.repositories.Database().Endpoint().CreateBulk(txctx, endpoints)
+		epIds, err := uc.repositories.Database().Endpoint().CreateBatch(txctx, endpoints)
 		if err != nil {
 			return nil, err
 		}
 		o.EpIds = epIds
 
-		eprIds, err := uc.repositories.Database().EndpointRule().CreateBulk(txctx, rules)
+		eprIds, err := uc.repositories.Database().EndpointRule().CreateBatch(txctx, rules)
 		if err != nil {
 			return nil, err
 		}

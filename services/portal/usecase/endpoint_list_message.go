@@ -35,7 +35,7 @@ func (uc *endpoint) ListMessage(ctx context.Context, in *EndpointListMessageIn) 
 		return nil, err
 	}
 
-	reqMaps, err := uc.repositories.Datastore().Request().ListMessages(ctx, ep.Id, in.ScanningQuery)
+	reqMaps, err := uc.repositories.Datastore().Request().ScanMessages(ctx, ep.Id, in.ScanningQuery)
 	if err != nil {
 		return nil, err
 	}
