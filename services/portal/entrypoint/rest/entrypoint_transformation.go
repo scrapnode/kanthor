@@ -2,7 +2,7 @@ package rest
 
 import (
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 )
 
 type Workspace struct {
@@ -255,13 +255,13 @@ func FromWorkspaceSnapshot(snapshot *WorkspaceSnapshot, id string) *entities.Wor
 					ConditionSource:     epr.ConditionSource,
 					ConditionExpression: epr.ConditionExpression,
 				}
-				endpoint.Rules[suid.New(entities.IdNsEpr)] = rule
+				endpoint.Rules[identifier.New(entities.IdNsEpr)] = rule
 			}
 
-			application.Endpoints[suid.New(entities.IdNsEp)] = endpoint
+			application.Endpoints[identifier.New(entities.IdNsEp)] = endpoint
 		}
 
-		returning.Applications[suid.New(entities.IdNsApp)] = application
+		returning.Applications[identifier.New(entities.IdNsApp)] = application
 	}
 
 	return returning

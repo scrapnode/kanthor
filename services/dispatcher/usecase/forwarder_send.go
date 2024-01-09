@@ -12,8 +12,8 @@ import (
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/internal/status"
 	"github.com/scrapnode/kanthor/internal/transformation"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/safe"
-	"github.com/scrapnode/kanthor/pkg/suid"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/sourcegraph/conc/pool"
 )
@@ -150,7 +150,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	}
 	// must use merge function otherwise you will edit the original data
 	doc.Metadata.Merge(request.Metadata)
-	doc.Id = suid.New(entities.IdNsRes)
+	doc.Id = identifier.New(entities.IdNsRes)
 	doc.SetTS(uc.infra.Timer.Now())
 
 	// IMPORTANT: we have an anti-pattern response that returns both error && response to trigger circuit breaker

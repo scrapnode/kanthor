@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services/permissions"
@@ -34,7 +34,7 @@ func (uc *workspace) Create(ctx context.Context, in *WorkspaceCreateIn) (*Worksp
 			Name:    in.Name,
 			Tier:    project.Tier(),
 		}
-		doc.Id = suid.New(entities.IdNsWs)
+		doc.Id = identifier.New(entities.IdNsWs)
 		doc.SetAT(uc.infra.Timer.Now())
 
 		ws, err := uc.repositories.Database().Workspace().Create(ctx, doc)

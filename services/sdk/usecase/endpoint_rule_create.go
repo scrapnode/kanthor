@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -49,7 +49,7 @@ func (uc *endpointRule) Create(ctx context.Context, in *EndpointRuleCreateIn) (*
 		ConditionSource:     in.ConditionSource,
 		ConditionExpression: in.ConditionExpression,
 	}
-	doc.Id = suid.New(entities.IdNsEpr)
+	doc.Id = identifier.New(entities.IdNsEpr)
 	doc.SetAT(uc.infra.Timer.Now())
 
 	epr, err := uc.repositories.EndpointRule().Create(ctx, doc)

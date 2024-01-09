@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"gorm.io/gorm"
 )
 
@@ -15,8 +15,8 @@ type ScanningCondition struct {
 }
 
 func SqlApplyScanQuery(tx *gorm.DB, query *entities.ScanningQuery, condition *ScanningCondition) *gorm.DB {
-	low := suid.Id(condition.PrimaryKeyNs, suid.BeforeTime(query.From))
-	high := suid.Id(condition.PrimaryKeyNs, suid.AfterTime(query.To))
+	low := identifier.Id(condition.PrimaryKeyNs, identifier.BeforeTime(query.From))
+	high := identifier.Id(condition.PrimaryKeyNs, identifier.AfterTime(query.To))
 
 	tx = tx.
 		Where(fmt.Sprintf(`%s > ?`, condition.PrimaryKeyCol), low).

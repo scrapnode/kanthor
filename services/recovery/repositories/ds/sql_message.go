@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"gorm.io/gorm"
 )
 
@@ -21,8 +21,8 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, query *entities.S
 func (sql *SqlMessage) scan(ctx context.Context, appId string, query *entities.ScanningQuery, ch chan *entities.ScanningResult[[]entities.Message]) {
 	defer close(ch)
 
-	low := suid.Id(entities.TableMsg, suid.BeforeTime(query.From))
-	high := suid.Id(entities.TableMsg, suid.AfterTime(query.To))
+	low := identifier.Id(entities.TableMsg, identifier.BeforeTime(query.From))
+	high := identifier.Id(entities.TableMsg, identifier.AfterTime(query.To))
 	var cursor string
 	for {
 		if ctx.Err() != nil {

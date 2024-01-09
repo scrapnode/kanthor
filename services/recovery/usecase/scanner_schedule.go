@@ -8,7 +8,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/internal/transformation"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/services/recovery/config"
 )
@@ -52,7 +52,7 @@ func (uc *scanner) Schedule(ctx context.Context, in *ScannerScheduleIn) (*Scanne
 
 			for _, app := range results.Data {
 				event, err := transformation.EventFromRecovery(&entities.Recovery{
-					Id:    suid.New(entities.IdNsRec),
+					Id:    identifier.New(entities.IdNsRec),
 					AppId: app.Id,
 					To:    to.UnixMilli(),
 					From:  from.UnixMilli(),

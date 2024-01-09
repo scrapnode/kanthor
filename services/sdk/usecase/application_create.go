@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -30,7 +30,7 @@ func (uc *application) Create(ctx context.Context, in *ApplicationCreateIn) (*Ap
 		WsId: in.WsId,
 		Name: in.Name,
 	}
-	doc.Id = suid.New(entities.IdNsApp)
+	doc.Id = identifier.New(entities.IdNsApp)
 	doc.SetAT(uc.infra.Timer.Now())
 
 	app, err := uc.repositories.Application().Create(ctx, doc)

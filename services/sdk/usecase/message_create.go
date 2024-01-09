@@ -6,7 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/internal/transformation"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
@@ -54,7 +54,7 @@ func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCre
 	// must use merge function otherwise you will edit the original data
 	msg.Headers.Merge(in.Headers)
 	msg.Metadata.Merge(in.Metadata)
-	msg.Id = suid.New(entities.IdNsMsg)
+	msg.Id = identifier.New(entities.IdNsMsg)
 	msg.SetTS(uc.infra.Timer.Now())
 
 	event, err := transformation.EventFromMessage(msg)

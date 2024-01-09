@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/pkg/utils"
 )
@@ -89,7 +89,7 @@ func Request(msg *entities.Message, ep *entities.Endpoint, epr *entities.Endpoin
 	// must use merge function otherwise you will edit the original data
 	req.Headers.Merge(msg.Headers)
 	req.Metadata.Merge(msg.Metadata)
-	req.Id = suid.New(entities.IdNsReq)
+	req.Id = identifier.New(entities.IdNsReq)
 	req.SetTS(timer.Now())
 
 	req.Metadata.Set(entities.MetaEprId, epr.Id)

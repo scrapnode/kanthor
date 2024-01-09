@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/project"
 )
 
@@ -24,7 +24,7 @@ func NewCasbin(conf *Config, logger logging.Logger) (Authorizator, error) {
 		conf:    &conf.Casbin.Watcher,
 		logger:  logger.With("casbin.watcher", "nats"),
 		subject: project.Subject("infrastructure.casbin.watcher"),
-		nodeid:  suid.New("casbinw"),
+		nodeid:  identifier.New("casbinw"),
 	}
 	return &casbin{conf: conf, logger: logger, watcher: w}, nil
 }

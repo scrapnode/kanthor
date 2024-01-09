@@ -7,7 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/internal/constants"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/suid"
+	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/project"
@@ -45,7 +45,7 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, in *WorkspaceCrede
 		Name:      in.Name,
 		ExpiredAt: in.ExpiredAt,
 	}
-	doc.Id = suid.New(entities.IdNsWsc)
+	doc.Id = identifier.New(entities.IdNsWsc)
 	doc.SetAT(now)
 
 	password := fmt.Sprintf("%s.%s", project.RegionCode(), utils.RandomString(constants.PasswordLength))
