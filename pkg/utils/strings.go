@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"strings"
 
 	"github.com/google/uuid"
@@ -29,4 +30,28 @@ func RandomString(n int) string {
 	}
 
 	return str[:n]
+}
+
+func UrlScheme(rawURL string) (scheme string, err error) {
+	for i := 0; i < len(rawURL); i++ {
+		c := rawURL[i]
+		switch {
+		case 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z':
+		// do nothing
+		case '0' <= c && c <= '9' || c == '+' || c == '-' || c == '.':
+			if i == 0 {
+				return "", nil
+			}
+		case c == ':':
+			if i == 0 {
+				return "", errors.New("missing protocol scheme")
+			}
+			return rawURL[:i], nil
+		default:
+			// we have encountered an invalid character,
+			// so there is no valid scheme
+			return "", nil
+		}
+	}
+	return "", nil
 }

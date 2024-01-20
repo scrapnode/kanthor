@@ -5,19 +5,19 @@ nats_uri: &nats_uri nats://127.0.0.1:4222
 
 logger:
   pretty: true
-  level: info
+  level: debug
   with:
     env: localhost
 
 database:
   uri: *postgres_uri
   migration:
-    source: file://./data/migration/database/sql
+    source: file://./data/migration/database
 
 datastore:
   uri: *postgres_uri
   migration:
-    source: file://./data/migration/datastore/sql
+    source: file://./data/migration/datastore
 
 # infrastructure
 infrastructure:
@@ -118,7 +118,7 @@ storage:
       size: 1000
 
 recovery:
-  scanner:
+  cronjob:
     scheduler: "*/15 * * * *"
     timeout: 300000 # 5m
     batch_size: 100
@@ -129,3 +129,6 @@ recovery:
         duration: 1800000 # 30m
       - offset: 3600000 # 1h
         duration: 1800000 # 30m
+  consumer:
+    timeout: 900000 # 15m
+    batch_size: 300

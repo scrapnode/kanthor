@@ -28,7 +28,7 @@ func (sql *SqlResponse) Create(ctx context.Context, docs []*entities.Response) (
 		returning := []string{}
 
 		names := []string{}
-		values := map[string]interface{}{}
+		values := map[string]any{}
 		for i := 0; i < len(docs); i++ {
 			doc := docs[i]
 			returning = append(returning, doc.Id)

@@ -1,6 +1,8 @@
 package transformation
 
 import (
+	"fmt"
+
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/internal/constants"
 	"github.com/scrapnode/kanthor/internal/entities"
@@ -102,7 +104,7 @@ func EventFromRecovery(rec *entities.Recovery) (*streaming.Event, error) {
 	event := &streaming.Event{
 		AppId:    rec.AppId,
 		Type:     constants.TypeScanner,
-		Id:       rec.Id,
+		Id:       fmt.Sprintf("%s/%d/%d/%d", rec.AppId, rec.From, rec.To, rec.Init),
 		Data:     data,
 		Metadata: map[string]string{},
 	}

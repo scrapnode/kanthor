@@ -54,12 +54,12 @@ func PlanRequest(
 
 		check, err := ConditionExpression(&route.Rules[i])
 		if err != nil {
-			return nil, append([]any{"ROUTING.PLAN.RULE.CE.ERROR", "error", err.Error()}, trace...)
+			return nil, append([]any{"ERROR.ROUTING.PLAN.RULE.CE", "error", err.Error()}, trace...)
 		}
 
 		source := ConditionSource(&route.Rules[i], msg)
 		if source == "" {
-			return nil, append([]any{"ROUTING.PLAN.RULE.CS.EMPTY"}, trace...)
+			return nil, append([]any{"ERROR.ROUTING.PLAN.RULE.CS.EMPTY"}, trace...)
 		}
 
 		matched := check(source)
@@ -72,5 +72,5 @@ func PlanRequest(
 		}
 	}
 
-	return nil, []any{"ROUTING.PLAN.NOT_MATCH", "msg_id", msg.Id, "ep_id", route.Endpoint.Id}
+	return nil, []any{"ERROR.ROUTING.PLAN.NOT_MATCH", "msg_id", msg.Id, "ep_id", route.Endpoint.Id}
 }

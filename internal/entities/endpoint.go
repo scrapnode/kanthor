@@ -63,14 +63,13 @@ type EndpointRule struct {
 	Exclusionary bool
 
 	// examples
-	//  - app_id
 	//  - type
-	//  - body
-	//  - metadata
+	//  - app_id
 	ConditionSource string
 	// examples:
+	// 	- any::
 	// 	- equal::orders.paid
-	// 	- regex::.*
+	// 	- prefix::orders.
 	ConditionExpression string
 }
 

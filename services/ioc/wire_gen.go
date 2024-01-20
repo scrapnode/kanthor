@@ -89,7 +89,7 @@ func Portal(provider configuration.Provider) (patterns.Runnable, error) {
 
 // Injectors from wire_recovery.go:
 
-func RecoveryScanner(provider configuration.Provider) (patterns.Runnable, error) {
+func RecoveryCronjob(provider configuration.Provider) (patterns.Runnable, error) {
 	configConfig, err := config3.New(provider)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,34 @@ func RecoveryScanner(provider configuration.Provider) (patterns.Runnable, error)
 	}
 	repositoriesRepositories := repositories2.New(logger, databaseDatabase, datastoreDatastore)
 	recovery := usecase3.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
-	runnable := entrypoint3.Scanner(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, recovery)
+	runnable := entrypoint3.Cronjob(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, recovery)
+	return runnable, nil
+}
+
+func RecoveryConsumer(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config3.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories2.New(logger, databaseDatabase, datastoreDatastore)
+	recovery := usecase3.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint3.Consumer(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, recovery)
 	return runnable, nil
 }
 

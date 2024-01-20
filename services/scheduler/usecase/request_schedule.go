@@ -4,15 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/samber/lo"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/internal/assessor"
 	"github.com/scrapnode/kanthor/internal/entities"
+	"github.com/scrapnode/kanthor/internal/routing"
 	"github.com/scrapnode/kanthor/internal/transformation"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
-	"github.com/sourcegraph/conc"
 )
 
 type RequestScheduleIn struct {
@@ -69,7 +67,11 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 	defer close(errc)
 
 	go func() {
-		requests := uc.arrange(ctx, in.Messages)
+		requests, err := uc.arrange(ctx, in.Messages)
+		if err != nil {
+			errc <- err
+			return
+		}
 		if len(requests) == 0 {
 			errc <- nil
 			return
@@ -136,68 +138,36 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 	}
 }
 
-func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Message) map[string]*entities.Request {
-	apps := map[string]string{}
-	for _, message := range messages {
-		apps[message.AppId] = message.AppId
+func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Message) (map[string]*entities.Request, error) {
+	appIds := make([]string, 0)
+	for id := range messages {
+		appIds = append(appIds, messages[id].AppId)
 	}
-	appIds := lo.Keys(apps)
-	applicables := uc.applicables(ctx, appIds)
+
+	routes, err := uc.repositories.Application().GetRoutes(ctx, appIds)
+	if err != nil {
+		return nil, err
+	}
 
 	returning := map[string]*entities.Request{}
-	for _, message := range messages {
-		app, ok := applicables[message.AppId]
-		if !ok {
-			uc.logger.Warnw("could not find applicable assets for app", "app_id", message.AppId, "msg_id", message.Id)
-			continue
-		}
+	for _, msg := range messages {
+		if items, has := routes[msg.AppId]; has {
+			requests, traces := routing.PlanRequests(uc.infra.Timer, msg, items)
+			if len(traces) > 0 {
+				for _, trace := range traces {
+					uc.logger.Warnw(trace[0].(string), trace[1:]...)
+				}
+			}
 
-		reqs, traces := assessor.Requests(message, app, uc.infra.Timer)
-		if len(traces) > 0 {
-			for _, trace := range traces {
-				uc.logger.Warnw(trace[0].(string), trace[1:]...)
+			for id, request := range requests {
+				returning[id] = request
 			}
 		}
-		for reqId, req := range reqs {
-			returning[reqId] = req
-		}
-	}
 
+	}
 	if len(returning) == 0 {
-		uc.logger.Warnw("no request was arranged", "app_id", appIds)
+		uc.logger.Warnw("SCHEDULER.USECASE.REQUEST.SCHEDULE.NO_REQUEST", "apps", appIds)
 	}
 
-	return returning
-}
-
-func (uc *request) applicables(ctx context.Context, appIds []string) map[string]*assessor.Assets {
-	apps := &safe.Map[*assessor.Assets]{}
-
-	var wg conc.WaitGroup
-	for _, id := range appIds {
-		appId := id
-		wg.Go(func() {
-			endpoints, err := uc.repositories.Endpoint().List(ctx, appId)
-			if err != nil {
-				uc.logger.Errorw("unable to get applicable endpoints", "err", err.Error(), "app_id", appId)
-				return
-			}
-			assets := &assessor.Assets{EndpointMap: map[string]entities.Endpoint{}}
-			for _, ep := range endpoints {
-				assets.EndpointMap[ep.Id] = ep
-			}
-
-			rules, err := uc.repositories.Endpoint().Rules(ctx, appId)
-			if err != nil {
-				uc.logger.Errorw("unable to get applicable endpoint rules", "err", err.Error(), "app_id", appId)
-				return
-			}
-			assets.Rules = rules
-
-			apps.Set(appId, assets)
-		})
-	}
-	wg.Wait()
-
-	return apps.Data()
+	return returning, nil
 }

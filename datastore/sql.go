@@ -76,14 +76,7 @@ func (ds *sql) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	dialector := postgresdriver.Open(ds.conf.Uri)
-	client, err := gorm.Open(dialector, &gorm.Config{
-		// GORM perform write (create/update/delete) operations run inside a transaction to ensure data consistency,
-		// you can disable it during initialization if it is not required,
-		// you will gain about 30%+ performance improvement after that
-		SkipDefaultTransaction: true,
-		Logger:                 NewSqlLogger(ds.logger),
-	})
+	client, err := ds.driver()
 	if err != nil {
 		return err
 	}
@@ -103,6 +96,17 @@ func (ds *sql) Connect(ctx context.Context) error {
 	ds.status = patterns.StatusConnected
 	ds.logger.Info("connected")
 	return nil
+}
+
+func (db *sql) driver() (*gorm.DB, error) {
+	dialector := postgresdriver.Open(db.conf.Uri)
+	return gorm.Open(dialector, &gorm.Config{
+		// GORM perform write (create/update/delete) operations run inside a transaction to ensure data consistency,
+		// you can disable it during initialization if it is not required,
+		// you will gain about 30%+ performance improvement after that
+		SkipDefaultTransaction: true,
+		Logger:                 NewSqlLogger(db.logger),
+	})
 }
 
 func (ds *sql) Disconnect(ctx context.Context) error {

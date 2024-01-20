@@ -29,7 +29,7 @@ func (sql *SqlRequest) Create(ctx context.Context, docs []*entities.Request) ([]
 		returning := []string{}
 
 		names := []string{}
-		values := map[string]interface{}{}
+		values := map[string]any{}
 		for i := 0; i < len(docs); i++ {
 			doc := docs[i]
 			returning = append(returning, doc.Id)

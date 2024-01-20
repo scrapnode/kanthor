@@ -93,7 +93,7 @@ func (server *server) check(name string, conf *healthcheck.CheckConfig, check fu
 			returning = errors.Join(returning, err)
 		}
 
-		errc <- fmt.Errorf("HEALTHCHECK.BACKGROUND.SERVER.ERROR: %v", returning)
+		errc <- fmt.Errorf("ERROR.HEALTHCHECK.BACKGROUND.SERVER: %v", returning)
 	}()
 
 	select {
@@ -102,7 +102,7 @@ func (server *server) check(name string, conf *healthcheck.CheckConfig, check fu
 	case err := <-errc:
 		return err
 	case <-ctx.Done():
-		return fmt.Errorf("HEALTHCHECK.BACKGROUND.SERVER.ERROR: %v | timeout:%d max_try:%d", ctx.Err(), conf.Timeout, conf.MaxTry)
+		return fmt.Errorf("ERROR.HEALTHCHECK.BACKGROUND.SERVER: %v | timeout:%d max_try:%d", ctx.Err(), conf.Timeout, conf.MaxTry)
 	}
 }
 

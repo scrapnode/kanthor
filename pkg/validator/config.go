@@ -5,5 +5,5 @@ type Config struct {
 }
 
 var DefaultConfig = &Config{
-	StopAtFirstError: false,
+	StopAtFirstError: true,
 }

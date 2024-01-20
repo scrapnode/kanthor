@@ -79,10 +79,7 @@ func (db *sql) Connect(ctx context.Context) error {
 		return ErrAlreadyConnected
 	}
 
-	dialector := postgresdriver.Open(db.conf.Uri)
-	client, err := gorm.Open(dialector, &gorm.Config{
-		Logger: NewSqlLogger(db.logger),
-	})
+	client, err := db.driver()
 	if err != nil {
 		return err
 	}
@@ -102,6 +99,13 @@ func (db *sql) Connect(ctx context.Context) error {
 	db.status = patterns.StatusConnected
 	db.logger.Info("connected")
 	return nil
+}
+
+func (db *sql) driver() (*gorm.DB, error) {
+	dialector := postgresdriver.Open(db.conf.Uri)
+	return gorm.Open(dialector, &gorm.Config{
+		Logger: NewSqlLogger(db.logger),
+	})
 }
 
 func (db *sql) Disconnect(ctx context.Context) error {

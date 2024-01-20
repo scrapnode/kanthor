@@ -31,13 +31,13 @@ func Handler(service *storage) streaming.SubHandler {
 				message, err := transformation.EventToMessage(event)
 				if err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not transform message to event", "event", event.String(), "err", err.Error())
+					service.logger.Errorw("could not transform message to event", "event", event.String(), "error", err.Error())
 					continue
 				}
 
 				if err := usecase.ValidateWarehousePutInMessage(prefix, message); err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not validate message", "event", event.String(), "message", message.String(), "err", err.Error())
+					service.logger.Errorw("could not validate message", "event", event.String(), "message", message.String(), "error", err.Error())
 					continue
 				}
 				in.Messages[id] = message
@@ -48,13 +48,13 @@ func Handler(service *storage) streaming.SubHandler {
 				request, err := transformation.EventToRequest(event)
 				if err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not transform request to event", "event", event.String(), "err", err.Error())
+					service.logger.Errorw("could not transform request to event", "event", event.String(), "error", err.Error())
 					continue
 				}
 
 				if err := usecase.ValidateWarehousePutInRequest(prefix, request); err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not validate request", "event", event.String(), "request", request.String(), "err", err.Error())
+					service.logger.Errorw("could not validate request", "event", event.String(), "request", request.String(), "error", err.Error())
 					continue
 				}
 				in.Requests[id] = request
@@ -65,13 +65,13 @@ func Handler(service *storage) streaming.SubHandler {
 				response, err := transformation.EventToResponse(event)
 				if err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not transform response to event", "event", event.String(), "err", err.Error())
+					service.logger.Errorw("could not transform response to event", "event", event.String(), "error", err.Error())
 					continue
 				}
 
 				if err := usecase.ValidateWarehousePutInResponse(prefix, response); err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not validate response", "event", event.String(), "response", response.String(), "err", err.Error())
+					service.logger.Errorw("could not validate response", "event", event.String(), "response", response.String(), "error", err.Error())
 					continue
 				}
 				in.Responses[id] = response

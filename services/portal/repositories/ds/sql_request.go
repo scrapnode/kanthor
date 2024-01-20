@@ -35,18 +35,18 @@ func (sql *SqlRequest) ScanMessages(ctx context.Context, epId string, query *ent
 			returning.Maps[request.MsgId] = append(returning.Maps[request.MsgId], request)
 
 			// checking limit exceeded
-			if len(returning.Maps) >= query.Limit {
+			if len(returning.Maps) >= query.Size {
 				return returning, nil
 			}
 		}
 
 		// checking no more data
-		if len(requests) < query.Limit {
+		if len(requests) < query.Size {
 			return returning, nil
 		}
 
 		// checking limit exceeded
-		if len(returning.Maps) >= query.Limit {
+		if len(returning.Maps) >= query.Size {
 			return returning, nil
 		}
 	}

@@ -1,4 +1,4 @@
-package scanner
+package cronjob
 
 import (
 	"context"
@@ -7,13 +7,11 @@ import (
 	"github.com/scrapnode/kanthor/services/recovery/usecase"
 )
 
-func UseJob(service *scanner) func() {
+func UseJob(service *cronjob) func() {
 	return func() {
-		service.logger.Debug("job is starting")
-
 		in := &usecase.ScannerScheduleIn{
-			BatchSize: service.conf.Scanner.BatchSize,
-			Buckets:   service.conf.Scanner.Buckets,
+			BatchSize: service.conf.Cronjob.BatchSize,
+			Buckets:   service.conf.Cronjob.Buckets,
 		}
 		if err := in.Validate(); err != nil {
 			service.logger.Error(err)
@@ -22,7 +20,7 @@ func UseJob(service *scanner) func() {
 
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
-			time.Millisecond*time.Duration(service.conf.Scanner.Timeout),
+			time.Millisecond*time.Duration(service.conf.Cronjob.Timeout),
 		)
 		defer cancel()
 

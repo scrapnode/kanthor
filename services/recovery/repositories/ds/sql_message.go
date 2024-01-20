@@ -21,8 +21,8 @@ func (sql *SqlMessage) Scan(ctx context.Context, appId string, query *entities.S
 func (sql *SqlMessage) scan(ctx context.Context, appId string, query *entities.ScanningQuery, ch chan *entities.ScanningResult[[]entities.Message]) {
 	defer close(ch)
 
-	low := identifier.Id(entities.TableMsg, identifier.BeforeTime(query.From))
-	high := identifier.Id(entities.TableMsg, identifier.AfterTime(query.To))
+	low := identifier.Id(entities.IdNsMsg, identifier.BeforeTime(query.From))
+	high := identifier.Id(entities.IdNsMsg, identifier.AfterTime(query.To))
 	var cursor string
 	for {
 		if ctx.Err() != nil {
@@ -34,7 +34,11 @@ func (sql *SqlMessage) scan(ctx context.Context, appId string, query *entities.S
 			Where("app_id = ?", appId).
 			Where("id > ?", low).
 			Order("app_id DESC, id DESC").
-			Limit(query.Limit)
+			Limit(query.Size)
+
+		if query.Search != "" {
+			tx = tx.Where("id = ?", query.Search)
+		}
 
 		if cursor == "" {
 			tx = tx.Where("id < ?", high)
@@ -50,9 +54,8 @@ func (sql *SqlMessage) scan(ctx context.Context, appId string, query *entities.S
 
 		ch <- &entities.ScanningResult[[]entities.Message]{Data: data}
 
-		if len(data) < query.Limit {
+		if len(data) < query.Size {
 			return
 		}
-
 	}
 }

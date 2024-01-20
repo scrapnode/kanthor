@@ -43,7 +43,7 @@ func TestPlanRequests(t *testing.T) {
 
 		_, trace := routing.PlanRequest(timer, msg, route)
 		assert.True(st, len(trace) > 0)
-		assert.Equal(st, trace[0], "ROUTING.PLAN.RULE.CE.ERROR")
+		assert.Equal(st, trace[0], "ERROR.ROUTING.PLAN.RULE.CE")
 	})
 
 	t.Run("error of condition source empty", func(st *testing.T) {
@@ -57,7 +57,7 @@ func TestPlanRequests(t *testing.T) {
 		msg.Type = ""
 		_, trace := routing.PlanRequest(timer, msg, route)
 		assert.True(st, len(trace) > 0)
-		assert.Equal(st, trace[0], "ROUTING.PLAN.RULE.CS.EMPTY")
+		assert.Equal(st, trace[0], "ERROR.ROUTING.PLAN.RULE.CS.EMPTY")
 	})
 
 	t.Run("error of exclustionary check", func(st *testing.T) {
@@ -92,7 +92,7 @@ func TestPlanRequests(t *testing.T) {
 		msg := tester.MessageOfApp(timer, app)
 		_, trace := routing.PlanRequest(timer, msg, route)
 		assert.True(st, len(trace) > 0)
-		assert.Equal(st, trace[0], "ROUTING.PLAN.NOT_MATCH")
+		assert.Equal(st, trace[0], "ERROR.ROUTING.PLAN.NOT_MATCH")
 	})
 }
 

@@ -1,4 +1,4 @@
-package scanner
+package cronjob
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
-	"github.com/scrapnode/kanthor/infrastructure/streaming"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
@@ -27,32 +26,30 @@ func New(
 	ds datastore.Datastore,
 	uc usecase.Recovery,
 ) patterns.Runnable {
-	logger = logger.With("service", "recovery", "entrypoint", "scanner")
-	return &scanner{
-		conf:       conf,
-		logger:     logger,
-		subscriber: infra.Stream.Subscriber("recovery"),
-		infra:      infra,
-		db:         db,
-		ds:         ds,
-		uc:         uc,
+	logger = logger.With("service", "recovery", "entrypoint", "cronjob")
+	return &cronjob{
+		conf:   conf,
+		logger: logger,
+		infra:  infra,
+		db:     db,
+		ds:     ds,
+		uc:     uc,
 
 		cron: cron.New(),
 		healthcheck: background.NewServer(
-			healthcheck.DefaultConfig("recovery"),
+			healthcheck.DefaultConfig("recovery.cronjob"),
 			logger.With("healthcheck", "background"),
 		),
 	}
 }
 
-type scanner struct {
-	conf       *config.Config
-	logger     logging.Logger
-	subscriber streaming.Subscriber
-	infra      *infrastructure.Infrastructure
-	db         database.Database
-	ds         datastore.Datastore
-	uc         usecase.Recovery
+type cronjob struct {
+	conf   *config.Config
+	logger logging.Logger
+	infra  *infrastructure.Infrastructure
+	db     database.Database
+	ds     datastore.Datastore
+	uc     usecase.Recovery
 
 	cron        *cron.Cron
 	healthcheck healthcheck.Server
@@ -61,7 +58,7 @@ type scanner struct {
 	status int
 }
 
-func (service *scanner) Start(ctx context.Context) error {
+func (service *cronjob) Start(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
@@ -85,15 +82,11 @@ func (service *scanner) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := service.subscriber.Connect(ctx); err != nil {
-		return err
-	}
-
 	if err := service.healthcheck.Connect(ctx); err != nil {
 		return err
 	}
 
-	_, err := service.cron.AddFunc(service.conf.Scanner.Scheduler, UseJob(service))
+	_, err := service.cron.AddFunc(service.conf.Cronjob.Scheduler, UseJob(service))
 	if err != nil {
 		return err
 	}
@@ -103,7 +96,7 @@ func (service *scanner) Start(ctx context.Context) error {
 	return nil
 }
 
-func (service *scanner) Stop(ctx context.Context) error {
+func (service *cronjob) Stop(ctx context.Context) error {
 	service.mu.Lock()
 	defer service.mu.Unlock()
 
@@ -118,10 +111,6 @@ func (service *scanner) Stop(ctx context.Context) error {
 
 	var returning error
 	if err := service.healthcheck.Disconnect(ctx); err != nil {
-		returning = errors.Join(returning, err)
-	}
-
-	if err := service.subscriber.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
 
@@ -140,7 +129,7 @@ func (service *scanner) Stop(ctx context.Context) error {
 	return returning
 }
 
-func (service *scanner) Run(ctx context.Context) error {
+func (service *cronjob) Run(ctx context.Context) error {
 	if err := service.readiness(); err != nil {
 		return err
 	}
@@ -148,10 +137,6 @@ func (service *scanner) Run(ctx context.Context) error {
 	go func() {
 		err := service.healthcheck.Liveness(func() error {
 			service.logger.Debug("checking liveness")
-
-			if err := service.subscriber.Liveness(); err != nil {
-				return err
-			}
 
 			if err := service.infra.Liveness(); err != nil {
 				return err
@@ -194,13 +179,9 @@ func (service *scanner) Run(ctx context.Context) error {
 	}
 }
 
-func (service *scanner) readiness() error {
+func (service *cronjob) readiness() error {
 	return service.healthcheck.Readiness(func() error {
 		service.logger.Debug("checking readiness")
-
-		if err := service.subscriber.Readiness(); err != nil {
-			return err
-		}
 
 		if err := service.infra.Readiness(); err != nil {
 			return err

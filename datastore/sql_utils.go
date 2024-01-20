@@ -21,7 +21,7 @@ func SqlApplyScanQuery(tx *gorm.DB, query *entities.ScanningQuery, condition *Sc
 	tx = tx.
 		Where(fmt.Sprintf(`%s > ?`, condition.PrimaryKeyCol), low).
 		Where(fmt.Sprintf(`%s < ?`, condition.PrimaryKeyCol), high).
-		Limit(query.Limit)
+		Limit(query.Size)
 
 	if query.Search != "" {
 		// IMPORTANT: only support search by primary key

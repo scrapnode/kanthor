@@ -11,5 +11,4 @@ func New(logger logging.Logger, db database.Database) Repositories {
 
 type Repositories interface {
 	Application() Application
-	Endpoint() Endpoint
 }

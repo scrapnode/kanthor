@@ -17,7 +17,7 @@ import (
 	"github.com/scrapnode/kanthor/services/recovery/usecase"
 )
 
-func RecoveryScanner(provider configuration.Provider) (patterns.Runnable, error) {
+func RecoveryCronjob(provider configuration.Provider) (patterns.Runnable, error) {
 	wire.Build(
 		config.New,
 		logging.New,
@@ -26,7 +26,21 @@ func RecoveryScanner(provider configuration.Provider) (patterns.Runnable, error)
 		database.New,
 		repositories.New,
 		usecase.New,
-		entrypoint.Scanner,
+		entrypoint.Cronjob,
+	)
+	return nil, nil
+}
+
+func RecoveryConsumer(provider configuration.Provider) (patterns.Runnable, error) {
+	wire.Build(
+		config.New,
+		logging.New,
+		infrastructure.New,
+		datastore.New,
+		database.New,
+		repositories.New,
+		usecase.New,
+		entrypoint.Consumer,
 	)
 	return nil, nil
 }

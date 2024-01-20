@@ -12,6 +12,7 @@ import (
 
 type Scanner interface {
 	Schedule(ctx context.Context, in *ScannerScheduleIn) (*ScannerScheduleOut, error)
+	Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerExecuteOut, error)
 }
 
 type scanner struct {

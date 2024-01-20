@@ -15,5 +15,4 @@ type Database interface {
 	Transaction(ctx context.Context, handler func(txctx context.Context) (interface{}, error)) (res interface{}, err error)
 	Workspace() Workspace
 	Application() Application
-	Endpoint() Endpoint
 }

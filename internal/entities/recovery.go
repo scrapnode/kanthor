@@ -3,7 +3,6 @@ package entities
 import "encoding/json"
 
 type Recovery struct {
-	Id    string
 	AppId string
 	To    int64
 	From  int64
