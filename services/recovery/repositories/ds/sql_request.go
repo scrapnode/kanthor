@@ -26,8 +26,8 @@ func (sql *SqlRequest) Check(ctx context.Context, pairs []string) (map[string]bo
 		returning[pairs[i]] = false
 
 		ids := strings.Split(pairs[i], "/")
-		values[fmt.Sprintf("@ep_id_%d", i)] = ids[0]
-		values[fmt.Sprintf("@msg_id_%d", i)] = ids[1]
+		values[fmt.Sprintf("ep_id_%d", i)] = ids[0]
+		values[fmt.Sprintf("msg_id_%d", i)] = ids[1]
 		conditions = append(conditions, fmt.Sprintf("(ep_id = @ep_id_%d AND msg_id = @msg_id_%d)", i, i))
 	}
 

@@ -125,10 +125,6 @@ recovery:
     buckets:
       - offset: 0 # 30m
         duration: 1800000 # 30m
-      - offset: 1800000 # 30m
-        duration: 1800000 # 30m
-      - offset: 3600000 # 1h
-        duration: 1800000 # 30m
   consumer:
     timeout: 900000 # 15m
     batch_size: 300
