@@ -33,7 +33,7 @@ func (uc *application) Create(ctx context.Context, in *ApplicationCreateIn) (*Ap
 	doc.Id = identifier.New(entities.IdNsApp)
 	doc.SetAT(uc.infra.Timer.Now())
 
-	app, err := uc.repositories.Application().Create(ctx, doc)
+	app, err := uc.repositories.Database().Application().Create(ctx, doc)
 	if err != nil {
 		return nil, err
 	}

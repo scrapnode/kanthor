@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	ErrNotReady         = errors.New("DATABASE.NOT_READY")
-	ErrNotLive          = errors.New("DATABASE.NOT_LIVE")
-	ErrAlreadyConnected = errors.New("DATABASE.CONNECTION.ALREADY_CONNECTED")
-	ErrNotConnected     = errors.New("DATABASE.CONNECTION.NOT_CONNECTED")
-	ErrRecordNotFound   = errors.New("DATABASE.RECORD.NOT_FOUND")
+	ErrNotReady         = errors.New("DATABASE.NOT_READY.ERROR")
+	ErrNotLive          = errors.New("DATABASE.NOT_LIVE.ERROR")
+	ErrAlreadyConnected = errors.New("DATABASE.ALREADY_CONNECTED.ERROR")
+	ErrNotConnected     = errors.New("DATABASE.NOT_CONNECTED.ERROR")
+	ErrRecordNotFound   = errors.New("DATABASE.RECORD.NOT_FOUND.ERROR")
 )

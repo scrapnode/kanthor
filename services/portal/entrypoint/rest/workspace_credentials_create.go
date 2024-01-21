@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/permissions"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
@@ -29,15 +28,14 @@ type WorkspaceCredentialsCreateRes struct {
 // @Router		/credentials	[post]
 // @Param		payload			body		WorkspaceCredentialsCreateReq	true	"credentials payload"
 // @Success		200				{object}	WorkspaceCredentialsCreateRes
-// @Failure		default			{object}	gateway.Error
+// @Failure		default			{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCredentialsCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
@@ -53,21 +51,18 @@ func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 			Permissions: permissions.SdkOwnerPermissions,
 		}
 		if err := in.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
 		out, err := service.uc.WorkspaceCredentials().Generate(ctx, in)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 
 		if err := service.infra.Authorizator.Refresh(ctx); err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 

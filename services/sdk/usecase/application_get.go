@@ -25,7 +25,7 @@ type ApplicationGetOut struct {
 }
 
 func (uc *application) Get(ctx context.Context, in *ApplicationGetIn) (*ApplicationGetOut, error) {
-	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.Id)
+	app, err := uc.repositories.Database().Application().Get(ctx, in.WsId, in.Id)
 	if err != nil {
 		return nil, err
 	}

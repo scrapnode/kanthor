@@ -28,15 +28,14 @@ type EndpointCreateRes struct {
 // @Router		/endpoint	[post]
 // @Param		payload		body		EndpointCreateReq	true	"endpoint payload"
 // @Success		201			{object}	EndpointCreateRes
-// @Failure		default		{object}	gateway.Error
+// @Failure		default		{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req EndpointCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
@@ -52,15 +51,13 @@ func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 			Uri:       req.Uri,
 		}
 		if err := in.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
 		out, err := service.uc.Endpoint().Create(ctx, in)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 

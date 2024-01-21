@@ -35,8 +35,8 @@ type EndpointRuleUpdateOut struct {
 }
 
 func (uc *endpointRule) Update(ctx context.Context, in *EndpointRuleUpdateIn) (*EndpointRuleUpdateOut, error) {
-	epr, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		epr, err := uc.repositories.EndpointRule().Get(ctx, in.WsId, in.Id)
+	epr, err := uc.repositories.Database().Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		epr, err := uc.repositories.Database().EndpointRule().Get(ctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +47,7 @@ func (uc *endpointRule) Update(ctx context.Context, in *EndpointRuleUpdateIn) (*
 		epr.ConditionSource = in.ConditionSource
 		epr.ConditionExpression = in.ConditionExpression
 		epr.SetAT(uc.infra.Timer.Now())
-		return uc.repositories.EndpointRule().Update(txctx, epr)
+		return uc.repositories.Database().EndpointRule().Update(txctx, epr)
 	})
 	if err != nil {
 		return nil, err

@@ -31,13 +31,13 @@ func Handler(service *storage) streaming.SubHandler {
 				message, err := transformation.EventToMessage(event)
 				if err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not transform message to event", "event", event.String(), "error", err.Error())
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_TRANSFORMATION.ERROR", "error", err.Error(), "event", event.String())
 					continue
 				}
 
 				if err := usecase.ValidateWarehousePutInMessage(prefix, message); err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not validate message", "event", event.String(), "message", message.String(), "error", err.Error())
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.MESSAGE_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "message", message.String())
 					continue
 				}
 				in.Messages[id] = message
@@ -48,13 +48,13 @@ func Handler(service *storage) streaming.SubHandler {
 				request, err := transformation.EventToRequest(event)
 				if err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not transform request to event", "event", event.String(), "error", err.Error())
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_TRANSFORMATION.ERROR", "error", err.Error(), "event", event.String())
 					continue
 				}
 
 				if err := usecase.ValidateWarehousePutInRequest(prefix, request); err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not validate request", "event", event.String(), "request", request.String(), "error", err.Error())
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.REQUEST_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "request", request.String())
 					continue
 				}
 				in.Requests[id] = request
@@ -65,21 +65,20 @@ func Handler(service *storage) streaming.SubHandler {
 				response, err := transformation.EventToResponse(event)
 				if err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not transform response to event", "event", event.String(), "error", err.Error())
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_TRANSFORMATION.ERROR", "error", err.Error(), "event", event.String())
 					continue
 				}
 
 				if err := usecase.ValidateWarehousePutInResponse(prefix, response); err != nil {
 					// un-recoverable error
-					service.logger.Errorw("could not validate response", "event", event.String(), "response", response.String(), "error", err.Error())
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.RESPONSE_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "response", response.String())
 					continue
 				}
 				in.Responses[id] = response
 				continue
 			}
 
-			err := fmt.Errorf("unrecognized event %s", event.Id)
-			service.logger.Warnw(err.Error(), "event", event.String())
+			service.logger.Warnw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_UNKNOWN.ERROR", "event", event.String())
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Warehouse.Put.Timeout))
@@ -88,8 +87,6 @@ func Handler(service *storage) streaming.SubHandler {
 		// we alreay validated messages, request and response, don't need to validate again
 		out, err := service.uc.Warehouse().Put(ctx, in)
 		if err != nil {
-			service.logger.Errorw("unable to store entities", "error", err.Error())
-
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
 			for _, event := range events {
@@ -97,14 +94,6 @@ func Handler(service *storage) streaming.SubHandler {
 			}
 			return retruning
 		}
-
-		if len(out.Error) > 0 {
-			for ref, err := range out.Error {
-				service.logger.Errorw("unable to store entities", "ref", ref, "error", err.Error())
-			}
-		}
-
-		service.logger.Infow("put entities", "ok_count", len(out.Success), "ko_count", len(out.Error))
 
 		return out.Error
 	}

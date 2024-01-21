@@ -8,7 +8,6 @@ import (
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/infrastructure/authorizator"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
@@ -22,7 +21,7 @@ type WorkspaceGetRes struct {
 // @Router		/workspace/{ws_id}	[get]
 // @Param		ws_id				path		string						true	"workspace id"
 // @Success		200					{object}	WorkspaceGetRes
-// @Failure		default				{object}	gateway.Error
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceGet(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
@@ -34,22 +33,19 @@ func UseWorkspaceGet(service *portal) gin.HandlerFunc {
 			Id:    ginctx.Param("ws_id"),
 		}
 		if err := in.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
 		out, err := service.uc.Workspace().Get(ctx, in)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 
 		permissions, err := service.infra.Authorizator.UserPermissionsInTenant(out.Doc.Id, acc.Sub)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 

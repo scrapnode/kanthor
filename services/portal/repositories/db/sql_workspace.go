@@ -69,7 +69,7 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
 		First(doc)
 	if tx.Error != nil {
-		return nil, database.SqlError(tx.Error)
+		return nil, tx.Error
 	}
 
 	return doc, nil
@@ -84,7 +84,7 @@ func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner, id string) (*entit
 		Order("id asc").
 		First(doc)
 	if tx.Error != nil {
-		return nil, database.SqlError(tx.Error)
+		return nil, tx.Error
 	}
 
 	return doc, nil
@@ -99,7 +99,7 @@ func (sql *SqlWorkspace) ListOwned(ctx context.Context, owner string) ([]entitie
 		Order("id DESC").
 		Find(&docs)
 
-	return docs, database.SqlError(tx.Error)
+	return docs, tx.Error
 }
 
 type SnaptshotRow struct {

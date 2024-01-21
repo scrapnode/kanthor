@@ -3,6 +3,6 @@ package idempotency
 import "errors"
 
 var (
-	ErrNotConnected     = errors.New("IDEMPOTENCY.CONNECTION.NOT_CONNECTED")
-	ErrAlreadyConnected = errors.New("IDEMPOTENCY.CONNECTION.ALREADY_CONNECTED")
+	ErrNotConnected     = errors.New("INFRASTRUCTURE.IDEMPOTENCY.NOT_CONNECTED.ERROR")
+	ErrAlreadyConnected = errors.New("INFRASTRUCTURE.IDEMPOTENCY.ALREADY_CONNECTED.ERROR")
 )

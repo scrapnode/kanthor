@@ -1,4 +1,4 @@
-package repositories
+package db
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func (sql *SqlWorkspaceCredentials) Get(ctx context.Context, id string) (*entiti
 		Where(fmt.Sprintf(`"%s".id = ?`, entities.TableWsc), id).
 		First(wsc)
 	if tx.Error != nil {
-		return nil, database.SqlError(tx.Error)
+		return nil, tx.Error
 	}
 
 	return wsc, nil

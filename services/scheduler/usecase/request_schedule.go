@@ -144,7 +144,7 @@ func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Me
 		appIds = append(appIds, messages[id].AppId)
 	}
 
-	routes, err := uc.repositories.Application().GetRoutes(ctx, appIds)
+	routes, err := uc.repositories.Database().Application().GetRoutes(ctx, appIds)
 	if err != nil {
 		return nil, err
 	}

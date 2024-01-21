@@ -25,7 +25,7 @@ type EndpointRuleGetOut struct {
 }
 
 func (uc *endpointRule) Get(ctx context.Context, in *EndpointRuleGetIn) (*EndpointRuleGetOut, error) {
-	epr, err := uc.repositories.EndpointRule().Get(ctx, in.WsId, in.Id)
+	epr, err := uc.repositories.Database().EndpointRule().Get(ctx, in.WsId, in.Id)
 	if err != nil {
 		return nil, err
 	}

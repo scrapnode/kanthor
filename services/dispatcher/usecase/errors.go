@@ -3,6 +3,6 @@ package usecase
 import "errors"
 
 var (
-	ErrNotConnected     = errors.New("USECASES.DISPATCHER.CONNECTION.NOT_CONNECTED")
-	ErrAlreadyConnected = errors.New("USECASES.DISPATCHER.CONNECTION.ALREADY_CONNECTED")
+	ErrNotConnected     = errors.New("DISPATCHER.USECASE.NOT_CONNECTED.ERROR")
+	ErrAlreadyConnected = errors.New("DISPATCHER.USECASE.ALREADY_CONNECTED.ERROR")
 )

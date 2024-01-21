@@ -2,7 +2,7 @@ package dlm
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/go-redsync/redsync/v4"
@@ -52,7 +52,7 @@ func (locker *redlock) Unlock(ctx context.Context) error {
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("dlm.unlock: unable to unlock because of quorum issue | key:%s", locker.key)
+		return errors.New("INFRASTRUCTURE.DLM.REDLOCK.UNLOCK.ERROR")
 	}
 
 	return nil

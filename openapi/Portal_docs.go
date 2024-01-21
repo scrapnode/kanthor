@@ -53,7 +53,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -82,7 +82,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -134,7 +134,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -163,7 +163,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -224,7 +224,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -262,7 +262,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -300,7 +300,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -345,7 +345,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -392,7 +392,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -444,7 +444,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -473,7 +473,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -499,7 +499,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -534,7 +534,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -569,7 +569,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -611,7 +611,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -646,7 +646,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -688,7 +688,7 @@ const docTemplatePortal = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -934,6 +934,17 @@ const docTemplatePortal = `{
                     "type": "integer"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "Error": {
+            "type": "object",
+            "required": [
+                "error"
+            ],
+            "properties": {
+                "error": {
                     "type": "string"
                 }
             }
@@ -1616,21 +1627,6 @@ const docTemplatePortal = `{
                     "type": "string"
                 },
                 "role": {
-                    "type": "string"
-                }
-            }
-        },
-        "gateway.Error": {
-            "type": "object",
-            "required": [
-                "code",
-                "error"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "error": {
                     "type": "string"
                 }
             }

@@ -1,10 +1,13 @@
 package gateway
 
-func NewError(msg string) *Error {
-	return &Error{Error: msg}
+func Error(err error) *Err {
+	return &Err{Error: err.Error()}
 }
 
-type Error struct {
-	Error string `json:"error"`
-	Code  string `json:"code,omitempty"`
+func ErrorString(err string) *Err {
+	return &Err{Error: err}
 }
+
+type Err struct {
+	Error string `json:"error" yaml:"error"`
+} // @name Error

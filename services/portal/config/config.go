@@ -33,7 +33,7 @@ type Config struct {
 }
 
 func (conf *Config) Validate() error {
-	if err := conf.Gateway.Validate("CONFIG.PORTAL"); err != nil {
+	if err := conf.Gateway.Validate("PORTAL.CONFIG."); err != nil {
 		return err
 	}
 

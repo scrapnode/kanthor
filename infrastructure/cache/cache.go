@@ -15,12 +15,7 @@ import (
 func New(conf *Config, logger logging.Logger) (Cache, error) {
 	uri, err := url.Parse(conf.Uri)
 	if err != nil {
-		logger.Warnw("unable to parse conf.Uri", "uri", conf.Uri)
 		return nil, err
-	}
-
-	if strings.HasPrefix(uri.Scheme, "noop") {
-		return NewNoop(conf, logger)
 	}
 
 	if strings.HasPrefix(uri.Scheme, "redis") {

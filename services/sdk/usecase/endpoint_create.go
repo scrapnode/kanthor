@@ -37,7 +37,7 @@ type EndpointCreateOut struct {
 }
 
 func (uc *endpoint) Create(ctx context.Context, in *EndpointCreateIn) (*EndpointCreateOut, error) {
-	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
+	app, err := uc.repositories.Database().Application().Get(ctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (uc *endpoint) Create(ctx context.Context, in *EndpointCreateIn) (*Endpoint
 	doc.SetAT(uc.infra.Timer.Now())
 	doc.GenSecretKey()
 
-	ep, err := uc.repositories.Endpoint().Create(ctx, doc)
+	ep, err := uc.repositories.Database().Endpoint().Create(ctx, doc)
 	if err != nil {
 		return nil, err
 	}

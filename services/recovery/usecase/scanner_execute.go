@@ -156,7 +156,7 @@ func (uc *scanner) execute(ctx context.Context, recovery *entities.Recovery, siz
 				if event, err := transformation.EventFromRequest(request); err == nil {
 					events[pair] = event
 				} else {
-					uc.logger.Errorw("ERROR.RECOVERY.USECASE.SCANNER.EXECUTE.EVENT.TRANSFORM", "error", err.Error())
+					uc.logger.Errorw("RECOVERY.USECASE.SCANNER.EXECUTE.EVENT_TRANSFORMATION", "error", err.Error())
 				}
 			}
 
@@ -168,7 +168,7 @@ func (uc *scanner) execute(ctx context.Context, recovery *entities.Recovery, siz
 		errs := uc.publisher.Pub(ctx, events)
 		for ref := range events {
 			if err, has := errs[ref]; has {
-				uc.logger.Errorw("ERROR.RECOVERY.USECASE.SCANNER.EXECUTE.EVENT.PUBLISH", "error", err.Error(), "ref", ref)
+				uc.logger.Errorw("RECOVERY.USECASE.SCANNER.EXECUTE.EVENT_PUBLISH", "ref", ref, "error", err.Error())
 				continue
 			}
 

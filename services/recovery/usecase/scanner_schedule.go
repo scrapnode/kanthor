@@ -22,7 +22,7 @@ func (in *ScannerScheduleIn) Validate() error {
 		validator.DefaultConfig,
 		validator.NumberGreaterThan("batch_size", in.BatchSize, 0),
 		validator.Slice(in.Buckets, func(i int, item *config.RecoveryCronjobBucket) error {
-			return item.Validate(fmt.Sprintf("CONFIG.RECOVERY.SCANNER.BUCKETS[%d]", i))
+			return item.Validate(fmt.Sprintf("buckets[%d]", i))
 		}),
 	)
 }

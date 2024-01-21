@@ -3,6 +3,6 @@ package cronjob
 import "errors"
 
 var (
-	ErrNotStarted     = errors.New("SERVICES.RECOVERY.CRONJOB.NOT_STARTED")
-	ErrAlreadyStarted = errors.New("SERVICES.RECOVERY.CRONJOB.ALREAD_STARTED")
+	ErrNotStarted     = errors.New("RECOVERY.ENTRYPOINT.CRONJOB.NOT_STARTED")
+	ErrAlreadyStarted = errors.New("RECOVERY.ENTRYPOINT.CRONJOB.ALREAD_STARTED")
 )

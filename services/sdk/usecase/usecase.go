@@ -117,7 +117,7 @@ func (uc *sdk) Message() Message {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			infra:        uc.infra,
-			publisher:    uc.infra.Stream.Publisher("sdk_message"),
+			publisher:    uc.infra.Stream.Publisher("sdk.message"),
 			repositories: uc.repositories,
 		}
 	}

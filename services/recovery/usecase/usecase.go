@@ -49,7 +49,7 @@ func (uc *recovery) Scanner() Scanner {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			infra:        uc.infra,
-			publisher:    uc.infra.Stream.Publisher("recovery_scanner"),
+			publisher:    uc.infra.Stream.Publisher("recovery.scanner"),
 			repositories: uc.repositories,
 		}
 	}

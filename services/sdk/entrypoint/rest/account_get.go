@@ -17,7 +17,7 @@ type AccountGetRes struct {
 // @Tags		account
 // @Router		/account/me			[get]
 // @Success		200					{object}	AccountGetRes
-// @Failure		default				{object}	gateway.Error
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 func UseAccountGet(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {

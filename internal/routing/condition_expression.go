@@ -15,8 +15,8 @@ var (
 )
 
 var (
-	ErrConditionExpressionMalformed = errors.New("PLANNER.CONDITION.EXPRESSION.MALFORMED")
-	ErrConditionExpressionUnknown   = errors.New("PLANNER.CONDITION.EXPRESSION.UNKNOWN")
+	ErrConditionExpressionMalformed = errors.New("ROUTING.CONDITION.EXPRESSION.MALFORMED.ERROR")
+	ErrConditionExpressionUnknown   = errors.New("ROUTING.CONDITION.EXPRESSION.UNKNOWN.ERROR")
 )
 
 func ConditionExpression(rule *entities.EndpointRule) (func(source string) bool, error) {

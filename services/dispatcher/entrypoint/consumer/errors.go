@@ -3,6 +3,6 @@ package consumer
 import "errors"
 
 var (
-	ErrNotStarted     = errors.New("SERVICE.DISPATCHER.NOT_STARTED")
-	ErrAlreadyStarted = errors.New("SERVICE.DISPATCHER.ALREAD_STARTED")
+	ErrNotStarted     = errors.New("DISPATCHER.ENTRYPOINT.CONSUMER.NOT_STARTED")
+	ErrAlreadyStarted = errors.New("DISPATCHER.ENTRYPOINT.CONSUMER.ALREAD_STARTED")
 )

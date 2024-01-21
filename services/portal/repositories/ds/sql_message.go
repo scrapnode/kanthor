@@ -84,7 +84,7 @@ func (sql *SqlMessage) Get(ctx context.Context, appId, id string) (*entities.Mes
 		Order(fmt.Sprintf(`"%s"."app_id" DESC, "%s"."id" DESC`, doc.TableName(), doc.TableName())).
 		First(doc)
 	if tx.Error != nil {
-		return nil, datastore.SqlError(tx.Error)
+		return nil, tx.Error
 	}
 
 	return doc, nil

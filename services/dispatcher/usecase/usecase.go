@@ -45,7 +45,7 @@ func (uc *dispatcher) Forwarder() Forwarder {
 			conf:      uc.conf,
 			logger:    uc.logger,
 			infra:     uc.infra,
-			publisher: uc.infra.Stream.Publisher("dispatcher_fowarder"),
+			publisher: uc.infra.Stream.Publisher("dispatcher.fowarder"),
 		}
 	}
 	return uc.forwarder

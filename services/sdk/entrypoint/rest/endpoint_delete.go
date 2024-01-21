@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 
@@ -20,7 +19,7 @@ type EndpointDeleteRes struct {
 // @Router		/endpoint/{ep_id}	[delete]
 // @Param		ep_id				path		string					true	"endpoint id"
 // @Success		200					{object}	EndpointDeleteRes
-// @Failure		default				{object}	gateway.Error
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointDelete(service *sdk) gin.HandlerFunc {
@@ -33,15 +32,13 @@ func UseEndpointDelete(service *sdk) gin.HandlerFunc {
 			Id:   ginctx.Param("ep_id"),
 		}
 		if err := in.Validate(); err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
 		out, err := service.uc.Endpoint().Delete(ctx, in)
 		if err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 

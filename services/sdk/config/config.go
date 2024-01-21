@@ -26,7 +26,7 @@ type Config struct {
 }
 
 func (conf *Config) Validate() error {
-	if err := conf.Gateway.Validate("CONFIG.SDK"); err != nil {
+	if err := conf.Gateway.Validate("SDK.CONFIG."); err != nil {
 		return err
 	}
 

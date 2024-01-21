@@ -12,12 +12,11 @@ func Warp[T any](cache Cache, ctx context.Context, key string, ttl time.Duration
 		return Unmarshal[T](entry)
 	}
 
-	// we only accept ErrEntryNotFound
+	// if we catched any error other than ErrEntryNotFound, return it immediately
 	if !errors.Is(err, ErrEntryNotFound) {
 		return nil, err
 	}
 
-	// cache miss
 	data, err := handler()
 	if err != nil {
 		return nil, err

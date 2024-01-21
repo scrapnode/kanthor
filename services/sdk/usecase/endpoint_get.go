@@ -25,7 +25,7 @@ type EndpointGetOut struct {
 }
 
 func (uc *endpoint) Get(ctx context.Context, in *EndpointGetIn) (*EndpointGetOut, error) {
-	ep, err := uc.repositories.Endpoint().Get(ctx, in.WsId, in.Id)
+	ep, err := uc.repositories.Database().Endpoint().Get(ctx, in.WsId, in.Id)
 	if err != nil {
 		return nil, err
 	}

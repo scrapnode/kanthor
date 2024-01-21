@@ -136,8 +136,6 @@ func (service *cronjob) Run(ctx context.Context) error {
 
 	go func() {
 		err := service.healthcheck.Liveness(func() error {
-			service.logger.Debug("checking liveness")
-
 			if err := service.infra.Liveness(); err != nil {
 				return err
 			}
@@ -181,8 +179,6 @@ func (service *cronjob) Run(ctx context.Context) error {
 
 func (service *cronjob) readiness() error {
 	return service.healthcheck.Readiness(func() error {
-		service.logger.Debug("checking readiness")
-
 		if err := service.infra.Readiness(); err != nil {
 			return err
 		}

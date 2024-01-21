@@ -30,8 +30,8 @@ type EndpointUpdateOut struct {
 }
 
 func (uc *endpoint) Update(ctx context.Context, in *EndpointUpdateIn) (*EndpointUpdateOut, error) {
-	ep, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		ep, err := uc.repositories.Endpoint().Get(ctx, in.WsId, in.Id)
+	ep, err := uc.repositories.Database().Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		ep, err := uc.repositories.Database().Endpoint().Get(ctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +39,7 @@ func (uc *endpoint) Update(ctx context.Context, in *EndpointUpdateIn) (*Endpoint
 		ep.Name = in.Name
 		ep.Method = in.Method
 		ep.SetAT(uc.infra.Timer.Now())
-		return uc.repositories.Endpoint().Update(txctx, ep)
+		return uc.repositories.Database().Endpoint().Update(txctx, ep)
 	})
 	if err != nil {
 		return nil, err

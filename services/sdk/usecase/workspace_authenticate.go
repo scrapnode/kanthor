@@ -28,7 +28,7 @@ type WorkspaceAuthenticateOut struct {
 }
 
 func (uc *workspace) Authenticate(ctx context.Context, in *WorkspaceAuthenticateIn) (*WorkspaceAuthenticateOut, error) {
-	credentials, err := uc.repositories.WorkspaceCredentials().Get(ctx, in.User)
+	credentials, err := uc.repositories.Database().WorkspaceCredentials().Get(ctx, in.User)
 	if err != nil {
 		return nil, err
 	}

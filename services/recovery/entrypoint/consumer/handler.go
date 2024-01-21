@@ -18,14 +18,14 @@ func Handler(service *consumer) streaming.SubHandler {
 		for id, event := range events {
 			recover, err := transformation.EventToRecovery(event)
 			if err != nil {
-				service.logger.Errorw(err.Error(), "event", event.String())
+				service.logger.Errorw("RECOVERY.ENTRYPOINT.CONSUMER.HANDLER.EVENT_TRANSFORMATION.ERROR", "error", err.Error(), "event", event.String())
 				// unable to parse recovery from event is considered as un-retriable error
 				// ignore the error, and we need to check it manually with log
 				continue
 			}
 
 			if err := usecase.ValidateScannerExecuteRecovery("recover", recover); err != nil {
-				service.logger.Errorw(err.Error(), "event", event.String(), "recover", recover.String())
+				service.logger.Errorw("RECOVERY.ENTRYPOINT.CONSUMER.HANDLER.RECOVERY_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "recovery", recover.String())
 				// got malformed recovery, should ignore and not retry it
 				continue
 			}
@@ -43,21 +43,12 @@ func Handler(service *consumer) streaming.SubHandler {
 		// we alreay validated messages of request, don't need to validate again
 		out, err := service.uc.Scanner().Execute(ctx, in)
 		if err != nil {
-			service.logger.Errorw("unable to execute recovery", "error", err.Error())
-
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event
 			for _, event := range events {
 				retruning[event.Id] = err
 			}
 			return retruning
-		}
-
-		service.logger.Infow("execute recovery success", "event_count", len(events), "ok_count", len(out.Success), "ko_count", len(out.Error))
-		if len(out.Error) > 0 {
-			for ref, err := range out.Error {
-				service.logger.Errorw("execute got error", "ref", ref, "error", err.Error())
-			}
 		}
 
 		return out.Error

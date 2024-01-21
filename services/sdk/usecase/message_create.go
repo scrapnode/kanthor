@@ -38,7 +38,7 @@ type MessageCreateOut struct {
 }
 
 func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCreateOut, error) {
-	app, err := uc.repositories.Application().Get(ctx, in.WsId, in.AppId)
+	app, err := uc.repositories.Database().Application().Get(ctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
 	}

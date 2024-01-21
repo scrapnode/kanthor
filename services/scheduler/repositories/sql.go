@@ -5,30 +5,22 @@ import (
 
 	"github.com/scrapnode/kanthor/database"
 	"github.com/scrapnode/kanthor/logging"
-	"gorm.io/gorm"
+	"github.com/scrapnode/kanthor/services/scheduler/repositories/db"
 )
 
-func NewSql(logger logging.Logger, db database.Database) Repositories {
-	logger = logger.With("component", "repositories.sql")
-	return &sql{logger: logger, db: db}
+func NewSql(logger logging.Logger, dbclient database.Database) Repositories {
+	logger = logger.With("repositories", "sql")
+	return &sql{logger: logger, db: db.NewSql(logger, dbclient)}
 }
 
 type sql struct {
 	logger logging.Logger
-	db     database.Database
-
-	application *SqlApplication
-
-	mu sync.Mutex
+	db     db.Database
+	mu     sync.Mutex
 }
 
-func (repo *sql) Application() Application {
+func (repo *sql) Database() db.Database {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
-
-	if repo.application == nil {
-		repo.application = &SqlApplication{client: repo.db.Client().(*gorm.DB)}
-	}
-
-	return repo.application
+	return repo.db
 }

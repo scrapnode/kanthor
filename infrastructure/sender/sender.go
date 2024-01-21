@@ -24,7 +24,7 @@ func New(conf *Config, logger logging.Logger) (Send, error) {
 			return rest(ctx, req)
 		}
 
-		return nil, fmt.Errorf("sender: unsupported scheme [%s]", uri.Scheme)
+		return nil, fmt.Errorf("INFRASTRUCTURE.SENDER.REST.SCHEME.%s.NOT_SUPPORT.ERROR", strings.ToUpper(uri.Scheme))
 	}, nil
 }
 

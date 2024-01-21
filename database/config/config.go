@@ -36,8 +36,8 @@ type Config struct {
 func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("database.uri", conf.Uri),
-		validator.StringStartsWith("database.uri", conf.Uri, "postgres"),
+		validator.StringUri("DATABASE.CONFIG.URI", conf.Uri),
+		validator.StringStartsWithOneOf("DATABASE.CONFIG.URI", conf.Uri, []string{"postgres"}),
 	)
 	if err != nil {
 		return err
@@ -57,6 +57,6 @@ type Migration struct {
 func (conf *Migration) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("database.migration.source", conf.Source),
+		validator.StringUri("DATABASE.CONFIG.MIGRATION.SOURCE", conf.Source),
 	)
 }

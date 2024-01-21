@@ -25,13 +25,13 @@ type ApplicationDeleteOut struct {
 }
 
 func (uc *application) Delete(ctx context.Context, in *ApplicationDeleteIn) (*ApplicationDeleteOut, error) {
-	app, err := uc.repositories.Transaction(ctx, func(txctx context.Context) (interface{}, error) {
-		app, err := uc.repositories.Application().Get(txctx, in.WsId, in.Id)
+	app, err := uc.repositories.Database().Transaction(ctx, func(txctx context.Context) (interface{}, error) {
+		app, err := uc.repositories.Database().Application().Get(txctx, in.WsId, in.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := uc.repositories.Application().Delete(txctx, app); err != nil {
+		if err := uc.repositories.Database().Application().Delete(txctx, app); err != nil {
 			return nil, err
 		}
 		return app, nil

@@ -12,8 +12,8 @@ type Config struct {
 func (conf *Config) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("CONFIG.INFRA.DLM.URI", conf.Uri),
-		validator.NumberGreaterThanOrEqual("CONFIG.INFRA.DLM.TIME_TO_LIVE", conf.TimeToLive, 1000),
+		validator.StringUri("INFRASTRUCTURE.DLM.CONFIG.URI", conf.Uri),
+		validator.NumberGreaterThanOrEqual("INFRASTRUCTURE.DLM.CONFIG.TIME_TO_LIVE", conf.TimeToLive, 1000),
 	)
 }
 

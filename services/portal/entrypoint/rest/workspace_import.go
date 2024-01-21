@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
@@ -27,7 +26,7 @@ type WorkspaceImportRes struct {
 // @Param		ws_id						path		string						true	"workspace id"
 // @Param		payload						body		WorkspaceImportReq	true	"import payload"
 // @Success		200							{object}	WorkspaceImportRes
-// @Failure		default						{object}	gateway.Error
+// @Failure		default						{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceImport(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
@@ -39,21 +38,18 @@ func UseWorkspaceImport(service *portal) gin.HandlerFunc {
 			Id:    ginctx.Param("ws_id"),
 		}
 		if err := getin.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(getin))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 		getout, err := service.uc.Workspace().Get(ctx, getin)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 
 		var req WorkspaceImportReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 		importin := &usecase.WorkspaceImportIn{
@@ -61,14 +57,12 @@ func UseWorkspaceImport(service *portal) gin.HandlerFunc {
 			Snapshot: FromWorkspaceSnapshot(req.Snapshot, getout.Doc.Id),
 		}
 		if err := importin.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(getin))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 		importout, err := service.uc.Workspace().Import(ctx, importin)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 

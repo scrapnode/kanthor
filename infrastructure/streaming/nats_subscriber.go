@@ -117,7 +117,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 		for {
 			if !subscriber.subscription.IsValid() {
 				if subscriber.status == patterns.StatusConnected {
-					subscriber.logger.Error("subscription is no more valid")
+					subscriber.logger.Error(ErrSubTerminiated.Error())
 				}
 				return
 			}
@@ -134,7 +134,6 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 				}
 				continue
 			}
-			subscriber.logger.Debugw("got messages", "request_count", subscriber.conf.Subscriber.Concurrency, "response_count", len(messages))
 
 			events := map[string]*Event{}
 			for _, msg := range messages {

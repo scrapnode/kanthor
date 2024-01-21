@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
@@ -24,14 +23,13 @@ type WorkspaceCreateRes struct {
 // @Router		/workspace			[post]
 // @Param		payload				body		WorkspaceCreateReq	true	"workspace payload"
 // @Success		200					{object}	WorkspaceCreateRes
-// @Failure		default				{object}	gateway.Error
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceCreate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req WorkspaceCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
@@ -43,15 +41,13 @@ func UseWorkspaceCreate(service *portal) gin.HandlerFunc {
 			Name:  req.Name,
 		}
 		if err := in.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
 		out, err := service.uc.Workspace().Create(ctx, in)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 

@@ -14,7 +14,6 @@ func UseJob(service *cronjob) func() {
 			Buckets:   service.conf.Cronjob.Buckets,
 		}
 		if err := in.Validate(); err != nil {
-			service.logger.Error(err)
 			return
 		}
 
@@ -24,17 +23,6 @@ func UseJob(service *cronjob) func() {
 		)
 		defer cancel()
 
-		out, err := service.uc.Scanner().Schedule(ctx, in)
-		if err != nil {
-			service.logger.Errorw("unable to execute cronjob", "error", err.Error())
-			return
-		}
-		if len(out.Error) > 0 {
-			for ref, err := range out.Error {
-				service.logger.Errorw("unable schedule a recovery entities", "ref", ref, "error", err.Error())
-			}
-		}
-
-		service.logger.Infow("scheduled recovery entities", "ok_count", len(out.Success), "ko_count", len(out.Error))
+		_, _ = service.uc.Scanner().Schedule(ctx, in)
 	}
 }

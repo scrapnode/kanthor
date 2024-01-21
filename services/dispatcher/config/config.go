@@ -51,6 +51,6 @@ type DispatcherForwarderSend struct {
 func (conf *DispatcherForwarderSend) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("CONFIG.DISPATCHER.FORWARDER.SEND.CONCURRENCY", conf.Concurrency, 0),
+		validator.NumberGreaterThan("DISPATCHER.CONFIG.FORWARDER.SEND.CONCURRENCY", conf.Concurrency, 0),
 	)
 }

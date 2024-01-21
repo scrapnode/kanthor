@@ -1,4 +1,4 @@
-package repositories
+package db
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 		Where(fmt.Sprintf(`"%s"."id" = ?`, entities.TableWs), id).
 		First(ws)
 	if tx.Error != nil {
-		return nil, database.SqlError(tx.Error)
+		return nil, tx.Error
 	}
 
 	return ws, nil

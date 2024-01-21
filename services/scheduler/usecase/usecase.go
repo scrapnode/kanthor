@@ -49,7 +49,7 @@ func (uc *scheduler) Request() Request {
 			conf:         uc.conf,
 			logger:       uc.logger,
 			infra:        uc.infra,
-			publisher:    uc.infra.Stream.Publisher("scheduler_request"),
+			publisher:    uc.infra.Stream.Publisher("scheduler.request"),
 			repositories: uc.repositories,
 		}
 	}

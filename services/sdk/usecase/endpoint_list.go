@@ -31,12 +31,12 @@ type EndpointListOut struct {
 }
 
 func (uc *endpoint) List(ctx context.Context, in *EndpointListIn) (*EndpointListOut, error) {
-	data, err := uc.repositories.Endpoint().List(ctx, in.WsId, in.AppId, in.PagingQuery)
+	data, err := uc.repositories.Database().Endpoint().List(ctx, in.WsId, in.AppId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := uc.repositories.Endpoint().Count(ctx, in.WsId, in.AppId, in.PagingQuery)
+	count, err := uc.repositories.Database().Endpoint().Count(ctx, in.WsId, in.AppId, in.PagingQuery)
 	if err != nil {
 		return nil, err
 	}

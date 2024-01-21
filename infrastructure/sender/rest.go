@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -22,7 +23,7 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			status := r.StatusCode()
 			url := r.Request.URL
 			if status >= http.StatusInternalServerError {
-				logger.Warnw("retrying", "status", status, "url", url)
+				logger.Warnw("INFRASTRUCTURE.SENDER.REST.RETRYING", "status", status, "url", url)
 				return true
 			}
 			return false
@@ -35,9 +36,9 @@ func Rest(conf *Config, logger logging.Logger) Send {
 		r := client.R().
 			SetContext(ctx).
 			SetHeaderMultiValues(req.Headers)
-		logger.Debugw("sending", "uri", req.Uri)
-		err := fmt.Errorf("sender.rest: unsupported method [%s]", req.Method)
+
 		var rp *resty.Response
+		err := fmt.Errorf("INFRASTRUCTURE.SENDER.REST.METHOD.%s.NOT_SUPPORT.ERROR", strings.ToUpper(req.Method))
 
 		if req.Method == http.MethodGet {
 			rp, err = r.Get(req.Uri)
@@ -52,8 +53,8 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			rp, err = r.SetBody(req.Body).Patch(req.Uri)
 		}
 
+		logger.Debugw("INFRASTRUCTURE.SENDER.REST.SENT", "traces", rp.Request.TraceInfo())
 		if err != nil {
-			logger.Debugw("sent", "trace_info", rp.Request.TraceInfo())
 			return nil, err
 		}
 
@@ -65,7 +66,6 @@ func Rest(conf *Config, logger logging.Logger) Send {
 			Uri:  rp.RawResponse.Request.URL.String(),
 			Body: rp.Body(),
 		}
-		logger.Debugw("sent", "uri", res.Uri, "trace_info", rp.Request.TraceInfo())
 
 		return res, nil
 	}

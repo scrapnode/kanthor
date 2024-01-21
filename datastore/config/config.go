@@ -34,7 +34,11 @@ type Config struct {
 }
 
 func (conf *Config) Validate() error {
-	err := validator.Validate(validator.DefaultConfig, validator.StringUri("datastore.uri", conf.Uri))
+	err := validator.Validate(
+		validator.DefaultConfig,
+		validator.StringUri("DATASTORE.CONFIG.URI", conf.Uri),
+		validator.StringStartsWithOneOf("DATASTORE.CONFIG.URI", conf.Uri, []string{"postgres"}),
+	)
 	if err != nil {
 		return err
 	}
@@ -53,6 +57,6 @@ type Migration struct {
 func (conf *Migration) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringUri("datastore.migration.source", conf.Source),
+		validator.StringUri("DATABASE.CONFIG.MIGRATION.SOURCE", conf.Source),
 	)
 }

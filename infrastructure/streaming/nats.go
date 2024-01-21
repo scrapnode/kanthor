@@ -30,21 +30,21 @@ func NewNatsConn(uri string, logger logging.Logger) (*natscore.Conn, error) {
 		natscore.MaxReconnects(9),
 		natscore.DisconnectErrHandler(func(c *natscore.Conn, err error) {
 			if err != nil {
-				logger.Errorf("STREAMING.NATS.DISCONNECTED: %v", err)
+				logger.Errorw("INFRASTRUCTURE.STREAMING.NATS.DISCONNECTED.ERROR", "error", err)
 				return
 			}
 		}),
 		natscore.ReconnectHandler(func(conn *natscore.Conn) {
-			logger.Warnf("STREAMING.NATS.RECONNECT: %v", conn.ConnectedUrl())
+			logger.Warnw("INFRASTRUCTURE.STREAMING.NATS.RECONNECT", "url", conn.ConnectedUrl())
 		}),
 		natscore.ErrorHandler(func(c *natscore.Conn, s *natscore.Subscription, err error) {
 			if err == natscore.ErrSlowConsumer {
 				count, bytes, err := s.Pending()
-				logger.Errorf("STREAMING.NATS.ERROR: %v | subject:%s behind: %d msgs / %d bytes", err, s.Subject, count, bytes)
+				logger.Errorw("INFRASTRUCTURE.STREAMING.NATS.SLOW_CONSUMER.ERROR", "error", err, "subject", s.Subject, "count", count, "bytes", bytes)
 				return
 			}
 
-			logger.Errorf("STREAMING.NATS.ERROR: %v", err)
+			logger.Errorw("INFRASTRUCTURE.STREAMING.NATS.ERROR", "error", err)
 		}),
 	}
 

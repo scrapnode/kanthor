@@ -518,6 +518,13 @@ definitions:
     - updated_at
     - uri
     type: object
+  Error:
+    properties:
+      error:
+        type: string
+    required:
+    - error
+    type: object
   MessageCreateReq:
     properties:
       app_id:
@@ -545,16 +552,6 @@ definitions:
     required:
     - id
     type: object
-  gateway.Error:
-    properties:
-      code:
-        type: string
-      error:
-        type: string
-    required:
-    - code
-    - error
-    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -581,7 +578,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       tags:
@@ -618,7 +615,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -640,7 +637,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -662,7 +659,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -683,7 +680,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -710,7 +707,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -752,7 +749,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -774,7 +771,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -796,7 +793,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -817,7 +814,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -844,7 +841,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -867,7 +864,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -913,7 +910,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -935,7 +932,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -957,7 +954,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -978,7 +975,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []
@@ -1005,7 +1002,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/gateway.Error'
+            $ref: '#/definitions/Error'
       security:
       - Authorization: []
       - WorkspaceId: []

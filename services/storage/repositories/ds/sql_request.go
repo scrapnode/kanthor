@@ -1,4 +1,4 @@
-package repositories
+package ds
 
 import (
 	"context"
@@ -9,11 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type SqlMessage struct {
+type SqlRequest struct {
 	client *gorm.DB
 }
 
-func (sql *SqlMessage) Create(ctx context.Context, docs []*entities.Message) ([]string, error) {
+func (sql *SqlRequest) Create(ctx context.Context, docs []*entities.Request) ([]string, error) {
+
 	if len(docs) == 0 {
 		return []string{}, nil
 	}
@@ -34,19 +35,19 @@ func (sql *SqlMessage) Create(ctx context.Context, docs []*entities.Message) ([]
 			returning = append(returning, doc.Id)
 
 			keys := []string{}
-			for _, col := range entities.MessageProps {
+			for _, col := range entities.RequestProps {
 				key := fmt.Sprintf("%s_%d", col, i)
 				keys = append(keys, "@"+key)
-				values[key] = entities.MessageMappers[col](doc)
+				values[key] = entities.RequestMappers[col](doc)
 			}
 
 			names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
 		}
 
-		tableName := fmt.Sprintf(`"%s"`, entities.TableMsg)
-		columns := fmt.Sprintf(`"%s"`, strings.Join(entities.MessageProps, `","`))
+		tableName := fmt.Sprintf(`"%s"`, entities.TableReq)
+		columns := fmt.Sprintf(`"%s"`, strings.Join(entities.RequestProps, `","`))
 		statement := fmt.Sprintf(
-			"INSERT INTO %s(%s) VALUES %s ON CONFLICT(app_id, id) DO NOTHING;",
+			"INSERT INTO %s(%s) VALUES %s ON CONFLICT(ep_id, msg_id, id) DO NOTHING;",
 			tableName,
 			columns,
 			strings.Join(names, ","),

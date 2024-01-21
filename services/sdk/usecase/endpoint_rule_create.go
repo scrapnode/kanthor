@@ -36,7 +36,7 @@ type EndpointRuleCreateOut struct {
 }
 
 func (uc *endpointRule) Create(ctx context.Context, in *EndpointRuleCreateIn) (*EndpointRuleCreateOut, error) {
-	ep, err := uc.repositories.Endpoint().Get(ctx, in.WsId, in.EpId)
+	ep, err := uc.repositories.Database().Endpoint().Get(ctx, in.WsId, in.EpId)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (uc *endpointRule) Create(ctx context.Context, in *EndpointRuleCreateIn) (*
 	doc.Id = identifier.New(entities.IdNsEpr)
 	doc.SetAT(uc.infra.Timer.Now())
 
-	epr, err := uc.repositories.EndpointRule().Create(ctx, doc)
+	epr, err := uc.repositories.Database().EndpointRule().Create(ctx, doc)
 	if err != nil {
 		return nil, err
 	}

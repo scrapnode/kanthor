@@ -9,8 +9,6 @@ import (
 	"github.com/scrapnode/kanthor/gateway"
 	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/logging"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
 
@@ -31,22 +29,20 @@ type MessageCreateRes struct {
 // @Router		/message		[post]
 // @Param		payload			body		MessageCreateReq	true	"message payload"
 // @Success		201				{object}	MessageCreateRes
-// @Failure		default			{object}	gateway.Error
+// @Failure		default			{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
-func UseMessageCreate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
+func UseMessageCreate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		var req MessageCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
-			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
 		body, err := json.Marshal(req.Body)
 		if err != nil {
-			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("malformed body"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
@@ -70,21 +66,17 @@ func UseMessageCreate(logger logging.Logger, uc usecase.Sdk) gin.HandlerFunc {
 		}
 
 		if err := in.Validate(); err != nil {
-			logger.Errorw(err.Error(), "data", utils.Stringify(in))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
-		out, err := uc.Message().Create(ctx, in)
+		out, err := service.uc.Message().Create(ctx, in)
 		if err != nil {
-			logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 
 		res := &MessageCreateRes{out.Message.Id}
-
-		logger.Debugw("put message", "msg_id", out.Message.Id)
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

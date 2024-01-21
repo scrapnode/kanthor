@@ -85,7 +85,7 @@ func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderS
 		event, err := transformation.EventFromResponse(response)
 		if err != nil {
 			// un-recoverable error
-			uc.logger.Errorw("could not transform response to event", "response", response.String())
+			uc.logger.Errorw("DISPATCHER.USECASE.FORWARDER.SEND.EVENT_TRANSFORM.ERROR", "response", response.String())
 			continue
 		}
 
@@ -108,7 +108,6 @@ func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderS
 }
 
 func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entities.Response {
-	// TODO: should notify entirely system about open circuit breaker open state of this endpoint
 	res, err := circuitbreaker.Do[sender.Response](
 		uc.infra.CircuitBreaker,
 		request.EpId,

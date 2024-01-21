@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/scrapnode/kanthor/configuration"
@@ -53,33 +52,32 @@ type Config struct {
 
 func (conf *Config) Validate() error {
 	if err := conf.Sender.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.sender: %v", err)
+		return err
 	}
 	if err := conf.CircuitBreaker.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.circuit_breaker: %v", err)
+		return err
 	}
 	if err := conf.Idempotency.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.idempotency: %v", err)
+		return err
 	}
 	if err := conf.DistributedLockManager.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.distributed_lock_manager: %v", err)
+		return err
 	}
 	if err := conf.Cache.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.cache: %v", err)
+		return err
 	}
 	if len(conf.Authenticators) > 0 {
-		for i, authenticator := range conf.Authenticators {
+		for _, authenticator := range conf.Authenticators {
 			if err := authenticator.Validate(); err != nil {
-				return fmt.Errorf("infrastructure.authenticator[%d]: %v", i, err)
+				return err
 			}
 		}
 	}
-
 	if err := conf.Authorizator.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.authorizator: %v", err)
+		return err
 	}
 	if err := conf.Streaming.Validate(); err != nil {
-		return fmt.Errorf("infrastructure.stream: %v", err)
+		return err
 	}
 
 	return nil

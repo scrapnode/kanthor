@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
@@ -20,7 +19,7 @@ type WorkspaceListRes struct {
 // @Tags		workspace
 // @Router		/workspace				[get]
 // @Success		200						{object}	WorkspaceGetRes
-// @Failure		default					{object}	gateway.Error
+// @Failure		default					{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceList(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
@@ -31,15 +30,13 @@ func UseWorkspaceList(service *portal) gin.HandlerFunc {
 			AccId: acc.Sub,
 		}
 		if err := in.Validate(); err != nil {
-			service.logger.Errorw(err.Error(), "data", utils.Stringify(in))
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("invalid request"))
+			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
 			return
 		}
 
 		out, err := service.uc.Workspace().List(ctx, in)
 		if err != nil {
-			service.logger.Error(err)
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("oops, something went wrong"))
+			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}
 

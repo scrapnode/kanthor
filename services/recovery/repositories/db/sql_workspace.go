@@ -21,7 +21,7 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 		Where(fmt.Sprintf(`"%s"."id" = ?`, doc.TableName()), id).
 		First(doc)
 	if tx.Error != nil {
-		return nil, database.SqlError(tx.Error)
+		return nil, tx.Error
 	}
 
 	return doc, nil

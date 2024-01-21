@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/scrapnode/kanthor/internal/entities"
@@ -37,15 +36,4 @@ func SqlTxnFromContext(ctx context.Context, client *gorm.DB) *gorm.DB {
 		return tx
 	}
 	return client
-}
-
-func SqlError(err error) error {
-	if err == nil {
-		return nil
-	}
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return ErrRecordNotFound
-	}
-	return err
 }

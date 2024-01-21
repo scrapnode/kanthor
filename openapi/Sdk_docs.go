@@ -50,7 +50,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -111,7 +111,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -149,7 +149,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -187,7 +187,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -223,7 +223,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -268,7 +268,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -335,7 +335,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -373,7 +373,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -411,7 +411,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -447,7 +447,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -492,7 +492,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -532,7 +532,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -605,7 +605,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -643,7 +643,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -681,7 +681,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -717,7 +717,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -762,7 +762,7 @@ const docTemplateSdk = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/gateway.Error"
+                            "$ref": "#/definitions/Error"
                         }
                     }
                 }
@@ -1502,6 +1502,17 @@ const docTemplateSdk = `{
                 }
             }
         },
+        "Error": {
+            "type": "object",
+            "required": [
+                "error"
+            ],
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
         "MessageCreateReq": {
             "type": "object",
             "required": [
@@ -1537,21 +1548,6 @@ const docTemplateSdk = `{
             ],
             "properties": {
                 "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "gateway.Error": {
-            "type": "object",
-            "required": [
-                "code",
-                "error"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "error": {
                     "type": "string"
                 }
             }

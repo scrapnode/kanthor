@@ -27,21 +27,19 @@ func UseIdempotency(logger logging.Logger, engine idempotency.Idempotency, bypas
 		if required {
 			key := ginctx.GetHeader(HeaderIdempotencyKey)
 			if key == "" {
-				ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.NewError("no idempotency key"))
+				ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.ErrorString("GATEWAY.MIDDLEWARE.IDEMPOTENCY_KEY.EMPTY.ERROR"))
 				return
 			}
 
 			ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 			ok, err := engine.Validate(ctx, key)
 			if err != nil {
-				logger.Error(err)
-				ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.NewError("could not validate idempotency key"))
+				ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.ErrorString("GATEWAY.MIDDLEWARE.IDEMPOTENCY_KEY.VERIFY.ERROR"))
 				return
 			}
 
 			if !ok {
-				logger.Errorw("duplicated request", "method", method, "idempotency_key", key)
-				ginctx.AbortWithStatusJSON(http.StatusPreconditionFailed, gateway.NewError("duplicated request"))
+				ginctx.AbortWithStatusJSON(http.StatusPreconditionFailed, gateway.ErrorString("GATEWAY.MIDDLEWARE.IDEMPOTENCY_KEY.INVALID.ERROR"))
 				return
 			}
 		}
