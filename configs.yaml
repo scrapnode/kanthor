@@ -66,9 +66,6 @@ infrastructure:
       watcher:
         uri: *nats_uri
 
-  metric:
-    engine: noop
-
   streaming:
     name: main
     uri: *nats_uri
@@ -115,13 +112,13 @@ storage:
   warehouse:
     put:
       timeout: 60000 # 60s
-      size: 1000
+      batch_size: 1000
 
 recovery:
   cronjob:
     scheduler: "*/15 * * * *"
     timeout: 300000 # 5m
-    batch_size: 100
+    batch_size: 300
     buckets:
       - offset: 0 # 30m
         duration: 1800000 # 30m

@@ -18,7 +18,7 @@ func Handler(service *storage) streaming.SubHandler {
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
 		in := &usecase.WarehousePutIn{
-			Size:      service.conf.Warehouse.Put.Size,
+			BatchSize: service.conf.Warehouse.Put.BatchSize,
 			Messages:  map[string]*entities.Message{},
 			Requests:  map[string]*entities.Request{},
 			Responses: map[string]*entities.Response{},

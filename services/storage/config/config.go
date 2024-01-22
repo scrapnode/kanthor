@@ -68,14 +68,14 @@ func (conf *StorageWarehouse) Validate() error {
 }
 
 type StorageWarehousePut struct {
-	Timeout int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	Size    int   `json:"size" yaml:"size" mapstructure:"size"`
+	Timeout   int64 `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	BatchSize int   `json:"batch_size" yaml:"batch_size" mapstructure:"batch_size"`
 }
 
 func (conf *StorageWarehousePut) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("CONFIG.STORAGE.WAREHOUSE.PUT.TIMEOUT", conf.Timeout, 1000),
-		validator.NumberGreaterThan("CONFIG.STORAGE.WAREHOUSE.PUT.SIZE", conf.Size, 0),
+		validator.NumberGreaterThan("CONFIG.STORAGE.WAREHOUSE.PUT.BATCH_SIZE", conf.BatchSize, 0),
 	)
 }

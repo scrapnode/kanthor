@@ -12,7 +12,7 @@ import (
 )
 
 type WarehousePutIn struct {
-	Size      int
+	BatchSize int
 	Messages  map[string]*entities.Message
 	Requests  map[string]*entities.Request
 	Responses map[string]*entities.Response
@@ -21,7 +21,7 @@ type WarehousePutIn struct {
 func (in *WarehousePutIn) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("size", in.Size, 0),
+		validator.NumberGreaterThan("batch_size", in.BatchSize, 0),
 	)
 	if err != nil {
 		return err
@@ -122,8 +122,8 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
 	p := pool.New().WithMaxGoroutines(1)
-	for i := 0; i < len(messages); i += in.Size {
-		j := utils.ChunkNext(i, len(messages), in.Size)
+	for i := 0; i < len(messages); i += in.BatchSize {
+		j := utils.ChunkNext(i, len(messages), in.BatchSize)
 
 		msgs := messages[i:j]
 		p.Go(func() {
@@ -141,8 +141,8 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		})
 	}
 
-	for i := 0; i < len(requests); i += in.Size {
-		j := utils.ChunkNext(i, len(requests), in.Size)
+	for i := 0; i < len(requests); i += in.BatchSize {
+		j := utils.ChunkNext(i, len(requests), in.BatchSize)
 
 		reqs := requests[i:j]
 		p.Go(func() {
@@ -160,8 +160,8 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		})
 	}
 
-	for i := 0; i < len(responses); i += in.Size {
-		j := utils.ChunkNext(i, len(responses), in.Size)
+	for i := 0; i < len(responses); i += in.BatchSize {
+		j := utils.ChunkNext(i, len(responses), in.BatchSize)
 
 		resps := responses[i:j]
 		p.Go(func() {
