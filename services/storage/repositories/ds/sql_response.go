@@ -2,11 +2,10 @@ package ds
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/scrapnode/kanthor/internal/entities"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SqlResponse struct {
@@ -25,36 +24,15 @@ func (sql *SqlResponse) Create(ctx context.Context, docs []*entities.Response) (
 	defer close(errc)
 
 	go func() {
-		returning := []string{}
-
-		names := []string{}
-		values := map[string]any{}
-		for i := 0; i < len(docs); i++ {
-			doc := docs[i]
-			returning = append(returning, doc.Id)
-
-			keys := []string{}
-			for _, col := range entities.ResponseProps {
-				key := fmt.Sprintf("%s_%d", col, i)
-				keys = append(keys, "@"+key)
-				values[key] = entities.ResponseMappers[col](doc)
-			}
-
-			names = append(names, fmt.Sprintf("(%s)", strings.Join(keys, ",")))
-		}
-
-		tableName := fmt.Sprintf(`"%s"`, entities.TableRes)
-		columns := fmt.Sprintf(`"%s"`, strings.Join(entities.ResponseProps, `","`))
-		statement := fmt.Sprintf(
-			"INSERT INTO %s(%s) VALUES %s ON CONFLICT(ep_id, msg_id, id) DO NOTHING;",
-			tableName,
-			columns,
-			strings.Join(names, ","),
-		)
-
-		if tx := sql.client.Exec(statement, values); tx.Error != nil {
+		tx := sql.client.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(&docs)
+		if tx.Error != nil {
 			errc <- tx.Error
 			return
+		}
+
+		returning := []string{}
+		for i := range docs {
+			returning = append(returning, docs[i].Id)
 		}
 
 		datac <- returning

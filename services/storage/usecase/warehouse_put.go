@@ -122,6 +122,7 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 
 	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
 	p := pool.New().WithMaxGoroutines(1)
+
 	for i := 0; i < len(messages); i += in.BatchSize {
 		j := utils.ChunkNext(i, len(messages), in.BatchSize)
 
