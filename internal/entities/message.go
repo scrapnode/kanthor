@@ -5,7 +5,7 @@ import (
 )
 
 type Message struct {
-	TSEntity
+	*TSEntity
 
 	Tier     string
 	AppId    string

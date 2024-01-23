@@ -126,7 +126,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 
 			// sending is success, but we got remote server error
 			// must use custom error here to trigger circuit breaker
-			if status.Is5xx(res.Status) {
+			if status.IsKO(res.Status) {
 				return res, errors.New(http.StatusText(res.Status))
 			}
 

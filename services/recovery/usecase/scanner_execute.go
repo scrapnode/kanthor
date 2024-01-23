@@ -17,7 +17,7 @@ type ScannerExecuteIn struct {
 	Tasks             map[string]*entities.RecoveryTask
 }
 
-func ValidateRecoveryTask(prefix string, recovery *entities.RecoveryTask) error {
+func ValidateScannerExecuteRecoveryTask(prefix string, recovery *entities.RecoveryTask) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".app_id", recovery.AppId, entities.IdNsApp),
@@ -33,7 +33,7 @@ func (in *ScannerExecuteIn) Validate() error {
 		validator.MapRequired("tasks", in.Tasks),
 		validator.Map(in.Tasks, func(refId string, item *entities.RecoveryTask) error {
 			prefix := fmt.Sprintf("tasks.%s", refId)
-			return ValidateRecoveryTask(prefix, item)
+			return ValidateScannerExecuteRecoveryTask(prefix, item)
 		}),
 	)
 }
@@ -151,18 +151,19 @@ func (uc *scanner) execute(ctx context.Context, recovery *entities.RecoveryTask,
 			}
 
 			request, trace := routing.PlanRequest(uc.infra.Timer, messages[pair], routeMaps[pair])
-
-			if request != nil {
-				if event, err := transformation.EventFromRequest(request); err == nil {
-					events[pair] = event
-				} else {
-					uc.logger.Errorw("RECOVERY.USECASE.SCANNER.EXECUTE.EVENT_TRANSFORMATION", "error", err.Error())
-				}
-			}
-
 			if len(trace) > 0 {
 				uc.logger.Warnw(trace[0].(string), trace[1:]...)
 			}
+			if request == nil {
+				continue
+			}
+
+			event, err := transformation.EventFromRequest(request)
+			if err != nil {
+				uc.logger.Errorw("RECOVERY.USECASE.SCANNER.EXECUTE.EVENT_TRANSFORMATION", "error", err.Error())
+			}
+
+			events[pair] = event
 		}
 
 		errs := uc.publisher.Pub(ctx, events)

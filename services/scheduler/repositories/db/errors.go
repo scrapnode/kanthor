@@ -1,8 +1,0 @@
-package db
-
-import "errors"
-
-var (
-	ErrNotConnected     = errors.New("USECASES.SCHEDULER.REPOSITORIES.CONNECTION.NOT_CONNECTED.ERROR")
-	ErrAlreadyConnected = errors.New("USECASES.SCHEDULER.REPOSITORIES.CONNECTION.ALREADY_CONNECTED.ERROR")
-)

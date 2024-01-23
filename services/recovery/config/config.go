@@ -7,7 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/pkg/validator"
 )
 
-// @TODO:mapstructure with env
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Wrapper
 	return &conf.Recovery, provider.Unmarshal(&conf)

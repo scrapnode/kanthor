@@ -22,6 +22,7 @@ func Handler(service *storage) streaming.SubHandler {
 			Messages:  map[string]*entities.Message{},
 			Requests:  map[string]*entities.Request{},
 			Responses: map[string]*entities.Response{},
+			Attempts:  map[string]*entities.Attempt{},
 		}
 
 		for id, event := range events {
@@ -78,7 +79,24 @@ func Handler(service *storage) streaming.SubHandler {
 				continue
 			}
 
-			service.logger.Warnw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_UNKNOWN.ERROR", "event", event.String())
+			if project.IsTopic(event.Subject, constants.TopicAttempt) {
+				attempt, err := transformation.EventToAttempt(event)
+				if err != nil {
+					// un-recoverable error
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_TRANSFORMATION.ERROR", "error", err.Error(), "event", event.String())
+					continue
+				}
+
+				if err := usecase.ValidateWarehousePutInAttempt(prefix, attempt); err != nil {
+					// un-recoverable error
+					service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.RESPONSE_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "attempt", attempt.String())
+					continue
+				}
+				in.Attempts[id] = attempt
+				continue
+			}
+
+			service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_UNKNOWN_TOPIC.ERROR", "event", event.String())
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Warehouse.Put.Timeout))

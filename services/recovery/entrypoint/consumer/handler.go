@@ -24,8 +24,8 @@ func Handler(service *consumer) streaming.SubHandler {
 				continue
 			}
 
-			if err := usecase.ValidateRecoveryTask("task", task); err != nil {
-				service.logger.Errorw("RECOVERY.ENTRYPOINT.CONSUMER.HANDLER.RECOVERY_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "recovery", task.String())
+			if err := usecase.ValidateScannerExecuteRecoveryTask("task", task); err != nil {
+				service.logger.Errorw("RECOVERY.ENTRYPOINT.CONSUMER.HANDLER.RECOVERY_TASK_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "recovery_task", task.String())
 				// got malformed recovery, should ignore and not retry it
 				continue
 			}

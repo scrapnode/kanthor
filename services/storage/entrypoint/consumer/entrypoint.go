@@ -133,8 +133,6 @@ func (service *storage) Run(ctx context.Context) error {
 
 	go func() {
 		err := service.healthcheck.Liveness(func() error {
-			service.logger.Debug("checking liveness")
-
 			if err := service.subscriber.Liveness(); err != nil {
 				return err
 			}
@@ -166,8 +164,6 @@ func (service *storage) Run(ctx context.Context) error {
 
 func (service *storage) readiness() error {
 	return service.healthcheck.Readiness(func() error {
-		service.logger.Debug("checking readiness")
-
 		if err := service.subscriber.Readiness(); err != nil {
 			return err
 		}

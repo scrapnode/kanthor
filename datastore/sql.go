@@ -37,7 +37,7 @@ func (ds *sql) Readiness() error {
 	}
 
 	var ok int
-	tx := ds.client.Raw("SELECT 1").Scan(&ok)
+	tx := ds.client.Raw(readinessQuery).Scan(&ok)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -57,7 +57,7 @@ func (ds *sql) Liveness() error {
 	}
 
 	var ok int
-	tx := ds.client.Raw("SELECT 1").Scan(&ok)
+	tx := ds.client.Raw(livenessQuery).Scan(&ok)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -135,3 +135,8 @@ func (ds *sql) Disconnect(ctx context.Context) error {
 func (ds *sql) Client() any {
 	return ds.client
 }
+
+var (
+	readinessQuery = "SELECT 1 as readiness"
+	livenessQuery  = "SELECT 1 as liveness"
+)

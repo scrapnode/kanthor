@@ -95,20 +95,72 @@ func EventToRecoveryTask(event *streaming.Event) (*entities.RecoveryTask, error)
 	return &rec, nil
 }
 
-func EventFromRecoveryTask(rec *entities.RecoveryTask) (*streaming.Event, error) {
-	data, err := rec.Marshal()
+func EventFromRecoveryTask(task *entities.RecoveryTask) (*streaming.Event, error) {
+	data, err := task.Marshal()
 	if err != nil {
 		return nil, err
 	}
 
 	event := &streaming.Event{
-		AppId:    rec.AppId,
+		AppId:    task.AppId,
 		Type:     constants.TypeScanner,
-		Id:       fmt.Sprintf("%s/%d/%d/%d", rec.AppId, rec.From, rec.To, rec.Init),
+		Id:       fmt.Sprintf("%s/%d/%d/%d", task.AppId, task.From, task.To, task.Init),
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicRecovery, event.AppId, event.Type))
+	event.Subject = project.Subject(project.Topic(constants.TopicRecoveryTask, event.AppId, event.Type))
+
+	return event, nil
+}
+
+func EventToAttemptTask(event *streaming.Event) (*entities.AttemptTask, error) {
+	var rec entities.AttemptTask
+	if err := rec.Unmarshal(event.Data); err != nil {
+		return nil, err
+	}
+	return &rec, nil
+}
+
+func EventFromAttemptTask(task *entities.AttemptTask) (*streaming.Event, error) {
+	data, err := task.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	event := &streaming.Event{
+		AppId:    task.AppId,
+		Type:     constants.TypeScanner,
+		Id:       fmt.Sprintf("%s/%d/%d/%d", task.EpId, task.From, task.To, task.Init),
+		Data:     data,
+		Metadata: map[string]string{},
+	}
+	event.Subject = project.Subject(project.Topic(constants.TopicAttemptTask, event.AppId, event.Type))
+
+	return event, nil
+}
+
+func EventToAttempt(event *streaming.Event) (*entities.Attempt, error) {
+	var rec entities.Attempt
+	if err := rec.Unmarshal(event.Data); err != nil {
+		return nil, err
+	}
+	return &rec, nil
+}
+
+func EventFromAttempt(att *entities.Attempt) (*streaming.Event, error) {
+	data, err := att.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	event := &streaming.Event{
+		AppId:    att.AppId,
+		Type:     constants.TypeEndeavor,
+		Id:       att.ReqId,
+		Data:     data,
+		Metadata: map[string]string{},
+	}
+	event.Subject = project.Subject(project.Topic(constants.TopicAttempt, event.AppId, event.Type))
 
 	return event, nil
 }

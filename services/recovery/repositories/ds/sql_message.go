@@ -30,7 +30,7 @@ func (sql *SqlMessage) scan(ctx context.Context, appId string, query *entities.S
 		}
 
 		tx := sql.client.
-			Table(entities.TableMsg).
+			Model(&entities.Message{}).
 			Where("app_id = ?", appId).
 			Where("id > ?", low).
 			Order("app_id DESC, id DESC").

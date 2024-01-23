@@ -28,7 +28,7 @@ func (sql *SqlApplication) scan(ctx context.Context, query *entities.ScanningQue
 		}
 
 		tx := sql.client.
-			Table(entities.TableApp).
+			Model(&entities.Application{}).
 			Order("id ASC").
 			Limit(query.Size)
 		if query.Search != "" {

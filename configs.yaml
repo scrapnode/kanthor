@@ -137,3 +137,4 @@ attempt:
   consumer:
     timeout: 900000 # 15m
     batch_size: 10
+    schedule_delay: 900000 # 15m

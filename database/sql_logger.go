@@ -35,6 +35,9 @@ func (logger *SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 	elapsed := time.Since(begin)
 
 	sql, rows := fc()
+	if sql == readinessQuery || sql == livenessQuery {
+		return
+	}
 	args := []interface{}{
 		"rows", rows,
 		"time", float64(elapsed.Nanoseconds()) / 1e6,

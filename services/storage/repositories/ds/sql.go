@@ -20,6 +20,7 @@ type sql struct {
 	message  *SqlMessage
 	request  *SqlRequest
 	response *SqlResponse
+	attempt  *SqlAttempt
 
 	mu sync.Mutex
 }
@@ -55,4 +56,15 @@ func (repo *sql) Response() Response {
 	}
 
 	return repo.response
+}
+
+func (repo *sql) Attempt() Attempt {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
+	if repo.attempt == nil {
+		repo.attempt = &SqlAttempt{client: repo.ds.Client().(*gorm.DB)}
+	}
+
+	return repo.attempt
 }

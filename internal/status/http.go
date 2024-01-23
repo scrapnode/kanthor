@@ -71,6 +71,20 @@ func Is5xx(status int) bool {
 	return int(status/100) == 5
 }
 
-func Is2xx(status int) bool {
+func IsOK(status int) bool {
 	return int(status/100) == 2
+}
+
+func IsAnyOK(status []int) bool {
+	for i := range status {
+		if IsOK(status[i]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func IsKO(status int) bool {
+	return int(status/100) == 5 || status == None
 }

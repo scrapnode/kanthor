@@ -71,7 +71,6 @@ func (server *server) Liveness(check func() error) error {
 			if err := server.write(Liveness); err != nil {
 				return err
 			}
-			server.logger.Debug("live")
 		}
 	}
 }

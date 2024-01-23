@@ -8,6 +8,8 @@ var (
 	STORAGE           = "storage"
 	RECOVERY_CRONJOB  = "recovery.cronjob"
 	RECOVERY_CONSUMER = "recovery.consumer"
+	ATTEMPT_CRONJOB   = "attempt.cronjob"
+	ATTEMPT_CONSUMER  = "attempt.consumer"
 
 	ALL      = "all"
 	SERVICES = []string{
@@ -18,5 +20,7 @@ var (
 		STORAGE,
 		RECOVERY_CRONJOB,
 		RECOVERY_CONSUMER,
+		ATTEMPT_CRONJOB,
+		ATTEMPT_CONSUMER,
 	}
 )

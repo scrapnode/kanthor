@@ -130,7 +130,7 @@ func (service *consumer) Stop(ctx context.Context) error {
 }
 
 func (service *consumer) Run(ctx context.Context) error {
-	topic := constants.TopicRecovery
+	topic := constants.TopicRecoveryTask
 	if err := service.subscriber.Sub(ctx, topic, Handler(service)); err != nil {
 		return err
 	}

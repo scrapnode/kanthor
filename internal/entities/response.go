@@ -2,12 +2,10 @@ package entities
 
 import (
 	"encoding/json"
-
-	"github.com/scrapnode/kanthor/internal/status"
 )
 
 type Response struct {
-	TSEntity
+	*TSEntity
 
 	EpId  string
 	MsgId string
@@ -40,10 +38,6 @@ func (entity *Response) Unmarshal(data []byte) error {
 func (entity *Response) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
-}
-
-func (entity *Response) Reschedulable() bool {
-	return status.Is5xx(entity.Status) || entity.Status == status.ErrUnknown || entity.Status == status.None
 }
 
 var ResponseProps = []string{

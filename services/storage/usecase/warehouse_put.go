@@ -16,6 +16,11 @@ type WarehousePutIn struct {
 	Messages  map[string]*entities.Message
 	Requests  map[string]*entities.Request
 	Responses map[string]*entities.Response
+	Attempts  map[string]*entities.Attempt
+}
+
+func (in *WarehousePutIn) Count() int {
+	return len(in.Messages) + len(in.Requests) + len(in.Responses) + len(in.Attempts)
 }
 
 func (in *WarehousePutIn) Validate() error {
@@ -105,6 +110,18 @@ func ValidateWarehousePutInResponse(prefix string, response *entities.Response) 
 	)
 }
 
+func ValidateWarehousePutInAttempt(prefix string, attempt *entities.Attempt) error {
+	return validator.Validate(
+		validator.DefaultConfig,
+		validator.StringStartsWith(prefix+".req_id", attempt.ReqId, entities.IdNsReq),
+		validator.StringStartsWith(prefix+".msg_id", attempt.MsgId, entities.IdNsMsg),
+		validator.StringStartsWith(prefix+".app_id", attempt.AppId, entities.IdNsApp),
+		validator.StringRequired(prefix+".tier", attempt.Tier),
+		validator.NumberGreaterThan(prefix+".schedule_next", attempt.ScheduleNext, 0),
+		validator.NumberGreaterThan(prefix+".scheduled_at", attempt.ScheduledAt, 0),
+	)
+}
+
 type WarehousePutOut struct {
 	Success []string
 	Error   map[string]error
@@ -113,12 +130,11 @@ type WarehousePutOut struct {
 func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutOut, error) {
 	ok := safe.Slice[string]{}
 	ko := safe.Map[error]{}
-	count := len(in.Messages) + len(in.Requests) + len(in.Responses)
-	if count == 0 {
+	if in.Count() == 0 {
 		return &WarehousePutOut{Success: ok.Data(), Error: ko.Data()}, nil
 	}
 
-	refs, messages, requests, responses := uc.references(in)
+	refs, messages, requests, responses, attempts := uc.references(in)
 
 	// hardcode the go routine to 1 because we are expecting stable throughput of database inserting
 	p := pool.New().WithMaxGoroutines(1)
@@ -164,18 +180,37 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 	for i := 0; i < len(responses); i += in.BatchSize {
 		j := utils.ChunkNext(i, len(responses), in.BatchSize)
 
-		resps := responses[i:j]
+		reses := responses[i:j]
 		p.Go(func() {
-			ids, err := uc.repositories.Datastore().Response().Create(ctx, resps)
+			ids, err := uc.repositories.Datastore().Response().Create(ctx, reses)
 			if err != nil {
-				for _, resp := range resps {
-					ko.Set(refs[resp.Id], err)
+				for _, res := range reses {
+					ko.Set(refs[res.Id], err)
 				}
 				return
 			}
 
-			for _, resp := range ids {
-				ok.Append(refs[resp])
+			for _, res := range ids {
+				ok.Append(refs[res])
+			}
+		})
+	}
+
+	for i := 0; i < len(attempts); i += in.BatchSize {
+		j := utils.ChunkNext(i, len(attempts), in.BatchSize)
+
+		atts := attempts[i:j]
+		p.Go(func() {
+			ids, err := uc.repositories.Datastore().Attempt().Create(ctx, atts)
+			if err != nil {
+				for _, att := range atts {
+					ko.Set(refs[att.ReqId], err)
+				}
+				return
+			}
+
+			for _, att := range ids {
+				ok.Append(refs[att])
 			}
 		})
 	}
@@ -216,16 +251,25 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 			}
 		}
 
+		// context deadline exceeded, should set that error to remain responses
+		for _, attempt := range in.Attempts {
+			// no error, should add context deadline error
+			if _, has := ko.Get(attempt.ReqId); !has {
+				ko.Set(attempt.ReqId, ctx.Err())
+			}
+		}
+
 		return &WarehousePutOut{Success: []string{}, Error: ko.Data()}, nil
 	}
 }
 
-func (uc *warehose) references(in *WarehousePutIn) (map[string]string, []*entities.Message, []*entities.Request, []*entities.Response) {
+func (uc *warehose) references(in *WarehousePutIn) (map[string]string, []*entities.Message, []*entities.Request, []*entities.Response, []*entities.Attempt) {
 	refs := map[string]string{}
 
 	var messages []*entities.Message
 	var requests []*entities.Request
 	var responses []*entities.Response
+	var attempts []*entities.Attempt
 
 	for eventId, msg := range in.Messages {
 		refs[msg.Id] = eventId
@@ -242,5 +286,10 @@ func (uc *warehose) references(in *WarehousePutIn) (map[string]string, []*entiti
 		responses = append(responses, res)
 	}
 
-	return refs, messages, requests, responses
+	for eventId, att := range in.Attempts {
+		refs[att.ReqId] = eventId
+		attempts = append(attempts, att)
+	}
+
+	return refs, messages, requests, responses, attempts
 }

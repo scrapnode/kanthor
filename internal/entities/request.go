@@ -5,7 +5,7 @@ import (
 )
 
 type Request struct {
-	TSEntity
+	*TSEntity
 
 	EpId  string
 	MsgId string
