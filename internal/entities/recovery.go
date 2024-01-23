@@ -2,7 +2,7 @@ package entities
 
 import "encoding/json"
 
-type Recovery struct {
+type RecoveryTask struct {
 	AppId string
 	To    int64
 	From  int64
@@ -10,15 +10,15 @@ type Recovery struct {
 	Init int64
 }
 
-func (entity *Recovery) Marshal() ([]byte, error) {
+func (entity *RecoveryTask) Marshal() ([]byte, error) {
 	return json.Marshal(entity)
 }
 
-func (entity *Recovery) Unmarshal(data []byte) error {
+func (entity *RecoveryTask) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, entity)
 }
 
-func (entity *Recovery) String() string {
+func (entity *RecoveryTask) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
 }

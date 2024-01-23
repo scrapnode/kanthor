@@ -87,15 +87,15 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 	return event, nil
 }
 
-func EventToRecovery(event *streaming.Event) (*entities.Recovery, error) {
-	var rec entities.Recovery
+func EventToRecoveryTask(event *streaming.Event) (*entities.RecoveryTask, error) {
+	var rec entities.RecoveryTask
 	if err := rec.Unmarshal(event.Data); err != nil {
 		return nil, err
 	}
 	return &rec, nil
 }
 
-func EventFromRecovery(rec *entities.Recovery) (*streaming.Event, error) {
+func EventFromRecoveryTask(rec *entities.RecoveryTask) (*streaming.Event, error) {
 	data, err := rec.Marshal()
 	if err != nil {
 		return nil, err

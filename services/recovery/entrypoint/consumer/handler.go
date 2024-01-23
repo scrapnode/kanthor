@@ -14,9 +14,9 @@ func Handler(service *consumer) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
 	return func(events map[string]*streaming.Event) map[string]error {
-		recovery := map[string]*entities.Recovery{}
+		tasks := map[string]*entities.RecoveryTask{}
 		for id, event := range events {
-			recover, err := transformation.EventToRecovery(event)
+			task, err := transformation.EventToRecoveryTask(event)
 			if err != nil {
 				service.logger.Errorw("RECOVERY.ENTRYPOINT.CONSUMER.HANDLER.EVENT_TRANSFORMATION.ERROR", "error", err.Error(), "event", event.String())
 				// unable to parse recovery from event is considered as un-retriable error
@@ -24,13 +24,13 @@ func Handler(service *consumer) streaming.SubHandler {
 				continue
 			}
 
-			if err := usecase.ValidateScannerExecuteRecovery("recover", recover); err != nil {
-				service.logger.Errorw("RECOVERY.ENTRYPOINT.CONSUMER.HANDLER.RECOVERY_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "recovery", recover.String())
+			if err := usecase.ValidateRecoveryTask("task", task); err != nil {
+				service.logger.Errorw("RECOVERY.ENTRYPOINT.CONSUMER.HANDLER.RECOVERY_VALIDATION.ERROR", "error", err.Error(), "event", event.String(), "recovery", task.String())
 				// got malformed recovery, should ignore and not retry it
 				continue
 			}
 
-			recovery[id] = recover
+			tasks[id] = task
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Consumer.Timeout))
@@ -38,7 +38,7 @@ func Handler(service *consumer) streaming.SubHandler {
 
 		in := &usecase.ScannerExecuteIn{
 			RecoveryBatchSize: service.conf.Consumer.BatchSize,
-			Recovery:          recovery,
+			Tasks:             tasks,
 		}
 		// we alreay validated messages of request, don't need to validate again
 		out, err := service.uc.Scanner().Execute(ctx, in)

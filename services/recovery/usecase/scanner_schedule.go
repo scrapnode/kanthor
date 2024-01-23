@@ -50,7 +50,7 @@ func (uc *scanner) Schedule(ctx context.Context, in *ScannerScheduleIn) (*Scanne
 			from := to.Add(time.Millisecond * time.Duration(-bucket.Duration))
 
 			for _, app := range results.Data {
-				event, err := transformation.EventFromRecovery(&entities.Recovery{
+				event, err := transformation.EventFromRecoveryTask(&entities.RecoveryTask{
 					AppId: app.Id,
 					To:    to.UnixMilli(),
 					From:  from.UnixMilli(),

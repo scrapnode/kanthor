@@ -14,10 +14,10 @@ import (
 
 type ScannerExecuteIn struct {
 	RecoveryBatchSize int
-	Recovery          map[string]*entities.Recovery
+	Tasks             map[string]*entities.RecoveryTask
 }
 
-func ValidateScannerExecuteRecovery(prefix string, recovery *entities.Recovery) error {
+func ValidateRecoveryTask(prefix string, recovery *entities.RecoveryTask) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".app_id", recovery.AppId, entities.IdNsApp),
@@ -30,10 +30,10 @@ func (in *ScannerExecuteIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThan("recovery_batch_size", in.RecoveryBatchSize, 0),
-		validator.MapRequired("recovery", in.Recovery),
-		validator.Map(in.Recovery, func(refId string, item *entities.Recovery) error {
-			prefix := fmt.Sprintf("recovery.%s", refId)
-			return ValidateScannerExecuteRecovery(prefix, item)
+		validator.MapRequired("tasks", in.Tasks),
+		validator.Map(in.Tasks, func(refId string, item *entities.RecoveryTask) error {
+			prefix := fmt.Sprintf("tasks.%s", refId)
+			return ValidateRecoveryTask(prefix, item)
 		}),
 	)
 }
@@ -50,17 +50,17 @@ func (uc *scanner) Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerE
 	// we have to store a ref map of recovery.app_id and the key
 	// so if we got any error, we can report back to the call that a key has a error
 	eventIdRefs := map[string]string{}
-	for eventId, rec := range in.Recovery {
-		eventIdRefs[rec.AppId] = eventId
+	for eventId, task := range in.Tasks {
+		eventIdRefs[task.AppId] = eventId
 	}
 
 	errc := make(chan error, 1)
 	defer close(errc)
 
 	go func() {
-		for i := range in.Recovery {
-			success, err := uc.execute(ctx, in.Recovery[i], in.RecoveryBatchSize)
-			eventRef := eventIdRefs[in.Recovery[i].AppId]
+		for i := range in.Tasks {
+			success, err := uc.execute(ctx, in.Tasks[i], in.RecoveryBatchSize)
+			eventRef := eventIdRefs[in.Tasks[i].AppId]
 
 			if err != nil {
 				ko.Set(eventRef, err)
@@ -80,7 +80,7 @@ func (uc *scanner) Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerE
 		return &ScannerExecuteOut{Success: ok.Keys(), Error: ko.Data()}, err
 	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages
-		for _, rec := range in.Recovery {
+		for _, rec := range in.Tasks {
 			eventRef := eventIdRefs[rec.AppId]
 
 			if _, success := ok.Get(rec.AppId); success {
@@ -98,7 +98,7 @@ func (uc *scanner) Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerE
 	}
 }
 
-func (uc *scanner) execute(ctx context.Context, recovery *entities.Recovery, size int) ([]string, error) {
+func (uc *scanner) execute(ctx context.Context, recovery *entities.RecoveryTask, size int) ([]string, error) {
 	routes, err := uc.repositories.Database().Application().GetRoutes(ctx, []string{recovery.AppId})
 	if err != nil {
 		return nil, err
