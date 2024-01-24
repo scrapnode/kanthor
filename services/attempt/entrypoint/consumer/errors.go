@@ -3,6 +3,6 @@ package consumer
 import "errors"
 
 var (
-	ErrNotStarted     = errors.New("RECOVERY.ENTRYPOINT.CONSUMER.NOT_STARTED")
-	ErrAlreadyStarted = errors.New("RECOVERY.ENTRYPOINT.CONSUMER.ALREAD_STARTED")
+	ErrNotStarted     = errors.New("ATTEMPT.ENTRYPOINT.CONSUMER.NOT_STARTED")
+	ErrAlreadyStarted = errors.New("ATTEMPT.ENTRYPOINT.CONSUMER.ALREAD_STARTED")
 )

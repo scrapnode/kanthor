@@ -121,7 +121,7 @@ func (conf *AttemptSelector) Validate() error {
 }
 
 type AttemptEndeavor struct {
-	Concurrency int64 `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
+	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
 }
 
 func (conf *AttemptEndeavor) Validate() error {

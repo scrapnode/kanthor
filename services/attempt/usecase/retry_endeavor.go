@@ -23,7 +23,7 @@ type RetryEndeavorIn struct {
 	Attempts    map[string]*entities.Attempt
 }
 
-func ValidateRetryEndeavorInAttempts(prefix string, attempt *entities.Attempt) error {
+func ValidateRetryEndeavorInAttempt(prefix string, attempt *entities.Attempt) error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".req_id", attempt.ReqId, entities.IdNsReq),
@@ -39,7 +39,7 @@ func (in *RetryEndeavorIn) Validate() error {
 		validator.MapRequired("attempts", in.Attempts),
 		validator.Map(in.Attempts, func(refId string, item *entities.Attempt) error {
 			prefix := fmt.Sprintf("attempts.%s", refId)
-			return ValidateRetryEndeavorInAttempts(prefix, item)
+			return ValidateRetryEndeavorInAttempt(prefix, item)
 		}),
 	)
 }

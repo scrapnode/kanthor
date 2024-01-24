@@ -13,6 +13,7 @@ import (
 
 type RetrySelectIn struct {
 	BatchSize int
+	Counter   int
 	Triggers  map[string]*entities.AttemptTrigger
 }
 
@@ -57,7 +58,7 @@ func (uc *retry) Select(ctx context.Context, in *RetrySelectIn) (*RetrySelectOut
 
 	go func() {
 		for i := range in.Triggers {
-			success, err := uc.choose(ctx, in.Triggers[i], in.BatchSize)
+			success, err := uc.choose(ctx, in.Triggers[i], in.BatchSize, in.Counter)
 			eventRef := eventIdRefs[in.Triggers[i].String()]
 
 			if err != nil {
@@ -96,13 +97,13 @@ func (uc *retry) Select(ctx context.Context, in *RetrySelectIn) (*RetrySelectOut
 	}
 }
 
-func (uc *retry) choose(ctx context.Context, trigger *entities.AttemptTrigger, size int) ([]string, error) {
+func (uc *retry) choose(ctx context.Context, trigger *entities.AttemptTrigger, size, counter int) ([]string, error) {
 	query := &entities.ScanningQuery{
 		Size: size,
 		From: uc.infra.Timer.UnixMilli(trigger.From),
 		To:   uc.infra.Timer.UnixMilli(trigger.To),
 	}
-	ch := uc.repositories.Datastore().Attempt().Scan(ctx, query, uc.infra.Timer.Now().UnixMilli(), uc.conf.Selector.Counter)
+	ch := uc.repositories.Datastore().Attempt().Scan(ctx, query, uc.infra.Timer.Now().UnixMilli(), counter)
 
 	returning := []string{}
 	for r := range ch {
