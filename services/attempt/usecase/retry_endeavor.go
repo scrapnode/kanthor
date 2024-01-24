@@ -18,51 +18,48 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-type ForwarderSendIn struct {
+type RetryEndeavorIn struct {
 	Concurrency int
-	Requests    map[string]*entities.Request
+	Attempts    map[string]*entities.Attempt
 }
 
-func ValidateForwarderSendInRequest(prefix string, item *entities.Request) error {
+func ValidateRetryEndeavorInAttempts(prefix string, attempt *entities.Attempt) error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringStartsWith("request.id", item.Id, entities.IdNsReq),
-		validator.StringStartsWith("request.msg_id", item.MsgId, entities.IdNsMsg),
-		validator.StringStartsWith("request.ep_id", item.EpId, entities.IdNsEp),
-		validator.StringRequired("request.tier", item.Tier),
-		validator.StringStartsWith("request.app_id", item.AppId, entities.IdNsApp),
-		validator.StringRequired("request.type", item.Type),
-		validator.MapNotNil[string, string]("request.metadata", item.Metadata),
-		validator.StringRequired("request.body", item.Body),
-		validator.StringUri("request.uri", item.Uri),
-		validator.StringRequired("request.method", item.Method),
+		validator.StringStartsWith(prefix+".req_id", attempt.ReqId, entities.IdNsReq),
+		validator.StringStartsWith(prefix+".msg_id", attempt.MsgId, entities.IdNsMsg),
+		validator.StringStartsWith(prefix+".app_id", attempt.AppId, entities.IdNsApp),
+		validator.StringRequired(prefix+".tier", attempt.Tier),
 	)
 }
 
-func (in *ForwarderSendIn) Validate() error {
+func (in *RetryEndeavorIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.MapRequired("requests", in.Requests),
-		validator.NumberGreaterThan("concurrency", in.Concurrency, 0),
-		validator.Map(in.Requests, func(refId string, item *entities.Request) error {
-			prefix := fmt.Sprintf("requests.%s", refId)
-			return ValidateForwarderSendInRequest(prefix, item)
+		validator.MapRequired("attempts", in.Attempts),
+		validator.Map(in.Attempts, func(refId string, item *entities.Attempt) error {
+			prefix := fmt.Sprintf("attempts.%s", refId)
+			return ValidateRetryEndeavorInAttempts(prefix, item)
 		}),
 	)
 }
 
-type ForwarderSendOut struct {
+type RetryEndeavorOut struct {
 	Success []string
 	Error   map[string]error
 }
 
-func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderSendOut, error) {
-	responses := safe.Map[*entities.Response]{}
+func (uc *retry) Endeavor(ctx context.Context, in *RetryEndeavorIn) (*RetryEndeavorOut, error) {
+	requests, err := uc.repositories.Datastore().Attempt().ListRequests(ctx, in.Attempts)
+	if err != nil {
+		return nil, err
+	}
 
+	responses := safe.Map[*entities.Response]{}
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
 	p := pool.New().WithMaxGoroutines(int(in.Concurrency))
-	for ref, r := range in.Requests {
+	for ref, r := range requests {
 		refId := ref
 		request := r
 		p.Go(func() {
@@ -78,7 +75,7 @@ func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderS
 		event, err := transformation.EventFromResponse(response)
 		if err != nil {
 			// un-recoverable error
-			uc.logger.Errorw("DISPATCHER.USECASE.FORWARDER.SEND.EVENT_TRANSFORM.ERROR", "response", response.String())
+			uc.logger.Errorw("ATTEMPT.USECASE.RETRY.ENDEAVOR.EVENT_TRANSFORM.ERROR", "response", response.String())
 			continue
 		}
 
@@ -97,10 +94,10 @@ func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderS
 		ok = append(ok, refId)
 	}
 
-	return &ForwarderSendOut{Success: ok, Error: ko}, nil
+	return &RetryEndeavorOut{Success: ok, Error: ko}, nil
 }
 
-func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entities.Response {
+func (uc *retry) send(ctx context.Context, request *entities.Request) *entities.Response {
 	res, err := circuitbreaker.Do[sender.Response](
 		uc.infra.CircuitBreaker,
 		request.EpId,

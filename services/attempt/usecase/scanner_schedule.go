@@ -14,14 +14,14 @@ import (
 
 type ScannerScheduleIn struct {
 	BatchSize int
-	Buckets   []config.AttemptCronjobBucket
+	Buckets   []config.AttemptBucket
 }
 
 func (in *ScannerScheduleIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThan("batch_size", in.BatchSize, 0),
-		validator.Slice(in.Buckets, func(i int, item *config.AttemptCronjobBucket) error {
+		validator.Slice(in.Buckets, func(i int, item *config.AttemptBucket) error {
 			return item.Validate(fmt.Sprintf("buckets[%d]", i))
 		}),
 	)
@@ -44,9 +44,10 @@ func (uc *scanner) Schedule(ctx context.Context, in *ScannerScheduleIn) (*Scanne
 			return nil, results.Error
 		}
 
+		now := uc.infra.Timer.Now()
 		events := map[string]*streaming.Event{}
 		for _, bucket := range in.Buckets {
-			to := uc.infra.Timer.Now().Add(time.Millisecond * time.Duration(-bucket.Offset))
+			to := now.Add(time.Millisecond * time.Duration(-bucket.Offset))
 			from := to.Add(time.Millisecond * time.Duration(-bucket.Duration))
 
 			for _, ep := range results.Data {
@@ -55,10 +56,7 @@ func (uc *scanner) Schedule(ctx context.Context, in *ScannerScheduleIn) (*Scanne
 					EpId:  ep.Id,
 					To:    to.UnixMilli(),
 					From:  from.UnixMilli(),
-					// For automatic attempt process (cronjob for example) we want to use the idempotency logic of the streaming process by default
-					// but we may want to bypass it when trigger the attempt manually
-					// so in the cronjob, we don't set Init and let the event use the ZERO as default value
-					// then the event id will be fmt.Sprintf("%s/%d/%d/%d", rec.AppId, rec.From, rec.To, 0),
+					// this is a hidden feature and is convenient way to punish the tasks and bypass deduplicated logic
 					// Init:  uc.infra.Timer.Now().UnixMilli(),
 				})
 				if err != nil {

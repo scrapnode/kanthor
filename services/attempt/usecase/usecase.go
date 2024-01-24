@@ -11,6 +11,7 @@ import (
 
 type Attempt interface {
 	Scanner() Scanner
+	Retry() Retry
 }
 
 func New(
@@ -36,6 +37,7 @@ type attempt struct {
 	repositories repositories.Repositories
 
 	scanner *scanner
+	retry   *retry
 
 	mu sync.Mutex
 }
@@ -54,4 +56,20 @@ func (uc *attempt) Scanner() Scanner {
 		}
 	}
 	return uc.scanner
+}
+
+func (uc *attempt) Retry() Retry {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+
+	if uc.retry == nil {
+		uc.retry = &retry{
+			conf:         uc.conf,
+			logger:       uc.logger,
+			infra:        uc.infra,
+			publisher:    uc.infra.Stream.Publisher("attempt.retry"),
+			repositories: uc.repositories,
+		}
+	}
+	return uc.retry
 }

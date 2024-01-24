@@ -23,3 +23,21 @@ func Code(str string) int {
 	// add more matching logic here, for instance: gRPC
 	return ErrUnknown
 }
+
+func IsOK(status int) bool {
+	return int(status/100) == 2
+}
+
+func IsAnyOK(status []int) bool {
+	for i := range status {
+		if IsOK(status[i]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func IsKO(status int) bool {
+	return !IsOK(status)
+}

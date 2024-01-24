@@ -14,8 +14,8 @@ import (
 )
 
 type ScannerExecuteIn struct {
-	RecoveryBatchSize int
-	Tasks             map[string]*entities.AttemptTask
+	BatchSize int
+	Tasks     map[string]*entities.AttemptTask
 }
 
 func ValidateScannerExecuteAttemptTask(prefix string, attempt *entities.AttemptTask) error {
@@ -30,7 +30,7 @@ func ValidateScannerExecuteAttemptTask(prefix string, attempt *entities.AttemptT
 func (in *ScannerExecuteIn) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThan("attempt_batch_size", in.RecoveryBatchSize, 0),
+		validator.NumberGreaterThan("batch_size", in.BatchSize, 0),
 		validator.MapRequired("tasks", in.Tasks),
 		validator.Map(in.Tasks, func(refId string, item *entities.AttemptTask) error {
 			prefix := fmt.Sprintf("tasks.%s", refId)
@@ -48,8 +48,8 @@ func (uc *scanner) Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerE
 	ok := &safe.Map[[]string]{}
 	ko := &safe.Map[error]{}
 
-	// we have to store a ref map of attempt.ep_id and the key
-	// so if we got any error, we can report back to the call that a key has a error
+	// we have to store a ref map so if we got any error,
+	// we can report back to the caller that a key has a error and should be retry
 	eventIdRefs := map[string]string{}
 	for eventId, task := range in.Tasks {
 		eventIdRefs[task.EpId] = eventId
@@ -60,7 +60,7 @@ func (uc *scanner) Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerE
 
 	go func() {
 		for i := range in.Tasks {
-			success, err := uc.execute(ctx, in.Tasks[i], in.RecoveryBatchSize)
+			success, err := uc.execute(ctx, in.Tasks[i], in.BatchSize)
 			eventRef := eventIdRefs[in.Tasks[i].EpId]
 
 			if err != nil {
@@ -81,16 +81,16 @@ func (uc *scanner) Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerE
 		return &ScannerExecuteOut{Success: ok.Keys(), Error: ko.Data()}, err
 	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages
-		for _, rec := range in.Tasks {
-			eventRef := eventIdRefs[rec.EpId]
+		for _, task := range in.Tasks {
+			eventRef := eventIdRefs[task.EpId]
 
-			if _, success := ok.Get(rec.EpId); success {
+			if _, success := ok.Get(task.EpId); success {
 				// already success
 				continue
 			}
 
 			// no error, should add context deadline error
-			if _, has := ko.Get(rec.EpId); !has {
+			if _, has := ko.Get(task.EpId); !has {
 				ko.Set(eventRef, ctx.Err())
 				continue
 			}
@@ -136,18 +136,18 @@ func (uc *scanner) execute(ctx context.Context, attempt *entities.AttemptTask, s
 			}
 
 			attempt := &entities.Attempt{
-				ReqId:  requests[msgId].Id,
-				MsgId:  msgId,
-				AppId:  requests[msgId].AppId,
-				Tier:   requests[msgId].Tier,
-				Status: status.None,
-
-				ScheduleNext: now.Add(time.Millisecond * time.Duration(uc.conf.Consumer.ScheduleDelay)).UnixMilli(),
-				ScheduledAt:  now.UnixMilli(),
+				ReqId: requests[msgId].Id,
+				MsgId: msgId,
+				EpId:  requests[msgId].EpId,
+				AppId: requests[msgId].AppId,
+				Tier:  requests[msgId].Tier,
 			}
+			attempt.ScheduleNext = now.Add(time.Millisecond * time.Duration(uc.conf.Consumer.ScheduleDelay)).UnixMilli()
+			attempt.ScheduledAt = now.UnixMilli()
+
 			event, err := transformation.EventFromAttempt(attempt)
 			if err != nil {
-				uc.logger.Errorw("ATTEMPT.USECASE.SCANNER.EXECUTE.EVENT_TRANSFORMATION", "error", err.Error())
+				uc.logger.Errorw("ATTEMPT.USECASE.SCANNER.EXECUTE.EVENT_TRANSFORMATION", "error", err.Error(), "attempt", attempt.String())
 			}
 
 			events[msgId] = event

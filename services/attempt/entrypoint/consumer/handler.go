@@ -37,8 +37,8 @@ func Handler(service *consumer) streaming.SubHandler {
 		defer cancel()
 
 		in := &usecase.ScannerExecuteIn{
-			RecoveryBatchSize: service.conf.Consumer.BatchSize,
-			Tasks:             tasks,
+			BatchSize: service.conf.Consumer.BatchSize,
+			Tasks:     tasks,
 		}
 		// we alreay validated messages of request, don't need to validate again
 		out, err := service.uc.Scanner().Execute(ctx, in)

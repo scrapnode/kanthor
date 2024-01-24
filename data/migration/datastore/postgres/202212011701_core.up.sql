@@ -49,10 +49,9 @@ CREATE TABLE IF NOT EXISTS kanthor_response (
 CREATE TABLE IF NOT EXISTS kanthor_attempt (
     req_id VARCHAR(64) NOT NULL PRIMARY KEY,
     msg_id VARCHAR(64) NOT NULL,
+    ep_id VARCHAR(64) NOT NULL,
     app_id VARCHAR(64) NOT NULL,
     tier VARCHAR(64) NOT NULL,
-    status INT NOT NULL,
-    success_id VARCHAR(64) NOT NULL,
     schedule_counter INT NOT NULL,
     schedule_next BIGINT NOT NULL DEFAULT 0,
     scheduled_at BIGINT NOT NULL DEFAULT 0,

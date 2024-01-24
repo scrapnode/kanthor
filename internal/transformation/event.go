@@ -16,13 +16,11 @@ func EventFromMessage(msg *entities.Message) (*streaming.Event, error) {
 	}
 
 	event := &streaming.Event{
-		AppId:    msg.AppId,
-		Type:     msg.Type,
 		Id:       msg.Id,
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicMessage, event.AppId, event.Type))
+	event.Subject = project.Subject(project.Topic(constants.TopicMessage, msg.AppId, msg.Type))
 
 	return event, nil
 }
@@ -42,13 +40,11 @@ func EventFromRequest(req *entities.Request) (*streaming.Event, error) {
 	}
 
 	event := &streaming.Event{
-		AppId:    req.AppId,
-		Type:     req.Type,
 		Id:       req.Id,
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicRequest, event.AppId, event.Type))
+	event.Subject = project.Subject(project.Topic(constants.TopicRequest, req.AppId, req.Type))
 
 	return event, nil
 }
@@ -62,11 +58,11 @@ func EventToRequest(event *streaming.Event) (*entities.Request, error) {
 }
 
 func EventToResponse(event *streaming.Event) (*entities.Response, error) {
-	var req entities.Response
-	if err := req.Unmarshal(event.Data); err != nil {
+	var res entities.Response
+	if err := res.Unmarshal(event.Data); err != nil {
 		return nil, err
 	}
-	return &req, nil
+	return &res, nil
 }
 
 func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
@@ -76,23 +72,21 @@ func EventFromResponse(res *entities.Response) (*streaming.Event, error) {
 	}
 
 	event := &streaming.Event{
-		AppId:    res.AppId,
-		Type:     res.Type,
 		Id:       res.Id,
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicResponse, event.AppId, event.Type))
+	event.Subject = project.Subject(project.Topic(constants.TopicResponse, res.AppId, res.Type))
 
 	return event, nil
 }
 
 func EventToRecoveryTask(event *streaming.Event) (*entities.RecoveryTask, error) {
-	var rec entities.RecoveryTask
-	if err := rec.Unmarshal(event.Data); err != nil {
+	var task entities.RecoveryTask
+	if err := task.Unmarshal(event.Data); err != nil {
 		return nil, err
 	}
-	return &rec, nil
+	return &task, nil
 }
 
 func EventFromRecoveryTask(task *entities.RecoveryTask) (*streaming.Event, error) {
@@ -102,23 +96,21 @@ func EventFromRecoveryTask(task *entities.RecoveryTask) (*streaming.Event, error
 	}
 
 	event := &streaming.Event{
-		AppId:    task.AppId,
-		Type:     constants.TypeScanner,
-		Id:       fmt.Sprintf("%s/%d/%d/%d", task.AppId, task.From, task.To, task.Init),
+		Id:       fmt.Sprintf("recovery_task.%s.%d.%d.%d", task.AppId, task.From, task.To, task.Init),
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicRecoveryTask, event.AppId, event.Type))
+	event.Subject = project.Subject(project.Topic(constants.TopicRecoveryTask, task.AppId))
 
 	return event, nil
 }
 
 func EventToAttemptTask(event *streaming.Event) (*entities.AttemptTask, error) {
-	var rec entities.AttemptTask
-	if err := rec.Unmarshal(event.Data); err != nil {
+	var task entities.AttemptTask
+	if err := task.Unmarshal(event.Data); err != nil {
 		return nil, err
 	}
-	return &rec, nil
+	return &task, nil
 }
 
 func EventFromAttemptTask(task *entities.AttemptTask) (*streaming.Event, error) {
@@ -128,13 +120,35 @@ func EventFromAttemptTask(task *entities.AttemptTask) (*streaming.Event, error) 
 	}
 
 	event := &streaming.Event{
-		AppId:    task.AppId,
-		Type:     constants.TypeScanner,
-		Id:       fmt.Sprintf("%s/%d/%d/%d", task.EpId, task.From, task.To, task.Init),
+		Id:       fmt.Sprintf("attempt_task.%s.%d.%d.%d", task.EpId, task.From, task.To, task.Init),
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicAttemptTask, event.AppId, event.Type))
+	event.Subject = project.Subject(project.Topic(constants.TopicAttemptTask, task.AppId))
+
+	return event, nil
+}
+
+func EventToAttemptTrigger(event *streaming.Event) (*entities.AttemptTrigger, error) {
+	var task entities.AttemptTrigger
+	if err := task.Unmarshal(event.Data); err != nil {
+		return nil, err
+	}
+	return &task, nil
+}
+
+func EventFromAttemptTrigger(task *entities.AttemptTrigger) (*streaming.Event, error) {
+	data, err := task.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	event := &streaming.Event{
+		Id:       fmt.Sprintf("attempt_trigger.%d.%d.%d", task.From, task.To, task.Init),
+		Data:     data,
+		Metadata: map[string]string{},
+	}
+	event.Subject = project.Subject(project.Topic(constants.TopicAttemptTrigger))
 
 	return event, nil
 }
@@ -154,13 +168,11 @@ func EventFromAttempt(att *entities.Attempt) (*streaming.Event, error) {
 	}
 
 	event := &streaming.Event{
-		AppId:    att.AppId,
-		Type:     constants.TypeEndeavor,
 		Id:       att.ReqId,
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicAttempt, event.AppId, event.Type))
+	event.Subject = project.Subject(project.Topic(constants.TopicAttempt, att.AppId))
 
 	return event, nil
 }

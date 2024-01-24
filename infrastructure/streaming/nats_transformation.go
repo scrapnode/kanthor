@@ -9,8 +9,6 @@ import (
 func NatsMsgToEvent(msg *natscore.Msg) *Event {
 	event := &Event{
 		Subject:  msg.Subject,
-		AppId:    msg.Header.Get(MetaAppId),
-		Type:     msg.Header.Get(MetaType),
 		Id:       msg.Header.Get(MetaId),
 		Data:     msg.Data,
 		Metadata: map[string]string{},
@@ -19,7 +17,7 @@ func NatsMsgToEvent(msg *natscore.Msg) *Event {
 		if strings.HasPrefix(key, "Nats") {
 			continue
 		}
-		if key == MetaAppId || key == MetaType || key == MetaId {
+		if key == MetaId {
 			continue
 		}
 		event.Metadata[key] = value[0]
@@ -31,9 +29,7 @@ func NatsMsgFromEvent(subject string, event *Event) *natscore.Msg {
 	msg := &natscore.Msg{
 		Subject: subject,
 		Header: natscore.Header{
-			MetaAppId: []string{event.AppId},
-			MetaType:  []string{event.Type},
-			MetaId:    []string{event.Id},
+			MetaId: []string{event.Id},
 		},
 		Data: event.Data,
 	}

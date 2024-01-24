@@ -66,25 +66,3 @@ var http2text = map[int]string{
 	http.StatusNotExtended:                   "Not Extended",
 	http.StatusNetworkAuthenticationRequired: "Network Authentication Required",
 }
-
-func Is5xx(status int) bool {
-	return int(status/100) == 5
-}
-
-func IsOK(status int) bool {
-	return int(status/100) == 2
-}
-
-func IsAnyOK(status []int) bool {
-	for i := range status {
-		if IsOK(status[i]) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func IsKO(status int) bool {
-	return int(status/100) == 5 || status == None
-}

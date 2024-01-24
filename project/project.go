@@ -55,7 +55,13 @@ func Subject(topic string) string {
 }
 
 func Topic(segments ...string) string {
-	return strings.Join(segments, ".")
+	var parts []string
+	for i := range segments {
+		if segments[i] != "" {
+			parts = append(parts, segments[i])
+		}
+	}
+	return strings.Join(parts, ".")
 }
 
 func IsTopic(subject, topic string) bool {

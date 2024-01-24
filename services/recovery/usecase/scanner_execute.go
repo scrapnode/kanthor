@@ -47,8 +47,8 @@ func (uc *scanner) Execute(ctx context.Context, in *ScannerExecuteIn) (*ScannerE
 	ok := &safe.Map[[]string]{}
 	ko := &safe.Map[error]{}
 
-	// we have to store a ref map of recovery.app_id and the key
-	// so if we got any error, we can report back to the call that a key has a error
+	// we have to store a ref map so if we got any error,
+	// we can report back to the caller that a key has a error and should be retry
 	eventIdRefs := map[string]string{}
 	for eventId, task := range in.Tasks {
 		eventIdRefs[task.AppId] = eventId
@@ -160,7 +160,7 @@ func (uc *scanner) execute(ctx context.Context, recovery *entities.RecoveryTask,
 
 			event, err := transformation.EventFromRequest(request)
 			if err != nil {
-				uc.logger.Errorw("RECOVERY.USECASE.SCANNER.EXECUTE.EVENT_TRANSFORMATION", "error", err.Error())
+				uc.logger.Errorw("RECOVERY.USECASE.SCANNER.EXECUTE.EVENT_TRANSFORMATION", "error", err.Error(), "request", request.String())
 			}
 
 			events[pair] = event

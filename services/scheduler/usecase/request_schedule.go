@@ -30,16 +30,9 @@ func ValidateRequestScheduleInMessage(prefix string, message *entities.Message) 
 }
 
 func (in *RequestScheduleIn) Validate() error {
-	err := validator.Validate(
-		validator.DefaultConfig,
-		validator.MapRequired("messages", in.Messages),
-	)
-	if err != nil {
-		return err
-	}
-
 	return validator.Validate(
 		validator.DefaultConfig,
+		validator.MapRequired("messages", in.Messages),
 		validator.Map(in.Messages, func(refId string, item *entities.Message) error {
 			prefix := fmt.Sprintf("messages.%s", refId)
 			return ValidateRequestScheduleInMessage(prefix, item)
@@ -56,8 +49,8 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 	ok := &safe.Map[[]string]{}
 	ko := &safe.Map[error]{}
 
-	// we have to store a ref map of messages.id and the key
-	// so if we got any error, we can report back to the call that a key has a error
+	// we have to store a ref map so if we got any error,
+	// we can report back to the caller that a key has a error and should be retry
 	eventIdRefs := map[string]string{}
 	for eventId, msg := range in.Messages {
 		eventIdRefs[msg.Id] = eventId
