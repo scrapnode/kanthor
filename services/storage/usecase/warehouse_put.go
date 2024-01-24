@@ -215,16 +215,16 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		})
 	}
 
-	c := make(chan bool, 1)
-	defer close(c)
+	done := make(chan bool, 1)
+	defer close(done)
 
 	go func() {
 		p.Wait()
-		c <- true
+		done <- true
 	}()
 
 	select {
-	case <-c:
+	case <-done:
 		return &WarehousePutOut{Success: ok.Data(), Error: ko.Data()}, nil
 	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages

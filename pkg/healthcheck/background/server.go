@@ -34,13 +34,13 @@ type server struct {
 }
 
 func (server *server) Connect(ctx context.Context) error {
-	server.logger.Info("HEALTHCHECK.BACKGROUND.SERVER.CONNECTED")
+	server.logger.Info("connected")
 	return nil
 }
 
 func (server *server) Disconnect(ctx context.Context) error {
 	server.terminated <- time.Now().UnixMilli()
-	server.logger.Info("HEALTHCHECK.BACKGROUND.SERVER.DISCONNECTED")
+	server.logger.Info("disconnected")
 	return nil
 }
 
@@ -80,6 +80,7 @@ func (server *server) check(name string, conf *healthcheck.CheckConfig, check fu
 	defer cancel()
 
 	errc := make(chan error, 1)
+	defer close(errc)
 	go func() {
 		var returning error
 		for i := 0; i < conf.MaxTry; i++ {

@@ -16,6 +16,7 @@ func Stop(instances ...Stoppable) error {
 	defer cancel()
 
 	errc := make(chan error, 1)
+	defer close(errc)
 	go func() {
 		var returning error
 		for _, instance := range instances {

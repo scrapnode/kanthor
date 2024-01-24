@@ -132,13 +132,8 @@ func (service *dispatcher) Run(ctx context.Context) error {
 	}()
 
 	service.logger.Infow("running", "topic", topic)
-	forever := make(chan bool)
-	select {
-	case <-forever:
-		return nil
-	case <-ctx.Done():
-		return nil
-	}
+	<-ctx.Done()
+	return nil
 }
 
 func (service *dispatcher) readiness() error {

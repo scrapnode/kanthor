@@ -149,13 +149,8 @@ func (service *scheduler) Run(ctx context.Context) error {
 	}()
 
 	service.logger.Infow("running", "topic", topic)
-	forever := make(chan bool)
-	select {
-	case <-forever:
-		return nil
-	case <-ctx.Done():
-		return nil
-	}
+	<-ctx.Done()
+	return nil
 }
 
 func (service *scheduler) readiness() error {

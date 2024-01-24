@@ -165,6 +165,7 @@ func (service *cronjob) Run(ctx context.Context) error {
 
 	service.logger.Infow("running")
 	done := make(chan bool, 1)
+	defer close(done)
 	go func() {
 		service.cron.Run()
 		done <- true
