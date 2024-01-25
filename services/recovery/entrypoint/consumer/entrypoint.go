@@ -30,7 +30,7 @@ func New(
 	return &consumer{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("recovery"),
+		subscriber: infra.Stream.Subscriber("recovery_consumer"),
 		infra:      infra,
 		db:         db,
 		ds:         ds,

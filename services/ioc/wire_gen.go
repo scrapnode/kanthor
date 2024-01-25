@@ -98,6 +98,87 @@ func AttemptConsumer(provider configuration.Provider) (patterns.Runnable, error)
 	return runnable, nil
 }
 
+func AttemptTrigger(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint.Trigger(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	return runnable, nil
+}
+
+func AttemptSelector(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint.Selector(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	return runnable, nil
+}
+
+func AttemptEndeavor(provider configuration.Provider) (patterns.Runnable, error) {
+	configConfig, err := config.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	logger, err := logging.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	infrastructureInfrastructure, err := infrastructure.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	databaseDatabase, err := database.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	datastoreDatastore, err := datastore.New(provider)
+	if err != nil {
+		return nil, err
+	}
+	repositoriesRepositories := repositories.New(logger, databaseDatabase, datastoreDatastore)
+	attempt := usecase.New(configConfig, logger, infrastructureInfrastructure, repositoriesRepositories)
+	runnable := entrypoint.Endeavor(configConfig, logger, infrastructureInfrastructure, databaseDatabase, datastoreDatastore, attempt)
+	return runnable, nil
+}
+
 // Injectors from wire_dispatcher.go:
 
 func Dispatcher(provider configuration.Provider) (patterns.Runnable, error) {

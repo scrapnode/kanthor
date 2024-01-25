@@ -30,7 +30,7 @@ func New(
 	return &endeavor{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("attempt"),
+		subscriber: infra.Stream.Subscriber("attempt_endeavor"),
 		infra:      infra,
 		db:         db,
 		ds:         ds,
@@ -130,7 +130,7 @@ func (service *endeavor) Stop(ctx context.Context) error {
 }
 
 func (service *endeavor) Run(ctx context.Context) error {
-	topic := constants.TopicAttemptTask
+	topic := constants.TopicAttempt
 	if err := service.subscriber.Sub(ctx, topic, Handler(service)); err != nil {
 		return err
 	}

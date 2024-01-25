@@ -36,7 +36,7 @@ func (sql *SqlAttempt) scan(ctx context.Context, query *entities.ScanningQuery, 
 		tx := sql.client.
 			Model(&entities.Attempt{}).
 			Where("req_id > ?", low).
-			Where("schedule_next >= ? AND count < ?", next, count).
+			Where("completed_at = 0 AND schedule_next <= ? AND schedule_counter < ?", next, count).
 			Order("req_id DESC").
 			Limit(query.Size)
 
@@ -79,7 +79,7 @@ func (sql *SqlAttempt) ListRequests(ctx context.Context, attempts map[string]*en
 		values[fmt.Sprintf("ep_id_%d", i)] = attempts[refId].EpId
 		values[fmt.Sprintf("msg_id_%d", i)] = attempts[refId].MsgId
 		values[fmt.Sprintf("id_%d", i)] = attempts[refId].ReqId
-		conditions = append(conditions, fmt.Sprintf("(ep_id = @ep_id_%d AND msg_id = @msg_id_%d) AND id = @id_%d)", i, i, i))
+		conditions = append(conditions, fmt.Sprintf("(ep_id = @ep_id_%d AND msg_id = @msg_id_%d AND id = @id_%d)", i, i, i))
 		i++
 	}
 
@@ -108,13 +108,13 @@ func (sql *SqlAttempt) ListRequests(ctx context.Context, attempts map[string]*en
 	return returning, nil
 }
 
-func (sql *SqlAttempt) Update(ctx context.Context, updates map[string]entities.AttemptState) map[string]error {
+func (sql *SqlAttempt) Update(ctx context.Context, updates map[string]*entities.AttemptState) map[string]error {
 	ko := safe.Map[error]{}
 	var wg conc.WaitGroup
 	for id := range updates {
 		reqId := id
 		wg.Go(func() {
-			tx := sql.client.Model(&entities.Attempt{}).Updates(updates[reqId]).Where("req_id = ?", reqId)
+			tx := sql.client.Model(&entities.Attempt{}).Where("req_id = ?", reqId).Updates(updates[reqId])
 			if tx.Error != nil {
 				ko.Set(reqId, tx.Error)
 			}

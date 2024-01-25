@@ -9,8 +9,8 @@ import (
 )
 
 type Endpoint struct {
-	*Entity
-	*AuditTime
+	Entity
+	AuditTime
 	// @TODO: add deactivated_at
 	// DeactivatedAt int64
 

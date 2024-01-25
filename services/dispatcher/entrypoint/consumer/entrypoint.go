@@ -26,7 +26,7 @@ func New(
 	return &dispatcher{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("dispatcher"),
+		subscriber: infra.Stream.Subscriber("dispatcher_consumer"),
 		infra:      infra,
 		uc:         uc,
 

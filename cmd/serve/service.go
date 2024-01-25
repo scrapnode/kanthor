@@ -38,6 +38,15 @@ func Service(provider configuration.Provider, name string) (patterns.Runnable, e
 	if name == services.ATTEMPT_CONSUMER {
 		return ioc.AttemptConsumer(provider)
 	}
+	if name == services.ATTEMPT_TRIGGER {
+		return ioc.AttemptTrigger(provider)
+	}
+	if name == services.ATTEMPT_SELECTOR {
+		return ioc.AttemptSelector(provider)
+	}
+	if name == services.ATTEMPT_ENDEAVOR {
+		return ioc.AttemptEndeavor(provider)
+	}
 
 	return nil, fmt.Errorf("serve.service: unknown service [%s]", name)
 }

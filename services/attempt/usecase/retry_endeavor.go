@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/sender"
@@ -14,6 +15,7 @@ import (
 	"github.com/scrapnode/kanthor/internal/transformation"
 	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/safe"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/sourcegraph/conc/pool"
 )
@@ -55,36 +57,53 @@ func (uc *retry) Endeavor(ctx context.Context, in *RetryEndeavorIn) (*RetryEndea
 		return nil, err
 	}
 
-	responses := safe.Map[*entities.Response]{}
+	resMaps := safe.Map[*entities.Response]{}
 	// we don't need to implement global timeout as we did with scheduler
 	// because for each request, we already configured the sender timeout
-	p := pool.New().WithMaxGoroutines(int(in.Concurrency))
+	sendPool := pool.New().WithMaxGoroutines(int(in.Concurrency))
 	for ref, r := range requests {
 		refId := ref
 		request := r
-		p.Go(func() {
+		sendPool.Go(func() {
 			response := uc.send(ctx, request)
-			responses.Set(refId, response)
+			resMaps.Set(refId, response)
 		})
 	}
-	p.Wait()
+	sendPool.Wait()
+	responses := resMaps.Data()
 
 	events := map[string]*streaming.Event{}
-	kv := responses.Data()
-	for refId, response := range kv {
+	updates := map[string]*entities.AttemptState{}
+
+	now := uc.infra.Timer.Now()
+	for refId := range responses {
+		response := responses[refId]
+		// handle publish response event
 		event, err := transformation.EventFromResponse(response)
 		if err != nil {
 			// un-recoverable error
 			uc.logger.Errorw("ATTEMPT.USECASE.RETRY.ENDEAVOR.EVENT_TRANSFORM.ERROR", "response", response.String())
 			continue
 		}
-
 		events[refId] = event
+
+		// handle attempt state change
+		update := &entities.AttemptState{}
+		if status.IsOK(response.Status) {
+			update.CompletedAt = now.UnixMilli()
+			update.CompletedId = response.Id
+		} else {
+			update.ScheduleCounter = in.Attempts[refId].ScheduleCounter + 1
+			update.ScheduleNext = now.Add(time.Millisecond * time.Duration(uc.conf.Endeavor.RetryDelay)).UnixMilli()
+			update.ScheduledAt = now.UnixMilli()
+
+		}
+		updates[response.ReqId] = update
 	}
 
+	// publish events first
 	ok := []string{}
 	ko := map[string]error{}
-
 	errs := uc.publisher.Pub(ctx, events)
 	for refId := range events {
 		if err, ok := errs[refId]; ok {
@@ -92,6 +111,10 @@ func (uc *retry) Endeavor(ctx context.Context, in *RetryEndeavorIn) (*RetryEndea
 			continue
 		}
 		ok = append(ok, refId)
+	}
+	// then update attempt state
+	if err := uc.repositories.Datastore().Attempt().Update(ctx, updates); err != nil {
+		uc.logger.Errorw("ATTEMPT.USECASE.RETRY.ENDEAVOR.UPDATE_STATE.ERROR", "updates", utils.Stringify(updates))
 	}
 
 	return &RetryEndeavorOut{Success: ok, Error: ko}, nil

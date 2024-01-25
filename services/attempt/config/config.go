@@ -122,11 +122,13 @@ func (conf *AttemptSelector) Validate() error {
 
 type AttemptEndeavor struct {
 	Concurrency int `json:"concurrency" yaml:"concurrency" mapstructure:"concurrency"`
+	RetryDelay  int `json:"retry_delay" yaml:"retry_delay" mapstructure:"retry_delay"`
 }
 
 func (conf *AttemptEndeavor) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
 		validator.NumberGreaterThanOrEqual("CONFIG.ATTEMPT.ENDEAVOR.CONCURRENCY", conf.Concurrency, 0),
+		validator.NumberGreaterThanOrEqual("CONFIG.ATTEMPT.ENDEAVOR.RETRY_DELAY", conf.RetryDelay, 1000),
 	)
 }

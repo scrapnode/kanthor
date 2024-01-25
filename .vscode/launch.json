@@ -5,6 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "All",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceRoot}",
+      "showLog": true,
+      "env": {
+        "KANTHOR_ENV": "development",
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6061"
+      },
+      "args": ["serve", "all"],
+      "preLaunchTask": "make"
+    },
+    {
       "name": "Core APIs",
       "type": "go",
       "request": "launch",
@@ -29,21 +43,7 @@
         "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6062"
       },
-      "args": ["serve", "scheduler", "dispatcher"],
-      "preLaunchTask": "make"
-    },
-    {
-      "name": "Recovery",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceRoot}",
-      "showLog": true,
-      "env": {
-        "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6062"
-      },
-      "args": ["serve", "recovery.scanner"],
+      "args": ["serve", "storage", "scheduler", "dispatcher"],
       "preLaunchTask": "make"
     }
   ]

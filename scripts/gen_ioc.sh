@@ -8,7 +8,6 @@ CHECKSUM_NEW=$(find $SERVICES_FOLDER -type f -name '*.go' -exec sha256sum {} \; 
 CHECKSUM_OLD=$(cat $SERVICES_FILE_CHECKSUM || true)
 if [ "$CHECKSUM_NEW" != "$CHECKSUM_OLD" ];
 then
-  rm -rf $SERVICES_FOLDER/ioc/wire_gen.go
   echo "generating services ioc ...";
   go generate $SERVICES_FOLDER/ioc/generate.go;
   find $SERVICES_FOLDER -type f -name '*.go' -exec sha256sum {} \; | sort -k 2 | sha256sum | cut -d  ' ' -f1 > $SERVICES_FILE_CHECKSUM;

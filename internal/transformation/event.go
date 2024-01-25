@@ -148,7 +148,7 @@ func EventFromAttemptTrigger(task *entities.AttemptTrigger) (*streaming.Event, e
 		Data:     data,
 		Metadata: map[string]string{},
 	}
-	event.Subject = project.Subject(project.Topic(constants.TopicAttemptTrigger))
+	event.Subject = project.Subject(project.Topic(constants.TopicAttemptTrigger, constants.TypeEndeavor))
 
 	return event, nil
 }
@@ -168,7 +168,7 @@ func EventFromAttempt(att *entities.Attempt) (*streaming.Event, error) {
 	}
 
 	event := &streaming.Event{
-		Id:       att.ReqId,
+		Id:       fmt.Sprintf("%s/%s/%s/%d", att.MsgId, att.EpId, att.ReqId, att.ScheduleCounter),
 		Data:     data,
 		Metadata: map[string]string{},
 	}

@@ -30,7 +30,7 @@ func New(
 	return &consumer{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("attempt"),
+		subscriber: infra.Stream.Subscriber("attempt_consumer"),
 		infra:      infra,
 		db:         db,
 		ds:         ds,

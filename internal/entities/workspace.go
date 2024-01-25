@@ -3,8 +3,8 @@ package entities
 import "github.com/scrapnode/kanthor/pkg/validator"
 
 type Workspace struct {
-	*Entity
-	*AuditTime
+	Entity
+	AuditTime
 
 	OwnerId string
 	Name    string

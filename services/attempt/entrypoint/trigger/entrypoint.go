@@ -164,18 +164,11 @@ func (service *trigger) Run(ctx context.Context) error {
 	}
 
 	service.logger.Infow("running")
-	done := make(chan bool, 1)
-	defer close(done)
 	go func() {
 		service.cron.Run()
-		done <- true
 	}()
-	select {
-	case <-done:
-		return nil
-	case <-ctx.Done():
-		return nil
-	}
+	<-ctx.Done()
+	return nil
 }
 
 func (service *trigger) readiness() error {

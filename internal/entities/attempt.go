@@ -52,7 +52,7 @@ type Attempt struct {
 	AppId string
 	Tier  string
 
-	*AttemptState
+	AttemptState
 }
 
 type AttemptState struct {
@@ -60,6 +60,7 @@ type AttemptState struct {
 	ScheduleNext    int64
 	ScheduledAt     int64
 	CompletedAt     int64
+	CompletedId     string
 }
 
 func (entity *Attempt) TableName() string {

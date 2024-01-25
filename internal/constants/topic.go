@@ -10,3 +10,7 @@ var (
 	TopicAttemptTask    = "private.attempt.task"
 	TopicAttemptTrigger = "private.attempt.trigger"
 )
+
+var (
+	TypeEndeavor = "endeavor"
+)

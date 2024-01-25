@@ -44,3 +44,45 @@ func AttemptConsumer(provider configuration.Provider) (patterns.Runnable, error)
 	)
 	return nil, nil
 }
+
+func AttemptTrigger(provider configuration.Provider) (patterns.Runnable, error) {
+	wire.Build(
+		config.New,
+		logging.New,
+		infrastructure.New,
+		datastore.New,
+		database.New,
+		repositories.New,
+		usecase.New,
+		entrypoint.Trigger,
+	)
+	return nil, nil
+}
+
+func AttemptSelector(provider configuration.Provider) (patterns.Runnable, error) {
+	wire.Build(
+		config.New,
+		logging.New,
+		infrastructure.New,
+		datastore.New,
+		database.New,
+		repositories.New,
+		usecase.New,
+		entrypoint.Selector,
+	)
+	return nil, nil
+}
+
+func AttemptEndeavor(provider configuration.Provider) (patterns.Runnable, error) {
+	wire.Build(
+		config.New,
+		logging.New,
+		infrastructure.New,
+		datastore.New,
+		database.New,
+		repositories.New,
+		usecase.New,
+		entrypoint.Endeavor,
+	)
+	return nil, nil
+}

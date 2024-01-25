@@ -5,7 +5,7 @@ import (
 )
 
 type Response struct {
-	*TSEntity
+	TSEntity
 
 	EpId  string
 	MsgId string

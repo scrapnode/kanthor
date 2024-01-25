@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS kanthor_attempt (
     schedule_counter INT NOT NULL,
     schedule_next BIGINT NOT NULL DEFAULT 0,
     scheduled_at BIGINT NOT NULL DEFAULT 0,
+    completed_id VARCHAR(64),
     completed_at BIGINT NOT NULL DEFAULT 0
 );
 

@@ -28,7 +28,7 @@ func New(
 	return &scheduler{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("scheduler"),
+		subscriber: infra.Stream.Subscriber("scheduler_consumer"),
 		infra:      infra,
 		db:         db,
 		uc:         uc,

@@ -28,7 +28,7 @@ func New(
 	return &storage{
 		conf:       conf,
 		logger:     logger,
-		subscriber: infra.Stream.Subscriber("storage"),
+		subscriber: infra.Stream.Subscriber("storage_consumer"),
 		infra:      infra,
 		ds:         ds,
 		uc:         uc,
