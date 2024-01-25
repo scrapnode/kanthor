@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	MetaMsgIdempotencyKey = "kanthor.msg.idempotency_key"
-	MetaAttId             = "kanthor.att.id"
-	MetaEprId             = "kanthor.epr.id"
+	MetaAttId    = "kanthor.att.id"
+	MetaAttState = "kanthor.att.state"
+	MetaEprId    = "kanthor.epr.id"
 )
 
 type Metadata map[string]string

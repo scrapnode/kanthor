@@ -168,7 +168,7 @@ func EventFromAttempt(att *entities.Attempt) (*streaming.Event, error) {
 	}
 
 	event := &streaming.Event{
-		Id:       fmt.Sprintf("%s/%s/%s/%d", att.MsgId, att.EpId, att.ReqId, att.ScheduleCounter),
+		Id:       att.Id(),
 		Data:     data,
 		Metadata: map[string]string{},
 	}

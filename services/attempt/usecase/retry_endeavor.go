@@ -66,6 +66,8 @@ func (uc *retry) Endeavor(ctx context.Context, in *RetryEndeavorIn) (*RetryEndea
 		request := r
 		sendPool.Go(func() {
 			response := uc.send(ctx, request)
+			response.Metadata.Set(entities.MetaAttId, in.Attempts[refId].Id())
+			response.Metadata.Set(entities.MetaAttState, in.Attempts[refId].AttemptState.String())
 			resMaps.Set(refId, response)
 		})
 	}

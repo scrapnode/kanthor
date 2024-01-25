@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
-	ginmw "github.com/scrapnode/kanthor/gateway/gin/middlewares"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
 )
@@ -62,7 +61,7 @@ func UseMessageCreate(service *sdk) gin.HandlerFunc {
 			Type:     req.Type,
 			Body:     string(body),
 			Headers:  headers,
-			Metadata: entities.Metadata{entities.MetaMsgIdempotencyKey: ginctx.GetHeader(ginmw.HeaderIdempotencyKey)},
+			Metadata: entities.Metadata{},
 		}
 
 		if err := in.Validate(); err != nil {

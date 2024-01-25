@@ -1,6 +1,9 @@
 package entities
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type AttemptTask struct {
 	AppId string
@@ -55,12 +58,8 @@ type Attempt struct {
 	AttemptState
 }
 
-type AttemptState struct {
-	ScheduleCounter int
-	ScheduleNext    int64
-	ScheduledAt     int64
-	CompletedAt     int64
-	CompletedId     string
+func (entity *Attempt) Id() string {
+	return fmt.Sprintf("%s/%s/%s/%d", entity.MsgId, entity.EpId, entity.ReqId, entity.ScheduleCounter)
 }
 
 func (entity *Attempt) TableName() string {
@@ -76,6 +75,19 @@ func (entity *Attempt) Unmarshal(data []byte) error {
 }
 
 func (entity *Attempt) String() string {
+	data, _ := json.Marshal(entity)
+	return string(data)
+}
+
+type AttemptState struct {
+	ScheduleCounter int    `json:"schedule_counter"`
+	ScheduleNext    int64  `json:"schedule_next"`
+	ScheduledAt     int64  `json:"scheduled_at"`
+	CompletedAt     int64  `json:"completed_at"`
+	CompletedId     string `json:"completed_id"`
+}
+
+func (entity *AttemptState) String() string {
 	data, _ := json.Marshal(entity)
 	return string(data)
 }
