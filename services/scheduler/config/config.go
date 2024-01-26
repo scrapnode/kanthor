@@ -7,7 +7,10 @@ import (
 
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Wrapper
-	return &conf.Scheduler, provider.Unmarshal(&conf)
+	if err := provider.Unmarshal(&conf); err != nil {
+		return nil, err
+	}
+	return &conf.Scheduler, conf.Validate()
 }
 
 type Wrapper struct {
@@ -51,6 +54,6 @@ type SchedulerRequestSchedule struct {
 func (conf *SchedulerRequestSchedule) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("CONFIG.SCHEDULER.REQUEST.SCHEDULE.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThanOrEqual("SCHEDULER.CONFIG.REQUEST.SCHEDULE.TIMEOUT", conf.Timeout, 1000),
 	)
 }

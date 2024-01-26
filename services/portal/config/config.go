@@ -10,11 +10,7 @@ func New(provider configuration.Provider) (*Config, error) {
 	if err := provider.Unmarshal(&conf); err != nil {
 		return nil, err
 	}
-	if err := conf.Validate(); err != nil {
-		return nil, err
-	}
-
-	return &conf.Portal, nil
+	return &conf.Portal, conf.Validate()
 }
 
 type Wrapper struct {

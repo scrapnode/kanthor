@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/pkg/validator"
@@ -9,7 +10,10 @@ import (
 
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Wrapper
-	return &conf.Recovery, provider.Unmarshal(&conf)
+	if err := provider.Unmarshal(&conf); err != nil {
+		return nil, err
+	}
+	return &conf.Recovery, conf.Validate()
 }
 
 type Wrapper struct {
@@ -32,6 +36,9 @@ func (conf *Config) Validate() error {
 	if err := conf.Cronjob.Validate(); err != nil {
 		return err
 	}
+	if err := conf.Consumer.Validate(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -46,12 +53,12 @@ type RecoveryCronjob struct {
 func (conf *RecoveryCronjob) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.StringRequired("CONFIG.RECOVERY.CRONJOB.SCHEDULER", conf.Scheduler),
-		validator.NumberGreaterThanOrEqual("CONFIG.RECOVERY.CRONJOB.TIMEOUT", conf.Timeout, 1000),
-		validator.NumberGreaterThan("CONFIG.RECOVERY.CRONJOB.BATCH_SIZE", conf.BatchSize, 0),
-		validator.SliceRequired("CONFIG.RECOVERY.CRONJOB.BUCKETS", conf.Buckets),
+		validator.StringRequired("RECOVERY.CONFIG.CRONJOB.SCHEDULER", conf.Scheduler),
+		validator.NumberGreaterThanOrEqual("RECOVERY.CONFIG.CRONJOB.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("RECOVERY.CONFIG.CRONJOB.BATCH_SIZE", conf.BatchSize, 0),
+		validator.SliceRequired("RECOVERY.CONFIG.CRONJOB.BUCKETS", conf.Buckets),
 		validator.Slice(conf.Buckets, func(i int, item *RecoveryCronjobBucket) error {
-			return item.Validate(fmt.Sprintf("CONFIG.RECOVERY.CRONJOB.BUCKETS[%d]", i))
+			return item.Validate(fmt.Sprintf("RECOVERY.CONFIG.CRONJOB.BUCKETS[%d]", i))
 		}),
 	)
 }
@@ -75,9 +82,14 @@ type RecoveryConsumer struct {
 }
 
 func (conf *RecoveryConsumer) Validate() error {
+	log.Println(validator.Validate(
+		validator.DefaultConfig,
+		validator.NumberGreaterThanOrEqual("RECOVERY.CONFIG.CRONJOB.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("RECOVERY.CONFIG.CRONJOB.BATCH_SIZE", conf.BatchSize, 0),
+	))
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("CONFIG.RECOVERY.CRONJOB.TIMEOUT", conf.Timeout, 1000),
-		validator.NumberGreaterThan("CONFIG.RECOVERY.CRONJOB.BATCH_SIZE", conf.BatchSize, 0),
+		validator.NumberGreaterThanOrEqual("RECOVERY.CONFIG.CRONJOB.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("RECOVERY.CONFIG.CRONJOB.BATCH_SIZE", conf.BatchSize, 0),
 	)
 }

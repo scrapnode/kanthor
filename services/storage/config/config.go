@@ -13,7 +13,7 @@ func New(provider configuration.Provider) (*Config, error) {
 	if err := provider.Unmarshal(&conf); err != nil {
 		return nil, err
 	}
-	return &conf.Storage, nil
+	return &conf.Storage, conf.Validate()
 }
 
 type Wrapper struct {
@@ -36,12 +36,13 @@ func (conf *Config) Validate() error {
 	err := validator.Validate(
 		validator.DefaultConfig,
 		validator.StringOneOf(
-			"CONFIG.STORAGE.TOPIC",
+			"STORAGE.CONFIG.TOPIC",
 			conf.Topic,
 			[]string{
 				constants.TopicMessage,
 				constants.TopicRequest,
 				constants.TopicResponse,
+				constants.TopicAttempt,
 				constants.TopicPublic,
 			},
 		),
@@ -75,7 +76,7 @@ type StorageWarehousePut struct {
 func (conf *StorageWarehousePut) Validate() error {
 	return validator.Validate(
 		validator.DefaultConfig,
-		validator.NumberGreaterThanOrEqual("CONFIG.STORAGE.WAREHOUSE.PUT.TIMEOUT", conf.Timeout, 1000),
-		validator.NumberGreaterThan("CONFIG.STORAGE.WAREHOUSE.PUT.BATCH_SIZE", conf.BatchSize, 0),
+		validator.NumberGreaterThanOrEqual("STORAGE.CONFIG.WAREHOUSE.PUT.TIMEOUT", conf.Timeout, 1000),
+		validator.NumberGreaterThan("STORAGE.CONFIG.WAREHOUSE.PUT.BATCH_SIZE", conf.BatchSize, 0),
 	)
 }

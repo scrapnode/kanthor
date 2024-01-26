@@ -13,13 +13,12 @@ type Fn func() error
 
 func Validate(conf *Config, fns ...Fn) (err error) {
 	for _, fn := range fns {
-		if ferr := fn(); ferr != nil {
-			if !conf.StopAtFirstError {
-				err = errors.Join(err, ferr)
-				continue
+		if suberr := fn(); suberr != nil {
+			if conf.StopAtFirstError {
+				return suberr
 			}
 
-			return err
+			err = errors.Join(err, suberr)
 		}
 	}
 	return

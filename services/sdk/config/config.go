@@ -7,7 +7,10 @@ import (
 
 func New(provider configuration.Provider) (*Config, error) {
 	var conf Wrapper
-	return &conf.Sdk, provider.Unmarshal(&conf)
+	if err := provider.Unmarshal(&conf); err != nil {
+		return nil, err
+	}
+	return &conf.Sdk, conf.Validate()
 }
 
 type Wrapper struct {
