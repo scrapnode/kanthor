@@ -150,3 +150,5 @@ attempt:
     counter: 3
   endeavor:
     concurrency: 500
+    retry_delay: 900000 # 15m
+
