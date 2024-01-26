@@ -9,7 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 )
 
-func UseAuth(auth authenticator.Authenticator, defaultEngine string) gin.HandlerFunc {
+func UseAuthn(auth authenticator.Authenticator, defaultEngine string) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 

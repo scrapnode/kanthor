@@ -112,7 +112,7 @@ func (service *portal) router() (*gin.Engine, error) {
 	{
 		api.Use(middlewares.UseStartup(&service.conf.Gateway))
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency, project.IsDev()))
-		api.Use(middlewares.UseAuth(service.infra.Authenticator, service.infra.Authenticator.Engines()[0]))
+		api.Use(middlewares.UseAuthn(service.infra.Authenticator, service.infra.Authenticator.Engines()[0]))
 
 		// IMPORTANT: always put the longer route in the top
 		RegisterAnalyticsRoutes(api.Group("/analytics"), service)
