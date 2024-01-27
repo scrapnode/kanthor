@@ -26,11 +26,13 @@ jobs:
           git config user.name "Kanthor SDK Sync Bot"
           git config user.email "<>"
 
-      - name: sync openapi specs
+      - name: sync assets
         run: |
           cp core/openapi/Sdk_swagger.json sdk/openapi.json
           cp core/openapi/Sdk_swagger.yaml sdk/openapi.yaml
           cp core/scripts/sdk_setup.sh sdk/scripts/sdk_setup.sh
+          # routing
+          mkdir -p sdk/routing
           cp core/internal/routing/condition_source.go sdk/routing/condition_source.go
           cp core/internal/routing/condition_expression.go sdk/routing/condition_expression.go
           # replace version
