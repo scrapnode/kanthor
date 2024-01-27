@@ -23,7 +23,7 @@ func ValidateScannerExecuteAttemptTask(prefix string, attempt *entities.AttemptT
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".ep_id", attempt.EpId, entities.IdNsEp),
 		validator.NumberGreaterThanOrEqual(prefix+".to", attempt.From, 0),
-		validator.NumberGreaterThan(prefix+".to", attempt.From, attempt.From),
+		validator.NumberGreaterThan(prefix+".to", attempt.To, attempt.From),
 	)
 }
 

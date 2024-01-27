@@ -22,7 +22,7 @@ func ValidateScannerExecuteRecoveryTask(prefix string, recovery *entities.Recove
 		validator.DefaultConfig,
 		validator.StringStartsWith(prefix+".app_id", recovery.AppId, entities.IdNsApp),
 		validator.NumberGreaterThanOrEqual(prefix+".to", recovery.From, 0),
-		validator.NumberGreaterThan(prefix+".to", recovery.From, recovery.From),
+		validator.NumberGreaterThan(prefix+".to", recovery.To, recovery.From),
 	)
 }
 
