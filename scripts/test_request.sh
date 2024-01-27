@@ -23,6 +23,7 @@ curl -s -X POST "$PORTAL_API_ENDPOINT/workspace" \
 
 TEST_WORKSPACE_ID=$(cat $STORAGE_PATH/workspace.json | jq -r '.id')
 jq '{snapshot: .}' $TEST_WORKSPACE_SNAPSHOT_PATH > "$STORAGE_PATH/workspace.snapshot.json"
+echo "Ws ID: $TEST_WORKSPACE_ID"
 
 IDEMPTOTENCY_KEY_WORKSPACE_TRANSFER=$(uuidgen)
 curl -s -X POST "$PORTAL_API_ENDPOINT/workspace/$TEST_WORKSPACE_ID/transfer" \
