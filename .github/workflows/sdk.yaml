@@ -30,8 +30,11 @@ jobs:
         run: |
           cp core/openapi/Sdk_swagger.json sdk/openapi.json
           cp core/openapi/Sdk_swagger.yaml sdk/openapi.yaml
-          cp core/scripts/sdk_setup.sh sdk/scripts/sdk_setup.sh
-          cp core/.version sdk/.version
+          cp core/scripts/sdk_setup.sh sdk/scripts/sdk_setup.
+          # replace version
+          jq --arg version $(cat core/.version) '.version = $version' sdk/project.json > project.json
+          rm sdk/project.json
+          mv project.json sdk/project.json
 
       - name: push
         working-directory: sdk
