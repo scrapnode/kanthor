@@ -35,6 +35,17 @@ curl -s -X POST "$TEST_KANTHOR_PORTAL_API_ENDPOINT/workspace/$TEST_WORKSPACE_ID/
 jq '{id: .app_id[0]}' "$STORAGE_PATH/workspace.transfer.json" > "$STORAGE_PATH/application.json"
 TEST_APPLICATION_ID=$(cat $STORAGE_PATH/application.json | jq -r '.id')
 echo -n "$TEST_APPLICATION_ID"  > "$STORAGE_PATH/application.plain"
+
+# only retrive the app id from trust source
+TEST_APP_ID=$(cat "$STORAGE_PATH/application.json" | jq -r '.id')
+if [ -z "${TEST_APP_ID}" ]; then
+    echo "App ID is empty"
+    exit 1
+fi
+if [ $TEST_APP_ID = "null" ]; then
+    echo "App ID is null"
+    exit 2
+fi
 echo "App ID: $TEST_APP_ID"
 
 
