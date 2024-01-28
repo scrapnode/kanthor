@@ -49,7 +49,7 @@ echo "App ID: $TEST_APP_ID"
 
 
 
-IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE=$(uuidgen)
+IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE=$(cat /proc/sys/kernel/random/uuid)
 WORKSPACE_CREDENTIALS_EXPIRED_AT=$(date -d '+1 hour' '+%s%N' | cut -b1-13)
 curl -s -X POST "$PORTAL_API_ENDPOINT/credentials" \
     -H "Content-Type: application/json" \
