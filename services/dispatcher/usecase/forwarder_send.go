@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -104,7 +103,7 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	res, err := circuitbreaker.Do[sender.Response](
 		uc.infra.CircuitBreaker,
 		request.EpId,
-		func() (interface{}, error) {
+		func() (any, error) {
 			req := &sender.Request{
 				Method:  request.Method,
 				Headers: request.Headers.ToHTTP(),
@@ -117,10 +116,8 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 				return nil, err
 			}
 
-			// sending is success, but we got remote server error
-			// must use custom error here to trigger circuit breaker
 			if status.IsKO(res.Status) {
-				return res, errors.New(http.StatusText(res.Status))
+				return nil, &sender.RestError{Status: http.StatusText(res.Status), Headers: res.Headers, Uri: res.Uri, Body: res.Body}
 			}
 
 			return res, nil
@@ -145,19 +142,21 @@ func (uc *forwarder) send(ctx context.Context, request *entities.Request) *entit
 	doc.Id = identifier.New(entities.IdNsRes)
 	doc.SetTS(uc.infra.Timer.Now())
 
-	// IMPORTANT: we have an anti-pattern response that returns both error && response to trigger circuit breaker
-	// so we should test both error and response seperately
 	if err != nil {
 		doc.Error = err.Error()
 		doc.Status = status.Code(err.Error())
+
+		if r, ok := err.(*sender.RestError); ok {
+			doc.Uri = r.Uri
+			doc.Headers.FromHTTP(r.Headers)
+			doc.Body = string(r.Body)
+		}
+		return doc
 	}
 
-	if res != nil {
-		doc.Status = res.Status
-		doc.Uri = res.Uri
-		doc.Headers.FromHTTP(res.Headers)
-		doc.Body = string(res.Body)
-	}
-
+	doc.Status = res.Status
+	doc.Uri = res.Uri
+	doc.Headers.FromHTTP(res.Headers)
+	doc.Body = string(res.Body)
 	return doc
 }

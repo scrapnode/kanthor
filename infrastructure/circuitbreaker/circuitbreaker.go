@@ -7,16 +7,17 @@ func New(conf *Config, logger logging.Logger) (CircuitBreaker, error) {
 }
 
 type CircuitBreaker interface {
-	Do(cmd string, onHandle Handler, onError ErrorHandler) (interface{}, error)
+	Do(cmd string, onHandle Handler, onError ErrorHandler) (any, error)
 }
 
-type Handler func() (interface{}, error)
+type Handler func() (any, error)
 
 type ErrorHandler func(err error) error
 
 func Do[T any](cb CircuitBreaker, cmd string, onHandle Handler, onError ErrorHandler) (*T, error) {
 	out, err := cb.Do(cmd, onHandle, onError)
-	if err != nil {
+
+	if out == nil {
 		return nil, err
 	}
 

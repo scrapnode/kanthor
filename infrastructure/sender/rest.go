@@ -70,3 +70,14 @@ func Rest(conf *Config, logger logging.Logger) Send {
 		return res, nil
 	}
 }
+
+type RestError struct {
+	Status  string
+	Headers http.Header
+	Uri     string
+	Body    []byte
+}
+
+func (err *RestError) Error() string {
+	return err.Status
+}
