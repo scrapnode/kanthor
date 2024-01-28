@@ -37,15 +37,29 @@ jq '{id: .app_id[0]}' "$STORAGE_PATH/workspace.transfer.json" > "$STORAGE_PATH/a
 
 # only retrive the app id from trust source
 TEST_APP_ID=$(cat "$STORAGE_PATH/application.json" | jq -r '.id')
-
 if [ -z "${TEST_APP_ID}" ]; then
     echo "App ID is empty"
     exit 1
 fi
-
 if [ $TEST_APP_ID = "null" ]; then
     echo "App ID is null"
     exit 2
 fi
-
 echo "App ID: $TEST_APP_ID"
+
+
+
+IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE=$(uuidgen)
+WORKSPACE_CREDENTIALS_EXPIRED_AT=$(date -d '+1 hour' '+%s%N' | cut -b1-13)
+curl -s -X POST "$TEST_KANTHOR_PORTAL_API_ENDPOINT/credentials" \
+    -H "Content-Type: application/json" \
+    -H "Idempotency-Key: $IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE" \
+    -H "X-Authorization-Engine: ask" \
+    -H "X-Authorization-Workspace: $TEST_WORKSPACE_ID" \
+    -H "Authorization: basic $TEST_KANTHOR_PORTAL_AUTH_CREDENTIALS" \
+    -d "{\"name\": \"sdk test at $NOW\", \"expired_at\": $WORKSPACE_CREDENTIALS_EXPIRED_AT}" > "$STORAGE_PATH/workspace.credentials.json"
+
+TEST_WORKSPACE_CREDENITIALS_USER=$(cat $STORAGE_PATH/workspace.credentials.json | jq -r '.user')
+TEST_WORKSPACE_CREDENITIALS_PASS=$(cat $STORAGE_PATH/workspace.credentials.json | jq -r '.password')
+echo -n "$TEST_WORKSPACE_CREDENITIALS_USER:$TEST_WORKSPACE_CREDENITIALS_PASS"  > "$STORAGE_PATH/workspace.credentials.plain"
+echo "Wsc ID: $TEST_WORKSPACE_CREDENITIALS_USER"
