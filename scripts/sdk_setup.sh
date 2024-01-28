@@ -2,9 +2,9 @@
 set -e
 
 STORAGE_PATH=${STORAGE_PATH:-"/tmp"}
-TEST_KANTHOR_PORTAL_AUTH_CREDENTIALS=${TEST_KANTHOR_PORTAL_AUTH_CREDENTIALS:-"YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93"}
-TEST_KANTHOR_PORTAL_API_ENDPOINT=${TEST_KANTHOR_PORTAL_API_ENDPOINT:-"http://localhost:8280/api"}
-TEST_WORKSPACE_SNAPSHOT_PATH=${TEST_WORKSPACE_SNAPSHOT_PATH:-"scripts/data/httpbin.json"}
+PORTAL_AUTH_CREDENTIALS=${PORTAL_AUTH_CREDENTIALS:-"YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93"}
+PORTAL_API_ENDPOINT=${PORTAL_API_ENDPOINT:-"http://localhost:8280/api"}
+WORKSPACE_SNAPSHOT_PATH=${WORKSPACE_SNAPSHOT_PATH:-"data/snapshot.json"}
 
 NOW=$(date '+%Y-%m-%d %H:%M:%S')
 
@@ -20,7 +20,7 @@ curl -X POST "$PORTAL_API_ENDPOINT/workspace" \
 TEST_WORKSPACE_ID=$(cat $STORAGE_PATH/workspace.json | jq -r '.id')
 echo "Ws ID: $TEST_WORKSPACE_ID"
 
-jq '{snapshot: .}' $TEST_WORKSPACE_SNAPSHOT_PATH > "$STORAGE_PATH/workspace.snapshot.json"
+jq '{snapshot: .}' $WORKSPACE_SNAPSHOT_PATH > "$STORAGE_PATH/workspace.snapshot.json"
 
 echo "----snapshot---"
 cat "$STORAGE_PATH/workspace.snapshot.json"
@@ -51,12 +51,12 @@ echo "App ID: $TEST_APP_ID"
 
 IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE=$(uuidgen)
 WORKSPACE_CREDENTIALS_EXPIRED_AT=$(date -d '+1 hour' '+%s%N' | cut -b1-13)
-curl -s -X POST "$TEST_KANTHOR_PORTAL_API_ENDPOINT/credentials" \
+curl -s -X POST "$PORTAL_API_ENDPOINT/credentials" \
     -H "Content-Type: application/json" \
     -H "Idempotency-Key: $IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE" \
     -H "X-Authorization-Engine: ask" \
     -H "X-Authorization-Workspace: $TEST_WORKSPACE_ID" \
-    -H "Authorization: basic $TEST_KANTHOR_PORTAL_AUTH_CREDENTIALS" \
+    -H "Authorization: basic $PORTAL_AUTH_CREDENTIALS" \
     -d "{\"name\": \"sdk test at $NOW\", \"expired_at\": $WORKSPACE_CREDENTIALS_EXPIRED_AT}" > "$STORAGE_PATH/workspace.credentials.json"
 
 TEST_WORKSPACE_CREDENITIALS_USER=$(cat $STORAGE_PATH/workspace.credentials.json | jq -r '.user')
