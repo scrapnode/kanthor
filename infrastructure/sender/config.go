@@ -3,9 +3,10 @@ package sender
 import "github.com/scrapnode/kanthor/pkg/validator"
 
 type Config struct {
-	Trace   bool  `json:"trace" yaml:"trace" mapstructure:"trace"`
-	Timeout int   `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
-	Retry   Retry `json:"retry" yaml:"retry" mapstructure:"retry"`
+	Trace   bool              `json:"trace" yaml:"trace" mapstructure:"trace"`
+	Timeout int               `json:"timeout" yaml:"timeout" mapstructure:"timeout"`
+	Retry   Retry             `json:"retry" yaml:"retry" mapstructure:"retry"`
+	Headers map[string]string `json:"header" yaml:"header" mapstructure:"header"`
 }
 
 func (conf *Config) Validate() error {

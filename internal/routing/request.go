@@ -7,6 +7,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/timer"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/project"
 )
 
 func NewRequest(
@@ -34,6 +35,8 @@ func NewRequest(
 	req.Metadata.Merge(msg.Metadata)
 	req.Id = identifier.New(entities.IdNsReq)
 	req.SetTS(timer.Now())
+
+	req.Headers.Set("User-Agent", fmt.Sprintf("Kanthor/%s", project.GetVersion()))
 
 	req.Metadata.Set(entities.MetaEprId, epr.Id)
 	req.Headers.Set(entities.HeaderIdempotencyKey, msg.Id)

@@ -63,6 +63,9 @@ func UseMessageCreate(service *sdk) gin.HandlerFunc {
 			Headers:  headers,
 			Metadata: entities.Metadata{},
 		}
+		if ct := in.Headers.Get("Content-Type"); ct == "" {
+			in.Headers.Set("Content-Type", ginctx.Request.Header.Get("Content-Type"))
+		}
 
 		if err := in.Validate(); err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))

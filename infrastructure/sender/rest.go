@@ -27,7 +27,8 @@ func Rest(conf *Config, logger logging.Logger) Send {
 				return true
 			}
 			return false
-		})
+		}).
+		SetHeaders(conf.Headers)
 	if conf.Trace {
 		client = client.EnableTrace()
 	}
