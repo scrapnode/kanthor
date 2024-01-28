@@ -21,6 +21,10 @@ type EndpointCreateReq struct {
 
 type EndpointCreateRes struct {
 	*Endpoint
+	// To make the UI become friendly we will return the secret key after user create the new endpoint
+	// but we don't want to return that key everytime user request for the endpoint
+	// user must have specific permission to reveal the secret key of an endpoint
+	SecretKey string `json:"secret_key"`
 } // @name EndpointCreateRes
 
 // UseEndpointCreate
@@ -61,7 +65,7 @@ func UseEndpointCreate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		res := &EndpointCreateRes{ToEndpoint(out.Doc)}
+		res := &EndpointCreateRes{ToEndpoint(out.Doc), out.Doc.SecretKey}
 		ginctx.JSON(http.StatusCreated, res)
 	}
 }

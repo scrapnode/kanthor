@@ -200,6 +200,12 @@ definitions:
         type: string
       name:
         type: string
+      secret_key:
+        description: |-
+          To make the UI become friendly we will return the secret key after user create the new endpoint
+          but we don't want to return that key everytime user request for the endpoint
+          user must have specific permission to reveal the secret key of an endpoint
+        type: string
       updated_at:
         type: integer
       uri:
@@ -210,6 +216,7 @@ definitions:
     - id
     - method
     - name
+    - secret_key
     - updated_at
     - uri
     type: object
@@ -262,6 +269,13 @@ definitions:
     - name
     - updated_at
     - uri
+    type: object
+  EndpointGetSecretRes:
+    properties:
+      secret_key:
+        type: string
+    required:
+    - secret_key
     type: object
   EndpointListRes:
     properties:
@@ -838,6 +852,28 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/EndpointUpdateRes'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+      - Authorization: []
+      - WorkspaceId: []
+      tags:
+      - endpoint
+  /endpoint/{ep_id}/secret:
+    get:
+      parameters:
+      - description: endpoint id
+        in: path
+        name: ep_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/EndpointGetSecretRes'
         default:
           description: ""
           schema:

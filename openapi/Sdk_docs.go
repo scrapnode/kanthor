@@ -498,6 +498,44 @@ const docTemplateSdk = `{
                 }
             }
         },
+        "/endpoint/{ep_id}/secret": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "WorkspaceId": []
+                    }
+                ],
+                "tags": [
+                    "endpoint"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "endpoint id",
+                        "name": "ep_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/EndpointGetSecretRes"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
         "/message": {
             "post": {
                 "security": [
@@ -1046,6 +1084,7 @@ const docTemplateSdk = `{
                 "id",
                 "method",
                 "name",
+                "secret_key",
                 "updated_at",
                 "uri"
             ],
@@ -1063,6 +1102,10 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "secret_key": {
+                    "description": "To make the UI become friendly we will return the secret key after user create the new endpoint\nbut we don't want to return that key everytime user request for the endpoint\nuser must have specific permission to reveal the secret key of an endpoint",
                     "type": "string"
                 },
                 "updated_at": {
@@ -1139,6 +1182,17 @@ const docTemplateSdk = `{
                     "type": "integer"
                 },
                 "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "EndpointGetSecretRes": {
+            "type": "object",
+            "required": [
+                "secret_key"
+            ],
+            "properties": {
+                "secret_key": {
                     "type": "string"
                 }
             }

@@ -20,6 +20,7 @@ var SdkOwnerPermissions = []authorizator.Permission{
 	{Object: "/api/endpoint/:ep_id", Action: "DELETE"},
 	{Object: "/api/endpoint", Action: "GET"},
 	{Object: "/api/endpoint/:ep_id", Action: "GET"},
+	{Object: "/api/endpoint/:ep_id/secret", Action: "GET"},
 
 	{Object: "/api/rule", Action: "POST"},
 	{Object: "/api/rule/:epr_id", Action: "PATCH"},
