@@ -38,7 +38,7 @@ echo -n "$TEST_APPLICATION_ID"  > "$STORAGE_PATH/application.plain"
 
 
 IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE=$(uuidgen)
-WORKSPACE_CREDENTIALS_EXPIRED_AT=$(date -d $(date -d 'next hour' '+%H:%M:%S') '+%s%N' | cut -b1-13)
+WORKSPACE_CREDENTIALS_EXPIRED_AT=$(date -d '+1 hour' '+%s%N' | cut -b1-13)
 curl -s -X POST "$TEST_KANTHOR_PORTAL_API_ENDPOINT/credentials" \
     -H "Content-Type: application/json" \
     -H "Idempotency-Key: $IDEMPTOTENCY_KEY_WORKSPACE_CREDENTIALS_GENERATE" \
