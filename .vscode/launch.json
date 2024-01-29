@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "All",
+      "name": "Default",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -13,9 +13,9 @@
       "showLog": true,
       "env": {
         "KANTHOR_ENV": "development",
-        "KANTHOR_DEBUGGING_SERVER_PORT": "6061"
+        "KANTHOR_DEBUGGING_SERVER_PORT": "6062"
       },
-      "args": ["serve", "all"],
+      "args": ["serve", "${input:service_name}"],
       "preLaunchTask": "make"
     },
     {
@@ -43,8 +43,31 @@
         "KANTHOR_ENV": "development",
         "KANTHOR_DEBUGGING_SERVER_PORT": "6062"
       },
-      "args": ["serve", "storage", "scheduler", "dispatcher"],
+      "args": ["serve", "scheduler", "dispatcher", "storage"],
       "preLaunchTask": "make"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "service_name",
+      "type": "pickString",
+      "description": "What service do you want to start?",
+      "options": [
+        "all",
+        "sdk",
+        "portal",
+        "scheduler",
+        "dispatcher",
+        "storage",
+        "recovery.cronjob",
+        "recovery.consumer",
+        "attempt.cronjob",
+        "attempt.consumer",
+        "attempt.trigger",
+        "attempt.selector",
+        "attempt.endeavor"
+      ],
+      "default": "all"
     }
   ]
 }
