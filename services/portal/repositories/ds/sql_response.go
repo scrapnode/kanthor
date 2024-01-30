@@ -69,7 +69,7 @@ func (sql *SqlResponse) mapping(returning *MessageResponsetMaps, response *entit
 	}
 
 	if status.IsOK(response.Status) {
-		returning.Success[response.MsgId] = response.MsgId
+		returning.Success[response.MsgId] = response.Id
 	}
 
 	returning.Maps[response.MsgId] = append(returning.Maps[response.MsgId], *response)
