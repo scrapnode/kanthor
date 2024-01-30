@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/scrapnode/kanthor/configuration"
+	database "github.com/scrapnode/kanthor/database/config"
+	datastore "github.com/scrapnode/kanthor/datastore/config"
 	infrastructure "github.com/scrapnode/kanthor/infrastructure/config"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/services"
@@ -25,6 +27,22 @@ func NewValidate(provider configuration.Provider) *cobra.Command {
 				return err
 			}
 
+			db, err := database.New(provider)
+			if err != nil {
+				return err
+			}
+			if err := db.Validate(); err != nil {
+				return err
+			}
+
+			ds, err := datastore.New(provider)
+			if err != nil {
+				return err
+			}
+			if err := ds.Validate(); err != nil {
+				return err
+			}
+
 			confs, err := Services(provider, args[0])
 			if err != nil {
 				return err
@@ -41,6 +59,12 @@ func NewValidate(provider configuration.Provider) *cobra.Command {
 				if verbose, err := cmd.Flags().GetBool("verbose"); err == nil && verbose {
 					fmt.Println("--- infrastructure ---")
 					fmt.Println(utils.StringifyIndent(infra))
+
+					fmt.Println("--- database ---")
+					fmt.Println(utils.StringifyIndent(db))
+
+					fmt.Println("--- datastore ---")
+					fmt.Println(utils.StringifyIndent(ds))
 
 					for name, conf := range confs {
 						fmt.Println("--- " + name + " ---")
