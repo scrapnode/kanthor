@@ -31,6 +31,9 @@ jobs:
           cp core/openapi/Sdk_swagger.json sdk/openapi.json
           cp core/openapi/Sdk_swagger.yaml sdk/openapi.yaml
           cp core/scripts/sdk_setup.sh sdk/scripts/sdk_setup.sh
+          # data
+          mkdir -p sdk/data
+          cp core/data/snapshot.json sdk/data/snapshot.json
           # routing
           mkdir -p sdk/routing
           cp core/internal/routing/condition_source.go sdk/routing/condition_source.go
