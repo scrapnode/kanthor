@@ -7,7 +7,7 @@ sh "$SCRIPT_DIR/gen_swagger.sh"
 sh "$SCRIPT_DIR/gen_ioc.sh"
 sh "$SCRIPT_DIR/ci_vet.sh"
 
-ga **/checksum
+git add **/checksum
 
 NOW=$(date +%Y.%-m%d.%-H%M)
 HAHSTAGS=${HAHSTAGS:-"#sdk"}
