@@ -49,7 +49,7 @@
         {
           "name": "example",
           "method": "POST",
-          "uri": "http://localhost:9080/webhook",
+          "uri": "http://localhost:9081/webhook",
           "rules": [
             {
               "name": "pass-through",

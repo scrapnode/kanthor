@@ -112,7 +112,7 @@ storage:
   warehouse:
     put:
       timeout: 60000 # 60s
-      size: 1000
+      batch_size: 1000
 
 recovery:
   cronjob:
@@ -124,7 +124,7 @@ recovery:
         duration: 1800000 # 30m
   consumer:
     timeout: 900000 # 15m
-    batch_size: 10
+    batch_size: 100
 
 attempt:
   cronjob:
@@ -151,4 +151,3 @@ attempt:
   endeavor:
     concurrency: 500
     retry_delay: 900000 # 15m
-

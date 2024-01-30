@@ -45,7 +45,7 @@ services:
       retries: 16
 
   migration-database:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       warehouse:
         condition: service_healthy
@@ -64,7 +64,7 @@ services:
       - up
 
   migration-datastore:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       warehouse:
         condition: service_healthy
@@ -84,7 +84,7 @@ services:
       - up
 
   sdk:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -108,7 +108,7 @@ services:
       - sdk
 
   portal:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -132,7 +132,7 @@ services:
       - portal
 
   scheduler:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -154,7 +154,7 @@ services:
       - scheduler
 
   dispatcher:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -176,7 +176,7 @@ services:
       - dispatcher
 
   storage:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -198,7 +198,7 @@ services:
       - storage
  
   recovery-cronjob:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -220,7 +220,7 @@ services:
       - recovery.cronjob
  
   recovery-consumer:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -242,7 +242,7 @@ services:
       - recovery.consumer
  
   attempt-cronjob:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -264,7 +264,7 @@ services:
       - attempt.cronjob
  
   attempt-consumer:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -286,7 +286,7 @@ services:
       - attempt.consumer
  
   attempt-selector:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
@@ -308,7 +308,7 @@ services:
       - attempt.selector
       
   attempt-endeavor:
-    image: kanthor:localhost
+    image: scrapnode/kanthor:latest
     depends_on:
       streaming:
         condition: service_started
