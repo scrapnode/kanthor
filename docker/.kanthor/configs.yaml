@@ -90,6 +90,7 @@ sdk:
     timeout: 60000
     origins:
       - http://localhost:3000
+      - http://localhost:9082
 
 portal:
   gateway:
@@ -97,6 +98,7 @@ portal:
     timeout: 60000
     origins:
       - http://localhost:3000
+      - http://localhost:9082
 
 scheduler:
   request:
