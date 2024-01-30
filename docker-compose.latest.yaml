@@ -51,11 +51,17 @@ services:
         condition: service_healthy
     container_name: kanthor-services-migration-database
     restart: on-failure
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
-      - ./data:/app/data
     command: 
       - kanthor
       - migrate
@@ -71,11 +77,17 @@ services:
         condition: service_started
     container_name: kanthor-services-migration-datastore
     restart: on-failure
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
-      - ./data:/app/data
     command: 
       - kanthor
       - migrate
@@ -95,12 +107,19 @@ services:
         condition: service_started
     container_name: kanthor-services-sdk
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
     ports:
       - "8180:8180"
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -119,12 +138,19 @@ services:
         condition: service_started
     container_name: kanthor-services-portal
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
     ports:
       - "8280:8280"
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -143,10 +169,17 @@ services:
         condition: service_started
     container_name: kanthor-services-scheduler
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -165,10 +198,17 @@ services:
         condition: service_started
     container_name: kanthor-services-dispatcher
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -187,10 +227,17 @@ services:
         condition: service_started
     container_name: kanthor-services-storage
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -209,10 +256,17 @@ services:
         condition: service_started
     container_name: kanthor-services-recovery-cronjob
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -231,10 +285,17 @@ services:
         condition: service_started
     container_name: kanthor-services-recovery-consumer
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -253,10 +314,17 @@ services:
         condition: service_started
     container_name: kanthor-services-attempt-cronjob
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -275,10 +343,17 @@ services:
         condition: service_started
     container_name: kanthor-services-attempt-consumer
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -297,10 +372,17 @@ services:
         condition: service_started
     container_name: kanthor-services-attempt-selector
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -319,10 +401,17 @@ services:
         condition: service_started
     container_name: kanthor-services-attempt-endeavor
     restart: unless-stopped
+    environment:
+      - KANTHOR_DATABASE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_DATASTORE_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_IDEMPOTENCY_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_DISTRIBUTED_LOCK_MANAGER_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_CACHE_URI=redis://cache:6379/0
+      - KANTHOR_INFRASTRUCTURE_STREAMING_URI=nats://streaming:4222
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_POLICY_URI=postgres://postgres:changemenow@warehouse/postgres?connect_timeout=30&sslmode=disable
+      - KANTHOR_INFRASTRUCTURE_AUTHORIZATOR_CASBIN_WATCHER_URI=nats://streaming:4222
     networks:
       - kanthor
-    volumes:
-      - ./docker/.kanthor:/root/.kanthor
     command:
       - kanthor
       - serve
@@ -351,16 +440,16 @@ services:
         condition: service_started
     container_name: kanthor-services-playground
     restart: unless-stopped
+    environment:
+      - KANTHOR_SDK_HOST=sdk:8180
+      - KANTHOR_SDK_ENDPOINT_PUBLIC=http://localhost:8180/api
+      - KANTHOR_PLAYGROUND_ENDPOINT=http://playground:9081
+      - KANTHOR_PORTAL_ENDPOINT=http://portal:8280/api
+      - KANTHOR_PORTAL_CREDENTIALS=YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93
     networks:
       - kanthor
     ports:
       - "9081:9081"
-    environment:
-      - KANTHOR_SDK_HOST=sdk:8180
-      - KANTHOR_SDK_ENDPOINT_PUBLIC=http://localhost:8180
-      - KANTHOR_PLAYGROUND_ENDPOINT=http://playground:9081
-      - KANTHOR_PORTAL_ENDPOINT=http://portal:8280
-      - KANTHOR_PORTAL_CREDENTIALS=YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93
 
 networks:
   kanthor:
