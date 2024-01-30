@@ -50,7 +50,6 @@ services:
       warehouse:
         condition: service_healthy
     container_name: kanthor-services-migration-database
-    build: .
     restart: on-failure
     networks:
       - kanthor
