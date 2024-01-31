@@ -8,6 +8,7 @@ sh "$SCRIPT_DIR/gen_ioc.sh"
 sh "$SCRIPT_DIR/ci_vet.sh"
 
 git add **/checksum
+git add openapi
 
 NOW=$(date +%Y.%-m%d.%-H%M)
 HAHSTAGS=${HAHSTAGS:-"#sdk"}
