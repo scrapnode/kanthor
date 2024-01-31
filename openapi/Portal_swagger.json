@@ -1381,7 +1381,6 @@
                 "id",
                 "name",
                 "owner_id",
-                "permissions",
                 "tier",
                 "updated_at"
             ],
@@ -1397,12 +1396,6 @@
                 },
                 "owner_id": {
                     "type": "string"
-                },
-                "permissions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/authorizator.Permission"
-                    }
                 },
                 "tier": {
                     "type": "string"
@@ -1601,25 +1594,6 @@
                     "type": "string"
                 },
                 "sub": {
-                    "type": "string"
-                }
-            }
-        },
-        "authorizator.Permission": {
-            "type": "object",
-            "required": [
-                "action",
-                "object",
-                "role"
-            ],
-            "properties": {
-                "action": {
-                    "type": "string"
-                },
-                "object": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 }
             }

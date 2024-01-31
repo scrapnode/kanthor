@@ -1388,7 +1388,6 @@ const docTemplatePortal = `{
                 "id",
                 "name",
                 "owner_id",
-                "permissions",
                 "tier",
                 "updated_at"
             ],
@@ -1404,12 +1403,6 @@ const docTemplatePortal = `{
                 },
                 "owner_id": {
                     "type": "string"
-                },
-                "permissions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/authorizator.Permission"
-                    }
                 },
                 "tier": {
                     "type": "string"
@@ -1608,25 +1601,6 @@ const docTemplatePortal = `{
                     "type": "string"
                 },
                 "sub": {
-                    "type": "string"
-                }
-            }
-        },
-        "authorizator.Permission": {
-            "type": "object",
-            "required": [
-                "action",
-                "object",
-                "role"
-            ],
-            "properties": {
-                "action": {
-                    "type": "string"
-                },
-                "object": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 }
             }

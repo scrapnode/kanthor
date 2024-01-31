@@ -495,10 +495,6 @@ definitions:
         type: string
       owner_id:
         type: string
-      permissions:
-        items:
-          $ref: '#/definitions/authorizator.Permission'
-        type: array
       tier:
         type: string
       updated_at:
@@ -508,7 +504,6 @@ definitions:
     - id
     - name
     - owner_id
-    - permissions
     - tier
     - updated_at
     type: object
@@ -643,19 +638,6 @@ definitions:
     - metadata
     - name
     - sub
-    type: object
-  authorizator.Permission:
-    properties:
-      action:
-        type: string
-      object:
-        type: string
-      role:
-        type: string
-    required:
-    - action
-    - object
-    - role
     type: object
 externalDocs:
   description: OpenAPI
