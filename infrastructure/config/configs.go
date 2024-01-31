@@ -5,7 +5,6 @@ import (
 
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/dlm"
@@ -46,7 +45,6 @@ type Config struct {
 	DistributedLockManager dlm.Config             `json:"distributed_lock_manager" yaml:"distributed_lock_manager" mapstructure:"distributed_lock_manager"`
 	Cache                  cache.Config           `json:"cache" yaml:"cache" mapstructure:"cache"`
 	Authenticators         []authenticator.Config `json:"authenticators" yaml:"authenticators" mapstructure:"authenticators"`
-	Authorizator           authorizator.Config    `json:"authorizator" yaml:"authorizator" mapstructure:"authorizator"`
 	Streaming              streaming.Config       `json:"streaming" yaml:"streaming" mapstructure:"streaming"`
 }
 
@@ -72,9 +70,6 @@ func (conf *Config) Validate() error {
 				return err
 			}
 		}
-	}
-	if err := conf.Authorizator.Validate(); err != nil {
-		return err
 	}
 	if err := conf.Streaming.Validate(); err != nil {
 		return err

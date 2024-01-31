@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"slices"
 
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
@@ -27,13 +26,15 @@ type WorkspaceGetOut struct {
 }
 
 func (uc *workspace) Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error) {
-	tenants, err := uc.infra.Authorizator.Tenants(in.AccId)
-	if err == nil && slices.Contains(tenants, in.Id) {
-		ws, err := uc.repositories.Database().Workspace().Get(ctx, in.Id)
-		if err == nil {
-			return &WorkspaceGetOut{Doc: ws}, nil
-		}
+	ws, err := uc.repositories.Database().Workspace().Get(ctx, in.Id)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New("you don't own the workspace or have no permission to access it")
+	isOwner := ws.OwnerId == in.AccId
+	if !isOwner {
+		return nil, errors.New("SDK.USECASE.WORKSPACE.GET.NOT_OWN.ERROR")
+	}
+
+	return &WorkspaceGetOut{ws}, nil
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/entities"
-	"github.com/scrapnode/kanthor/services/permissions"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
@@ -46,9 +45,6 @@ func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 			WsId:      ws.Id,
 			Name:      req.Name,
 			ExpiredAt: req.ExpiredAt,
-			// @TODO remove hardcode
-			Role:        permissions.SdkOwner,
-			Permissions: permissions.SdkOwnerPermissions,
 		}
 		if err := in.Validate(); err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
@@ -57,11 +53,6 @@ func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {
 
 		out, err := service.uc.WorkspaceCredentials().Generate(ctx, in)
 		if err != nil {
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
-			return
-		}
-
-		if err := service.infra.Authorizator.Refresh(ctx); err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
 			return
 		}

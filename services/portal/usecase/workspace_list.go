@@ -41,25 +41,5 @@ func (uc *workspace) List(ctx context.Context, in *WorkspaceListIn) (*WorkspaceL
 		out.Data = append(out.Data, ws)
 	}
 
-	// collaborator
-	tenants, err := uc.infra.Authorizator.Tenants(in.AccId)
-	if err != nil {
-		return nil, err
-	}
-	if len(tenants) > 0 {
-		workspaces, err := uc.repositories.Database().Workspace().ListByIds(ctx, tenants)
-		if err != nil {
-			return nil, err
-		}
-		for _, ws := range workspaces {
-			if _, found := seen[ws.Id]; found {
-				continue
-			}
-
-			seen[ws.Id] = true
-			out.Data = append(out.Data, ws)
-		}
-	}
-
 	return out, nil
 }

@@ -33,7 +33,7 @@ func (verifier *external) Verify(ctx context.Context, request *Request) (*Accoun
 	}
 
 	// add authorization header
-	req.Headers.Add(HeaderAuthCredentials, request.Credentials)
+	req.Headers.Add(HeaderAuthnCredentials, request.Credentials)
 	// then add others headers as well
 	for _, key := range verifier.conf.Headers {
 		if value, has := request.Metadata[key]; has {

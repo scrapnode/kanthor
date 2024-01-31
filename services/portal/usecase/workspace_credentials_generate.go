@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/internal/constants"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/identifier"
@@ -17,9 +16,6 @@ type WorkspaceCredentialsGenerateIn struct {
 	WsId      string
 	Name      string
 	ExpiredAt int64
-
-	Role        string
-	Permissions []authorizator.Permission
 }
 
 func (in *WorkspaceCredentialsGenerateIn) Validate() error {
@@ -28,8 +24,6 @@ func (in *WorkspaceCredentialsGenerateIn) Validate() error {
 		validator.StringStartsWith("ws_id", in.WsId, entities.IdNsWs),
 		validator.StringRequired("name", in.Name),
 		validator.NumberGreaterThanOrEqual("expired_at", in.ExpiredAt, 0),
-		validator.StringRequired("role", in.Role),
-		validator.SliceRequired("permissions", in.Permissions),
 	)
 }
 
@@ -58,13 +52,6 @@ func (uc *workspaceCredentials) Generate(ctx context.Context, in *WorkspaceCrede
 
 	credentials, err := uc.repositories.Database().WorkspaceCredentials().Create(ctx, doc)
 	if err != nil {
-		return nil, err
-	}
-
-	if err := uc.infra.Authorizator.Grant(credentials.WsId, credentials.Id, in.Role, in.Permissions); err != nil {
-		return nil, err
-	}
-	if err := uc.infra.Authorizator.Refresh(ctx); err != nil {
 		return nil, err
 	}
 

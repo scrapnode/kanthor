@@ -58,14 +58,6 @@ infrastructure:
         secret_key: changemenow
         # base64(key:secret): basic YWRtaW5Aa2FudGhvcmxhYnMuY29tOmNoYW5nZW1lbm93
 
-  authorizator:
-    engine: casbin
-    casbin:
-      model_uri: file://./data/authorizator/casbin_rbac_model.conf
-      policy_uri: *postgres_uri
-      watcher:
-        uri: *nats_uri
-
   streaming:
     name: main
     uri: *nats_uri

@@ -7,7 +7,6 @@ import (
 	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/project"
-	"github.com/scrapnode/kanthor/services/permissions"
 )
 
 type WorkspaceCreateIn struct {
@@ -39,18 +38,6 @@ func (uc *workspace) Create(ctx context.Context, in *WorkspaceCreateIn) (*Worksp
 
 		ws, err := uc.repositories.Database().Workspace().Create(ctx, doc)
 		if err != nil {
-			return nil, err
-		}
-
-		if err := uc.infra.Authorizator.Grant(ws.Id, in.AccId, permissions.PortalOwner, permissions.PortalOwnerPermissions); err != nil {
-			return nil, err
-		}
-
-		if err := uc.infra.Authorizator.Grant(ws.Id, in.AccId, permissions.SdkOwner, permissions.SdkOwnerPermissions); err != nil {
-			return nil, err
-		}
-
-		if err := uc.infra.Authorizator.Refresh(ctx); err != nil {
 			return nil, err
 		}
 

@@ -13,14 +13,14 @@ func UseAuthn(auth authenticator.Authenticator, defaultEngine string) gin.Handle
 	return func(ginctx *gin.Context) {
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 
-		credentials := ginctx.Request.Header.Get(authenticator.HeaderAuthCredentials)
+		credentials := ginctx.Request.Header.Get(authenticator.HeaderAuthnCredentials)
 		request := &authenticator.Request{Credentials: credentials, Metadata: map[string]string{}}
 		for key, value := range ginctx.Request.Header {
 			request.Metadata[key] = value[0]
 		}
 
 		engine := defaultEngine
-		if selectEngine := ginctx.Request.Header.Get(authenticator.HeaderAuthEngine); selectEngine != "" {
+		if selectEngine := ginctx.Request.Header.Get(authenticator.HeaderAuthnEngine); selectEngine != "" {
 			engine = selectEngine
 		}
 		acc, err := auth.Authenticate(engine, ctx, request)

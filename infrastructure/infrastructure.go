@@ -6,7 +6,6 @@ import (
 
 	"github.com/scrapnode/kanthor/configuration"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/infrastructure/cache"
 	"github.com/scrapnode/kanthor/infrastructure/circuitbreaker"
 	"github.com/scrapnode/kanthor/infrastructure/config"
@@ -45,10 +44,6 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 	if err != nil {
 		return nil, err
 	}
-	authz, err := authorizator.New(&conf.Authorizator, logger)
-	if err != nil {
-		return nil, err
-	}
 	lock, err := dlm.New(&conf.DistributedLockManager)
 	if err != nil {
 		return nil, err
@@ -71,7 +66,6 @@ func New(provider configuration.Provider) (*Infrastructure, error) {
 		Idempotency:            idemp,
 		CircuitBreaker:         cb,
 		Authenticator:          auth,
-		Authorizator:           authz,
 		DistributedLockManager: lock,
 		Stream:                 s,
 		Cache:                  c,
@@ -89,16 +83,12 @@ type Infrastructure struct {
 	CircuitBreaker         circuitbreaker.CircuitBreaker
 	DistributedLockManager dlm.Factory
 	Authenticator          authenticator.Authenticator
-	Authorizator           authorizator.Authorizator
 	Stream                 streaming.Stream
 	Cache                  cache.Cache
 }
 
 func (infra *Infrastructure) Readiness() error {
 	if err := infra.Idempotency.Readiness(); err != nil {
-		return err
-	}
-	if err := infra.Authorizator.Readiness(); err != nil {
 		return err
 	}
 	if err := infra.Stream.Readiness(); err != nil {
@@ -114,9 +104,6 @@ func (infra *Infrastructure) Liveness() error {
 	if err := infra.Idempotency.Liveness(); err != nil {
 		return err
 	}
-	if err := infra.Authorizator.Liveness(); err != nil {
-		return err
-	}
 	if err := infra.Stream.Liveness(); err != nil {
 		return err
 	}
@@ -128,9 +115,6 @@ func (infra *Infrastructure) Liveness() error {
 
 func (infra *Infrastructure) Connect(ctx context.Context) error {
 	if err := infra.Idempotency.Connect(ctx); err != nil {
-		return err
-	}
-	if err := infra.Authorizator.Connect(ctx); err != nil {
 		return err
 	}
 	if err := infra.Stream.Connect(ctx); err != nil {
@@ -149,9 +133,6 @@ func (infra *Infrastructure) Disconnect(ctx context.Context) error {
 	var returning error
 
 	if err := infra.Idempotency.Disconnect(ctx); err != nil {
-		returning = errors.Join(returning, err)
-	}
-	if err := infra.Authorizator.Disconnect(ctx); err != nil {
 		returning = errors.Join(returning, err)
 	}
 	if err := infra.Stream.Disconnect(ctx); err != nil {

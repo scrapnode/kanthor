@@ -7,13 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/services/portal/usecase"
 )
 
 type WorkspaceGetRes struct {
 	*Workspace
-	Permissions []authorizator.Permission `json:"permissions"`
 } // @name WorkspaceGetRes
 
 // UseWorkspaceGet
@@ -43,15 +41,8 @@ func UseWorkspaceGet(service *portal) gin.HandlerFunc {
 			return
 		}
 
-		permissions, err := service.infra.Authorizator.UserPermissionsInTenant(out.Doc.Id, acc.Sub)
-		if err != nil {
-			ginctx.AbortWithStatusJSON(http.StatusInternalServerError, gateway.Error(err))
-			return
-		}
-
 		res := &WorkspaceGetRes{
-			Workspace:   ToWorkspace(out.Doc),
-			Permissions: permissions,
+			Workspace: ToWorkspace(out.Doc),
 		}
 		ginctx.JSON(http.StatusOK, res)
 	}

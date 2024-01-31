@@ -6,9 +6,7 @@ import (
 )
 
 func RegisterMessageRoutes(router gin.IRoutes, service *sdk) {
-	router.
-		Use(middlewares.UseWorkspace(RegisterWorkspaceResolver(service.uc))).
-		Use(middlewares.UseAuthz(service.infra.Authorizator))
+	router.Use(middlewares.UseWorkspace(RegisterWorkspaceResolver(service.uc)))
 
 	router.POST("", UseMessageCreate(service))
 }

@@ -11,7 +11,6 @@ import (
 
 type Portal interface {
 	Analytics() Analytics
-	Account() Account
 	Workspace() Workspace
 	WorkspaceCredentials() WorkspaceCredentials
 	Application() Application
@@ -41,7 +40,6 @@ type portal struct {
 	repositories repositories.Repositories
 
 	analytics            *analytics
-	account              *account
 	workspace            *workspace
 	workspaceCredentials *workspaceCredentials
 	application          *application
@@ -63,21 +61,6 @@ func (uc *portal) Analytics() Analytics {
 		}
 	}
 	return uc.analytics
-}
-
-func (uc *portal) Account() Account {
-	uc.mu.Lock()
-	defer uc.mu.Unlock()
-
-	if uc.account == nil {
-		uc.account = &account{
-			conf:         uc.conf,
-			logger:       uc.logger,
-			infra:        uc.infra,
-			repositories: uc.repositories,
-		}
-	}
-	return uc.account
 }
 
 func (uc *portal) Workspace() Workspace {

@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
-	"github.com/scrapnode/kanthor/infrastructure/authorizator"
 	"github.com/scrapnode/kanthor/internal/entities"
 )
 
@@ -16,17 +15,13 @@ func UseWorkspace(resolve func(ctx context.Context, acc *authenticator.Account, 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
-		id := ginctx.Request.Header.Get(authorizator.HeaderAuthWorkspace)
-		// fallback to default workspace id of request account
-		if ws, has := acc.Metadata[gateway.MetaWorkspaceId]; has && id == "" {
-			id = ws
-		}
-		if id == "" {
-			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown selected workspace"})
+		wsId, has := acc.Metadata[gateway.MetaWorkspaceId]
+		if !has && wsId == "" {
+			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gateway.ErrorString("GATEWAY.MIDDLEWARE.WORKSPACE.UNKNOWN.ERROR"))
 			return
 		}
 
-		workspace, err := resolve(ctx, acc, id)
+		workspace, err := resolve(ctx, acc, wsId)
 		if err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return

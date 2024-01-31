@@ -75,21 +75,6 @@ func (sql *SqlWorkspace) Get(ctx context.Context, id string) (*entities.Workspac
 	return doc, nil
 }
 
-func (sql *SqlWorkspace) GetOwned(ctx context.Context, owner, id string) (*entities.Workspace, error) {
-	doc := &entities.Workspace{}
-
-	transaction := database.SqlTxnFromContext(ctx, sql.client)
-	tx := transaction.WithContext(ctx).Model(doc).
-		Where("owner_id = ? AND id = ?", owner, id).
-		Order("id asc").
-		First(doc)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return doc, nil
-}
-
 func (sql *SqlWorkspace) ListOwned(ctx context.Context, owner string) ([]entities.Workspace, error) {
 	var docs []entities.Workspace
 
