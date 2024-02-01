@@ -23,7 +23,6 @@ func main() {
 
 	defer func() {
 		if r := recover(); r != nil {
-			// ignore main error
 			if err, ok := r.(error); ok {
 				log.Println("--- error ---")
 				log.Println(err.Error())

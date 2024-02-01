@@ -32,9 +32,19 @@ func (uc *workspace) Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGet
 	}
 
 	isOwner := ws.OwnerId == in.AccId
-	if !isOwner {
-		return nil, errors.New("SDK.USECASE.WORKSPACE.GET.NOT_OWN.ERROR")
+	if isOwner {
+		return &WorkspaceGetOut{ws}, nil
 	}
 
-	return &WorkspaceGetOut{ws}, nil
+	wsc, err := uc.repositories.Database().WorkspaceCredentials().Get(ctx, in.AccId)
+	if err != nil {
+		return nil, err
+	}
+
+	isWorker := wsc.WsId == in.Id
+	if isWorker {
+		return &WorkspaceGetOut{ws}, nil
+	}
+
+	return nil, errors.New("SDK.USECASE.WORKSPACE.GET.NOT_OWN.ERROR")
 }

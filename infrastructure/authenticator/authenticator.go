@@ -13,6 +13,7 @@ import (
 var (
 	HeaderAuthnCredentials = "authorization"
 	HeaderAuthnEngine      = "x-authorization-engine"
+	HeaderAuthnWorkspace   = "x-authorization-workspace"
 )
 
 type Request struct {

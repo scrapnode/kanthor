@@ -15,8 +15,15 @@ func UseWorkspace(resolve func(ctx context.Context, acc *authenticator.Account, 
 		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		acc := ctx.Value(gateway.CtxAccount).(*authenticator.Account)
 
-		wsId, has := acc.Metadata[gateway.MetaWorkspaceId]
-		if !has && wsId == "" {
+		var wsId string
+		if id, has := acc.Metadata[gateway.MetaWorkspaceId]; has && id != "" {
+			wsId = id
+		}
+		if id := ginctx.Request.Header.Get(authenticator.HeaderAuthnWorkspace); id != "" {
+			wsId = id
+		}
+
+		if wsId == "" {
 			ginctx.AbortWithStatusJSON(http.StatusUnauthorized, gateway.ErrorString("GATEWAY.MIDDLEWARE.WORKSPACE.UNKNOWN.ERROR"))
 			return
 		}

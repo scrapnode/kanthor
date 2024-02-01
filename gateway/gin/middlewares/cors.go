@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 )
 
 func UseCors(origins []string) gin.HandlerFunc {
@@ -23,10 +24,10 @@ func UseCors(origins []string) gin.HandlerFunc {
 			"Origin",
 			"Content-Length",
 			"Content-Type",
-			"Authorization",
 			"Idempotency-Key",
-			"X-Authorization-Engine",
-			"X-Authorization-Workspace",
+			authenticator.HeaderAuthnCredentials,
+			authenticator.HeaderAuthnEngine,
+			authenticator.HeaderAuthnWorkspace,
 		},
 		MaxAge: time.Hour * 12,
 	})
