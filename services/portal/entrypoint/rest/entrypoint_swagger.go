@@ -3,7 +3,7 @@ package rest
 // @BasePath /api
 
 // @title Kanthor Portal API
-// @version 1.0
+// @version 2022.1201.1701
 // @description Portal API
 // @termsOfService http://kanthorlabs.com/terms/
 

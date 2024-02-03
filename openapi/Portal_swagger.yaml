@@ -653,7 +653,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://kanthorlabs.com/terms/
   title: Kanthor Portal API
-  version: "1.0"
+  version: 2022.1201.1701
 paths:
   /account:
     get:

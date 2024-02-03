@@ -3,7 +3,7 @@ package rest
 // @BasePath /api
 
 // @title Kanthor SDK API
-// @version 1.0
+// @version 2022.1201.1701
 // @description SDK API
 // @termsOfService http://kanthorlabs.com/terms/
 

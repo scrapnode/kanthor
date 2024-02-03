@@ -1628,7 +1628,7 @@ const docTemplateSdk = `{
 
 // SwaggerInfoSdk holds exported Swagger Info so clients can modify it
 var SwaggerInfoSdk = &swag.Spec{
-	Version:          "1.0",
+	Version:          "2022.1201.1701",
 	Host:             "",
 	BasePath:         "/api",
 	Schemes:          []string{},
