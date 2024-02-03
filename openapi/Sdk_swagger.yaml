@@ -544,8 +544,7 @@ definitions:
       app_id:
         type: string
       body:
-        additionalProperties: true
-        type: object
+        type: string
       headers:
         additionalProperties:
           type: string

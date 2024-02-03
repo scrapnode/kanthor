@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,8 +14,8 @@ type MessageCreateReq struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type" example:"testing.debug"`
 
-	Body    map[string]interface{} `json:"body"`
-	Headers map[string]string      `json:"headers"`
+	Body    string            `json:"body"`
+	Headers map[string]string `json:"headers"`
 } // @name MessageCreateReq
 
 type MessageCreateRes struct {
@@ -39,12 +38,6 @@ func UseMessageCreate(service *sdk) gin.HandlerFunc {
 			return
 		}
 
-		body, err := json.Marshal(req.Body)
-		if err != nil {
-			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
-			return
-		}
-
 		headers := entities.Header{}
 		if len(req.Headers) > 0 {
 			for k, v := range req.Headers {
@@ -59,12 +52,9 @@ func UseMessageCreate(service *sdk) gin.HandlerFunc {
 			Tier:     ws.Tier,
 			AppId:    req.AppId,
 			Type:     req.Type,
-			Body:     string(body),
+			Body:     req.Body,
 			Headers:  headers,
 			Metadata: entities.Metadata{},
-		}
-		if ct := in.Headers.Get("Content-Type"); ct == "" {
-			in.Headers.Set("Content-Type", ginctx.Request.Header.Get("Content-Type"))
 		}
 
 		if err := in.Validate(); err != nil {

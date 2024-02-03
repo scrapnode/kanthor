@@ -1580,8 +1580,7 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "body": {
-                    "type": "object",
-                    "additionalProperties": true
+                    "type": "string"
                 },
                 "headers": {
                     "type": "object",
