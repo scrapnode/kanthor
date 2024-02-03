@@ -7,8 +7,8 @@ sh "$SCRIPT_DIR/gen_swagger.sh"
 sh "$SCRIPT_DIR/gen_ioc.sh"
 sh "$SCRIPT_DIR/ci_vet.sh"
 
-git add **/checksum
 git add openapi
+find . -type f -name 'checksum' -exec git add {} \;
 
 NOW=$(date +%Y.%-m%d.%-H%M)
 HAHSTAGS=${HAHSTAGS:-"#sdk"}
