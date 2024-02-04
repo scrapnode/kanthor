@@ -15,11 +15,11 @@ type WorkspaceCredentialsGetRes struct {
 } // @name WorkspaceCredentialsGetRes
 
 // UseWorkspaceCredentialsGet
-// @Tags		credentials
+// @Tags			credentials
 // @Router		/credentials/{wsc_id}	[get]
-// @Param		wsc_id					path		string						true	"credentials id"
-// @Success		200						{object}	WorkspaceCredentialsGetRes
-// @Failure		default					{object}	gateway.Err
+// @Param			wsc_id								path			string										true	"credentials id"
+// @Success		200										{object}	WorkspaceCredentialsGetRes
+// @Failure		default								{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseWorkspaceCredentialsGet(service *portal) gin.HandlerFunc {

@@ -14,7 +14,7 @@ type MessageCreateReq struct {
 	AppId string `json:"app_id"`
 	Type  string `json:"type" example:"testing.debug"`
 
-	Body    string            `json:"body"`
+	Body    string            `json:"body" default:"{\"ping\":true}"`
 	Headers map[string]string `json:"headers"`
 } // @name MessageCreateReq
 
@@ -23,11 +23,11 @@ type MessageCreateRes struct {
 } // @name MessageCreateRes
 
 // UseMessageCreate
-// @Tags		message
-// @Router		/message		[post]
-// @Param		payload			body		MessageCreateReq	true	"message payload"
-// @Success		201				{object}	MessageCreateRes
-// @Failure		default			{object}	gateway.Err
+// @Tags			message
+// @Router		/message			[post]
+// @Param			payload				body			MessageCreateReq	true	"message payload"
+// @Success		201						{object}	MessageCreateRes
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseMessageCreate(service *sdk) gin.HandlerFunc {

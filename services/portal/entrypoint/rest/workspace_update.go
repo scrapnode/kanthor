@@ -19,12 +19,12 @@ type WorkspaceUpdateRes struct {
 } // @name WorkspaceUpdateRes
 
 // UseWorkspaceUpdate
-// @Tags		workspace
+// @Tags			workspace
 // @Router		/workspace/{ws_id}		[patch]
-// @Param		ws_id					path		string						true	"workspace id"
-// @Param		payload					body		WorkspaceUpdateReq	true	"workspace payload"
-// @Success		200						{object}	WorkspaceUpdateRes
-// @Failure		default					{object}	gateway.Err
+// @Param			ws_id									path			string							true	"workspace id"
+// @Param			payload								body			WorkspaceUpdateReq	true	"workspace payload"
+// @Success		200										{object}	WorkspaceUpdateRes
+// @Failure		default								{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceUpdate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {

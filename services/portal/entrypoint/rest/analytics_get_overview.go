@@ -18,10 +18,10 @@ type AnalyticsGetOverviewRes struct {
 } // @name AnalyticsGetOverviewRes
 
 // UseAnalyticsGetOverview
-// @Tags		analytics
+// @Tags			analytics
 // @Router		/analytics/overview		[get]
-// @Success		200						{object}	AnalyticsGetOverviewRes
-// @Failure		default					{object}	gateway.Err
+// @Success		200										{object}	AnalyticsGetOverviewRes
+// @Failure		default								{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseAnalyticsGetOverview(service *portal) gin.HandlerFunc {

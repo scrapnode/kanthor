@@ -15,11 +15,11 @@ type EndpointDeleteRes struct {
 } // @name EndpointDeleteRes
 
 // UseEndpointDelete
-// @Tags		endpoint
+// @Tags			endpoint
 // @Router		/endpoint/{ep_id}	[delete]
-// @Param		ep_id				path		string					true	"endpoint id"
-// @Success		200					{object}	EndpointDeleteRes
-// @Failure		default				{object}	gateway.Err
+// @Param			ep_id							path			string						true	"endpoint id"
+// @Success		200								{object}	EndpointDeleteRes
+// @Failure		default						{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointDelete(service *sdk) gin.HandlerFunc {

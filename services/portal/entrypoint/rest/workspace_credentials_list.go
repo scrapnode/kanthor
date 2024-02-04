@@ -16,14 +16,14 @@ type WorkspaceCredentialsListRes struct {
 } // @name WorkspaceCredentialsListRes
 
 // UseWorkspaceCredentialsList
-// @Tags		credentials
+// @Tags			credentials
 // @Router		/credentials	[get]
-// @Param		id				query		[]string					false	"list by ids"
-// @Param		_q				query		string						false	"search keyword"
-// @Param		_limit			query		int							false	"limit returning records" 	default(10)
-// @Param		_page			query		int							false	"requesting page"			default(0)
-// @Success		200				{object}	WorkspaceCredentialsListRes
-// @Failure		default			{object}	gateway.Err
+// @Param			id						query			[]string										false	"list by ids"
+// @Param			_q						query			string											false	"search keyword"
+// @Param			_limit				query			int													false	"limit returning records" 	default(10)
+// @Param			_page					query			int													false	"requesting page"			default(0)
+// @Success		200						{object}	WorkspaceCredentialsListRes
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseWorkspaceCredentialsList(service *portal) gin.HandlerFunc {

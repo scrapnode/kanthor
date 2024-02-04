@@ -202,7 +202,7 @@ const docTemplateSdk = `{
                     }
                 ],
                 "tags": [
-                    "application"
+                    "a\tpplication"
                 ],
                 "parameters": [
                     {
@@ -875,7 +875,8 @@ const docTemplateSdk = `{
             ],
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "openapi"
                 }
             }
         },
@@ -1068,11 +1069,12 @@ const docTemplateSdk = `{
                     "example": "POST"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "POST httpbin"
                 },
                 "uri": {
                     "type": "string",
-                    "example": "https://example.com"
+                    "example": "https://httpbin.org/post"
                 }
             }
         },
@@ -1270,10 +1272,12 @@ const docTemplateSdk = `{
             ],
             "properties": {
                 "condition_expression": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "any::"
                 },
                 "condition_source": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "type"
                 },
                 "ep_id": {
                     "type": "string"
@@ -1282,10 +1286,12 @@ const docTemplateSdk = `{
                     "type": "boolean"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "passthrough"
                 },
                 "priority": {
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 100
                 }
             }
         },
@@ -1580,7 +1586,8 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "body": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "{\"ping\":true}"
                 },
                 "headers": {
                     "type": "object",

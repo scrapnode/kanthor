@@ -15,10 +15,10 @@ type ApplicationGetMessageRes struct {
 } // @name ApplicationGetMessageRes
 
 // UseApplicationGetMessage
-// @Tags		application
+// @Tags			application
 // @Router		/application/{app_id}/message/{msg_id}		[get]
-// @Success		200											{object}	ApplicationGetMessageRes
-// @Failure		default										{object}	gateway.Err
+// @Success		200																				{object}	ApplicationGetMessageRes
+// @Failure		default																		{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseApplicationGetMessage(service *portal) gin.HandlerFunc {

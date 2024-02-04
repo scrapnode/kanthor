@@ -15,10 +15,10 @@ type EndpointGetMessageRes struct {
 } // @name EndpointGetMessageRes
 
 // UseEndpointGetMessage
-// @Tags		endpoint
+// @Tags			endpoint
 // @Router		/endpoint/{ep_id}/message/{msg_id}			[get]
-// @Success		200											{object}	EndpointGetMessageRes
-// @Failure		default										{object}	gateway.Err
+// @Success		200																			{object}	EndpointGetMessageRes
+// @Failure		default																	{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointGetMessage(service *portal) gin.HandlerFunc {

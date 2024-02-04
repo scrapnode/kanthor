@@ -15,11 +15,11 @@ type ApplicationGetRes struct {
 } // @name ApplicationGetRes
 
 // UseApplicationGet
-// @Tags		application
+// @Tags			application
 // @Router		/application/{app_id}	[get]
-// @Param		app_id					path		string					true	"application id"
-// @Success		200						{object}	ApplicationGetRes
-// @Failure		default					{object}	gateway.Err
+// @Param			app_id								path		string					true	"application id"
+// @Success		200										{object}	ApplicationGetRes
+// @Failure		default								{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseApplicationGet(service *sdk) gin.HandlerFunc {

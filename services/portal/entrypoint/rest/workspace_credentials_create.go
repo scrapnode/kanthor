@@ -23,11 +23,11 @@ type WorkspaceCredentialsCreateRes struct {
 } // @name WorkspaceCredentialsCreateRes
 
 // UseWorkspaceCredentialsCreate
-// @Tags		credentials
+// @Tags			credentials
 // @Router		/credentials	[post]
-// @Param		payload			body		WorkspaceCredentialsCreateReq	true	"credentials payload"
-// @Success		200				{object}	WorkspaceCredentialsCreateRes
-// @Failure		default			{object}	gateway.Err
+// @Param			payload				body			WorkspaceCredentialsCreateReq	true	"credentials payload"
+// @Success		200						{object}	WorkspaceCredentialsCreateRes
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseWorkspaceCredentialsCreate(service *portal) gin.HandlerFunc {

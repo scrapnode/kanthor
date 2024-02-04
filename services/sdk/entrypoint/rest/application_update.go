@@ -19,12 +19,12 @@ type ApplicationUpdateRes struct {
 } // @name ApplicationUpdateRes
 
 // UseApplicationUpdate
-// @Tags		application
+// @Tags			application
 // @Router		/application/{app_id}	[patch]
-// @Param		app_id					path		string					true	"application id"
-// @Param		payload					body		ApplicationUpdateReq	true	"application payload"
-// @Success		200						{object}	ApplicationUpdateRes
-// @Failure		default					{object}	gateway.Err
+// @Param			app_id								path			string								true	"application id"
+// @Param			payload								body			ApplicationUpdateReq	true	"application payload"
+// @Success		200										{object}	ApplicationUpdateRes
+// @Failure		default								{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseApplicationUpdate(service *sdk) gin.HandlerFunc {

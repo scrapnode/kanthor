@@ -21,12 +21,12 @@ type WorkspaceImportRes struct {
 } // @name WorkspaceImportRes
 
 // UseWorkspaceImport
-// @Tags		workspace
+// @Tags			workspace
 // @Router		/workspace/{ws_id}/transfer	[post]
-// @Param		ws_id						path		string						true	"workspace id"
-// @Param		payload						body		WorkspaceImportReq	true	"import payload"
-// @Success		200							{object}	WorkspaceImportRes
-// @Failure		default						{object}	gateway.Err
+// @Param			ws_id												path			string							true	"workspace id"
+// @Param			payload											body			WorkspaceImportReq	true	"import payload"
+// @Success		200													{object}	WorkspaceImportRes
+// @Failure		default											{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceImport(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {

@@ -15,11 +15,11 @@ type EndpointRuleGetRes struct {
 } // @name EndpointRuleGetRes
 
 // UseEndpointRuleGet
-// @Tags		endpoint rule
+// @Tags			endpoint rule
 // @Router		/rule/{epr_id}	[get]
-// @Param		epr_id			path		string					true	"rule id"
-// @Success		200				{object}	EndpointRuleGetRes
-// @Failure		default			{object}	gateway.Err
+// @Param			epr_id					path			string					true	"rule id"
+// @Success		200							{object}	EndpointRuleGetRes
+// @Failure		default					{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointRuleGet(service *sdk) gin.HandlerFunc {

@@ -20,12 +20,12 @@ type WorkspaceCredentialsUpdateRes struct {
 } // @name WorkspaceCredentialsUpdateRes
 
 // UseWorkspaceCredentialsUpdate
-// @Tags		credentials
+// @Tags			credentials
 // @Router		/credentials/{wsc_id}	[patch]
-// @Param		wsc_id					path		string							true	"credentials id"
-// @Param		payload					body		WorkspaceCredentialsUpdateReq	true	"credentials payload"
-// @Success		200						{object}	WorkspaceCredentialsUpdateRes
-// @Failure		default					{object}	gateway.Err
+// @Param			wsc_id								path			string												true	"credentials id"
+// @Param			payload								body			WorkspaceCredentialsUpdateReq	true	"credentials payload"
+// @Success		200										{object}	WorkspaceCredentialsUpdateRes
+// @Failure		default								{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseWorkspaceCredentialsUpdate(service *portal) gin.HandlerFunc {

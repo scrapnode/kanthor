@@ -71,6 +71,7 @@ services:
       migration-database:
         condition: service_started
     container_name: kanthor-services-migration-datastore
+    build: .
     restart: on-failure
     networks:
       - kanthor

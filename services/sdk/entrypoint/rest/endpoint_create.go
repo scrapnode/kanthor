@@ -13,10 +13,10 @@ import (
 
 type EndpointCreateReq struct {
 	AppId string `json:"app_id"`
-	Name  string `json:"name"`
+	Name  string `json:"name" default:"POST httpbin"`
 
 	Method string `json:"method" example:"POST"`
-	Uri    string `json:"uri" example:"https://example.com"`
+	Uri    string `json:"uri" example:"https://httpbin.org/post"`
 } // @name EndpointCreateReq
 
 type EndpointCreateRes struct {
@@ -28,11 +28,11 @@ type EndpointCreateRes struct {
 } // @name EndpointCreateRes
 
 // UseEndpointCreate
-// @Tags		endpoint
-// @Router		/endpoint	[post]
-// @Param		payload		body		EndpointCreateReq	true	"endpoint payload"
-// @Success		201			{object}	EndpointCreateRes
-// @Failure		default		{object}	gateway.Err
+// @Tags			endpoint
+// @Router		/endpoint			[post]
+// @Param			payload				body			EndpointCreateReq	true	"endpoint payload"
+// @Success		201						{object}	EndpointCreateRes
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointCreate(service *sdk) gin.HandlerFunc {

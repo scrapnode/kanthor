@@ -195,7 +195,7 @@
                     }
                 ],
                 "tags": [
-                    "application"
+                    "a\tpplication"
                 ],
                 "parameters": [
                     {
@@ -868,7 +868,8 @@
             ],
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "openapi"
                 }
             }
         },
@@ -1061,11 +1062,12 @@
                     "example": "POST"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "POST httpbin"
                 },
                 "uri": {
                     "type": "string",
-                    "example": "https://example.com"
+                    "example": "https://httpbin.org/post"
                 }
             }
         },
@@ -1263,10 +1265,12 @@
             ],
             "properties": {
                 "condition_expression": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "any::"
                 },
                 "condition_source": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "type"
                 },
                 "ep_id": {
                     "type": "string"
@@ -1275,10 +1279,12 @@
                     "type": "boolean"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "passthrough"
                 },
                 "priority": {
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 100
                 }
             }
         },
@@ -1573,7 +1579,8 @@
                     "type": "string"
                 },
                 "body": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "{\"ping\":true}"
                 },
                 "headers": {
                     "type": "object",

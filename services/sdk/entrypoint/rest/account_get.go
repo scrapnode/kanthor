@@ -14,9 +14,9 @@ type AccountGetRes struct {
 } // @name AccountGetRes
 
 // UseAccountGet
-// @Tags		account
-// @Router		/account/me			[get]
-// @Success		200					{object}	AccountGetRes
+// @Tags			account
+// @Router		/account/me		[get]
+// @Success		200						{object}	AccountGetRes
 // @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 func UseAccountGet(service *sdk) gin.HandlerFunc {

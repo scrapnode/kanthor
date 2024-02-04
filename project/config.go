@@ -17,5 +17,12 @@ func GetVersion() string {
 }
 
 func IsDev() bool {
-	return strings.EqualFold(os.Getenv("KANTHOR_ENV"), "development")
+	return strings.EqualFold(Env(), "development")
+}
+
+func Env() string {
+	if env := os.Getenv("KANTHOR_ENV"); env != "" {
+		return env
+	}
+	return "production"
 }

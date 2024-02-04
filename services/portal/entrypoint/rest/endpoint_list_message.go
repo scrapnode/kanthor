@@ -15,13 +15,13 @@ type EndpointListMessageRes struct {
 } // @name EndpointListMessageRes
 
 // UseEndpointListMessage
-// @Tags		endpoint
+// @Tags			endpoint
 // @Router		/endpoint/{ep_id}/message			[get]
-// @Param		_limit								query		int				false	"limit returning records" 	default(10)
-// @Param		_start								query		int64			false	"starting time to scan in milliseconds" example(1669914060000)
-// @Param		_end								query		int64			false	"ending time to scan in milliseconds" 	example(1985533260000)
-// @Success		200									{object}	EndpointListMessageRes
-// @Failure		default								{object}	gateway.Err
+// @Param			_limit												query			int										false	"limit returning records" 	default(10)
+// @Param			_start												query			int64									false	"starting time to scan in milliseconds" example(1669914060000)
+// @Param			_end													query			int64									false	"ending time to scan in milliseconds" 	example(1985533260000)
+// @Success		200														{object}	EndpointListMessageRes
+// @Failure		default												{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointListMessage(service *portal) gin.HandlerFunc {

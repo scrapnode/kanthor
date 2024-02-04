@@ -15,11 +15,11 @@ type ApplicationDeleteRes struct {
 } // @name ApplicationDeleteRes
 
 // UseApplicationDelete
-// @Tags		application
+// @Tags		a	pplication
 // @Router		/application/{app_id}	[delete]
-// @Param		app_id					path		string					true	"application id"
-// @Success		200						{object}	ApplicationDeleteRes
-// @Failure		default					{object}	gateway.Err
+// @Param			app_id								path		string					true	"application id"
+// @Success		200										{object}	ApplicationDeleteRes
+// @Failure		default								{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseApplicationDelete(service *sdk) gin.HandlerFunc {

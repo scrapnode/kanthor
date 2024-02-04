@@ -15,11 +15,11 @@ type WorkspaceGetRes struct {
 } // @name WorkspaceGetRes
 
 // UseWorkspaceGet
-// @Tags		workspace
+// @Tags			workspace
 // @Router		/workspace/{ws_id}	[get]
-// @Param		ws_id				path		string						true	"workspace id"
-// @Success		200					{object}	WorkspaceGetRes
-// @Failure		default				{object}	gateway.Err
+// @Param			ws_id								path			string						true	"workspace id"
+// @Success		200									{object}	WorkspaceGetRes
+// @Failure		default							{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceGet(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {

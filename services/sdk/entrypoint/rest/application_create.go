@@ -11,7 +11,7 @@ import (
 )
 
 type ApplicationCreateReq struct {
-	Name string `json:"name"`
+	Name string `json:"name" default:"openapi"`
 } // @name ApplicationCreateReq
 
 type ApplicationCreateRes struct {
@@ -19,10 +19,10 @@ type ApplicationCreateRes struct {
 } // @name ApplicationCreateRes
 
 // UseApplicationCreate
-// @Tags		application
-// @Router		/application		[post]
-// @Param		payload				body		ApplicationCreateReq	true	"application payload"
-// @Success		201					{object}	ApplicationCreateRes
+// @Tags			application
+// @Router		/application	[post]
+// @Param			payload				body		ApplicationCreateReq	true	"application payload"
+// @Success		201						{object}	ApplicationCreateRes
 // @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId

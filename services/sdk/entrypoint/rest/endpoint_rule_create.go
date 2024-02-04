@@ -12,12 +12,12 @@ import (
 
 type EndpointRuleCreateReq struct {
 	EpId string `json:"ep_id"`
-	Name string `json:"name" `
+	Name string `json:"name" default:"passthrough"`
 
-	Priority            int32  `json:"priority"`
+	Priority            int32  `json:"priority" default:"100"`
 	Exclusionary        bool   `json:"exclusionary"`
-	ConditionSource     string `json:"condition_source"`
-	ConditionExpression string `json:"condition_expression"`
+	ConditionSource     string `json:"condition_source" default:"type"`
+	ConditionExpression string `json:"condition_expression" default:"any::"`
 } // @name EndpointRuleCreateReq
 
 type EndpointRuleCreateRes struct {

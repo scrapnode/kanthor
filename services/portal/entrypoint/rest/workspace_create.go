@@ -19,11 +19,11 @@ type WorkspaceCreateRes struct {
 } // @name WorkspaceCreateRes
 
 // UseWorkspaceCreate
-// @Tags		workspace
+// @Tags			workspace
 // @Router		/workspace			[post]
-// @Param		payload				body		WorkspaceCreateReq	true	"workspace payload"
-// @Success		200					{object}	WorkspaceCreateRes
-// @Failure		default				{object}	gateway.Err
+// @Param			payload					body			WorkspaceCreateReq	true	"workspace payload"
+// @Success		200							{object}	WorkspaceCreateRes
+// @Failure		default					{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceCreate(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {

@@ -16,16 +16,16 @@ type EndpointRuleListRes struct {
 } // @name EndpointRuleListRes
 
 // UseEndpointRuleList
-// @Tags		endpoint rule
-// @Router		/rule			[get]
-// @Param		app_id			query		string					false	"application id"
-// @Param		ep_id			query		string					false	"endpoint id"
-// @Param		id				query		[]string				false	"list by ids"
-// @Param		_q				query		string					false	"search keyword"
-// @Param		_limit			query		int						false	"limit returning records"	default(10)
-// @Param		_page			query		int						false	"current requesting page"	default(0)
-// @Success		200				{object}	EndpointRuleListRes
-// @Failure		default			{object}	gateway.Err
+// @Tags			endpoint rule
+// @Router		/rule					[get]
+// @Param			app_id				query			string							false	"application id"
+// @Param			ep_id					query			string							false	"endpoint id"
+// @Param			id						query			[]string						false	"list by ids"
+// @Param			_q						query			string							false	"search keyword"
+// @Param			_limit				query			int									false	"limit returning records"	default(10)
+// @Param			_page					query			int									false	"current requesting page"	default(0)
+// @Success		200						{object}	EndpointRuleListRes
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointRuleList(service *sdk) gin.HandlerFunc {

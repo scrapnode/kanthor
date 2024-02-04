@@ -16,9 +16,9 @@ type AccountGetRes struct {
 } // @name AccountGetRes
 
 // UseAccountGet
-// @Tags		account
+// @Tags			account
 // @Router		/account			[get]
-// @Success		200					{object}	AccountGetRes
+// @Success		200						{object}	AccountGetRes
 // @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId

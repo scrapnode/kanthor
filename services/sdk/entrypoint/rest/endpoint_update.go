@@ -20,12 +20,12 @@ type EndpointUpdateRes struct {
 } // @name EndpointUpdateRes
 
 // UseEndpointUpdate
-// @Tags		endpoint
+// @Tags			endpoint
 // @Router		/endpoint/{ep_id}	[patch]
-// @Param		ep_id				path		string					true	"endpoint id"
-// @Param		payload				body		EndpointUpdateReq		true	"endpoint payload"
-// @Success		200					{object}	EndpointUpdateRes
-// @Failure		default				{object}	gateway.Err
+// @Param			ep_id							path			string						true	"endpoint id"
+// @Param			payload						body			EndpointUpdateReq	true	"endpoint payload"
+// @Success		200								{object}	EndpointUpdateRes
+// @Failure		default						{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointUpdate(service *sdk) gin.HandlerFunc {

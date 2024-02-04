@@ -13,7 +13,9 @@ import (
 	"github.com/scrapnode/kanthor/internal/debugging"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services"
+	"github.com/scrapnode/kanthor/telemetry"
 	"github.com/spf13/cobra"
 )
 
@@ -31,11 +33,18 @@ func New(provider configuration.Provider) *cobra.Command {
 		ValidArgs: append(services.SERVICES, services.ALL),
 		Args:      cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.WithValue(cmd.Context(), telemetry.CtxService, project.Topic(args...))
+			telemetry.Start(ctx)
+			defer telemetry.Stop(ctx)
+
 			if slices.Contains(args, services.ALL) || len(args) > 1 {
 				return multiple(provider, args)
 			}
 
 			return single(provider, args[0])
+		},
+		PostRunE: func(cmd *cobra.Command, args []string) error {
+			return telemetry.Stop(cmd.Context())
 		},
 	}
 
@@ -43,6 +52,7 @@ func New(provider configuration.Provider) *cobra.Command {
 }
 
 func single(provider configuration.Provider, name string) error {
+
 	logger, err := logging.New(provider)
 	if err != nil {
 		return err

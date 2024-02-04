@@ -15,11 +15,11 @@ type WorkspaceExportRes struct {
 } // @name WorkspaceExportRes
 
 // UseWorkspaceExport
-// @Tags		workspace
+// @Tags			workspace
 // @Router		/workspace/{ws_id}/transfer	[get]
-// @Param		ws_id						path		string						true	"workspace id"
-// @Success		200							{object}	WorkspaceExportRes
-// @Failure		default						{object}	gateway.Err
+// @Param			ws_id												path			string						true	"workspace id"
+// @Success		200													{object}	WorkspaceExportRes
+// @Failure		default											{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceExport(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {

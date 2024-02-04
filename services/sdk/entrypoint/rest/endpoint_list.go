@@ -16,15 +16,15 @@ type EndpointListRes struct {
 } // @name EndpointListRes
 
 // UseEndpointList
-// @Tags		endpoint
-// @Router		/endpoint		[get]
-// @Param		app_id			query		string					false	"application id"
-// @Param		id				query		[]string				false	"list by ids"
-// @Param		_q				query		string					false	"search keyword"
-// @Param		_limit			query		int						false	"limit returning records"	default(10)
-// @Param		_page			query		int						false	"current requesting page"	default(0)
-// @Success		200				{object}	EndpointListRes
-// @Failure		default			{object}	gateway.Err
+// @Tags			endpoint
+// @Router		/endpoint			[get]
+// @Param			app_id				query			string					false	"application id"
+// @Param			id						query			[]string				false	"list by ids"
+// @Param			_q						query			string					false	"search keyword"
+// @Param			_limit				query			int							false	"limit returning records"	default(10)
+// @Param			_page					query			int							false	"current requesting page"	default(0)
+// @Success		200						{object}	EndpointListRes
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointList(service *sdk) gin.HandlerFunc {

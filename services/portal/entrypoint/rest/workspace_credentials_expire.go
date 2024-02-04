@@ -20,12 +20,12 @@ type WorkspaceCredentialsExpireRes struct {
 } // @name WorkspaceCredentialsExpireRes
 
 // UseWorkspaceCredentialsExpire
-// @Tags		credentials
+// @Tags			credentials
 // @Router		/credentials/{wsc_id}/expiration	[put]
-// @Param		wsc_id								path		string							true	"credentials id"
-// @Param		payload								body		WorkspaceCredentialsExpireReq	true	"credentials payload"
-// @Success		200									{object}	WorkspaceCredentialsExpireRes
-// @Failure		default								{object}	gateway.Err
+// @Param			wsc_id														path			string												true	"credentials id"
+// @Param			payload														body			WorkspaceCredentialsExpireReq	true	"credentials payload"
+// @Success		200																{object}	WorkspaceCredentialsExpireRes
+// @Failure		default														{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseWorkspaceCredentialsExpire(service *portal) gin.HandlerFunc {

@@ -15,11 +15,11 @@ type EndpointGetRes struct {
 } // @name EndpointGetRes
 
 // UseEndpointGet
-// @Tags		endpoint
+// @Tags			endpoint
 // @Router		/endpoint/{ep_id}	[get]
-// @Param		ep_id				path		string					true	"endpoint id"
-// @Success		200					{object}	EndpointGetRes
-// @Failure		default				{object}	gateway.Err
+// @Param			ep_id							path			string					true	"endpoint id"
+// @Success		200								{object}	EndpointGetRes
+// @Failure		default						{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointGet(service *sdk) gin.HandlerFunc {

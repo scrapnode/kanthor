@@ -16,10 +16,10 @@ type WorkspaceListRes struct {
 } // @name WorkspaceListRes
 
 // UseWorkspaceList
-// @Tags		workspace
-// @Router		/workspace				[get]
+// @Tags			workspace
+// @Router		/workspace		[get]
 // @Success		200						{object}	WorkspaceGetRes
-// @Failure		default					{object}	gateway.Err
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 func UseWorkspaceList(service *portal) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
