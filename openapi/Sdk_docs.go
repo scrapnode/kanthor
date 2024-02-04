@@ -202,7 +202,7 @@ const docTemplateSdk = `{
                     }
                 ],
                 "tags": [
-                    "a\tpplication"
+                    "application"
                 ],
                 "parameters": [
                     {

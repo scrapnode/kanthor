@@ -73,13 +73,14 @@ func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCre
 
 	events := map[string]*streaming.Event{}
 	events[event.Id] = event
+
 	spanner := &telemetry.Spanner{
 		Tracer:   ctx.Value(telemetry.CtxTracer).(trace.Tracer),
 		Contexts: make(map[string]context.Context),
 	}
 	spanner.Contexts[event.Id] = subctx
-	pubctx := context.WithValue(subctx, telemetry.CtxSpanner, spanner)
-	if errs := uc.publisher.Pub(pubctx, events); len(errs) > 0 {
+
+	if errs := uc.publisher.Pub(context.WithValue(subctx, telemetry.CtxSpanner, spanner), events); len(errs) > 0 {
 		return nil, errs[event.Id]
 	}
 

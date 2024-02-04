@@ -38,6 +38,7 @@ func Handler(service *dispatcher) streaming.SubHandler {
 
 		// we alreay validated messages of request, don't need to validate again
 		out, err := service.uc.Forwarder().Send(ctx, in)
+
 		if err != nil {
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event

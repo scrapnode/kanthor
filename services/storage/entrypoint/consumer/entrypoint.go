@@ -119,7 +119,7 @@ func (service *storage) Stop(ctx context.Context) error {
 }
 
 func (service *storage) Run(ctx context.Context) error {
-	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("consumer")))
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("storage_consumer")))
 	topic := service.conf.Topic
 	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err

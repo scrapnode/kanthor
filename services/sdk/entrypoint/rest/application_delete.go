@@ -15,7 +15,7 @@ type ApplicationDeleteRes struct {
 } // @name ApplicationDeleteRes
 
 // UseApplicationDelete
-// @Tags		a	pplication
+// @Tags			application
 // @Router		/application/{app_id}	[delete]
 // @Param			app_id								path		string					true	"application id"
 // @Success		200										{object}	ApplicationDeleteRes

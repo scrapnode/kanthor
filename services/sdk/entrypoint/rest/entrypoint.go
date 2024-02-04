@@ -104,7 +104,7 @@ func (service *sdk) router() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.Use(middlewares.UseStartup(&service.conf.Gateway))
-		api.Use(middlewares.UseTracing(project.Name("rest")))
+		api.Use(middlewares.UseTracing(project.Name("sdk_rest")))
 		api.Use(middlewares.UseIdempotency(service.logger, service.infra.Idempotency, project.IsDev()))
 		api.Use(middlewares.UseAuthn(service.infra.Authenticator, AuthzEngineInternal))
 

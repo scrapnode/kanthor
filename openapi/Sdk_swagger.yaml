@@ -685,7 +685,7 @@ paths:
       - Authorization: []
       - WorkspaceId: []
       tags:
-      - "a\tpplication"
+      - application
     get:
       parameters:
       - description: application id

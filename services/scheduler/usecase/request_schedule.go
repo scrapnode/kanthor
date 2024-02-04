@@ -12,7 +12,6 @@ import (
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/telemetry"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type RequestScheduleIn struct {
@@ -50,6 +49,7 @@ type RequestScheduleOut struct {
 func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*RequestScheduleOut, error) {
 	spanName := "usecase.request.schedule"
 	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
+	defer spanner.End(spanName)
 
 	ok := &safe.Map[[]string]{}
 	ko := &safe.Map[error]{}
@@ -61,13 +61,12 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 		spanner.StartWithRefId(spanName, refId)
 		refIds[msg.Id] = refId
 	}
-	defer spanner.End(spanName)
 
 	errc := make(chan error, 1)
 	defer close(errc)
 
 	go func() {
-		requests, err := uc.arrange(context.WithValue(ctx, telemetry.CtxSpanner, spanner.Clone()), in)
+		requests, err := uc.arrange(ctx, in)
 		if err != nil {
 			errc <- err
 			return
@@ -76,9 +75,6 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			errc <- nil
 			return
 		}
-
-		publishSpanner := spanner.Clone()
-		publishSpanner.Start("usecase.request.publish")
 
 		msgrefs := map[string]string{}
 		events := map[string]*streaming.Event{}
@@ -91,6 +87,8 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 				continue
 			}
 
+			// link the span so we can continue to measure it
+			spanner.Link(msgRefId, refIds[request.MsgId])
 			events[msgRefId] = event
 			msgrefs[msgRefId] = request.MsgId
 		}
@@ -115,7 +113,6 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			}
 		}
 
-		publishSpanner.End("usecase.request.publish")
 		errc <- nil
 	}()
 
@@ -143,31 +140,20 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 }
 
 func (uc *request) arrange(ctx context.Context, in *RequestScheduleIn) (map[string]*entities.Request, error) {
-	spanName := "usecase.request.arrange"
-	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
 
 	appIds := make([]string, 0)
 	for refId := range in.Messages {
-		spanner.StartWithRefId(spanName, refId)
 		appIds = append(appIds, in.Messages[refId].AppId)
 	}
-	defer spanner.End(spanName)
 
-	appSpanner := spanner.Clone()
-	appSpanner.Start("repositories.db.application.get_routes")
 	routes, err := uc.repositories.Database().Application().GetRoutes(ctx, appIds)
 	if err != nil {
-		appSpanner.End("repositories.db.application.get_routes")
 		return nil, err
 	}
-	appSpanner.End("repositories.db.application.get_routes", attribute.Int("app.route_count", len(routes)))
 
-	planningSpanner := spanner.Clone()
 	returning := map[string]*entities.Request{}
-	for refId, msg := range in.Messages {
-		spanNamePlanning := "usecase.request.arrange.planning"
+	for _, msg := range in.Messages {
 		if items, has := routes[msg.AppId]; has {
-			planningSpanner.StartWithRefId("usecase.request.arrange.planning", refId)
 
 			requests, traces := routing.PlanRequests(uc.infra.Timer, msg, items)
 			if len(traces) > 0 {
@@ -179,8 +165,6 @@ func (uc *request) arrange(ctx context.Context, in *RequestScheduleIn) (map[stri
 			for id, request := range requests {
 				returning[id] = request
 			}
-
-			planningSpanner.End(spanNamePlanning, attribute.Int("request_count", len(requests)))
 		}
 	}
 

@@ -6,6 +6,7 @@ import (
 	"github.com/scrapnode/kanthor/project"
 	"github.com/uptrace/uptrace-go/uptrace"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -27,6 +28,7 @@ func Start(ctx context.Context) error {
 		uptrace.WithServiceName(ctx.Value(CtxService).(string)),
 		uptrace.WithServiceVersion(project.GetVersion()),
 		uptrace.WithDeploymentEnvironment(project.Env()),
+		uptrace.WithResourceAttributes(attribute.String("kanthor_tier", project.Tier())),
 	)
 	return nil
 }

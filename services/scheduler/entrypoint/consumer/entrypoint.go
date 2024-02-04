@@ -120,7 +120,7 @@ func (service *scheduler) Stop(ctx context.Context) error {
 }
 
 func (service *scheduler) Run(ctx context.Context) error {
-	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("consumer")))
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("scheduler_consumer")))
 	topic := constants.TopicMessage
 	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err

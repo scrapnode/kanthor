@@ -108,7 +108,7 @@ func (service *dispatcher) Stop(ctx context.Context) error {
 }
 
 func (service *dispatcher) Run(ctx context.Context) error {
-	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("consumer")))
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("dispatcher_consumer")))
 	topic := constants.TopicRequest
 	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err

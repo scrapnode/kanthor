@@ -8,7 +8,9 @@ import (
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
+	"github.com/scrapnode/kanthor/telemetry"
 	"github.com/sourcegraph/conc/pool"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type WarehousePutIn struct {
@@ -128,6 +130,10 @@ type WarehousePutOut struct {
 }
 
 func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutOut, error) {
+	spanName := "usecase.warehouse.put"
+	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
+	defer spanner.End(spanName)
+
 	ok := safe.Slice[string]{}
 	ko := safe.Map[error]{}
 	if in.Count() == 0 {
@@ -143,6 +149,11 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		j := utils.ChunkNext(i, len(messages), in.BatchSize)
 
 		msgs := messages[i:j]
+		for k := range msgs {
+			id := msgs[k].Id
+			spanner.StartWithRefId(spanName, refs[id], attribute.String("msg.id", id))
+		}
+
 		p.Go(func() {
 			ids, err := uc.repositories.Datastore().Message().Create(ctx, msgs)
 			if err != nil {
@@ -162,6 +173,11 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		j := utils.ChunkNext(i, len(requests), in.BatchSize)
 
 		reqs := requests[i:j]
+		for k := range reqs {
+			id := reqs[k].Id
+			spanner.StartWithRefId(spanName, refs[id], attribute.String("req.id", id))
+		}
+
 		p.Go(func() {
 			ids, err := uc.repositories.Datastore().Request().Create(ctx, reqs)
 			if err != nil {
@@ -181,6 +197,11 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		j := utils.ChunkNext(i, len(responses), in.BatchSize)
 
 		reses := responses[i:j]
+		for k := range reses {
+			id := reses[k].Id
+			spanner.StartWithRefId(spanName, refs[id], attribute.String("res.id", id))
+		}
+
 		p.Go(func() {
 			ids, err := uc.repositories.Datastore().Response().Create(ctx, reses)
 			if err != nil {
@@ -200,6 +221,11 @@ func (uc *warehose) Put(ctx context.Context, in *WarehousePutIn) (*WarehousePutO
 		j := utils.ChunkNext(i, len(attempts), in.BatchSize)
 
 		atts := attempts[i:j]
+		for k := range atts {
+			id := atts[k].ReqId
+			spanner.StartWithRefId(spanName, refs[id], attribute.String("att.req_id", id))
+		}
+
 		p.Go(func() {
 			ids, err := uc.repositories.Datastore().Attempt().Create(ctx, atts)
 			if err != nil {

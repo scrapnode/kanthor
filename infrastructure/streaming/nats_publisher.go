@@ -7,11 +7,11 @@ import (
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/telemetry"
 	"github.com/sourcegraph/conc/pool"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type NatsPublisher struct {
@@ -27,7 +27,7 @@ func (publisher *NatsPublisher) Name() string {
 }
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Event) map[string]error {
-	spanName := "streaming.publisher.pub"
+	spanName := project.Topic("streaming.publisher.sub", publisher.name)
 	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
 
 	datac := make(chan map[string]error, 1)
@@ -37,12 +37,12 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 		returning := safe.Map[error]{}
 		p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
 		for refId, e := range events {
-			attributes := trace.WithAttributes(
+			spanner.StartWithRefId(
+				spanName, refId,
 				attribute.String("streaming.publisher.engine", "nats"),
 				attribute.String("event.id", refId),
 				attribute.String("event.subject", e.Subject),
 			)
-			spanner.StartWithRefId(spanName, refId, attributes)
 			defer spanner.End(spanName)
 
 			if err := e.Validate(); err != nil {
@@ -58,7 +58,7 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 			// telemetry tracing
 			propgator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{})
 			carrier := propagation.MapCarrier{}
-			propgator.Inject(ctx, carrier)
+			propgator.Inject(spanner.Contexts[refId], carrier)
 			msg.Header.Add(HeaderTelemetryTrace, utils.Stringify(carrier))
 
 			p.Go(func() {

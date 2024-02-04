@@ -14,6 +14,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/validator"
+	"github.com/scrapnode/kanthor/telemetry"
 	"github.com/sourcegraph/conc/pool"
 )
 
@@ -56,6 +57,10 @@ type ForwarderSendOut struct {
 }
 
 func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderSendOut, error) {
+	spanName := "usecase.forwarder.send"
+	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
+	defer spanner.End(spanName)
+
 	responses := safe.Map[*entities.Response]{}
 
 	// we don't need to implement global timeout as we did with scheduler
@@ -64,6 +69,8 @@ func (uc *forwarder) Send(ctx context.Context, in *ForwarderSendIn) (*ForwarderS
 	for ref, r := range in.Requests {
 		refId := ref
 		request := r
+		spanner.StartWithRefId(spanName, refId)
+
 		p.Go(func() {
 			response := uc.send(ctx, request)
 			responses.Set(refId, response)

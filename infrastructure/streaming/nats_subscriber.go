@@ -119,7 +119,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 	}
 
 	propgator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{})
-	spanName := "streaming.publisher.sub"
+	spanName := project.Topic("streaming.publisher.sub", subscriber.name)
 	go func() {
 		for {
 			if !subscriber.subscription.IsValid() {
@@ -157,11 +157,11 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 				if err := json.Unmarshal([]byte(msg.Header.Get(HeaderTelemetryTrace)), &carrier); err == nil {
 					spanner.Contexts[eventId] = propgator.Extract(context.Background(), carrier)
 
-					attributes := trace.WithAttributes(
+					spanner.StartWithRefId(
+						spanName, eventId,
 						attribute.String("streaming.publisher.engine", "nats"),
 						attribute.String("event.id", eventId),
 					)
-					spanner.StartWithRefId(spanName, eventId, attributes)
 				}
 
 				event := NatsMsgToEvent(msg)

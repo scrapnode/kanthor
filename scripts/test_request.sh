@@ -40,6 +40,7 @@ echo "App ID: $TEST_APP_ID"
 
 for SEQ in $( seq 1 $TEST_REQUEST_COUNT )
 do
+  sleep $TEST_REQUEST_WAIT_TIME
   IDEMPTOTENCY_KEY=$(uuidgen)
   echo -n "$IDEMPTOTENCY_KEY/$SEQ -> $TEST_APP_ID\n"
   curl -s -X POST "$KANTHOR_SDK_API_ENDPOINT/message" \
@@ -48,7 +49,7 @@ do
     -H "X-Authorization-Engine: ask" \
     -H "X-Authorization-Workspace: $TEST_WORKSPACE_ID" \
     -H "Authorization: Basic $KANTHOR_PORTAL_AUTH_CREDENTIALS" \
-    -d "{\"app_id\": \"$TEST_APP_ID\",\"type\":\"testing.traffic.request\",\"body\":{\"hello\":\"world\",\"seq\":$SEQ},\"headers\":{\"x-client\":\"curl\"}}" > /dev/null
+    -d "{\"app_id\": \"$TEST_APP_ID\",\"type\":\"testing.traffic.request\",\"body\":{\"hello\":\"world\",\"seq\":$SEQ},\"headers\":{\"x-client\":\"curl\"}}"  
 done
 
 echo "App ID: $TEST_APP_ID | $TEST_REQUEST_COUNT messages"

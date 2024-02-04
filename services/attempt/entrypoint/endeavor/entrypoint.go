@@ -132,7 +132,7 @@ func (service *endeavor) Stop(ctx context.Context) error {
 }
 
 func (service *endeavor) Run(ctx context.Context) error {
-	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("endeavor")))
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("attempt_endeavor")))
 	topic := constants.TopicAttempt
 	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err

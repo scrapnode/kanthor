@@ -132,7 +132,7 @@ func (service *consumer) Stop(ctx context.Context) error {
 }
 
 func (service *consumer) Run(ctx context.Context) error {
-	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("consumer")))
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("attempt_consumer")))
 	topic := constants.TopicAttemptTask
 	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err

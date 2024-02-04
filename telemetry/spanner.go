@@ -16,17 +16,17 @@ type Spanner struct {
 	spans map[string]map[string]trace.Span
 }
 
-func (spanner *Spanner) Start(name string, options ...trace.SpanStartOption) {
+func (spanner *Spanner) Start(name string, kv ...attribute.KeyValue) {
 	for refId := range spanner.Contexts {
-		spanner.StartWithRefId(name, refId, options...)
+		spanner.StartWithRefId(name, refId, kv...)
 	}
 }
 
-func (spanner *Spanner) StartWithRefId(name, refId string, options ...trace.SpanStartOption) {
+func (spanner *Spanner) StartWithRefId(name, refId string, kv ...attribute.KeyValue) {
 	spanner.mu.Lock()
 	defer spanner.mu.Unlock()
 
-	ctx, span := spanner.Tracer.Start(spanner.Contexts[refId], name, options...)
+	ctx, span := spanner.Tracer.Start(spanner.Contexts[refId], name, trace.WithAttributes(kv...))
 	// override with new context that contains tracing id
 	spanner.Contexts[refId] = ctx
 
@@ -56,19 +56,6 @@ func (spanner *Spanner) End(name string, kv ...attribute.KeyValue) {
 	}
 }
 
-func (spanner *Spanner) Clone() *Spanner {
-	s := &Spanner{
-		Tracer:   spanner.Tracer,
-		Contexts: make(map[string]context.Context),
-		spans:    make(map[string]map[string]trace.Span),
-	}
-
-	for name := range spanner.Contexts {
-		s.Contexts[name] = spanner.Contexts[name]
-	}
-	for name := range spanner.spans {
-		s.spans[name] = spanner.spans[name]
-	}
-
-	return s
+func (spanner *Spanner) Link(dest, src string) {
+	spanner.Contexts[dest] = spanner.Contexts[src]
 }

@@ -132,7 +132,7 @@ func (service *selector) Stop(ctx context.Context) error {
 }
 
 func (service *selector) Run(ctx context.Context) error {
-	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("selector")))
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("attempt_selector")))
 	topic := constants.TopicAttemptTrigger
 	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err
