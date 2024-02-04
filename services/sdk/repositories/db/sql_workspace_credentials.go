@@ -17,7 +17,7 @@ type SqlWorkspaceCredentials struct {
 }
 
 func (sql *SqlWorkspaceCredentials) Get(ctx context.Context, id string) (*entities.WorkspaceCredentials, error) {
-	attributes := trace.WithAttributes(attribute.String("wsc_id", id))
+	attributes := trace.WithAttributes(attribute.String("wsc.id", id))
 	subctx, span := ctx.Value(telemetry.CtxTracer).(trace.Tracer).Start(ctx, "repositories.db.workspace_credentials.get", attributes)
 	defer func() {
 		span.End()

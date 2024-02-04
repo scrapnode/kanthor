@@ -333,6 +333,7 @@ definitions:
       ep_id:
         type: string
       exclusionary:
+        default: false
         type: boolean
       name:
         default: passthrough

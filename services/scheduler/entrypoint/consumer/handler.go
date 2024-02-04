@@ -13,8 +13,15 @@ import (
 func Handler(service *scheduler) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events map[string]*streaming.Event) map[string]error {
-		messages := map[string]*entities.Message{}
+	return func(ctx context.Context, events map[string]*streaming.Event) map[string]error {
+		// timeout
+		timeout := time.Millisecond * time.Duration(service.conf.Request.Schedule.Timeout)
+		timeoutctx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+
+		in := &usecase.RequestScheduleIn{
+			Messages: make(map[string]*entities.Message),
+		}
 		for id, event := range events {
 			message, err := transformation.EventToMessage(event)
 			if err != nil {
@@ -30,17 +37,11 @@ func Handler(service *scheduler) streaming.SubHandler {
 				continue
 			}
 
-			messages[id] = message
+			in.Messages[id] = message
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Request.Schedule.Timeout))
-		defer cancel()
-
-		in := &usecase.RequestScheduleIn{
-			Messages: messages,
-		}
 		// we alreay validated messages of request, don't need to validate again
-		out, err := service.uc.Request().Schedule(ctx, in)
+		out, err := service.uc.Request().Schedule(timeoutctx, in)
 		if err != nil {
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event

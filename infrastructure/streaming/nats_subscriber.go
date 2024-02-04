@@ -2,6 +2,7 @@ package streaming
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -12,7 +13,11 @@ import (
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/project"
+	"github.com/scrapnode/kanthor/telemetry"
 	"github.com/sourcegraph/conc"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type NatsSubscriber struct {
@@ -113,6 +118,8 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 		return err
 	}
 
+	propgator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{})
+	spanName := "streaming.publisher.sub"
 	go func() {
 		for {
 			if !subscriber.subscription.IsValid() {
@@ -135,23 +142,48 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 				continue
 			}
 
-			events := map[string]*Event{}
+			spanner := &telemetry.Spanner{
+				Tracer:   ctx.Value(telemetry.CtxTracer).(trace.Tracer),
+				Contexts: make(map[string]context.Context),
+			}
+
+			events := make(map[string]*Event)
 			for _, msg := range messages {
+				// MetaId is event.Id
+				eventId := msg.Header.Get(MetaId)
+
+				// telemetry tracing
+				var carrier propagation.MapCarrier
+				if err := json.Unmarshal([]byte(msg.Header.Get(HeaderTelemetryTrace)), &carrier); err == nil {
+					spanner.Contexts[eventId] = propgator.Extract(context.Background(), carrier)
+
+					attributes := trace.WithAttributes(
+						attribute.String("streaming.publisher.engine", "nats"),
+						attribute.String("event.id", eventId),
+					)
+					spanner.StartWithRefId(spanName, eventId, attributes)
+				}
+
 				event := NatsMsgToEvent(msg)
 				if err := event.Validate(); err != nil {
 					subscriber.logger.Errorw(err.Error(), "nats_msg", utils.Stringify(msg))
 					continue
 				}
-				// MetaId is event.Id
-				events[msg.Header.Get(MetaId)] = event
+
+				// event transformation
+				events[eventId] = event
+
 			}
 
-			errors := handler(events)
+			spannerctx := context.WithValue(ctx, telemetry.CtxSpanner, spanner)
+			errors := handler(spannerctx, events)
 
 			var wg conc.WaitGroup
 			for _, msg := range messages {
 				// MetaId is event.Id
-				event := events[msg.Header.Get(MetaId)]
+				eventId := msg.Header.Get(MetaId)
+
+				event := events[eventId]
 				message := msg
 				wg.Go(func() {
 					if err, ok := errors[event.Id]; ok && err != nil {
@@ -168,6 +200,7 @@ func (subscriber *NatsSubscriber) Sub(ctx context.Context, topic string, handler
 					}
 				})
 
+				spanner.End(spanName)
 			}
 			wg.Wait()
 		}

@@ -14,6 +14,7 @@ type ctxkey string
 var (
 	CtxService ctxkey = "telemetry.ctx.service.name"
 	CtxTracer  ctxkey = "telemetry.ctx.tracer"
+	CtxSpanner ctxkey = "telemetry.ctx.spanner"
 )
 
 // Start will help configure the telemetry in local machine

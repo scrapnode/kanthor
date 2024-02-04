@@ -13,8 +13,17 @@ import (
 func Handler(service *selector) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events map[string]*streaming.Event) map[string]error {
-		triggers := map[string]*entities.AttemptTrigger{}
+	return func(ctx context.Context, events map[string]*streaming.Event) map[string]error {
+		timeout := time.Millisecond * time.Duration(service.conf.Consumer.Timeout)
+		timeoutctx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+
+		in := &usecase.RetrySelectIn{
+			BatchSize: service.conf.Selector.BatchSize,
+			Counter:   service.conf.Selector.Counter,
+			Triggers:  make(map[string]*entities.AttemptTrigger),
+		}
+
 		for id, event := range events {
 			trigger, err := transformation.EventToAttemptTrigger(event)
 			if err != nil {
@@ -30,19 +39,11 @@ func Handler(service *selector) streaming.SubHandler {
 				continue
 			}
 
-			triggers[id] = trigger
+			in.Triggers[id] = trigger
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Consumer.Timeout))
-		defer cancel()
-
-		in := &usecase.RetrySelectIn{
-			BatchSize: service.conf.Selector.BatchSize,
-			Counter:   service.conf.Selector.Counter,
-			Triggers:  triggers,
-		}
 		// we alreay validated messages of request, don't need to validate again
-		out, err := service.uc.Retry().Select(ctx, in)
+		out, err := service.uc.Retry().Select(timeoutctx, in)
 		if err != nil {
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event

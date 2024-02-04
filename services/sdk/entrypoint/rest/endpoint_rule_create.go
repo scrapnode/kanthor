@@ -15,7 +15,7 @@ type EndpointRuleCreateReq struct {
 	Name string `json:"name" default:"passthrough"`
 
 	Priority            int32  `json:"priority" default:"100"`
-	Exclusionary        bool   `json:"exclusionary"`
+	Exclusionary        bool   `json:"exclusionary" default:"false"`
 	ConditionSource     string `json:"condition_source" default:"type"`
 	ConditionExpression string `json:"condition_expression" default:"any::"`
 } // @name EndpointRuleCreateReq
@@ -25,11 +25,11 @@ type EndpointRuleCreateRes struct {
 } // @name EndpointRuleCreateRes
 
 // UseEndpointRuleCreate
-// @Tags		endpoint rule
-// @Router		/rule		[post]
-// @Param		payload		body		EndpointRuleCreateReq	true	"rule payload"
-// @Success		201			{object}	EndpointRuleCreateRes
-// @Failure		default		{object}	gateway.Err
+// @Tags			endpoint rule
+// @Router		/rule					[post]
+// @Param			payload				body		EndpointRuleCreateReq	true	"rule payload"
+// @Success		201						{object}	EndpointRuleCreateRes
+// @Failure		default				{object}	gateway.Err
 // @Security	Authorization
 // @Security	WorkspaceId
 func UseEndpointRuleCreate(service *sdk) gin.HandlerFunc {

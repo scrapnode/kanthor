@@ -13,8 +13,10 @@ import (
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services/scheduler/config"
 	"github.com/scrapnode/kanthor/services/scheduler/usecase"
+	"github.com/scrapnode/kanthor/telemetry"
 )
 
 func New(
@@ -118,8 +120,9 @@ func (service *scheduler) Stop(ctx context.Context) error {
 }
 
 func (service *scheduler) Run(ctx context.Context) error {
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("consumer")))
 	topic := constants.TopicMessage
-	if err := service.subscriber.Sub(ctx, topic, Handler(service)); err != nil {
+	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err
 	}
 

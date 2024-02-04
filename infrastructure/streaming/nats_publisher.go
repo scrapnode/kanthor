@@ -6,9 +6,11 @@ import (
 	natscore "github.com/nats-io/nats.go"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/pkg/safe"
+	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/telemetry"
 	"github.com/sourcegraph/conc/pool"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -25,15 +27,8 @@ func (publisher *NatsPublisher) Name() string {
 }
 
 func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Event) map[string]error {
-	tracer := ctx.Value(telemetry.CtxTracer).(trace.Tracer)
-	attributes := trace.WithAttributes(
-		attribute.String("streaming.publisher.engine", "nats"),
-		attribute.Int("streaming.publisher.event_count", len(events)),
-	)
-	multictx, multispan := tracer.Start(ctx, "streaming.publisher.pub", attributes)
-	defer func() {
-		multispan.End()
-	}()
+	spanName := "streaming.publisher.pub"
+	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
 
 	datac := make(chan map[string]error, 1)
 	defer close(datac)
@@ -42,6 +37,14 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 		returning := safe.Map[error]{}
 		p := pool.New().WithMaxGoroutines(publisher.conf.Publisher.RateLimit)
 		for refId, e := range events {
+			attributes := trace.WithAttributes(
+				attribute.String("streaming.publisher.engine", "nats"),
+				attribute.String("event.id", refId),
+				attribute.String("event.subject", e.Subject),
+			)
+			spanner.StartWithRefId(spanName, refId, attributes)
+			defer spanner.End(spanName)
+
 			if err := e.Validate(); err != nil {
 				publisher.logger.Errorw("INFRASTRUCTURE.STREAMING.PUBLISHER.NATS.EVENT_VALIDATION.ERROR", "subject", e.Subject, "event_id", e.Id, "event", e.String())
 				returning.Set(refId, err)
@@ -51,16 +54,14 @@ func (publisher *NatsPublisher) Pub(ctx context.Context, events map[string]*Even
 			// store the value to use in p.Go, otherwise we got the same value
 			event := e
 			msg := NatsMsgFromEvent(e.Subject, e)
-			p.Go(func() {
-				_, singlespan := tracer.Start(multictx, "streaming.publisher.pub.event",
-					trace.WithAttributes(
-						attribute.String("streaming.publisher.event.id", event.Id),
-						attribute.String("streaming.publisher.event.subject", event.Subject),
-					))
-				defer func() {
-					singlespan.End()
-				}()
 
+			// telemetry tracing
+			propgator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{})
+			carrier := propagation.MapCarrier{}
+			propgator.Inject(ctx, carrier)
+			msg.Header.Add(HeaderTelemetryTrace, utils.Stringify(carrier))
+
+			p.Go(func() {
 				ack, err := publisher.nats.js.PublishMsg(msg, natscore.Context(ctx), natscore.MsgId(event.Id))
 				if err != nil {
 					publisher.logger.Errorw("INFRASTRUCTURE.STREAMING.PUBLISHER.NATS.EVENT_PUBLISH.ERROR", "subject", event.Subject, "event_id", event.Id)

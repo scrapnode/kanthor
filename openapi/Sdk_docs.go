@@ -1283,7 +1283,8 @@ const docTemplateSdk = `{
                     "type": "string"
                 },
                 "exclusionary": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 },
                 "name": {
                     "type": "string",

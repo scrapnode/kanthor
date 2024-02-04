@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	MetaId = "KANTHOR_META_ID"
+	MetaId               = "KANTHOR_META_ID"
+	HeaderTelemetryTrace = "x-telemtry-trace"
 )
 
 type Event struct {

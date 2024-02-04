@@ -28,4 +28,4 @@ type Subscriber interface {
 	Sub(ctx context.Context, topic string, handler SubHandler) error
 }
 
-type SubHandler func(events map[string]*Event) map[string]error
+type SubHandler func(ctx context.Context, events map[string]*Event) map[string]error

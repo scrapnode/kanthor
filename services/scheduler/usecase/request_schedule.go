@@ -11,6 +11,8 @@ import (
 	"github.com/scrapnode/kanthor/pkg/safe"
 	"github.com/scrapnode/kanthor/pkg/utils"
 	"github.com/scrapnode/kanthor/pkg/validator"
+	"github.com/scrapnode/kanthor/telemetry"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type RequestScheduleIn struct {
@@ -46,21 +48,26 @@ type RequestScheduleOut struct {
 }
 
 func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*RequestScheduleOut, error) {
+	spanName := "usecase.request.schedule"
+	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
+
 	ok := &safe.Map[[]string]{}
 	ko := &safe.Map[error]{}
 
 	// we have to store a ref map so if we got any error,
 	// we can report back to the caller that a key has a error and should be retry
-	eventIdRefs := map[string]string{}
-	for eventId, msg := range in.Messages {
-		eventIdRefs[msg.Id] = eventId
+	refIds := map[string]string{}
+	for refId, msg := range in.Messages {
+		spanner.StartWithRefId(spanName, refId)
+		refIds[msg.Id] = refId
 	}
+	defer spanner.End(spanName)
 
 	errc := make(chan error, 1)
 	defer close(errc)
 
 	go func() {
-		requests, err := uc.arrange(ctx, in.Messages)
+		requests, err := uc.arrange(context.WithValue(ctx, telemetry.CtxSpanner, spanner.Clone()), in)
 		if err != nil {
 			errc <- err
 			return
@@ -69,6 +76,9 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			errc <- nil
 			return
 		}
+
+		publishSpanner := spanner.Clone()
+		publishSpanner.Start("usecase.request.publish")
 
 		msgrefs := map[string]string{}
 		events := map[string]*streaming.Event{}
@@ -89,7 +99,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 		for msgRefId := range events {
 			// map key back to message id
 			msgId := msgrefs[msgRefId]
-			eventRef := eventIdRefs[msgId]
+			eventRef := refIds[msgId]
 
 			if err, ok := errs[msgRefId]; ok {
 				ko.Set(eventRef, err)
@@ -105,6 +115,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 			}
 		}
 
+		publishSpanner.End("usecase.request.publish")
 		errc <- nil
 	}()
 
@@ -114,7 +125,7 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 	case <-ctx.Done():
 		// context deadline exceeded, should set that error to remain messages
 		for _, msg := range in.Messages {
-			eventRef := eventIdRefs[msg.Id]
+			eventRef := refIds[msg.Id]
 
 			if _, success := ok.Get(msg.Id); success {
 				// already success, should not retry it
@@ -131,20 +142,33 @@ func (uc *request) Schedule(ctx context.Context, in *RequestScheduleIn) (*Reques
 	}
 }
 
-func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Message) (map[string]*entities.Request, error) {
-	appIds := make([]string, 0)
-	for id := range messages {
-		appIds = append(appIds, messages[id].AppId)
-	}
+func (uc *request) arrange(ctx context.Context, in *RequestScheduleIn) (map[string]*entities.Request, error) {
+	spanName := "usecase.request.arrange"
+	spanner := ctx.Value(telemetry.CtxSpanner).(*telemetry.Spanner)
 
+	appIds := make([]string, 0)
+	for refId := range in.Messages {
+		spanner.StartWithRefId(spanName, refId)
+		appIds = append(appIds, in.Messages[refId].AppId)
+	}
+	defer spanner.End(spanName)
+
+	appSpanner := spanner.Clone()
+	appSpanner.Start("repositories.db.application.get_routes")
 	routes, err := uc.repositories.Database().Application().GetRoutes(ctx, appIds)
 	if err != nil {
+		appSpanner.End("repositories.db.application.get_routes")
 		return nil, err
 	}
+	appSpanner.End("repositories.db.application.get_routes", attribute.Int("app.route_count", len(routes)))
 
+	planningSpanner := spanner.Clone()
 	returning := map[string]*entities.Request{}
-	for _, msg := range messages {
+	for refId, msg := range in.Messages {
+		spanNamePlanning := "usecase.request.arrange.planning"
 		if items, has := routes[msg.AppId]; has {
+			planningSpanner.StartWithRefId("usecase.request.arrange.planning", refId)
+
 			requests, traces := routing.PlanRequests(uc.infra.Timer, msg, items)
 			if len(traces) > 0 {
 				for _, trace := range traces {
@@ -155,9 +179,11 @@ func (uc *request) arrange(ctx context.Context, messages map[string]*entities.Me
 			for id, request := range requests {
 				returning[id] = request
 			}
-		}
 
+			planningSpanner.End(spanNamePlanning, attribute.Int("request_count", len(requests)))
+		}
 	}
+
 	if len(returning) == 0 {
 		uc.logger.Warnw("SCHEDULER.USECASE.REQUEST.SCHEDULE.NO_REQUEST", "apps", appIds)
 	}

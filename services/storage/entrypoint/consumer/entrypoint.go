@@ -8,13 +8,14 @@ import (
 	"github.com/scrapnode/kanthor/datastore"
 	"github.com/scrapnode/kanthor/infrastructure"
 	"github.com/scrapnode/kanthor/infrastructure/streaming"
-	"github.com/scrapnode/kanthor/internal/constants"
 	"github.com/scrapnode/kanthor/logging"
 	"github.com/scrapnode/kanthor/patterns"
 	"github.com/scrapnode/kanthor/pkg/healthcheck"
 	"github.com/scrapnode/kanthor/pkg/healthcheck/background"
+	"github.com/scrapnode/kanthor/project"
 	"github.com/scrapnode/kanthor/services/storage/config"
 	"github.com/scrapnode/kanthor/services/storage/usecase"
+	"github.com/scrapnode/kanthor/telemetry"
 )
 
 func New(
@@ -118,12 +119,9 @@ func (service *storage) Stop(ctx context.Context) error {
 }
 
 func (service *storage) Run(ctx context.Context) error {
-	topic := constants.TopicPublic
-	if service.conf.Topic != "" {
-		topic = service.conf.Topic
-	}
-
-	if err := service.subscriber.Sub(ctx, topic, Handler(service)); err != nil {
+	tracectx := context.WithValue(ctx, telemetry.CtxTracer, telemetry.Tracer(project.Name("consumer")))
+	topic := service.conf.Topic
+	if err := service.subscriber.Sub(tracectx, topic, Handler(service)); err != nil {
 		return err
 	}
 

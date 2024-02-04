@@ -13,8 +13,16 @@ import (
 func Handler(service *consumer) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events map[string]*streaming.Event) map[string]error {
-		tasks := map[string]*entities.AttemptTask{}
+	return func(ctx context.Context, events map[string]*streaming.Event) map[string]error {
+		timeout := time.Millisecond * time.Duration(service.conf.Consumer.Timeout)
+		timeoutctx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+
+		in := &usecase.ScannerExecuteIn{
+			BatchSize: service.conf.Consumer.BatchSize,
+			Tasks:     make(map[string]*entities.AttemptTask),
+		}
+
 		for id, event := range events {
 			task, err := transformation.EventToAttemptTask(event)
 			if err != nil {
@@ -30,18 +38,10 @@ func Handler(service *consumer) streaming.SubHandler {
 				continue
 			}
 
-			tasks[id] = task
-		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Consumer.Timeout))
-		defer cancel()
-
-		in := &usecase.ScannerExecuteIn{
-			BatchSize: service.conf.Consumer.BatchSize,
-			Tasks:     tasks,
+			in.Tasks[id] = task
 		}
 		// we alreay validated messages of request, don't need to validate again
-		out, err := service.uc.Scanner().Execute(ctx, in)
+		out, err := service.uc.Scanner().Execute(timeoutctx, in)
 		if err != nil {
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event

@@ -9,6 +9,7 @@ import (
 	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
 	"github.com/scrapnode/kanthor/telemetry"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -39,8 +40,9 @@ type MessageCreateOut struct {
 	Message *entities.Message
 }
 
-func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (out *MessageCreateOut, err error) {
-	subctx, span := ctx.Value(telemetry.CtxTracer).(trace.Tracer).Start(ctx, "usecase.message.create")
+func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCreateOut, error) {
+	attributes := trace.WithAttributes(attribute.String("app.id", in.AppId))
+	subctx, span := ctx.Value(telemetry.CtxTracer).(trace.Tracer).Start(ctx, "usecase.message.create", attributes)
 	defer func() {
 		span.End()
 	}()
@@ -71,7 +73,13 @@ func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (out *Messag
 
 	events := map[string]*streaming.Event{}
 	events[event.Id] = event
-	if errs := uc.publisher.Pub(subctx, events); len(errs) > 0 {
+	spanner := &telemetry.Spanner{
+		Tracer:   ctx.Value(telemetry.CtxTracer).(trace.Tracer),
+		Contexts: make(map[string]context.Context),
+	}
+	spanner.Contexts[event.Id] = subctx
+	pubctx := context.WithValue(subctx, telemetry.CtxSpanner, spanner)
+	if errs := uc.publisher.Pub(pubctx, events); len(errs) > 0 {
 		return nil, errs[event.Id]
 	}
 

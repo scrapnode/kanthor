@@ -16,7 +16,11 @@ import (
 func Handler(service *storage) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events map[string]*streaming.Event) map[string]error {
+	return func(ctx context.Context, events map[string]*streaming.Event) map[string]error {
+		timeout := time.Millisecond * time.Duration(service.conf.Warehouse.Put.Timeout)
+		timeoutctx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+
 		in := &usecase.WarehousePutIn{
 			BatchSize: service.conf.Warehouse.Put.BatchSize,
 			Messages:  map[string]*entities.Message{},
@@ -99,11 +103,8 @@ func Handler(service *storage) streaming.SubHandler {
 			service.logger.Errorw("STORAGE.ENTRYPOINT.CONSUMER.HANDLER.EVENT_UNKNOWN_TOPIC.ERROR", "event", event.String())
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(service.conf.Warehouse.Put.Timeout))
-		defer cancel()
-
 		// we alreay validated messages, request and response, don't need to validate again
-		out, err := service.uc.Warehouse().Put(ctx, in)
+		out, err := service.uc.Warehouse().Put(timeoutctx, in)
 		if err != nil {
 			retruning := map[string]error{}
 			// got un-coverable error, should retry all event

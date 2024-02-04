@@ -12,8 +12,12 @@ import (
 func Handler(service *dispatcher) streaming.SubHandler {
 	// if you return error here, the event will be retried
 	// so, you must test your error before return it
-	return func(events map[string]*streaming.Event) map[string]error {
-		requests := map[string]*entities.Request{}
+	return func(ctx context.Context, events map[string]*streaming.Event) map[string]error {
+		in := &usecase.ForwarderSendIn{
+			Concurrency: service.conf.Forwarder.Send.Concurrency,
+			Requests:    make(map[string]*entities.Request),
+		}
+
 		for id, event := range events {
 			request, err := transformation.EventToRequest(event)
 			if err != nil {
@@ -29,14 +33,9 @@ func Handler(service *dispatcher) streaming.SubHandler {
 				continue
 			}
 
-			requests[id] = request
+			in.Requests[id] = request
 		}
 
-		ctx := context.Background()
-		in := &usecase.ForwarderSendIn{
-			Concurrency: service.conf.Forwarder.Send.Concurrency,
-			Requests:    requests,
-		}
 		// we alreay validated messages of request, don't need to validate again
 		out, err := service.uc.Forwarder().Send(ctx, in)
 		if err != nil {
