@@ -8,6 +8,8 @@ import (
 	"github.com/scrapnode/kanthor/gateway"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
+	"github.com/scrapnode/kanthor/telemetry"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type MessageCreateReq struct {
@@ -32,6 +34,12 @@ type MessageCreateRes struct {
 // @Security	WorkspaceId
 func UseMessageCreate(service *sdk) gin.HandlerFunc {
 	return func(ginctx *gin.Context) {
+		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
+		ctx, span := ctx.Value(telemetry.CtxTracer).(trace.Tracer).Start(ctx, "entrypoint.message.create")
+		defer func() {
+			span.End()
+		}()
+
 		var req MessageCreateReq
 		if err := ginctx.ShouldBindJSON(&req); err != nil {
 			ginctx.AbortWithStatusJSON(http.StatusBadRequest, gateway.Error(err))
@@ -45,7 +53,6 @@ func UseMessageCreate(service *sdk) gin.HandlerFunc {
 			}
 		}
 
-		ctx := ginctx.MustGet(gateway.Ctx).(context.Context)
 		ws := ctx.Value(gateway.CtxWorkspace).(*entities.Workspace)
 		in := &usecase.MessageCreateIn{
 			WsId:     ws.Id,

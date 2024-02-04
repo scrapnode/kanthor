@@ -6,6 +6,8 @@ import (
 
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/pkg/validator"
+	"github.com/scrapnode/kanthor/telemetry"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type WorkspaceGetIn struct {
@@ -26,7 +28,12 @@ type WorkspaceGetOut struct {
 }
 
 func (uc *workspace) Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGetOut, error) {
-	ws, err := uc.repositories.Database().Workspace().Get(ctx, in.Id)
+	subctx, span := ctx.Value(telemetry.CtxTracer).(trace.Tracer).Start(ctx, "usecase.workspace.get")
+	defer func() {
+		span.End()
+	}()
+
+	ws, err := uc.repositories.Database().Workspace().Get(subctx, in.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +43,7 @@ func (uc *workspace) Get(ctx context.Context, in *WorkspaceGetIn) (*WorkspaceGet
 		return &WorkspaceGetOut{ws}, nil
 	}
 
-	wsc, err := uc.repositories.Database().WorkspaceCredentials().Get(ctx, in.AccId)
+	wsc, err := uc.repositories.Database().WorkspaceCredentials().Get(subctx, in.AccId)
 	if err != nil {
 		return nil, err
 	}

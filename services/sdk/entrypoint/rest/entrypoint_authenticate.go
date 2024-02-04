@@ -7,10 +7,17 @@ import (
 	"github.com/scrapnode/kanthor/infrastructure/authenticator"
 	"github.com/scrapnode/kanthor/internal/entities"
 	"github.com/scrapnode/kanthor/services/sdk/usecase"
+	"github.com/scrapnode/kanthor/telemetry"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func RegisterWorkspaceResolver(uc usecase.Sdk) func(ctx context.Context, acc *authenticator.Account, id string) (*entities.Workspace, error) {
 	return func(ctx context.Context, acc *authenticator.Account, id string) (*entities.Workspace, error) {
+		subctx, span := ctx.Value(telemetry.CtxTracer).(trace.Tracer).Start(ctx, "entrypoint.authentication.workspace.resolve")
+		defer func() {
+			span.End()
+		}()
+
 		in := &usecase.WorkspaceGetIn{
 			AccId: acc.Sub,
 			Id:    id,
@@ -19,7 +26,7 @@ func RegisterWorkspaceResolver(uc usecase.Sdk) func(ctx context.Context, acc *au
 			return nil, err
 		}
 
-		out, err := uc.Workspace().Get(ctx, in)
+		out, err := uc.Workspace().Get(subctx, in)
 		if err != nil {
 			return nil, err
 		}

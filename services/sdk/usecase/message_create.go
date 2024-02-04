@@ -8,6 +8,8 @@ import (
 	"github.com/scrapnode/kanthor/internal/transformation"
 	"github.com/scrapnode/kanthor/pkg/identifier"
 	"github.com/scrapnode/kanthor/pkg/validator"
+	"github.com/scrapnode/kanthor/telemetry"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type MessageCreateIn struct {
@@ -37,8 +39,13 @@ type MessageCreateOut struct {
 	Message *entities.Message
 }
 
-func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCreateOut, error) {
-	app, err := uc.repositories.Database().Application().Get(ctx, in.WsId, in.AppId)
+func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (out *MessageCreateOut, err error) {
+	subctx, span := ctx.Value(telemetry.CtxTracer).(trace.Tracer).Start(ctx, "usecase.message.create")
+	defer func() {
+		span.End()
+	}()
+
+	app, err := uc.repositories.Database().Application().Get(subctx, in.WsId, in.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +71,7 @@ func (uc *message) Create(ctx context.Context, in *MessageCreateIn) (*MessageCre
 
 	events := map[string]*streaming.Event{}
 	events[event.Id] = event
-	if errs := uc.publisher.Pub(ctx, events); len(errs) > 0 {
+	if errs := uc.publisher.Pub(subctx, events); len(errs) > 0 {
 		return nil, errs[event.Id]
 	}
 
